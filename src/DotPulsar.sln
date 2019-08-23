@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29209.62
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotPulsar", "DotPulsar\DotPulsar.csproj", "{8D300FC3-2E35-4D23-B0DD-FEE9E153330A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotPulsar.Tests", "DotPulsar.Tests\DotPulsar.Tests.csproj", "{B3FCD2D5-8009-4281-ACDB-6A7BC99606B4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8D300FC3-2E35-4D23-B0DD-FEE9E153330A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D300FC3-2E35-4D23-B0DD-FEE9E153330A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D300FC3-2E35-4D23-B0DD-FEE9E153330A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D300FC3-2E35-4D23-B0DD-FEE9E153330A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3FCD2D5-8009-4281-ACDB-6A7BC99606B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3FCD2D5-8009-4281-ACDB-6A7BC99606B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3FCD2D5-8009-4281-ACDB-6A7BC99606B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3FCD2D5-8009-4281-ACDB-6A7BC99606B4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {88355922-E70A-4B73-B7F8-ABF8F2B59789}
+	EndGlobalSection
+EndGlobal
