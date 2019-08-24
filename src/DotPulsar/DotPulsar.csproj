@@ -2,20 +2,21 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <PackageReleaseNotes>Alpha release</PackageReleaseNotes>
+    <Title>DotPulsar</Title>
+    <PackageReleaseNotes>Alpha release - Can now read max sized (5mb) messages</PackageReleaseNotes>
+    <PackageTags>Apache;Pulsar</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/danske-commodities/dotpulsar</RepositoryUrl>
     <Description>Native .NET/C# client library for Apache Pulsar</Description>
-    <Authors>dblank</Authors>
+    <Authors>DanskeCommodities;dblank</Authors>
     <Company>Danske Commodities A/S</Company>
     <Copyright>$(Company)</Copyright>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <NoWarn>1701;1702;1591</NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>\DotPulsar.xml</DocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
