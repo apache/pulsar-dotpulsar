@@ -10,8 +10,8 @@ namespace DotPulsar.Internal
 {
     public sealed class PulsarStream : IDisposable
     {
-        const long PauseAtMoreThan10Mb = 10485760;
-        const long ResumeAt5MbOrLess = 5242881;
+        private const long PauseAtMoreThan10Mb = 10485760;
+        private const long ResumeAt5MbOrLess = 5242881;
 
         private readonly Stream _stream;
         private readonly Action<uint, ReadOnlySequence<byte>> _handler;

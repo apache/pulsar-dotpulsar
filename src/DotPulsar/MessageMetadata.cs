@@ -6,6 +6,12 @@
 
         internal Internal.PulsarApi.MessageMetadata Metadata;
 
+        public long DeliverAtTime
+        {
+            get => Metadata.DeliverAtTime;
+            set => Metadata.DeliverAtTime = value;
+        }
+
         public ulong EventTime
         {
             get => Metadata.EventTime;

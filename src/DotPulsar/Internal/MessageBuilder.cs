@@ -16,6 +16,12 @@ namespace DotPulsar.Internal
             _metadata = new MessageMetadata();
         }
 
+        public IMessageBuilder DeliverAt(long timestamp)
+        {
+            _metadata.DeliverAtTime = timestamp;
+            return this;
+        }
+
         public IMessageBuilder EventTime(ulong eventTime)
         {
             _metadata.EventTime = eventTime;

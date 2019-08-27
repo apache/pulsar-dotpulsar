@@ -10,6 +10,11 @@ namespace DotPulsar.Abstractions
     public interface IMessageBuilder
     {
         /// <summary>
+        /// Absolute timestamp indicating when the message should be delivered to consumers
+        /// </summary>
+        IMessageBuilder DeliverAt(long timestamp);
+
+        /// <summary>
         /// Set the event time of the message
         /// </summary>
         IMessageBuilder EventTime(ulong eventTime);
