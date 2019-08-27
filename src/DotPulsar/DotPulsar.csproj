@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Title>DotPulsar</Title>
-    <PackageReleaseNotes>Alpha release - Can now read max sized (5mb) messages</PackageReleaseNotes>
+    <PackageReleaseNotes>Alpha release - Support delayed message delivery</PackageReleaseNotes>
     <PackageTags>Apache;Pulsar</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/danske-commodities/dotpulsar</RepositoryUrl>
