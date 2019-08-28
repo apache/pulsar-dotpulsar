@@ -4,9 +4,9 @@ Native .NET/C# client library for [Apache Pulsar](https://pulsar.apache.org/)
 
 ## Getting Started
 
-DotPulsar is written entirely in C# and implement Apache Pulsar's [binary protocol](https://pulsar.apache.org/docs/en/develop-binary-protocol/). Other options was using the [C++ client library](https://pulsar.apache.org/docs/en/client-libraries-cpp/) (which is what the [Python client](https://pulsar.apache.org/docs/en/client-libraries-python/) and [Go client](https://pulsar.apache.org/docs/en/client-libraries-go/) do) or build on top of the [WebSocket API](https://pulsar.apache.org/docs/en/client-libraries-websocket/). We decided to implement the binary protocol in order to gain full control and maximize portability and performance.
+DotPulsar is written entirely in C# and implement Apache Pulsar's [binary protocol](https://pulsar.apache.org/docs/en/develop-binary-protocol/). Other options was using the [C++ client library](https://pulsar.apache.org/docs/en/client-libraries-cpp/) (which is what the [Python client](https://pulsar.apache.org/docs/en/client-libraries-python/) and [Go client](https://pulsar.apache.org/docs/en/client-libraries-go/) do) or build on top of the [WebSocket API](https://pulsar.apache.org/docs/en/client-libraries-websocket/). We decided to implement the binary protocol to gain full control and maximize portability and performance.
 
-DotPulsar's API is strongly inspired by Apache Pulsar's official [Java client](https://pulsar.apache.org/docs/en/client-libraries-java/), but a 100% match is not goal.
+DotPulsar's API is strongly inspired by Apache Pulsar's official [Java client](https://pulsar.apache.org/docs/en/client-libraries-java/), but a 100% match is not a goal.
 
 Let's see how to produce, consume and read messages.
 
@@ -172,8 +172,8 @@ private static async Task MonitorConsumerState(IConsumer consumer, CancellationT
 }
 ```
 
-Here the variable 'state' will contained to new state. You can both monitor going From (StateChangedFrom) and To (StateChangedTo) a state. 
-Some states are final, meaning the state can no longer change. For consumers 'Closed', 'Faulted' and 'ReachedEndOfTopic' are final states. When the consumer enter a final state, all monitoring tasks are completed. So if you e.g. are monitoring going to 'Diconnected' and the consumer is 'Closed', then you task will complete and return 'Closed'.
+Here the variable 'state' will contain the new state. You can both monitor going From (StateChangedFrom) and To (StateChangedTo) a state. 
+Some states are final, meaning the state can no longer change. For consumers 'Closed', 'Faulted' and 'ReachedEndOfTopic' are final states. When the consumer enters a final state, all monitoring tasks are completed. So if you e.g. are monitoring going to 'Disconnected' and the consumer is 'Closed', then your task will complete and return 'Closed'.
 
 ## Built With
 
