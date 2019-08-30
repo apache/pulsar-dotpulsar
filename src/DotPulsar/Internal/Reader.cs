@@ -51,7 +51,7 @@ namespace DotPulsar.Internal
             switch (_faultStrategy.DetermineFaultAction(exception))
             {
                 case FaultAction.Retry:
-                    await Task.Delay(_faultStrategy.TimeToWait, cancellationToken);
+                    await Task.Delay(_faultStrategy.RetryInterval, cancellationToken);
                     break;
                 case FaultAction.Relookup:
                     await _stateManager.StateChangedTo(ReaderState.Connected, cancellationToken);

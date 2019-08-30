@@ -8,6 +8,11 @@ namespace DotPulsar.Abstractions
     public interface IPulsarClientBuilder
     {
         /// <summary>
+        /// The time to wait before retrying an operation or a reconnect. Default is 3 seconds.
+        /// </summary>
+        IPulsarClientBuilder RetryInterval(TimeSpan interval);
+
+        /// <summary>
         /// The service URL for the Pulsar cluster
         /// </summary>
         IPulsarClientBuilder ServiceUrl(Uri uri);

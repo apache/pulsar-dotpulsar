@@ -15,10 +15,10 @@ namespace DotPulsar
         private readonly ConnectionPool _connectionPool;
         private bool _isClosed;
 
-        internal PulsarClient(ConnectionPool connectionPool)
+        internal PulsarClient(ConnectionPool connectionPool, IFaultStrategy faultStrategy)
         {
             _lock = new object();
-            _faultStrategy = new FaultStrategy(3000);
+            _faultStrategy = faultStrategy;
             _disposabels = new LinkedList<IDisposable>();
             _connectionPool = connectionPool;
             _isClosed = false;
@@ -28,6 +28,8 @@ namespace DotPulsar
 
         public IProducer CreateProducer(ProducerOptions options)
         {
+            Validate(options);
+
             lock (_lock)
             {
                 ThrowIfClosed();
@@ -40,6 +42,8 @@ namespace DotPulsar
 
         public IConsumer CreateConsumer(ConsumerOptions options)
         {
+            Validate(options);
+
             lock (_lock)
             {
                 ThrowIfClosed();
@@ -52,6 +56,8 @@ namespace DotPulsar
 
         public IReader CreateReader(ReaderOptions options)
         {
+            Validate(options);
+
             lock (_lock)
             {
                 ThrowIfClosed();
@@ -89,6 +95,30 @@ namespace DotPulsar
             {
                 _disposabels.Remove(disposable);
             }
+        }
+
+        private void Validate(ProducerOptions options)
+        {
+            if (string.IsNullOrEmpty(options.Topic))
+                throw new ConfigurationException("ProducerOptions.Topic may not be null or empty");
+        }
+
+        private void Validate(ConsumerOptions options)
+        {
+            if (string.IsNullOrEmpty(options.SubscriptionName))
+                throw new ConfigurationException("ConsumerOptions.SubscriptionName may not be null or empty");
+
+            if (string.IsNullOrEmpty(options.Topic))
+                throw new ConfigurationException("ConsumerOptions.Topic may not be null or empty");
+        }
+
+        private void Validate(ReaderOptions options)
+        {
+            if (options.StartMessageId is null)
+                throw new ConfigurationException("ReaderOptions.StartMessageId may not be null");
+
+            if (string.IsNullOrEmpty(options.Topic))
+                throw new ConfigurationException("ReaderOptions.Topic may not be null or empty");
         }
     }
 }

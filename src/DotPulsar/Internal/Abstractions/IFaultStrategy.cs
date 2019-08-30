@@ -5,6 +5,6 @@ namespace DotPulsar.Internal.Abstractions
     public interface IFaultStrategy
     {
         FaultAction DetermineFaultAction(Exception exception);
-        TimeSpan TimeToWait { get; }
+        TimeSpan RetryInterval { get; }
     }
 }

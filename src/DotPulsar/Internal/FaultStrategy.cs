@@ -7,12 +7,12 @@ namespace DotPulsar.Internal
 {
     public sealed class FaultStrategy : IFaultStrategy
     {
-        public FaultStrategy(int timeToWaitInMilliseconds)
+        public FaultStrategy(TimeSpan retryInterval)
         {
-            TimeToWait = TimeSpan.FromMilliseconds(timeToWaitInMilliseconds);
+            RetryInterval = retryInterval;
         }
 
-        public TimeSpan TimeToWait { get; }
+        public TimeSpan RetryInterval { get; }
 
         public FaultAction DetermineFaultAction(Exception exception)
         {

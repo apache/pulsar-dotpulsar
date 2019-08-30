@@ -172,7 +172,7 @@ private static async Task MonitorConsumerState(IConsumer consumer, CancellationT
 }
 ```
 
-Here the variable 'state' will contain the new state. You can both monitor going From (StateChangedFrom) and To (StateChangedTo) a state. 
+Here the variable 'state' will contain the new state. You can monitor going From (StateChangedFrom) and To (StateChangedTo) a state. 
 Some states are final, meaning the state can no longer change. For consumers 'Closed', 'Faulted' and 'ReachedEndOfTopic' are final states. When the consumer enters a final state, all monitoring tasks are completed. So if you e.g. are monitoring going to 'Disconnected' and the consumer is 'Closed', then your task will complete and return 'Closed'.
 
 ## Built With

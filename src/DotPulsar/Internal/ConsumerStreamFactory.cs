@@ -61,7 +61,7 @@ namespace DotPulsar.Internal
                     if (cancellationToken.IsCancellationRequested)
                         throw;
                     else
-                        await Task.Delay(_faultStrategy.TimeToWait, cancellationToken);
+                        await Task.Delay(_faultStrategy.RetryInterval, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -69,7 +69,7 @@ namespace DotPulsar.Internal
                     {
                         case FaultAction.Relookup:
                         case FaultAction.Retry:
-                            await Task.Delay(_faultStrategy.TimeToWait, cancellationToken);
+                            await Task.Delay(_faultStrategy.RetryInterval, cancellationToken);
                             continue;
                     }
 

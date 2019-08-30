@@ -16,9 +16,20 @@ namespace DotPulsar.Internal
             ClientVersion = assemblyName.Name + " " + assemblyName.Version.ToString(3);
         }
 
+        private TimeSpan _retryInterval;
         private Uri _serviceUrl;
 
-        public PulsarClientBuilder() => _serviceUrl = new Uri("pulsar://localhost:6650");
+        public PulsarClientBuilder()
+        {
+            _retryInterval = TimeSpan.FromSeconds(3);
+            _serviceUrl = new Uri("pulsar://localhost:6650");
+        }
+
+        public IPulsarClientBuilder RetryInterval(TimeSpan interval)
+        {
+            _retryInterval = interval;
+            return this;
+        }
 
         public IPulsarClientBuilder ServiceUrl(Uri uri)
         {
@@ -29,7 +40,7 @@ namespace DotPulsar.Internal
         public IPulsarClient Build()
         {
             var connectionPool = new ConnectionPool(ProtocolVersion, ClientVersion, _serviceUrl);
-            return new PulsarClient(connectionPool);
+            return new PulsarClient(connectionPool, new FaultStrategy(_retryInterval));
         }
     }
 }
