@@ -31,7 +31,7 @@
         IReaderBuilder Topic(string topic);
 
         /// <summary>
-        /// Create the reader
+        /// Create the reader.
         /// </summary>
         IReader Create();
     }

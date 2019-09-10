@@ -1,4 +1,6 @@
-﻿namespace DotPulsar
+﻿using System;
+
+namespace DotPulsar
 {
     public sealed class MessageMetadata
     {
@@ -16,6 +18,38 @@
         {
             get => Metadata.EventTime;
             set => Metadata.EventTime = value;
+        }
+
+        public string Key
+        {
+            get => Metadata.PartitionKey;
+            set
+            {
+                Metadata.PartitionKey = value;
+                Metadata.PartitionKeyB64Encoded = false;
+            }
+        }
+
+        public byte[] KeyBytes
+        {
+            get
+            {
+                if (Metadata.PartitionKey is null)
+                    return null;
+
+                return Convert.FromBase64String(Metadata.PartitionKey);
+            }
+            set
+            {
+                Metadata.PartitionKey = Convert.ToBase64String(value);
+                Metadata.PartitionKeyB64Encoded = true;
+            }
+        }
+
+        public byte[] OrderingKey
+        {
+            get => Metadata.OrderingKey;
+            set => Metadata.OrderingKey = value;
         }
 
         public string this[string key]

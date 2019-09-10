@@ -1,7 +1,7 @@
 ﻿namespace DotPulsar.Abstractions
 {
     /// <summary>
-    /// A producer building abstraction
+    /// A producer building abstraction.
     /// </summary>
     public interface IProducerBuilder
     {
@@ -21,7 +21,7 @@
         IProducerBuilder Topic(string topic);
 
         /// <summary>
-        /// Create the producer
+        /// Create the producer.
         /// </summary>
         IProducer Create();
     }

@@ -1,7 +1,7 @@
 ﻿namespace DotPulsar.Abstractions
 {
     /// <summary>
-    /// A consumer building abstraction
+    /// A consumer building abstraction.
     /// </summary>
     public interface IConsumerBuilder
     {
@@ -46,7 +46,7 @@
         IConsumerBuilder Topic(string topic);
 
         /// <summary>
-        /// Create the consumer
+        /// Create the consumer.
         /// </summary>
         IConsumer Create();
     }

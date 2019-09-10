@@ -4,6 +4,7 @@
     {
         Exclusive = 0,
         Shared = 1,
-        Failover = 2
+        Failover = 2,
+        KeyShared = 3
     }
 }

@@ -28,6 +28,24 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IMessageBuilder Key(string key)
+        {
+            _metadata.Key = key;
+            return this;
+        }
+
+        public IMessageBuilder KeyBytes(byte[] key)
+        {
+            _metadata.KeyBytes = key;
+            return this;
+        }
+
+        public IMessageBuilder OrderingKey(byte[] key)
+        {
+            _metadata.OrderingKey = key;
+            return this;
+        }
+
         public IMessageBuilder Property(string key, string value)
         {
             _metadata[key] = value;

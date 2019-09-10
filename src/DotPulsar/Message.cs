@@ -18,6 +18,11 @@ namespace DotPulsar
         public MessageId MessageId { get; }
         public ReadOnlySequence<byte> Data { get; }
         public ulong EventTime => _messageMetadata.EventTime;
+        public bool HasBase64EncodedKey => _messageMetadata.PartitionKeyB64Encoded;
+        public bool HasKey => _messageMetadata.PartitionKey != null;
+        public string Key => _messageMetadata.PartitionKey;
+        public bool HasOrderingKey => _messageMetadata.OrderingKey != null;
+        public byte[] OrderingKey => _messageMetadata.OrderingKey;
         public string ProducerName => _messageMetadata.ProducerName;
         public ulong PublishTime => _messageMetadata.PublishTime;
         public ulong SequenceId => _messageMetadata.SequenceId;

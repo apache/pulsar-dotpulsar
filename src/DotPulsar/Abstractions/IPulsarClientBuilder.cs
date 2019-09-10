@@ -3,7 +3,7 @@
 namespace DotPulsar.Abstractions
 {
     /// <summary>
-    /// A pulsar client building abstraction
+    /// A pulsar client building abstraction.
     /// </summary>
     public interface IPulsarClientBuilder
     {
@@ -13,12 +13,12 @@ namespace DotPulsar.Abstractions
         IPulsarClientBuilder RetryInterval(TimeSpan interval);
 
         /// <summary>
-        /// The service URL for the Pulsar cluster
+        /// The service URL for the Pulsar cluster.
         /// </summary>
         IPulsarClientBuilder ServiceUrl(Uri uri);
 
         /// <summary>
-        /// Create the client
+        /// Create the client.
         /// </summary>
         IPulsarClient Build();
     }
