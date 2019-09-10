@@ -16,6 +16,11 @@
         IReaderBuilder MessagePrefetchCount(uint count);
 
         /// <summary>
+        /// Whether to read from the compacted topic.
+        /// </summary>
+        IReaderBuilder ReadCompacted(bool readCompacted);
+
+        /// <summary>
         /// The initial reader position is set to the specified message id. This is required.
         /// </summary>
         IReaderBuilder StartMessageId(MessageId messageId);

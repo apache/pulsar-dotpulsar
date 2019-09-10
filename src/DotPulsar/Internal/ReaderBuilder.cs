@@ -25,6 +25,12 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IReaderBuilder ReadCompacted(bool readCompacted)
+        {
+            _options.ReadCompacted = readCompacted;
+            return this;
+        }
+
         public IReaderBuilder StartMessageId(MessageId messageId)
         {
             _options.StartMessageId = messageId;

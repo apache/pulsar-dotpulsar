@@ -37,6 +37,12 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IConsumerBuilder ReadCompacted(bool readCompacted)
+        {
+            _options.ReadCompacted = readCompacted;
+            return this;
+        }
+
         public IConsumerBuilder SubscriptionName(string name)
         {
             _options.SubscriptionName = name;

@@ -26,6 +26,11 @@
         IConsumerBuilder MessagePrefetchCount(uint count);
 
         /// <summary>
+        /// Whether to read from the compacted topic.
+        /// </summary>
+        IConsumerBuilder ReadCompacted(bool readCompacted);
+
+        /// <summary>
         /// Set the subscription name for this consumer. This is required.
         /// </summary>
         IConsumerBuilder SubscriptionName(string name);

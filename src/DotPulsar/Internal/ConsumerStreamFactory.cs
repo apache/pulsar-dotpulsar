@@ -24,6 +24,7 @@ namespace DotPulsar.Internal
                 ConsumerName = options.ConsumerName,
                 initialPosition = (CommandSubscribe.InitialPosition)options.InitialPosition,
                 PriorityLevel = options.PriorityLevel,
+                ReadCompacted = options.ReadCompacted,
                 Subscription = options.SubscriptionName,
                 Topic = options.Topic,
                 Type = (CommandSubscribe.SubType)options.SubscriptionType
@@ -40,6 +41,7 @@ namespace DotPulsar.Internal
             {
                 ConsumerName = options.ReaderName,
                 Durable = false,
+                ReadCompacted = options.ReadCompacted,
                 StartMessageId = options.StartMessageId.Data,
                 Subscription = "Reader-" + Guid.NewGuid().ToString("N"),
                 Topic = options.Topic

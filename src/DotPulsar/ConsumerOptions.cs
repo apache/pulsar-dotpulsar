@@ -13,6 +13,7 @@
         public SubscriptionInitialPosition InitialPosition { get; set; }
         public int PriorityLevel { get; set; }
         public uint MessagePrefetchCount { get; set; }
+        public bool ReadCompacted { get; set; }
         public string SubscriptionName { get; set; }
         public SubscriptionType SubscriptionType { get; set; }
         public string Topic { get; set; }
