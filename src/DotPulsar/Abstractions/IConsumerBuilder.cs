@@ -26,7 +26,7 @@
         IConsumerBuilder MessagePrefetchCount(uint count);
 
         /// <summary>
-        /// Whether to read from the compacted topic.
+        /// Whether to read from the compacted topic. Default is false.
         /// </summary>
         IConsumerBuilder ReadCompacted(bool readCompacted);
 

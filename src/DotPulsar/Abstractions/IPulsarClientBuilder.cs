@@ -13,7 +13,7 @@ namespace DotPulsar.Abstractions
         IPulsarClientBuilder RetryInterval(TimeSpan interval);
 
         /// <summary>
-        /// The service URL for the Pulsar cluster.
+        /// The service URL for the Pulsar cluster. Default is "pulsar://localhost:6650".
         /// </summary>
         IPulsarClientBuilder ServiceUrl(Uri uri);
 
