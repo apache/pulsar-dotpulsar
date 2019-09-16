@@ -1,179 +1,73 @@
 # DotPulsar
 
-Native .NET/C# client library for [Apache Pulsar](https://pulsar.apache.org/)
+Native .NET/C# client library for [Apache Pulsar](https://pulsar.apache.org/).
 
-## Getting Started
-
-DotPulsar is written entirely in C# and implement Apache Pulsar's [binary protocol](https://pulsar.apache.org/docs/en/develop-binary-protocol/). Other options was using the [C++ client library](https://pulsar.apache.org/docs/en/client-libraries-cpp/) (which is what the [Python client](https://pulsar.apache.org/docs/en/client-libraries-python/) and [Go client](https://pulsar.apache.org/docs/en/client-libraries-go/) do) or build on top of the [WebSocket API](https://pulsar.apache.org/docs/en/client-libraries-websocket/). We decided to implement the binary protocol to gain full control and maximize portability and performance.
+DotPulsar is written entirely in C# and implements Apache Pulsar's [binary protocol](https://pulsar.apache.org/docs/en/develop-binary-protocol/). Other options was using the [C++ client library](https://pulsar.apache.org/docs/en/client-libraries-cpp/) (which is what the [Python client](https://pulsar.apache.org/docs/en/client-libraries-python/) and [Go client](https://pulsar.apache.org/docs/en/client-libraries-go/) do) or build on top of the [WebSocket API](https://pulsar.apache.org/docs/en/client-libraries-websocket/). We decided to implement the binary protocol to gain full control and maximize portability and performance.
 
 DotPulsar's API is strongly inspired by Apache Pulsar's official [Java client](https://pulsar.apache.org/docs/en/client-libraries-java/), but a 100% match is not a goal.
 
-Let's see how to produce, consume and read messages.
+## Getting Started
 
-### Producing messages
+Let's take a look at a "Hello world" example, where we first produce a message and then consume it.
 
-Producers can be created via the extension method show below, which follows the API from the Java client:
-
-```csharp
-var client = PulsarClient.Builder().Build();
-var producer = client.NewProducer().Topic("persistent://public/default/mytopic").Create();
-await producer.Send(System.Text.Encoding.UTF8.GetBytes("Hello World"));
-```
-
-If you are not a fan of extensions methods and builders, then there is another option:
+Install the NuGet package [DotPulsar](https://www.nuget.org/packages/DotPulsar/) and copy/paste the code below (you will be needing using declarations for 'DotPulsar' and 'DotPulsar.Extensions').
 
 ```csharp
-var client = PulsarClient.Builder().Build();
-var producerOptions = new ProducerOptions
-{
-    ProducerName = "MyProducer",
-    Topic = "persistent://public/default/mytopic"
-};
-var producer = client.CreateProducer(producerOptions);
-```
+const string myTopic = "persistent://public/default/mytopic";
 
-In the above you only specify the data being sent, but you can also specify metadata:
+using var client = PulsarClient.Builder().Build(); //Connecting to localhost:6650
 
-```csharp
-var data = Encoding.UTF8.GetBytes("Hello World");
-var messageId = await producer.NewMessage()
-                              .Property("SomeKey", "SomeValue") //EventTime and SequenceId can also be set
-                              .Send(data);
-```
+var producer = client.NewProducer()
+                     .Topic(myTopic)
+                     .Create();
+await producer.Send(Encoding.UTF8.GetBytes("Hello World"));
 
-If you are not a fan of extensions methods and builders, then there is another option:
-
-```csharp
-var data = Encoding.UTF8.GetBytes("Hello World");
-var metadata = new MessageMetadata(); //EventTime and SequenceId can be set via properties
-metadata["SomeKey"] = "SomeValue";
-var messageId = await producer.Send(metadata, data));
-```
-
-### Consuming messages
-
-Consumers can be created via the extension method show below, which follows the API from the Java client:
-
-```csharp
-var client = PulsarClient.Builder().Build();
 var consumer = client.NewConsumer()
                      .SubscriptionName("MySubscription")
-                     .Topic("persistent://public/default/mytopic")
+                     .Topic(myTopic)
                      .Create();
 var message = await consumer.Receive();
-Console.WriteLine("Received Message: " + Encoding.UTF8.GetString(message.Data.ToArray()));
+Console.WriteLine("Received: " + Encoding.UTF8.GetString(message.Data.ToArray()));
 await consumer.Acknowledge(message);
 ```
 
-If you are not a fan of extensions methods and builders, then there is another option:
+For a more in-depth tour of the API, please visit the [Wiki](https://github.com/danske-commodities/dotpulsar/wiki).
 
-```csharp
-var client = PulsarClient.Builder().Build();
-var consumerOptions = new ConsumerOptions
-{
-    SubscriptionName = "MySubscription",
-    Topic = "persistent://public/default/mytopic"
-};
-var consumer = client.CreateConsumer(consumerOptions);
-```
+## Supported features
 
-### Reading messages
+- [X] Service discovery
+- [X] Automatic reconnect
+- [X] Producer send with custom metadata
+- [X] Producer send with event time, sequence id and delayed message delivery
+- [X] Producer send with key and ordering key
+- [X] Consumer subscription with initial position and priority level
+- [X] Consumer subscription types exclusive, shared, failover and key shared
+- [X] Consumer receive and single + cumulative acknowledge
+- [X] Consumer seek
+- [X] Consumer unsubscribe
+- [X] Consume compacted topics
+- [X] Reader API
 
-Readers can be created via the extension method show below, which follows the API from the Java client:
+## Roadmap
 
-```csharp
-var client = PulsarClient.Builder().Build();
-var reader = client.NewReader()
-                   .StartMessageId(MessageId.Earliest)
-                   .Topic("persistent://public/default/mytopic")
-                   .Create();
-var message = await reader.Receive();
-Console.WriteLine("Received Message: " + Encoding.UTF8.GetString(message.Data.ToArray()));
-```
+1.0.0
 
-If you are not a fan of extensions methods and builders, then there is another option:
+* Move to IAsyncDisposable and IAsyncEnumerable (will mean moving to .NET Standard 2.1)
+* Consider using ValueTask instead of Task
 
-```csharp
-var client = PulsarClient.Builder().Build();
-var readerOptions = new ReaderOptions
-{
-    StartMessageId = MessageId.Earliest,
-    Topic = "persistent://public/default/mytopic"
-};
-var reader = client.CreateReader(readerOptions);
-```
+X.X.X //Future
 
-## Monitoring state
-
-Consumers, producers and readers all have states that can be monitored. Let's have a look at what states they can have.
-
-### Consumer states
-
-* Active (All is well)
-* Inactive (All is well. The subscription type is 'Failover' and you are not the active consumer)
-* Closed (The consumer or PulsarClient has been disposed)
-* Disconnected (The connection was lost and attempts are being made to reconnect)
-* Faulted (An unrecoverable error has occurred)
-* ReachedEndOfTopic (No more messages will be delivered)
-
-### Producer states
-
-* Closed (The producer or PulsarClient has been disposed)
-* Connected (All is well)
-* Disconnected (The connection was lost and attempts are being made to reconnect)
-* Faulted (An unrecoverable error has occurred)
-
-### Reader states
-
-* Closed (The reader or PulsarClient has been disposed)
-* Connected: (All is well)
-* Disconnected (The connection was lost and attempts are being made to reconnect)
-* Faulted (An unrecoverable error has occurred)
-* ReachedEndOfTopic (No more messages will be delivered)
-
-### How to
-
-Monitoring the state is easy, so let's see how to monitor when a consumer changes state:
-
-```csharp
-private static async Task MonitorConsumerState(IConsumer consumer, CancellationToken cancellationToken)
-{
-	var state = ConsumerState.Disconnected;
-
-	while (true)
-	{
-		state = await consumer.StateChangedFrom(state, cancellationToken);
-
-		switch (state)
-		{
-			case ConsumerState.Active:
-				Console.WriteLine("Consumer is active");
-				break;
-			case ConsumerState.Inactive:
-				Console.WriteLine("Consumer is inactive");
-				break;
-			case ConsumerState.Disconnected:
-				Console.WriteLine("Consumer is disconnected");
-				break;
-			case ConsumerState.Closed:
-				Console.WriteLine("Consumer has closed");
-				break;
-			case ConsumerState.ReachedEndOfTopic:
-				Console.WriteLine("Consumer has reached end of topic");
-				break;
-			case ConsumerState.Faulted:
-				Console.WriteLine("Consumer has faulted");
-				break;
-		}
-
-		if (consumer.IsFinalState(state))
-			return;
-	}
-}
-```
-
-Here the variable 'state' will contain the new state. You can monitor going From (StateChangedFrom) and To (StateChangedTo) a state. 
-Some states are final, meaning the state can no longer change. For consumers 'Closed', 'Faulted' and 'ReachedEndOfTopic' are final states. When the consumer enters a final state, all monitoring tasks are completed. So if you e.g. are monitoring going to 'Disconnected' and the consumer is 'Closed', then your task will complete and return 'Closed'.
+* Schema
+* Authentication/Authorization (TLS Authentication, Athenz, Kerberos)
+* Partitioned topics
+* Message compression (LZ4, ZLIB, ZSTD, SNAPPY)
+* Multi-topic subscriptions
+* Connection encryption
+* Message encryption
+* Batching
+* CommandConsumerStats/CommandConsumerStatsResponse
+* CommandGetTopicsOfNamespace/CommandGetTopicsOfNamespaceResponse
+* CommandPartitionedTopicMetadata/CommandPartitionedTopicMetadataResponse
 
 ## Built With
 
@@ -193,24 +87,3 @@ See also the list of [contributors](https://github.com/danske-commodities/dotpul
 ## License
 
 This project is licensed under the Apache License Version 2.0 - see the [LICENSE](LICENSE) file for details.
-
-## Roadmap
-
-1.0.0
-
-* Move to IAsyncDisposable and IAsyncEnumerable (will mean moving to .NET Standard 2.1)
-
-X.X.X //Future
-
-* Schemas
-* Authentication/Authorization (TLS Authentication, Athenz, Kerberos)
-* Partitioned topics
-* Topic compaction
-* Message compression (LZ4, ZLIB, ZSTD, SNAPPY)
-* Multi-topic subscriptions
-* Connection encryption
-* Message encryption
-* Batching
-* CommandConsumerStats/CommandConsumerStatsResponse
-* CommandGetTopicsOfNamespace/CommandGetTopicsOfNamespaceResponse
-* CommandPartitionedTopicMetadata/CommandPartitionedTopicMetadataResponse
