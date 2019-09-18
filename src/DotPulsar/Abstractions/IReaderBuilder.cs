@@ -11,12 +11,12 @@
         IReaderBuilder ReaderName(string name);
 
         /// <summary>
-        /// Number of messages that will be prefetched. Default is 1000.
+        /// Number of messages that will be prefetched. The default is 1000.
         /// </summary>
         IReaderBuilder MessagePrefetchCount(uint count);
 
         /// <summary>
-        /// Whether to read from the compacted topic. Default is false.
+        /// Whether to read from the compacted topic. The default is 'false'.
         /// </summary>
         IReaderBuilder ReadCompacted(bool readCompacted);
 

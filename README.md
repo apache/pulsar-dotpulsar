@@ -50,24 +50,39 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 
 ## Roadmap
 
-1.0.0
+Help prioritizing the roadmap is most welcome, so please reach out and tell us what you want and need.
 
-* Move to IAsyncDisposable and IAsyncEnumerable (will mean moving to .NET Standard 2.1)
+### 1.0.0
+
+Before the first stable release, we should have a look at:
+
+* Use IAsyncDisposable
+* Use IAsyncEnumerable
 * Consider using ValueTask instead of Task
+* Consider using nullable reference types
+* Look into the possibility of supporting .NET Standard 2.0
 
-X.X.X //Future
+### Future
 
-* Schema
-* Authentication/Authorization (TLS Authentication, Athenz, Kerberos)
-* Partitioned topics
-* Message compression (LZ4, ZLIB, ZSTD, SNAPPY)
-* Multi-topic subscriptions
-* Connection encryption
-* Message encryption
 * Batching
-* CommandConsumerStats/CommandConsumerStatsResponse
-* CommandGetTopicsOfNamespace/CommandGetTopicsOfNamespaceResponse
-* CommandPartitionedTopicMetadata/CommandPartitionedTopicMetadataResponse
+* TLS connections
+* JSON Web Token Authentication
+
+### If requested by the community
+
+* Get consumer stats
+* Get topics of namespace
+* Message encryption
+* Schema
+* Partitioned topics
+* Multi-topic subscriptions
+* TLS Authentication
+* Athenz Authentication
+* Kerberos Authentication
+* LZ4 message compression
+* ZLIB message compression
+* ZSTD message compression
+* SNAPPY message compression
 
 ## Built With
 

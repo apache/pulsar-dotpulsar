@@ -11,7 +11,7 @@
         IProducerBuilder ProducerName(string name);
 
         /// <summary>
-        /// Set the initial sequence id. Default is 0.
+        /// Set the initial sequence id. The default is 0.
         /// </summary>
         IProducerBuilder InitialSequenceId(ulong initialSequenceId);
 

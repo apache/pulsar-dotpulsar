@@ -11,22 +11,22 @@
         IConsumerBuilder ConsumerName(string name);
 
         /// <summary>
-        /// Set initial position for the subscription. Default is 'Latest'.
+        /// Set initial position for the subscription. The default is 'Latest'.
         /// </summary>
         IConsumerBuilder InitialPosition(SubscriptionInitialPosition initialPosition);
 
         /// <summary>
-        /// Set the priority level for the shared subscription consumer. Default is 0.
+        /// Set the priority level for the shared subscription consumer. The default is 0.
         /// </summary>
         IConsumerBuilder PriorityLevel(int priorityLevel);
 
         /// <summary>
-        /// Number of messages that will be prefetched. Default is 1000.
+        /// Number of messages that will be prefetched. The default is 1000.
         /// </summary>
         IConsumerBuilder MessagePrefetchCount(uint count);
 
         /// <summary>
-        /// Whether to read from the compacted topic. Default is false.
+        /// Whether to read from the compacted topic. The default is 'false'.
         /// </summary>
         IConsumerBuilder ReadCompacted(bool readCompacted);
 
@@ -36,7 +36,7 @@
         IConsumerBuilder SubscriptionName(string name);
 
         /// <summary>
-        /// Set the subscription type for this consumer. Default is 'Exclusive'.
+        /// Set the subscription type for this consumer. The default is 'Exclusive'.
         /// </summary>
         IConsumerBuilder SubscriptionType(SubscriptionType type);
 

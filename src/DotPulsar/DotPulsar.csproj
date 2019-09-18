@@ -15,7 +15,7 @@
     <Company>Danske Commodities A/S</Company>
     <Copyright>$(Company)</Copyright>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <NoWarn>1701;1702;1591</NoWarn>
+    <NoWarn>1591;1701;1702</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
