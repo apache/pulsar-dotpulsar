@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 
 namespace DotPulsar.Abstractions
 {
@@ -16,6 +17,21 @@ namespace DotPulsar.Abstractions
         /// The service URL for the Pulsar cluster. The default is "pulsar://localhost:6650".
         /// </summary>
         IPulsarClientBuilder ServiceUrl(Uri uri);
+
+        /// <summary>
+        /// Add a trusted certificate authority. This is optional.
+        /// </summary>
+        IPulsarClientBuilder TrustedCertificateAuthority(X509Certificate2 trustedCertificateAuthority);
+
+        /// <summary>
+        /// Verify the certificate authority. The default is 'true'.
+        /// </summary>
+        IPulsarClientBuilder VerifyCertificateAuthority(bool verifyCertificateAuthority);
+
+        /// <summary>
+        /// Verify the certificate name with the hostname. The default is 'false'.
+        /// </summary>
+        IPulsarClientBuilder VerifyCertificateName(bool verifyCertificateName);
 
         /// <summary>
         /// Create the client.

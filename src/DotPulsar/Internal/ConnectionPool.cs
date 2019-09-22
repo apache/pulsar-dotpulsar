@@ -3,8 +3,6 @@ using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,16 +14,19 @@ namespace DotPulsar.Internal
         private readonly int _protocolVersion;
         private readonly string _clientVersion;
         private readonly Uri _serviceUrl;
+        private readonly Connector _connector;
         private readonly ConcurrentDictionary<Uri, Connection> _connections;
+
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _closeInactiveConnections;
 
-        public ConnectionPool(int protocolVersion, string clientVersion, Uri serviceUrl)
+        public ConnectionPool(int protocolVersion, string clientVersion, Uri serviceUrl, Connector connector)
         {
             _lock = new AsyncLock();
             _protocolVersion = protocolVersion;
             _clientVersion = clientVersion;
             _serviceUrl = serviceUrl;
+            _connector = connector;
             _connections = new ConcurrentDictionary<Uri, Connection>();
             _cancellationTokenSource = new CancellationTokenSource();
             _closeInactiveConnections = CloseInactiveConnections(TimeSpan.FromSeconds(60), _cancellationTokenSource.Token);
@@ -52,7 +53,7 @@ namespace DotPulsar.Internal
                 Authoritative = false
             };
 
-            Uri serviceUrl = _serviceUrl;
+            var serviceUrl = _serviceUrl;
 
             while (true)
             {
@@ -69,7 +70,7 @@ namespace DotPulsar.Internal
                 if (response.LookupTopicResponse.Response == CommandLookupTopicResponse.LookupType.Redirect || !response.LookupTopicResponse.Authoritative)
                     continue;
 
-                if (_serviceUrl.IsLoopback) // LookupType is Connect, ServiceUrl is local and response is authoritative. Assume the Pulsar server is a standalone docker
+                if (_serviceUrl.IsLoopback) // LookupType is 'Connect', ServiceUrl is local and response is authoritative. Assume the Pulsar server is a standalone docker.
                     return connection;
                 else
                     return await CreateConnection(serviceUrl, cancellationToken);
@@ -78,25 +79,15 @@ namespace DotPulsar.Internal
 
         private async Task<Connection> CreateConnection(Uri serviceUrl, CancellationToken cancellationToken)
         {
+
             using (await _lock.Lock(cancellationToken))
             {
                 if (_connections.TryGetValue(serviceUrl, out Connection connection))
                     return connection;
 
-                var tcpClient = new TcpClient();
+                var stream = await _connector.Connect(serviceUrl);
 
-                switch (Uri.CheckHostName(serviceUrl.Host))
-                {
-                    case UriHostNameType.IPv4:
-                    case UriHostNameType.IPv6:
-                        await tcpClient.ConnectAsync(IPAddress.Parse(serviceUrl.Host), serviceUrl.Port);
-                        break;
-                    default:
-                        await tcpClient.ConnectAsync(serviceUrl.Host, serviceUrl.Port);
-                        break;
-                }
-
-                connection = new Connection(tcpClient.GetStream());
+                connection = new Connection(stream);
                 Register(serviceUrl, connection);
 
                 var connect = new CommandConnect
