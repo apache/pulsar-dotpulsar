@@ -1,22 +1,13 @@
 ﻿using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
 using System;
-using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 
 namespace DotPulsar.Internal
 {
     public sealed class PulsarClientBuilder : IPulsarClientBuilder
     {
-        private static readonly int ProtocolVersion;
-        private static readonly string ClientVersion;
-
-        static PulsarClientBuilder()
-        {
-            ProtocolVersion = 12;
-            var assemblyName = Assembly.GetCallingAssembly().GetName();
-            ClientVersion = assemblyName.Name + " " + assemblyName.Version.ToString(3);
-        }
-
+        private EncryptionPolicy? _encryptionPolicy;
         private TimeSpan _retryInterval;
         private Uri _serviceUrl;
         private X509Certificate2 _trustedCertificateAuthority;
@@ -26,9 +17,15 @@ namespace DotPulsar.Internal
         public PulsarClientBuilder()
         {
             _retryInterval = TimeSpan.FromSeconds(3);
-            _serviceUrl = new Uri("pulsar://localhost:6650");
+            _serviceUrl = new Uri(Constants.PulsarScheme + "://localhost:" + Constants.DefaultPulsarPort);
             _verifyCertificateAuthority = true;
             _verifyCertificateName = false;
+        }
+
+        public IPulsarClientBuilder ConnectionSecurity(EncryptionPolicy encryptionPolicy)
+        {
+            _encryptionPolicy = encryptionPolicy;
+            return this;
         }
 
         public IPulsarClientBuilder RetryInterval(TimeSpan interval)
@@ -63,8 +60,29 @@ namespace DotPulsar.Internal
 
         public IPulsarClient Build()
         {
+            var scheme = _serviceUrl.Scheme;
+
+            if (scheme == Constants.PulsarScheme)
+            {
+                if (!_encryptionPolicy.HasValue)
+                    _encryptionPolicy = EncryptionPolicy.EnforceUnencrypted;
+
+                if (_encryptionPolicy.Value == EncryptionPolicy.EnforceEncrypted)
+                    throw new ConnectionSecurityException($"The scheme of the ServiceUrl ({_serviceUrl}) is '{Constants.PulsarScheme}' and cannot be used with an encryption policy of 'EnforceEncrypted'");
+            }
+            else if (scheme == Constants.PulsarSslScheme)
+            {
+                if (!_encryptionPolicy.HasValue)
+                    _encryptionPolicy = EncryptionPolicy.EnforceEncrypted;
+
+                if (_encryptionPolicy.Value == EncryptionPolicy.EnforceUnencrypted)
+                    throw new ConnectionSecurityException($"The scheme of the ServiceUrl ({_serviceUrl}) is '{Constants.PulsarSslScheme}' and cannot be used with an encryption policy of 'EnforceUnencrypted'");
+            }
+            else
+                throw new InvalidSchemeException($"Invalid scheme '{scheme}'. Expected '{Constants.PulsarScheme}' or '{Constants.PulsarSslScheme}'");
+
             var connector = new Connector(_trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
-            var connectionPool = new ConnectionPool(ProtocolVersion, ClientVersion, _serviceUrl, connector);
+            var connectionPool = new ConnectionPool(Constants.ProtocolVersion, Constants.ClientVersion, _serviceUrl, connector, _encryptionPolicy.Value);
             return new PulsarClient(connectionPool, new FaultStrategy(_retryInterval));
         }
     }

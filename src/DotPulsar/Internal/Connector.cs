@@ -11,11 +11,6 @@ namespace DotPulsar.Internal
 {
     public sealed class Connector
     {
-        private const string PulsarScheme = "pulsar";
-        private const string PulsarSslScheme = "pulsar+ssl";
-        private const int DefaultPulsarPort = 6650;
-        private const int DefaultPulsarSSLPort = 6651;
-
         private readonly X509Certificate2 _trustedCertificateAuthority;
         private readonly bool _verifyCertificateAuthority;
         private readonly bool _verifyCertificateName;
@@ -32,22 +27,10 @@ namespace DotPulsar.Internal
             var scheme = serviceUrl.Scheme;
             var host = serviceUrl.Host;
             var port = serviceUrl.Port;
-            var encrypt = false;
+            var encrypt = scheme == Constants.PulsarSslScheme;
 
-            switch (scheme)
-            {
-                case PulsarScheme:
-                    if (port == -1)
-                        port = DefaultPulsarPort;
-                    break;
-                case PulsarSslScheme:
-                    if (port == -1)
-                        port = DefaultPulsarSSLPort;
-                    encrypt = true;
-                    break;
-                default:
-                    throw new InvalidSchemeException($"Invalid scheme '{scheme}'. Expected '{PulsarScheme}' or '{PulsarSslScheme}'");
-            }
+            if (port == -1)
+                port = encrypt ? Constants.DefaultPulsarSSLPort : Constants.DefaultPulsarPort;
 
             var tcpClient = new TcpClient();
 

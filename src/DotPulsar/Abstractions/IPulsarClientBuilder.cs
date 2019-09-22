@@ -9,6 +9,11 @@ namespace DotPulsar.Abstractions
     public interface IPulsarClientBuilder
     {
         /// <summary>
+        /// Set connection encryption policy. The default is 'EnforceUnencrypted' if the ServiceUrl scheme is 'pulsar' and 'EnforceEncrypted' if it's 'pulsar+ssl'.
+        /// </summary>
+        IPulsarClientBuilder ConnectionSecurity(EncryptionPolicy encryptionPolicy);
+
+        /// <summary>
         /// The time to wait before retrying an operation or a reconnect. The default is 3 seconds.
         /// </summary>
         IPulsarClientBuilder RetryInterval(TimeSpan interval);

@@ -1,4 +1,5 @@
-﻿using DotPulsar.Internal.Extensions;
+﻿using DotPulsar.Exceptions;
+using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Collections.Concurrent;
@@ -15,18 +16,20 @@ namespace DotPulsar.Internal
         private readonly string _clientVersion;
         private readonly Uri _serviceUrl;
         private readonly Connector _connector;
+        private readonly EncryptionPolicy _encryptionPolicy;
         private readonly ConcurrentDictionary<Uri, Connection> _connections;
 
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _closeInactiveConnections;
 
-        public ConnectionPool(int protocolVersion, string clientVersion, Uri serviceUrl, Connector connector)
+        public ConnectionPool(int protocolVersion, string clientVersion, Uri serviceUrl, Connector connector, EncryptionPolicy encryptionPolicy)
         {
             _lock = new AsyncLock();
             _protocolVersion = protocolVersion;
             _clientVersion = clientVersion;
             _serviceUrl = serviceUrl;
             _connector = connector;
+            _encryptionPolicy = encryptionPolicy;
             _connections = new ConcurrentDictionary<Uri, Connection>();
             _cancellationTokenSource = new CancellationTokenSource();
             _closeInactiveConnections = CloseInactiveConnections(TimeSpan.FromSeconds(60), _cancellationTokenSource.Token);
@@ -65,7 +68,8 @@ namespace DotPulsar.Internal
                     response.LookupTopicResponse.Throw();
 
                 lookup.Authoritative = response.LookupTopicResponse.Authoritative;
-                serviceUrl = new Uri(response.LookupTopicResponse.BrokerServiceUrl);
+
+                serviceUrl = new Uri(GetBrokerServiceUrl(response.LookupTopicResponse));
 
                 if (response.LookupTopicResponse.Response == CommandLookupTopicResponse.LookupType.Redirect || !response.LookupTopicResponse.Authoritative)
                     continue;
@@ -74,6 +78,29 @@ namespace DotPulsar.Internal
                     return connection;
                 else
                     return await CreateConnection(serviceUrl, cancellationToken);
+            }
+        }
+
+        private string GetBrokerServiceUrl(CommandLookupTopicResponse response)
+        {
+            var hasBrokerServiceUrl = !string.IsNullOrEmpty(response.BrokerServiceUrl);
+            var hasBrokerServiceUrlTls = !string.IsNullOrEmpty(response.BrokerServiceUrlTls);
+
+            switch (_encryptionPolicy)
+            {
+                case EncryptionPolicy.EnforceEncrypted:
+                    if (!hasBrokerServiceUrlTls)
+                        throw new ConnectionSecurityException("Cannot enforce encrypted connections. Lookup response from broker gave no secure alternative.");
+                    return response.BrokerServiceUrlTls;
+                case EncryptionPolicy.EnforceUnencrypted:
+                    if (!hasBrokerServiceUrl)
+                        throw new ConnectionSecurityException("Cannot enforce unencrypted connections. Lookup response from broker gave no unsecure alternative.");
+                    return response.BrokerServiceUrl;
+                case EncryptionPolicy.PreferEncrypted:
+                    return hasBrokerServiceUrlTls ? response.BrokerServiceUrlTls : response.BrokerServiceUrl;
+                case EncryptionPolicy.PreferUnencrypted:
+                default:
+                    return hasBrokerServiceUrl ? response.BrokerServiceUrl : response.BrokerServiceUrlTls;
             }
         }
 
