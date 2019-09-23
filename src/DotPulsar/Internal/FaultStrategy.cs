@@ -2,6 +2,7 @@
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Exceptions;
 using System;
+using System.Net.Sockets;
 
 namespace DotPulsar.Internal
 {
@@ -22,6 +23,15 @@ namespace DotPulsar.Internal
                 case StreamNotReadyException _: return FaultAction.Relookup;
                 case ServiceNotReadyException _: return FaultAction.Relookup;
                 case DotPulsarException _: return FaultAction.Fault;
+                case SocketException socketException:
+                    switch (socketException.SocketErrorCode)
+                    {
+                        case SocketError.HostNotFound:
+                        case SocketError.HostUnreachable:
+                        case SocketError.NetworkUnreachable:
+                            return FaultAction.Fault;
+                    }
+                    break;
             }
 
             return FaultAction.Relookup;

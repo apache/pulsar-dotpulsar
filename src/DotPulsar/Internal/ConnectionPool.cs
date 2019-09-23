@@ -12,8 +12,7 @@ namespace DotPulsar.Internal
     public sealed class ConnectionPool : IDisposable
     {
         private readonly AsyncLock _lock;
-        private readonly int _protocolVersion;
-        private readonly string _clientVersion;
+        private readonly CommandConnect _commandConnect;
         private readonly Uri _serviceUrl;
         private readonly Connector _connector;
         private readonly EncryptionPolicy _encryptionPolicy;
@@ -22,11 +21,10 @@ namespace DotPulsar.Internal
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _closeInactiveConnections;
 
-        public ConnectionPool(int protocolVersion, string clientVersion, Uri serviceUrl, Connector connector, EncryptionPolicy encryptionPolicy)
+        public ConnectionPool(CommandConnect commandConnect, Uri serviceUrl, Connector connector, EncryptionPolicy encryptionPolicy)
         {
             _lock = new AsyncLock();
-            _protocolVersion = protocolVersion;
-            _clientVersion = clientVersion;
+            _commandConnect = commandConnect;
             _serviceUrl = serviceUrl;
             _connector = connector;
             _encryptionPolicy = encryptionPolicy;
@@ -90,11 +88,11 @@ namespace DotPulsar.Internal
             {
                 case EncryptionPolicy.EnforceEncrypted:
                     if (!hasBrokerServiceUrlTls)
-                        throw new ConnectionSecurityException("Cannot enforce encrypted connections. Lookup response from broker gave no secure alternative.");
+                        throw new ConnectionSecurityException("Cannot enforce encrypted connections. The lookup topic response from broker gave no secure alternative.");
                     return response.BrokerServiceUrlTls;
                 case EncryptionPolicy.EnforceUnencrypted:
                     if (!hasBrokerServiceUrl)
-                        throw new ConnectionSecurityException("Cannot enforce unencrypted connections. Lookup response from broker gave no unsecure alternative.");
+                        throw new ConnectionSecurityException("Cannot enforce unencrypted connections. The lookup topic response from broker gave no unsecure alternative.");
                     return response.BrokerServiceUrl;
                 case EncryptionPolicy.PreferEncrypted:
                     return hasBrokerServiceUrlTls ? response.BrokerServiceUrlTls : response.BrokerServiceUrl;
@@ -117,13 +115,7 @@ namespace DotPulsar.Internal
                 connection = new Connection(stream);
                 Register(serviceUrl, connection);
 
-                var connect = new CommandConnect
-                {
-                    ProtocolVersion = _protocolVersion,
-                    ClientVersion = _clientVersion
-                };
-
-                var response = await connection.Send(connect);
+                var response = await connection.Send(_commandConnect);
                 response.Expect(BaseCommand.Type.Connected);
 
                 return connection;

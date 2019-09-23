@@ -32,30 +32,53 @@ namespace DotPulsar.Internal
             if (port == -1)
                 port = encrypt ? Constants.DefaultPulsarSSLPort : Constants.DefaultPulsarPort;
 
+            var stream = await GetStream(host, port);
+
+            if (encrypt)
+                stream = await EncryptStream(stream, host);
+
+            return stream;
+        }
+
+        private async Task<Stream> GetStream(string host, int port)
+        {
             var tcpClient = new TcpClient();
-
-            switch (Uri.CheckHostName(host))
-            {
-                case UriHostNameType.IPv4:
-                case UriHostNameType.IPv6:
-                    await tcpClient.ConnectAsync(IPAddress.Parse(host), port);
-                    break;
-                default:
-                    await tcpClient.ConnectAsync(host, port);
-                    break;
-            }
-
-            if (!encrypt)
-                return tcpClient.GetStream();
 
             try
             {
-                var sslStream = new SslStream(tcpClient.GetStream(), false, new RemoteCertificateValidationCallback(ValidateServerCertificate), null);
+                var type = Uri.CheckHostName(host);
+
+                if (type == UriHostNameType.IPv4 || type == UriHostNameType.IPv6)
+                    await tcpClient.ConnectAsync(IPAddress.Parse(host), port);
+                else
+                    await tcpClient.ConnectAsync(host, port);
+
+                return tcpClient.GetStream();
+            }
+            catch
+            {
+                tcpClient.Dispose();
+                throw;
+            }
+        }
+
+        private async Task<Stream> EncryptStream(Stream stream, string host)
+        {
+            SslStream sslStream = null;
+
+            try
+            {
+                sslStream = new SslStream(stream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), null);
                 await sslStream.AuthenticateAsClientAsync(host);
                 return sslStream;
             }
             catch (System.Security.Authentication.AuthenticationException exception)
             {
+                if (sslStream == null)
+                    stream.Dispose();
+                else
+                    sslStream.Dispose();
+
                 throw new AuthenticationException("Got an authentication exception while trying to establish an encrypted connection. See inner exception for details.", exception);
             }
         }

@@ -1,12 +1,15 @@
 ﻿using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
+using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 namespace DotPulsar.Internal
 {
     public sealed class PulsarClientBuilder : IPulsarClientBuilder
     {
+        private readonly CommandConnect _commandConnect;
         private EncryptionPolicy? _encryptionPolicy;
         private TimeSpan _retryInterval;
         private Uri _serviceUrl;
@@ -16,10 +19,22 @@ namespace DotPulsar.Internal
 
         public PulsarClientBuilder()
         {
+            _commandConnect = new CommandConnect
+            {
+                ProtocolVersion = Constants.ProtocolVersion,
+                ClientVersion = Constants.ClientVersion
+            };
             _retryInterval = TimeSpan.FromSeconds(3);
             _serviceUrl = new Uri(Constants.PulsarScheme + "://localhost:" + Constants.DefaultPulsarPort);
             _verifyCertificateAuthority = true;
             _verifyCertificateName = false;
+        }
+
+        public IPulsarClientBuilder AuthenticateUsingToken(string token)
+        {
+            _commandConnect.AuthMethodName = "token";
+            _commandConnect.AuthData = Encoding.ASCII.GetBytes(token);
+            return this;
         }
 
         public IPulsarClientBuilder ConnectionSecurity(EncryptionPolicy encryptionPolicy)
@@ -82,7 +97,7 @@ namespace DotPulsar.Internal
                 throw new InvalidSchemeException($"Invalid scheme '{scheme}'. Expected '{Constants.PulsarScheme}' or '{Constants.PulsarSslScheme}'");
 
             var connector = new Connector(_trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
-            var connectionPool = new ConnectionPool(Constants.ProtocolVersion, Constants.ClientVersion, _serviceUrl, connector, _encryptionPolicy.Value);
+            var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value);
             return new PulsarClient(connectionPool, new FaultStrategy(_retryInterval));
         }
     }

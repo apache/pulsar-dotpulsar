@@ -9,6 +9,11 @@ namespace DotPulsar.Abstractions
     public interface IPulsarClientBuilder
     {
         /// <summary>
+        /// Authenticate using a (JSON Web) token. This is optional.
+        /// </summary>
+        IPulsarClientBuilder AuthenticateUsingToken(string token);
+
+        /// <summary>
         /// Set connection encryption policy. The default is 'EnforceUnencrypted' if the ServiceUrl scheme is 'pulsar' and 'EnforceEncrypted' if it's 'pulsar+ssl'.
         /// </summary>
         IPulsarClientBuilder ConnectionSecurity(EncryptionPolicy encryptionPolicy);
