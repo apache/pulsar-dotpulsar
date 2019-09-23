@@ -37,6 +37,8 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 
 - [X] Service discovery
 - [X] Automatic reconnect
+- [X] TLS connections
+- [X] JSON Web Token Authentication
 - [X] Producer send with custom metadata
 - [X] Producer send with event time, sequence id and delayed message delivery
 - [X] Producer send with key and ordering key
@@ -65,8 +67,6 @@ Before the first stable release, we should have a look at:
 ### Future
 
 * Batching
-* TLS connections
-* JSON Web Token Authentication
 
 ### If requested by the community
 

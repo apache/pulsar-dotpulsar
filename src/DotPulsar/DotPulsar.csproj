@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Title>DotPulsar</Title>
-    <PackageReleaseNotes>Alpha release - Support compacted topics and fixed service discovery bug</PackageReleaseNotes>
+    <PackageReleaseNotes>Beta release - TLS connections and JSON Web Token authentication</PackageReleaseNotes>
     <PackageTags>Apache;Pulsar</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/danske-commodities/dotpulsar</RepositoryUrl>
