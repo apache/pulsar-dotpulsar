@@ -128,7 +128,7 @@ namespace DotPulsar.Tests.Internal
 
             //Act
             await sut.DisposeAsync();
-            var exception = Record.ExceptionAsync(() => sut.DisposeAsync().AsTask()); // xUnit can't record ValueTask yet
+            var exception = await Record.ExceptionAsync(() => sut.DisposeAsync().AsTask()); // xUnit can't record ValueTask yet
 
             //Assert
             Assert.Null(exception);
