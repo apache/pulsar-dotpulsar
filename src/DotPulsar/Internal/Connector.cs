@@ -11,11 +11,11 @@ namespace DotPulsar.Internal
 {
     public sealed class Connector
     {
-        private readonly X509Certificate2 _trustedCertificateAuthority;
+        private readonly X509Certificate2? _trustedCertificateAuthority;
         private readonly bool _verifyCertificateAuthority;
         private readonly bool _verifyCertificateName;
 
-        public Connector(X509Certificate2 trustedCertificateAuthority, bool verifyCertificateAuthority, bool verifyCertificateName)
+        public Connector(X509Certificate2? trustedCertificateAuthority, bool verifyCertificateAuthority, bool verifyCertificateName)
         {
             _trustedCertificateAuthority = trustedCertificateAuthority;
             _verifyCertificateAuthority = verifyCertificateAuthority;
@@ -64,7 +64,7 @@ namespace DotPulsar.Internal
 
         private async Task<Stream> EncryptStream(Stream stream, string host)
         {
-            SslStream sslStream = null;
+            SslStream? sslStream = null;
 
             try
             {

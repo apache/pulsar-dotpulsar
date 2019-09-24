@@ -5,7 +5,7 @@ namespace DotPulsar.Abstractions
     /// <summary>
     /// A pulsar client abstraction.
     /// </summary>
-    public interface IPulsarClient : IDisposable
+    public interface IPulsarClient : IAsyncDisposable
     {
         /// <summary>
         /// Create a producer.

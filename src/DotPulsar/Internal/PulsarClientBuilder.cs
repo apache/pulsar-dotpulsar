@@ -13,7 +13,7 @@ namespace DotPulsar.Internal
         private EncryptionPolicy? _encryptionPolicy;
         private TimeSpan _retryInterval;
         private Uri _serviceUrl;
-        private X509Certificate2 _trustedCertificateAuthority;
+        private X509Certificate2? _trustedCertificateAuthority;
         private bool _verifyCertificateAuthority;
         private bool _verifyCertificateName;
 

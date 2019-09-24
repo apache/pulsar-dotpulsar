@@ -36,7 +36,7 @@ namespace DotPulsar.Internal
 
         public Task<T> Dequeue(CancellationToken cancellationToken = default)
         {
-            LinkedListNode<CancelableCompletionSource<T>> node = null;
+            LinkedListNode<CancelableCompletionSource<T>>? node = null;
 
             lock (_lock)
             {

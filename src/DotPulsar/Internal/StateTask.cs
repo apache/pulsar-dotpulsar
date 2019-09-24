@@ -2,7 +2,7 @@
 
 namespace DotPulsar.Internal
 {
-    public sealed class StateTask<TState> : IDisposable
+    public sealed class StateTask<TState> : IDisposable where TState : notnull
     {
         private readonly TState _state;
         private readonly StateChanged _change;

@@ -35,11 +35,11 @@ namespace DotPulsar.Internal
         public bool IsFinalState() => _stateManager.IsFinalState();
         public bool IsFinalState(ProducerState state) => _stateManager.IsFinalState(state);
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            _executor.Dispose();
+            await _executor.DisposeAsync();
             _connectTokenSource.Cancel();
-            _connectTask.Wait();
+            await _connectTask;
         }
 
         public async Task<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
@@ -94,7 +94,7 @@ namespace DotPulsar.Internal
                 {
                     var proxy = new ProducerProxy(_stateManager);
 
-                    using (Stream = await _streamFactory.CreateStream(proxy, cancellationToken))
+                    await using (Stream = await _streamFactory.CreateStream(proxy, cancellationToken))
                     {
                         proxy.Connected();
                         await _stateManager.StateChangedFrom(ProducerState.Connected, cancellationToken);

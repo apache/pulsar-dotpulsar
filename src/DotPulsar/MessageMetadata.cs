@@ -30,7 +30,7 @@ namespace DotPulsar
             }
         }
 
-        public byte[] KeyBytes
+        public byte[]? KeyBytes
         {
             get
             {
@@ -52,7 +52,7 @@ namespace DotPulsar
             set => Metadata.OrderingKey = value;
         }
 
-        public string this[string key]
+        public string? this[string key]
         {
             get
             {

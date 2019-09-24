@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace DotPulsar.Internal
 {
-    public sealed class SequenceBuilder<T>
+    public sealed class SequenceBuilder<T> where T : notnull
     {
         private readonly LinkedList<ReadOnlyMemory<T>> _elements;
 
@@ -27,8 +27,11 @@ namespace DotPulsar.Internal
 
         public ReadOnlySequence<T> Build()
         {
-            Segment start = null;
-            Segment current = null;
+            if (_elements.Count == 0)
+                return new ReadOnlySequence<T>();
+
+            Segment? start = null;
+            Segment? current = null;
 
             foreach (var element in _elements)
             {
@@ -41,7 +44,7 @@ namespace DotPulsar.Internal
                     current = current.CreateNext(element);
             }
 
-            return new ReadOnlySequence<T>(start, 0, current, current.Memory.Length);
+            return new ReadOnlySequence<T>(start, 0, current, current!.Memory.Length);
         }
 
         private sealed class Segment : ReadOnlySequenceSegment<T>

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
 {
-    public sealed class AsyncLock : IDisposable
+    public sealed class AsyncLock : IAsyncDisposable
     {
         private readonly LinkedList<CancelableCompletionSource<IDisposable>> _pending;
         private readonly SemaphoreSlim _semaphoreSlim;
@@ -24,7 +24,7 @@ namespace DotPulsar.Internal
 
         public Task<IDisposable> Lock(CancellationToken cancellationToken = default)
         {
-            LinkedListNode<CancelableCompletionSource<IDisposable>> node = null;
+            LinkedListNode<CancelableCompletionSource<IDisposable>>? node = null;
 
             lock (_pending)
             {
@@ -47,7 +47,7 @@ namespace DotPulsar.Internal
             return node.Value.Task;
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             lock (_pending)
             {
@@ -65,7 +65,7 @@ namespace DotPulsar.Internal
                 _pending.Clear();
             }
 
-            _semaphoreSlim.Wait(); //Wait for possible lock-holder to finish
+            await _semaphoreSlim.WaitAsync(); //Wait for possible lock-holder to finish
             _semaphoreSlim.Release();
             _semaphoreSlim.Dispose();
         }

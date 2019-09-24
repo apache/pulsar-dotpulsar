@@ -19,7 +19,12 @@ namespace DotPulsar.Internal
 
         public void SetResult(T item, Result result)
         {
+#if NETSTANDARD2_0
+            var tcs = _items[item];
+            _items.Remove(item);
+#else
             _items.Remove(item, out var tcs);
+#endif
             tcs.SetResult(result);
         }
 

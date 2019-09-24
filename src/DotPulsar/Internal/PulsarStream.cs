@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
 {
-    public sealed class PulsarStream : IDisposable
+    public sealed class PulsarStream : IAsyncDisposable
     {
         private const long PauseAtMoreThan10Mb = 10485760;
         private const long ResumeAt5MbOrLess = 5242881;
@@ -35,10 +35,15 @@ namespace DotPulsar.Internal
         {
             try
             {
+#if NETSTANDARD2_0
+                var data = sequence.ToArray();
+                await _stream.WriteAsync(data, 0, data.Length);
+#else
                 foreach (var segment in sequence)
                 {
                     await _stream.WriteAsync(segment);
                 }
+#endif
             }
             catch
             {
@@ -47,10 +52,16 @@ namespace DotPulsar.Internal
             }
         }
 
-        public void Dispose()
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async ValueTask DisposeAsync()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             _tokenSource.Cancel();
+#if NETSTANDARD2_0
             _stream.Dispose();
+#else
+            await _stream.DisposeAsync();
+#endif
         }
 
         private async Task FillPipe(Stream stream, PipeWriter writer, CancellationToken cancellationToken)
@@ -60,7 +71,13 @@ namespace DotPulsar.Internal
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var memory = writer.GetMemory(84999); // LOH - 1 byte
+#if NETSTANDARD2_0
+                    var buffer = new byte[memory.Length];
+                    var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+                    buffer.CopyTo(memory);
+#else
                     var bytesRead = await stream.ReadAsync(memory, cancellationToken);
+#endif
                     if (bytesRead == 0)
                         break;
 

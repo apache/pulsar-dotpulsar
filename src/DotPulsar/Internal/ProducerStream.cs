@@ -27,11 +27,11 @@ namespace DotPulsar.Internal
             _proxy = proxy;
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             try
             {
-                _connection.Send(new CommandCloseProducer { ProducerId = _id }).Wait();
+                await _connection.Send(new CommandCloseProducer { ProducerId = _id });
             }
             catch
             {

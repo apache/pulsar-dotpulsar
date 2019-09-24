@@ -35,11 +35,11 @@ namespace DotPulsar.Internal
         public bool IsFinalState() => _stateManager.IsFinalState();
         public bool IsFinalState(ReaderState state) => _stateManager.IsFinalState(state);
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            _executor.Dispose();
+            await _executor.DisposeAsync();
             _connectTokenSource.Cancel();
-            _connectTask.Wait();
+            await _connectTask;
         }
 
         public async Task<Message> Receive(CancellationToken cancellationToken) => await _executor.Execute(() => Stream.Receive(cancellationToken), cancellationToken);
@@ -83,7 +83,7 @@ namespace DotPulsar.Internal
                 while (true)
                 {
                     using (var proxy = new ReaderProxy(_stateManager, new AsyncQueue<MessagePackage>()))
-                    using (Stream = await _streamFactory.CreateStream(proxy, cancellationToken))
+                    await using (Stream = await _streamFactory.CreateStream(proxy, cancellationToken))
                     {
                         proxy.Active();
                         await _stateManager.StateChangedFrom(ReaderState.Connected, cancellationToken);

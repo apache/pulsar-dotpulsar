@@ -7,7 +7,7 @@ namespace DotPulsar.Abstractions
     /// <summary>
     /// A producer abstraction.
     /// </summary>
-    public interface IProducer : IStateChanged<ProducerState>, IDisposable
+    public interface IProducer : IStateChanged<ProducerState>, IAsyncDisposable
     {
         /// <summary>
         /// Sends a message.

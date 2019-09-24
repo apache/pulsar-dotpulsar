@@ -2,14 +2,24 @@
 {
     public sealed class ConsumerOptions
     {
-        public ConsumerOptions()
+        internal const SubscriptionInitialPosition DefaultInitialPosition = SubscriptionInitialPosition.Latest;
+        internal const uint DefaultMessagePrefetchCount = 1000;
+        internal const int DefaultPriorityLevel = 0;
+        internal const bool DefaultReadCompacted = false;
+        internal const SubscriptionType DefaultSubscriptionType = SubscriptionType.Exclusive;
+
+        public ConsumerOptions(string subscriptionName, string topic)
         {
-            InitialPosition = SubscriptionInitialPosition.Latest;
-            MessagePrefetchCount = 1000;
-            SubscriptionType = SubscriptionType.Exclusive;
+            InitialPosition = DefaultInitialPosition;
+            PriorityLevel = DefaultPriorityLevel;
+            MessagePrefetchCount = DefaultMessagePrefetchCount;
+            ReadCompacted = DefaultReadCompacted;
+            SubscriptionType = DefaultSubscriptionType;
+            SubscriptionName = subscriptionName;
+            Topic = topic;
         }
 
-        public string ConsumerName { get; set; }
+        public string? ConsumerName { get; set; }
         public SubscriptionInitialPosition InitialPosition { get; set; }
         public int PriorityLevel { get; set; }
         public uint MessagePrefetchCount { get; set; }

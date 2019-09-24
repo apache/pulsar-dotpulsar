@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
 {
-    public sealed class StateManager<TState> : IStateChanged<TState>
+    public sealed class StateManager<TState> : IStateChanged<TState> where TState : notnull
     {
         private readonly object _lock;
         private readonly StateTaskCollection<TState> _stateTasks;

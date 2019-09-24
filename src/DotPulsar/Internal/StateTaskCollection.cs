@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
 {
-    public sealed class StateTaskCollection<TState>
+    public sealed class StateTaskCollection<TState> where TState : notnull
     {
         private readonly object _lock;
         private readonly LinkedList<StateTask<TState>> _awaitors;

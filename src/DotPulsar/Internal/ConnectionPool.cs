@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
 {
-    public sealed class ConnectionPool : IDisposable
+    public sealed class ConnectionPool : IAsyncDisposable
     {
         private readonly AsyncLock _lock;
         private readonly CommandConnect _commandConnect;
@@ -33,16 +33,16 @@ namespace DotPulsar.Internal
             _closeInactiveConnections = CloseInactiveConnections(TimeSpan.FromSeconds(60), _cancellationTokenSource.Token);
         }
 
-        public void Dispose() //While we wait for IAsyncDisposable
+        public async ValueTask DisposeAsync()
         {
             _cancellationTokenSource.Cancel();
-            _closeInactiveConnections.Wait();
+            await _closeInactiveConnections;
 
-            _lock.Dispose();
+            await _lock.DisposeAsync();
 
             foreach (var serviceUrl in _connections.Keys.ToArray())
             {
-                Deregister(serviceUrl);
+                await Deregister(serviceUrl);
             }
         }
 
@@ -125,13 +125,13 @@ namespace DotPulsar.Internal
         private void Register(Uri serviceUrl, Connection connection)
         {
             _connections[serviceUrl] = connection;
-            connection.IsClosed.ContinueWith(t => Deregister(serviceUrl));
+            connection.IsClosed.ContinueWith(async t => await Deregister(serviceUrl));
         }
 
-        private void Deregister(Uri serviceUrl)
+        private async ValueTask Deregister(Uri serviceUrl)
         {
             if (_connections.TryRemove(serviceUrl, out Connection connection))
-                connection.Dispose();
+                await connection.DisposeAsync();
         }
 
         private async Task CloseInactiveConnections(TimeSpan interval, CancellationToken cancellationToken)
@@ -151,7 +151,7 @@ namespace DotPulsar.Internal
                             if (connection == null)
                                 continue;
                             if (!await connection.IsActive())
-                                Deregister(serviceUrl);
+                                await Deregister(serviceUrl);
                         }
                     }
                 }

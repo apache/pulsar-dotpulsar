@@ -3,6 +3,8 @@ using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,14 +42,20 @@ namespace DotPulsar.Internal
         public bool IsFinalState() => _stateManager.IsFinalState();
         public bool IsFinalState(ConsumerState state) => _stateManager.IsFinalState(state);
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            _executor.Dispose();
+            await _executor.DisposeAsync();
             _connectTokenSource.Cancel();
-            _connectTask.Wait();
+            await _connectTask;
         }
 
-        public async Task<Message> Receive(CancellationToken cancellationToken) => await _executor.Execute(() => Stream.Receive(cancellationToken), cancellationToken);
+        public async IAsyncEnumerable<Message> Receive([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                yield return await _executor.Execute(() => Stream.Receive(cancellationToken), cancellationToken);
+            }
+        }
 
         public async Task Acknowledge(Message message, CancellationToken cancellationToken)
             => await Acknowledge(message.MessageId.Data, CommandAck.AckType.Individual, cancellationToken);
@@ -130,7 +138,7 @@ namespace DotPulsar.Internal
                 while (true)
                 {
                     using (var proxy = new ConsumerProxy(_stateManager, new AsyncQueue<MessagePackage>()))
-                    using (Stream = await _streamFactory.CreateStream(proxy, cancellationToken))
+                    await using (Stream = await _streamFactory.CreateStream(proxy, cancellationToken))
                     {
                         if (_setProxyState)
                             proxy.Active();

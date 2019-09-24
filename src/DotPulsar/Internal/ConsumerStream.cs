@@ -130,11 +130,11 @@ namespace DotPulsar.Internal
             }
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             try
             {
-                _connection.Send(new CommandCloseConsumer { ConsumerId = _id }).Wait();
+                await _connection.Send(new CommandCloseConsumer { ConsumerId = _id });
             }
             catch
             {

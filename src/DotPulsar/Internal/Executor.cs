@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
 {
-    public sealed class Executor : IDisposable
+    public sealed class Executor : IAsyncDisposable
     {
         private readonly AsyncLock _lock;
         private readonly Func<Exception, CancellationToken, Task> _onException;
@@ -15,7 +15,7 @@ namespace DotPulsar.Internal
             _onException = onException;
         }
 
-        public void Dispose() => _lock.Dispose();
+        public async ValueTask DisposeAsync() => await _lock.DisposeAsync();
 
         public async Task Execute(Action action, CancellationToken cancellationToken)
         {

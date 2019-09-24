@@ -2,7 +2,15 @@
 {
     public sealed class ProducerOptions
     {
-        public string ProducerName { get; set; }
+        internal const ulong DefaultInitialSequenceId = 0;
+
+        public ProducerOptions(string topic)
+        {
+            InitialSequenceId = DefaultInitialSequenceId;
+            Topic = topic;
+        }
+
+        public string? ProducerName { get; set; }
         public ulong InitialSequenceId { get; set; }
         public string Topic { get; set; }
     }

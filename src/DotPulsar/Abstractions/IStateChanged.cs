@@ -6,7 +6,7 @@ namespace DotPulsar.Abstractions
     /// <summary>
     /// A state change monitoring abstraction.
     /// </summary>
-    public interface IStateChanged<TState>
+    public interface IStateChanged<TState> where TState : notnull
     {
         /// <summary>
         /// Wait for the state to change to a specific state.

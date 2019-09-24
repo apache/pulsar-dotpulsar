@@ -9,7 +9,7 @@ namespace DotPulsar.Tests.Internal
     public class AsyncLockTests
     {
         [Fact]
-        public void Lock_GivenLockIsFree_ShouldReturnCompletedTask()
+        public async Task Lock_GivenLockIsFree_ShouldReturnCompletedTask()
         {
             //Arrange
             var sut = new AsyncLock();
@@ -22,7 +22,7 @@ namespace DotPulsar.Tests.Internal
 
             //Annihilate 
             actual.Result.Dispose();
-            sut.Dispose();
+            await sut.DisposeAsync();
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace DotPulsar.Tests.Internal
             //Annihilate
             alreadyTaken.Dispose();
             actual.Result.Dispose();
-            sut.Dispose();
+            await sut.DisposeAsync();
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace DotPulsar.Tests.Internal
         {
             //Arrange
             var sut = new AsyncLock();
-            sut.Dispose();
+            await sut.DisposeAsync();
 
             //Act
             var exception = await Record.ExceptionAsync(() => sut.Lock());
@@ -65,7 +65,7 @@ namespace DotPulsar.Tests.Internal
             var sut = new AsyncLock();
             var gotLock = await sut.Lock();
             var awaiting = sut.Lock();
-            _ = Task.Run(() => sut.Dispose());
+            _ = Task.Run(async () => await sut.DisposeAsync());
 
             //Act
             var exception = await Record.ExceptionAsync(() => awaiting);
@@ -74,7 +74,7 @@ namespace DotPulsar.Tests.Internal
             Assert.IsType<ObjectDisposedException>(exception);
 
             //Annihilate
-            sut.Dispose();
+            await sut.DisposeAsync();
             gotLock.Dispose();
         }
 
@@ -97,7 +97,7 @@ namespace DotPulsar.Tests.Internal
             //Annihilate
             cts.Dispose();
             gotLock.Dispose();
-            sut.Dispose();
+            await sut.DisposeAsync();
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace DotPulsar.Tests.Internal
             //Arrange
             var sut = new AsyncLock();
             var gotLock = await sut.Lock();
-            var disposeTask = Task.Run(() => sut.Dispose());
+            var disposeTask = Task.Run(async () => await sut.DisposeAsync());
             Assert.False(disposeTask.IsCompleted);
 
             //Act
@@ -117,18 +117,18 @@ namespace DotPulsar.Tests.Internal
             Assert.True(disposeTask.IsCompleted);
 
             //Annihilate
-            sut.Dispose();
+            await sut.DisposeAsync();
         }
 
         [Fact]
-        public void Dispose_WhenCalledMultipleTimes_ShouldBeSafeToDoSo()
+        public async Task Dispose_WhenCalledMultipleTimes_ShouldBeSafeToDoSo()
         {
             //Arrange
             var sut = new AsyncLock();
 
             //Act
-            sut.Dispose();
-            var exception = Record.Exception(() => sut.Dispose());
+            await sut.DisposeAsync();
+            var exception = Record.ExceptionAsync(() => sut.DisposeAsync().AsTask()); // xUnit can't record ValueTask yet
 
             //Assert
             Assert.Null(exception);

@@ -4,6 +4,7 @@ using DotPulsar.Internal;
 using DotPulsar.Internal.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DotPulsar
 {
@@ -11,7 +12,7 @@ namespace DotPulsar
     {
         private readonly object _lock;
         private readonly IFaultStrategy _faultStrategy;
-        private readonly LinkedList<IDisposable> _disposabels;
+        private readonly LinkedList<IAsyncDisposable> _disposabels;
         private readonly ConnectionPool _connectionPool;
         private bool _isClosed;
 
@@ -19,7 +20,7 @@ namespace DotPulsar
         {
             _lock = new object();
             _faultStrategy = faultStrategy;
-            _disposabels = new LinkedList<IDisposable>();
+            _disposabels = new LinkedList<IAsyncDisposable>();
             _connectionPool = connectionPool;
             _isClosed = false;
         }
@@ -28,8 +29,6 @@ namespace DotPulsar
 
         public IProducer CreateProducer(ProducerOptions options)
         {
-            Validate(options);
-
             lock (_lock)
             {
                 ThrowIfClosed();
@@ -42,8 +41,6 @@ namespace DotPulsar
 
         public IConsumer CreateConsumer(ConsumerOptions options)
         {
-            Validate(options);
-
             lock (_lock)
             {
                 ThrowIfClosed();
@@ -56,8 +53,6 @@ namespace DotPulsar
 
         public IReader CreateReader(ReaderOptions options)
         {
-            Validate(options);
-
             lock (_lock)
             {
                 ThrowIfClosed();
@@ -68,19 +63,20 @@ namespace DotPulsar
             }
         }
 
-        public void Dispose() //While we wait for IAsyncDisposable
+        public async ValueTask DisposeAsync()
         {
             lock (_lock)
             {
                 ThrowIfClosed();
                 _isClosed = true;
-                foreach (var disposable in _disposabels)
-                {
-                    disposable.Dispose();
-                }
             }
 
-            _connectionPool.Dispose();
+            foreach (var disposable in _disposabels)
+            {
+                await disposable.DisposeAsync();
+            }
+
+            await _connectionPool.DisposeAsync();
         }
 
         private void ThrowIfClosed()
@@ -89,36 +85,12 @@ namespace DotPulsar
                 throw new PulsarClientClosedException();
         }
 
-        private void Remove(IDisposable disposable)
+        private void Remove(IAsyncDisposable disposable)
         {
             lock (_lock)
             {
                 _disposabels.Remove(disposable);
             }
-        }
-
-        private void Validate(ProducerOptions options)
-        {
-            if (string.IsNullOrEmpty(options.Topic))
-                throw new ConfigurationException("ProducerOptions.Topic may not be null or empty");
-        }
-
-        private void Validate(ConsumerOptions options)
-        {
-            if (string.IsNullOrEmpty(options.SubscriptionName))
-                throw new ConfigurationException("ConsumerOptions.SubscriptionName may not be null or empty");
-
-            if (string.IsNullOrEmpty(options.Topic))
-                throw new ConfigurationException("ConsumerOptions.Topic may not be null or empty");
-        }
-
-        private void Validate(ReaderOptions options)
-        {
-            if (options.StartMessageId is null)
-                throw new ConfigurationException("ReaderOptions.StartMessageId may not be null");
-
-            if (string.IsNullOrEmpty(options.Topic))
-                throw new ConfigurationException("ReaderOptions.Topic may not be null or empty");
         }
     }
 }

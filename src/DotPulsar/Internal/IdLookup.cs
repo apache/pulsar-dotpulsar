@@ -4,7 +4,7 @@ namespace DotPulsar.Internal
 {
     public sealed class IdLookup<T> where T : class
     {
-        private T[] _items;
+        private T?[] _items;
 
         public IdLookup() => _items = new T[0];
 
@@ -51,7 +51,7 @@ namespace DotPulsar.Internal
 
         public void Remove(ulong id) => _items[(int)id] = null;
 
-        public T this[ulong id]
+        public T? this[ulong id]
         {
             get => _items[(int)id];
         }

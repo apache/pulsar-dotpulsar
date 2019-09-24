@@ -6,7 +6,7 @@ namespace DotPulsar
     public sealed class Message
     {
         private readonly Internal.PulsarApi.MessageMetadata _messageMetadata;
-        private ImmutableDictionary<string, string> _properties;
+        private ImmutableDictionary<string, string>? _properties;
 
         internal Message(MessageId messageId, Internal.PulsarApi.MessageMetadata messageMetadata, ReadOnlySequence<byte> data)
         {
@@ -31,7 +31,7 @@ namespace DotPulsar
         {
             get
             {
-                if (_properties == null)
+                if (_properties is null)
                     _properties = _messageMetadata.Properties.ToImmutableDictionary(p => p.Key, p => p.Value);
                 return _properties;
             }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
 {
-    public sealed class Connection : IDisposable
+    public sealed class Connection : IAsyncDisposable
     {
         private readonly AsyncLock _lock;
         private readonly ProducerManager _producerManager;
@@ -39,7 +39,7 @@ namespace DotPulsar.Internal
 
         public async Task<ProducerResponse> Send(CommandProducer command, IProducerProxy proxy)
         {
-            Task<BaseCommand> responseTask = null;
+            Task<BaseCommand>? responseTask = null;
             using (await _lock.Lock())
             {
                 _producerManager.Outgoing(command, proxy);
@@ -61,7 +61,7 @@ namespace DotPulsar.Internal
 
         public async Task<SubscribeResponse> Send(CommandSubscribe command, IConsumerProxy proxy)
         {
-            Task<BaseCommand> responseTask = null;
+            Task<BaseCommand>? responseTask = null;
             using (await _lock.Lock())
             {
                 _consumerManager.Outgoing(command, proxy);
@@ -117,7 +117,7 @@ namespace DotPulsar.Internal
 
         public async Task<BaseCommand> Send(SendPackage command)
         {
-            Task<BaseCommand> response = null;
+            Task<BaseCommand>? response = null;
             using (await _lock.Lock())
             {
                 var baseCommand = command.Command.AsBaseCommand();
@@ -130,7 +130,7 @@ namespace DotPulsar.Internal
 
         private async Task<BaseCommand> SendRequestResponse(BaseCommand command)
         {
-            Task<BaseCommand> response = null;
+            Task<BaseCommand>? response = null;
             using (await _lock.Lock())
             {
                 response = _requestResponseHandler.Outgoing(command);
@@ -179,13 +179,13 @@ namespace DotPulsar.Internal
             }
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            _lock.Dispose();
+            await _lock.DisposeAsync();
             _consumerManager.Dispose();
             _producerManager.Dispose();
             _requestResponseHandler.Dispose();
-            _stream.Dispose();
+            await _stream.DisposeAsync();
         }
     }
 }
