@@ -29,7 +29,7 @@ namespace DotPulsar.Internal
         private void RemoveProducer(ulong producerId)
         {
             var stateManager = _proxies[producerId];
-            if (stateManager == null) return;
+            if (stateManager is null) return;
             stateManager.Disconnected();
             _proxies.Remove(producerId);
         }

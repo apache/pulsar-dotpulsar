@@ -148,7 +148,7 @@ namespace DotPulsar.Internal
                         foreach (var serviceUrl in serviceUrls)
                         {
                             var connection = _connections[serviceUrl];
-                            if (connection == null)
+                            if (connection is null)
                                 continue;
                             if (!await connection.IsActive())
                                 await Deregister(serviceUrl);

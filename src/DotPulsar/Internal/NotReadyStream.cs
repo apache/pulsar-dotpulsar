@@ -9,7 +9,7 @@ namespace DotPulsar.Internal
 {
     public sealed class NotReadyStream : IConsumerStream, IProducerStream
     {
-        public ValueTask DisposeAsync() => new ValueTask(); // Really? No ValueTask.Completed?
+        public ValueTask DisposeAsync() => new ValueTask();
 
         public Task<Message> Receive(CancellationToken cancellationToken) => throw GetException();
 

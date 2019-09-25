@@ -36,8 +36,11 @@ namespace DotPulsar.Internal
             try
             {
 #if NETSTANDARD2_0
-                var data = sequence.ToArray();
-                await _stream.WriteAsync(data, 0, data.Length);
+                foreach (var segment in sequence)
+                {
+                    var data = segment.ToArray();
+                    await _stream.WriteAsync(data, 0, data.Length);
+                }
 #else
                 foreach (var segment in sequence)
                 {
@@ -68,13 +71,15 @@ namespace DotPulsar.Internal
         {
             try
             {
+#if NETSTANDARD2_0
+                var buffer = new byte[84999];
+#endif
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var memory = writer.GetMemory(84999); // LOH - 1 byte
 #if NETSTANDARD2_0
-                    var buffer = new byte[memory.Length];
                     var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
-                    buffer.CopyTo(memory);
+                    new Memory<byte>(buffer, 0, bytesRead).CopyTo(memory);
 #else
                     var bytesRead = await stream.ReadAsync(memory, cancellationToken);
 #endif

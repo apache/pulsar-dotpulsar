@@ -34,7 +34,7 @@ namespace DotPulsar.Internal
         public void Incoming(CommandActiveConsumerChange command)
         {
             var proxy = _proxies[command.ConsumerId];
-            if (proxy == null) return;
+            if (proxy is null) return;
 
             if (command.IsActive)
                 proxy.Active();
@@ -53,7 +53,7 @@ namespace DotPulsar.Internal
         private void RemoveConsumer(ulong consumerId)
         {
             var proxy = _proxies[consumerId];
-            if (proxy == null) return;
+            if (proxy is null) return;
             proxy.Disconnected();
             _proxies.Remove(consumerId);
         }

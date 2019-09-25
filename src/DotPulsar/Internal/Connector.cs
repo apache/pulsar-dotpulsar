@@ -74,7 +74,7 @@ namespace DotPulsar.Internal
             }
             catch (System.Security.Authentication.AuthenticationException exception)
             {
-                if (sslStream == null)
+                if (sslStream is null)
                     stream.Dispose();
                 else
                     sslStream.Dispose();
