@@ -11,7 +11,7 @@ namespace DotPulsar.Internal
     {
         public ValueTask DisposeAsync() => new ValueTask();
 
-        public Task<Message> Receive(CancellationToken cancellationToken) => throw GetException();
+        public ValueTask<Message> Receive(CancellationToken cancellationToken) => throw GetException();
 
         public Task Send(CommandAck command) => throw GetException();
 

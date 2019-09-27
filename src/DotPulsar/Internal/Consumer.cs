@@ -49,7 +49,7 @@ namespace DotPulsar.Internal
             await _connectTask;
         }
 
-        public async IAsyncEnumerable<Message> Receive([EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<Message> Messages([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {

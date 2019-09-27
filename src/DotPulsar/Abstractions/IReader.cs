@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace DotPulsar.Abstractions
 {
@@ -10,8 +10,8 @@ namespace DotPulsar.Abstractions
     public interface IReader : IStateChanged<ReaderState>, IAsyncDisposable
     {
         /// <summary>
-        /// Receives a single message.
+        /// Get an IAsyncEnumerable for reading messages
         /// </summary>
-        Task<Message> Receive(CancellationToken cancellationToken = default);
+        IAsyncEnumerable<Message> Messages(CancellationToken cancellationToken = default);
     }
 }

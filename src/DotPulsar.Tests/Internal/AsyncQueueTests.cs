@@ -101,7 +101,7 @@ namespace DotPulsar.Tests.Internal
             //Act
             source1.Cancel();
             queue.Enqueue(excepted);
-            var exception = await Record.ExceptionAsync(() => task1);
+            var exception = await Record.ExceptionAsync(() => task1.AsTask());
             await task2;
 
             //Assert

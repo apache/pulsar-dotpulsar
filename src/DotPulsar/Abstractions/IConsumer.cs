@@ -36,9 +36,9 @@ namespace DotPulsar.Abstractions
         Task<MessageId> GetLastMessageId(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Receives a single message.
+        /// Get an IAsyncEnumerable for consuming messages
         /// </summary>
-        IAsyncEnumerable<Message> Receive(CancellationToken cancellationToken = default);
+        IAsyncEnumerable<Message> Messages(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Reset the subscription associated with this consumer to a specific MessageId.

@@ -34,20 +34,20 @@ namespace DotPulsar.Internal
             }
         }
 
-        public Task<T> Dequeue(CancellationToken cancellationToken = default)
+        public ValueTask<T> Dequeue(CancellationToken cancellationToken = default)
         {
             LinkedListNode<CancelableCompletionSource<T>>? node = null;
 
             lock (_lock)
             {
                 if (_queue.Count > 0)
-                    return Task.FromResult(_queue.Dequeue());
+                    return new ValueTask<T>(_queue.Dequeue());
 
                 node = _pendingDequeues.AddLast(new CancelableCompletionSource<T>());
             }
 
             node.Value.SetupCancellation(() => Cancel(node), cancellationToken);
-            return node.Value.Task;
+            return new ValueTask<T>(node.Value.Task);
         }
 
         public void Dispose()

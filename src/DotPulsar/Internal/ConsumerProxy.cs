@@ -38,7 +38,7 @@ namespace DotPulsar.Internal
 
 
         public void Enqueue(MessagePackage package) => _queue.Enqueue(package);
-        public async Task<MessagePackage> Dequeue(CancellationToken cancellationToken) => await _queue.Dequeue(cancellationToken);
+        public async ValueTask<MessagePackage> Dequeue(CancellationToken cancellationToken) => await _queue.Dequeue(cancellationToken);
 
         private void SetState(ConsumerState state)
         {

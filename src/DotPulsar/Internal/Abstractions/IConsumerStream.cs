@@ -11,6 +11,6 @@ namespace DotPulsar.Internal.Abstractions
         Task<CommandSuccess> Send(CommandUnsubscribe command);
         Task<CommandSuccess> Send(CommandSeek command);
         Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command);
-        Task<Message> Receive(CancellationToken cancellationToken = default);
+        ValueTask<Message> Receive(CancellationToken cancellationToken = default);
     }
 }

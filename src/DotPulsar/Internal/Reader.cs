@@ -2,6 +2,8 @@
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,7 +44,13 @@ namespace DotPulsar.Internal
             await _connectTask;
         }
 
-        public async Task<Message> Receive(CancellationToken cancellationToken) => await _executor.Execute(() => Stream.Receive(cancellationToken), cancellationToken);
+        public async IAsyncEnumerable<Message> Messages([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                yield return await _executor.Execute(() => Stream.Receive(cancellationToken), cancellationToken);
+            }
+        }
 
         private async Task ExecutorOnException(Exception exception, CancellationToken cancellationToken)
         {

@@ -98,5 +98,25 @@ namespace DotPulsar.Internal
                 }
             }
         }
+
+        public async ValueTask<TResult> Execute<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken)
+        {
+            using (await _lock.Lock(cancellationToken))
+            {
+                while (true)
+                {
+                    try
+                    {
+                        return await func();
+                    }
+                    catch (Exception exception)
+                    {
+                        await _onException(exception, cancellationToken);
+                    }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+            }
+        }
     }
 }
