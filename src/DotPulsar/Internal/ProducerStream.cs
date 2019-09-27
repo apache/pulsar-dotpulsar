@@ -8,6 +8,7 @@ namespace DotPulsar.Internal
 {
     public sealed class ProducerStream : IProducerStream
     {
+        private readonly PulsarApi.MessageMetadata _cachedMetadata;
         private readonly SendPackage _cachedSendPackage;
         private readonly ulong _id;
         private readonly string _name;
@@ -18,7 +19,8 @@ namespace DotPulsar.Internal
 
         public ProducerStream(ulong id, string name, SequenceId sequenceId, Connection connection, IFaultStrategy faultStrategy, IProducerProxy proxy)
         {
-            _cachedSendPackage = new SendPackage(new CommandSend { ProducerId = id, NumMessages = 1 });
+            _cachedMetadata = new PulsarApi.MessageMetadata();
+            _cachedSendPackage = new SendPackage(new CommandSend { ProducerId = id, NumMessages = 1 }, _cachedMetadata);
             _id = id;
             _name = name;
             _sequenceId = sequenceId;
@@ -38,6 +40,8 @@ namespace DotPulsar.Internal
                 // Ignore
             }
         }
+
+        public async Task<CommandSendReceipt> Send(ReadOnlyMemory<byte> payload) => await Send(_cachedMetadata, payload);
 
         public async Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlyMemory<byte> payload)
         {

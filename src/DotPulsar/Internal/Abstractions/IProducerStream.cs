@@ -6,6 +6,7 @@ namespace DotPulsar.Internal.Abstractions
 {
     public interface IProducerStream : IAsyncDisposable
     {
+        Task<CommandSendReceipt> Send(ReadOnlyMemory<byte> payload);
         Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlyMemory<byte> payload);
     }
 }

@@ -30,8 +30,8 @@ namespace DotPulsar.Internal
             _throwIfClosedOrFaulted = () => { };
         }
 
-        public async Task<ProducerState> StateChangedTo(ProducerState state, CancellationToken cancellationToken) => await _stateManager.StateChangedTo(state, cancellationToken);
-        public async Task<ProducerState> StateChangedFrom(ProducerState state, CancellationToken cancellationToken) => await _stateManager.StateChangedFrom(state, cancellationToken);
+        public async ValueTask<ProducerState> StateChangedTo(ProducerState state, CancellationToken cancellationToken) => await _stateManager.StateChangedTo(state, cancellationToken);
+        public async ValueTask<ProducerState> StateChangedFrom(ProducerState state, CancellationToken cancellationToken) => await _stateManager.StateChangedFrom(state, cancellationToken);
         public bool IsFinalState() => _stateManager.IsFinalState();
         public bool IsFinalState(ProducerState state) => _stateManager.IsFinalState(state);
 
@@ -42,15 +42,15 @@ namespace DotPulsar.Internal
             await _connectTask;
         }
 
-        public async Task<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => await Send(new MessageMetadata(), data, cancellationToken);
-
-        public async Task<MessageId> Send(MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => await Send(metadata.Metadata, data, cancellationToken);
-
-        private async Task<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken)
+        public async ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
-            var response = await _executor.Execute(() => Stream.Send(metadata, payload), cancellationToken);
+            var response = await _executor.Execute(() => Stream.Send(data), cancellationToken);
+            return new MessageId(response.MessageId);
+        }
+
+        public async ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            var response = await _executor.Execute(() => Stream.Send(metadata.Metadata, data), cancellationToken);
             return new MessageId(response.MessageId);
         }
 

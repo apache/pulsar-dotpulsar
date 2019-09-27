@@ -219,7 +219,7 @@ namespace DotPulsar.Tests.Internal
 
             //Act
             cts.Cancel();
-            var exception = await Record.ExceptionAsync(() => task);
+            var exception = await Record.ExceptionAsync(() => task.AsTask());
 
             //Assert
             Assert.IsType<TaskCanceledException>(exception);

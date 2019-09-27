@@ -48,6 +48,6 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Set the consumer name.
         /// </summary>
-        Task<MessageId> Send(ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default);
+        ValueTask<MessageId> Send(ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default);
     }
 }

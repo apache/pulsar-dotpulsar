@@ -37,8 +37,8 @@ namespace DotPulsar.Internal
             _throwIfClosedOrFaulted = () => { };
         }
 
-        public async Task<ConsumerState> StateChangedTo(ConsumerState state, CancellationToken cancellationToken) => await _stateManager.StateChangedTo(state, cancellationToken);
-        public async Task<ConsumerState> StateChangedFrom(ConsumerState state, CancellationToken cancellationToken) => await _stateManager.StateChangedFrom(state, cancellationToken);
+        public async ValueTask<ConsumerState> StateChangedTo(ConsumerState state, CancellationToken cancellationToken) => await _stateManager.StateChangedTo(state, cancellationToken);
+        public async ValueTask<ConsumerState> StateChangedFrom(ConsumerState state, CancellationToken cancellationToken) => await _stateManager.StateChangedFrom(state, cancellationToken);
         public bool IsFinalState() => _stateManager.IsFinalState();
         public bool IsFinalState(ConsumerState state) => _stateManager.IsFinalState(state);
 
@@ -57,38 +57,38 @@ namespace DotPulsar.Internal
             }
         }
 
-        public async Task Acknowledge(Message message, CancellationToken cancellationToken)
+        public async ValueTask Acknowledge(Message message, CancellationToken cancellationToken)
             => await Acknowledge(message.MessageId.Data, CommandAck.AckType.Individual, cancellationToken);
 
-        public async Task Acknowledge(MessageId messageId, CancellationToken cancellationToken)
+        public async ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken)
             => await Acknowledge(messageId.Data, CommandAck.AckType.Individual, cancellationToken);
 
-        public async Task AcknowledgeCumulative(Message message, CancellationToken cancellationToken)
+        public async ValueTask AcknowledgeCumulative(Message message, CancellationToken cancellationToken)
             => await Acknowledge(message.MessageId.Data, CommandAck.AckType.Cumulative, cancellationToken);
 
-        public async Task AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken)
+        public async ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken)
             => await Acknowledge(messageId.Data, CommandAck.AckType.Cumulative, cancellationToken);
 
-        public async Task Unsubscribe(CancellationToken cancellationToken)
+        public async ValueTask Unsubscribe(CancellationToken cancellationToken)
         {
             _ = await _executor.Execute(() => Stream.Send(new CommandUnsubscribe()), cancellationToken);
             HasClosed();
         }
 
-        public async Task Seek(MessageId messageId, CancellationToken cancellationToken)
+        public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
         {
             var seek = new CommandSeek { MessageId = messageId.Data };
             _ = await _executor.Execute(() => Stream.Send(seek), cancellationToken);
             return;
         }
 
-        public async Task<MessageId> GetLastMessageId(CancellationToken cancellationToken)
+        public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken)
         {
             var response = await _executor.Execute(() => Stream.Send(new CommandGetLastMessageId()), cancellationToken);
             return new MessageId(response.LastMessageId);
         }
 
-        private async Task Acknowledge(MessageIdData messageIdData, CommandAck.AckType ackType, CancellationToken cancellationToken)
+        private async ValueTask Acknowledge(MessageIdData messageIdData, CommandAck.AckType ackType, CancellationToken cancellationToken)
         {
             await _executor.Execute(() =>
             {

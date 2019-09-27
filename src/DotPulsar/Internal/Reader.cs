@@ -32,8 +32,8 @@ namespace DotPulsar.Internal
             _throwIfClosedOrFaulted = () => { };
         }
 
-        public async Task<ReaderState> StateChangedTo(ReaderState state, CancellationToken cancellationToken) => await _stateManager.StateChangedTo(state, cancellationToken);
-        public async Task<ReaderState> StateChangedFrom(ReaderState state, CancellationToken cancellationToken) => await _stateManager.StateChangedFrom(state, cancellationToken);
+        public async ValueTask<ReaderState> StateChangedTo(ReaderState state, CancellationToken cancellationToken) => await _stateManager.StateChangedTo(state, cancellationToken);
+        public async ValueTask<ReaderState> StateChangedFrom(ReaderState state, CancellationToken cancellationToken) => await _stateManager.StateChangedFrom(state, cancellationToken);
         public bool IsFinalState() => _stateManager.IsFinalState();
         public bool IsFinalState(ReaderState state) => _stateManager.IsFinalState(state);
 

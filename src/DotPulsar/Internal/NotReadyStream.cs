@@ -21,6 +21,8 @@ namespace DotPulsar.Internal
 
         public Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command) => throw GetException();
 
+        public Task<CommandSendReceipt> Send(ReadOnlyMemory<byte> payload) => throw GetException();
+
         public Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlyMemory<byte> payload) => throw GetException();
 
         private Exception GetException() => new StreamNotReadyException();

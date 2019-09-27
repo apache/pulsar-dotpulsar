@@ -34,7 +34,7 @@ namespace DotPulsar
                 ThrowIfClosed();
                 var producer = new Producer(new ProducerStreamFactory(_connectionPool, options, _faultStrategy), _faultStrategy);
                 _disposabels.AddFirst(producer);
-                producer.StateChangedTo(ProducerState.Closed, default).ContinueWith(t => Remove(producer));
+                producer.StateChangedTo(ProducerState.Closed, default).AsTask().ContinueWith(t => Remove(producer));
                 return producer;
             }
         }
@@ -46,7 +46,7 @@ namespace DotPulsar
                 ThrowIfClosed();
                 var consumer = new Consumer(new ConsumerStreamFactory(_connectionPool, options, _faultStrategy), _faultStrategy, options.SubscriptionType != SubscriptionType.Failover);
                 _disposabels.AddFirst(consumer);
-                consumer.StateChangedTo(ConsumerState.Closed, default).ContinueWith(t => Remove(consumer));
+                consumer.StateChangedTo(ConsumerState.Closed, default).AsTask().ContinueWith(t => Remove(consumer));
                 return consumer;
             }
         }
@@ -58,7 +58,7 @@ namespace DotPulsar
                 ThrowIfClosed();
                 var reader = new Reader(new ConsumerStreamFactory(_connectionPool, options, _faultStrategy), _faultStrategy);
                 _disposabels.AddFirst(reader);
-                reader.StateChangedTo(ReaderState.Closed, default).ContinueWith(t => Remove(reader));
+                reader.StateChangedTo(ReaderState.Closed, default).AsTask().ContinueWith(t => Remove(reader));
                 return reader;
             }
         }

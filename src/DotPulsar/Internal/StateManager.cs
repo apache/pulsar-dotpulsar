@@ -39,23 +39,23 @@ namespace DotPulsar.Internal
             }
         }
 
-        public Task<TState> StateChangedTo(TState state, CancellationToken cancellationToken)
+        public ValueTask<TState> StateChangedTo(TState state, CancellationToken cancellationToken)
         {
             lock (_lock)
             {
                 if (IsFinalState(CurrentState) || CurrentState.Equals(state))
-                    return Task.FromResult(CurrentState);
-                return _stateTasks.CreateTaskFor(state, StateChanged.To, cancellationToken);
+                    return new ValueTask<TState>(CurrentState);
+                return new ValueTask<TState>(_stateTasks.CreateTaskFor(state, StateChanged.To, cancellationToken));
             }
         }
 
-        public Task<TState> StateChangedFrom(TState state, CancellationToken cancellationToken)
+        public ValueTask<TState> StateChangedFrom(TState state, CancellationToken cancellationToken)
         {
             lock (_lock)
             {
                 if (IsFinalState(CurrentState) || !CurrentState.Equals(state))
-                    return Task.FromResult(CurrentState);
-                return _stateTasks.CreateTaskFor(state, StateChanged.From, cancellationToken);
+                    return new ValueTask<TState>(CurrentState);
+                return new ValueTask<TState>(_stateTasks.CreateTaskFor(state, StateChanged.From, cancellationToken));
             }
         }
 

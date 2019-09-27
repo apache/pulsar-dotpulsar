@@ -17,7 +17,7 @@ namespace DotPulsar.Abstractions
         /// <remarks>
         /// If the state change to a final state, then all awaiting tasks will complete.
         /// </remarks>
-        Task<TState> StateChangedTo(TState state, CancellationToken cancellationToken = default);
+        ValueTask<TState> StateChangedTo(TState state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Wait for the state to change from a specific state.
@@ -28,7 +28,7 @@ namespace DotPulsar.Abstractions
         /// <remarks>
         /// If the state change to a final state, then all awaiting tasks will complete.
         /// </remarks>
-        Task<TState> StateChangedFrom(TState state, CancellationToken cancellationToken = default);
+        ValueTask<TState> StateChangedFrom(TState state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Ask whether the current state is final, meaning that it will never change.
