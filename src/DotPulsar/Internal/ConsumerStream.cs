@@ -41,7 +41,7 @@ namespace DotPulsar.Internal
 
                     if (_firstBatch)
                     {
-                        _commandFlow.MessagePermits = (uint) Math.Ceiling(_commandFlow.MessagePermits * 0.5);
+                        _commandFlow.MessagePermits = (uint)Math.Ceiling(_commandFlow.MessagePermits * 0.5);
                         _firstBatch = false;
                     }
 

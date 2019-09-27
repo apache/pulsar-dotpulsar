@@ -1,6 +1,6 @@
 # DotPulsar
 
-Native .NET/C# client library for [Apache Pulsar](https://pulsar.apache.org/).
+.NET/C# client library for [Apache Pulsar](https://pulsar.apache.org/).
 
 DotPulsar is written entirely in C# and implements Apache Pulsar's [binary protocol](https://pulsar.apache.org/docs/en/develop-binary-protocol/). Other options was using the [C++ client library](https://pulsar.apache.org/docs/en/client-libraries-cpp/) (which is what the [Python client](https://pulsar.apache.org/docs/en/client-libraries-python/) and [Go client](https://pulsar.apache.org/docs/en/client-libraries-go/) do) or build on top of the [WebSocket API](https://pulsar.apache.org/docs/en/client-libraries-websocket/). We decided to implement the binary protocol to gain full control and maximize portability and performance.
 
@@ -15,20 +15,25 @@ Install the NuGet package [DotPulsar](https://www.nuget.org/packages/DotPulsar/)
 ```csharp
 const string myTopic = "persistent://public/default/mytopic";
 
-using var client = PulsarClient.Builder().Build(); //Connecting to localhost:6650
+await using var client = PulsarClient.Builder()
+                                     .Build(); //Connecting to pulsar://localhost:6650
 
 var producer = client.NewProducer()
                      .Topic(myTopic)
                      .Create();
-await producer.Send(Encoding.UTF8.GetBytes("Hello World"));
+
+_ = await producer.Send(Encoding.UTF8.GetBytes("Hello World"));
 
 var consumer = client.NewConsumer()
                      .SubscriptionName("MySubscription")
                      .Topic(myTopic)
                      .Create();
-var message = await consumer.Receive();
-Console.WriteLine("Received: " + Encoding.UTF8.GetString(message.Data.ToArray()));
-await consumer.Acknowledge(message);
+
+await foreach (var message in consumer.Messages())
+{
+    Console.WriteLine("Received: " + Encoding.UTF8.GetString(message.Data.ToArray()));
+    await consumer.Acknowledge(message);
+}
 ```
 
 For a more in-depth tour of the API, please visit the [Wiki](https://github.com/danske-commodities/dotpulsar/wiki).
@@ -56,13 +61,13 @@ Help prioritizing the roadmap is most welcome, so please reach out and tell us w
 
 ### 1.0.0
 
-Before the first stable release, we should have a look at:
+We are feature complete for this release. We just need testing.
 
-* Use IAsyncDisposable
-* Use IAsyncEnumerable
-* Consider using ValueTask instead of Task
-* Consider using nullable reference types
-* Look into the possibility of supporting .NET Standard 2.0
+- [X] Use IAsyncDisposable
+- [X] Use IAsyncEnumerable
+- [X] Use ValueTask instead of Task
+- [X] Make solution nullable
+- [X] Support .NET Standard 2.0 and 2.1
 
 ### Future
 
