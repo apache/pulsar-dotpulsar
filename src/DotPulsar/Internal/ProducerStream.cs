@@ -2,6 +2,7 @@
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 using System;
+using System.Buffers;
 using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
@@ -41,9 +42,9 @@ namespace DotPulsar.Internal
             }
         }
 
-        public async Task<CommandSendReceipt> Send(ReadOnlyMemory<byte> payload) => await Send(_cachedMetadata, payload);
+        public async Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload) => await Send(_cachedMetadata, payload);
 
-        public async Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlyMemory<byte> payload)
+        public async Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload)
         {
             try
             {

@@ -1,5 +1,5 @@
 ﻿using DotPulsar.Internal.PulsarApi;
-using System;
+using System.Buffers;
 
 namespace DotPulsar.Internal
 {
@@ -13,6 +13,6 @@ namespace DotPulsar.Internal
 
         public CommandSend Command { get; }
         public PulsarApi.MessageMetadata Metadata { get; set; }
-        public ReadOnlyMemory<byte> Payload { get; set; }
+        public ReadOnlySequence<byte> Payload { get; set; }
     }
 }

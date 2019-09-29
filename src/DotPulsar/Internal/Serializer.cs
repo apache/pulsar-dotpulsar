@@ -46,7 +46,7 @@ namespace DotPulsar.Internal
                 .Build();
         }
 
-        public static ReadOnlySequence<byte> Serialize(BaseCommand command, PulsarApi.MessageMetadata metadata, ReadOnlyMemory<byte> payload)
+        public static ReadOnlySequence<byte> Serialize(BaseCommand command, PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload)
         {
             var commandBytes = Serialize<BaseCommand>(command);
             var commandSizeBytes = ToBigEndianBytes((uint)commandBytes.Length);

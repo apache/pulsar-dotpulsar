@@ -17,9 +17,32 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public SequenceBuilder<T> Prepend(ReadOnlySequence<T> sequence)
+        {
+            LinkedListNode<ReadOnlyMemory<T>>? index = null;
+
+            foreach (var memory in sequence)
+            {
+                if (index is null)
+                    index = _elements.AddFirst(memory);
+                else
+                    index = _elements.AddAfter(index, memory);
+            }
+
+            return this;
+        }
+
         public SequenceBuilder<T> Append(ReadOnlyMemory<T> memory)
         {
             _elements.AddLast(memory);
+            return this;
+        }
+
+        public SequenceBuilder<T> Append(ReadOnlySequence<T> sequence)
+        {
+            foreach (var memory in sequence)
+                _elements.AddLast(memory);
+
             return this;
         }
 
