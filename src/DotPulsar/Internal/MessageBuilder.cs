@@ -22,9 +22,21 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IMessageBuilder DeliverAt(DateTimeOffset timestamp)
+        {
+            _metadata.DeliverAtTime = timestamp.ToUnixTimeMilliseconds();
+            return this;
+        }
+
         public IMessageBuilder EventTime(ulong eventTime)
         {
             _metadata.EventTime = eventTime;
+            return this;
+        }
+
+        public IMessageBuilder EventTime(DateTimeOffset eventTime)
+        {
+            _metadata.EventTime = (ulong)eventTime.ToUnixTimeMilliseconds();
             return this;
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿using System;
+using System.Buffers;
 using System.Collections.Immutable;
 
 namespace DotPulsar
@@ -17,15 +18,24 @@ namespace DotPulsar
 
         public MessageId MessageId { get; }
         public ReadOnlySequence<byte> Data { get; }
+        public string ProducerName => _messageMetadata.ProducerName;
+        public ulong SequenceId => _messageMetadata.SequenceId;
+
+        public bool HasEventTime => _messageMetadata.EventTime != 0;
         public ulong EventTime => _messageMetadata.EventTime;
+        public DateTimeOffset EventTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long)_messageMetadata.EventTime);
+
         public bool HasBase64EncodedKey => _messageMetadata.PartitionKeyB64Encoded;
         public bool HasKey => _messageMetadata.PartitionKey != null;
         public string Key => _messageMetadata.PartitionKey;
+
         public bool HasOrderingKey => _messageMetadata.OrderingKey != null;
         public byte[] OrderingKey => _messageMetadata.OrderingKey;
-        public string ProducerName => _messageMetadata.ProducerName;
+
+
         public ulong PublishTime => _messageMetadata.PublishTime;
-        public ulong SequenceId => _messageMetadata.SequenceId;
+        public DateTimeOffset PublishTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long)_messageMetadata.PublishTime);
+
 
         public ImmutableDictionary<string, string> Properties
         {

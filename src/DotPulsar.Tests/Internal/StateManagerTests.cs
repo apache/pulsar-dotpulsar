@@ -219,7 +219,7 @@ namespace DotPulsar.Tests.Internal
 
             //Act
             cts.Cancel();
-            var exception = await Record.ExceptionAsync(() => task.AsTask());
+            var exception = await Record.ExceptionAsync(() => task.AsTask()); // xUnit can't record ValueTask yet
 
             //Assert
             Assert.IsType<TaskCanceledException>(exception);

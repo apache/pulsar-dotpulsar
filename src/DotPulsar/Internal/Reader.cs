@@ -86,6 +86,8 @@ namespace DotPulsar.Internal
 
         private async Task Connect(CancellationToken cancellationToken)
         {
+            await Task.Yield();
+
             try
             {
                 while (true)

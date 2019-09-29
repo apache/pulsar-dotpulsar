@@ -58,7 +58,7 @@ namespace DotPulsar.Internal
                 _cachedSendPackage.Payload = payload;
 
                 var response = await _connection.Send(_cachedSendPackage);
-                response.Expect(BaseCommand.Type.SendReceipt); //TODO find out if we should increment on SendError
+                response.Expect(BaseCommand.Type.SendReceipt);
                 _sequenceId.Increment();
                 return response.SendReceipt;
             }

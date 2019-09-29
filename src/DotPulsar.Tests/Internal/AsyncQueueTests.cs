@@ -101,7 +101,7 @@ namespace DotPulsar.Tests.Internal
             //Act
             source1.Cancel();
             queue.Enqueue(excepted);
-            var exception = await Record.ExceptionAsync(() => task1.AsTask());
+            var exception = await Record.ExceptionAsync(() => task1.AsTask()); // xUnit can't record ValueTask yet
             await task2;
 
             //Assert
