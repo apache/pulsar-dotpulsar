@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Buffers;
-using System.Collections.Immutable;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DotPulsar
 {
     public sealed class Message
     {
         private readonly Internal.PulsarApi.MessageMetadata _messageMetadata;
-        private ImmutableDictionary<string, string>? _properties;
+        private IReadOnlyDictionary<string, string>? _properties;
 
         internal Message(MessageId messageId, Internal.PulsarApi.MessageMetadata messageMetadata, ReadOnlySequence<byte> data)
         {
@@ -37,12 +38,12 @@ namespace DotPulsar
         public DateTimeOffset PublishTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long)_messageMetadata.PublishTime);
 
 
-        public ImmutableDictionary<string, string> Properties
+        public IReadOnlyDictionary<string, string> Properties
         {
             get
             {
                 if (_properties is null)
-                    _properties = _messageMetadata.Properties.ToImmutableDictionary(p => p.Key, p => p.Value);
+                    _properties = _messageMetadata.Properties.ToDictionary(p => p.Key, p => p.Value);
                 return _properties;
             }
         }
