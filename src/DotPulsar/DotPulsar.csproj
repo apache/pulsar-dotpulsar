@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Authors>DanskeCommodities;dblank</Authors>
@@ -11,7 +11,7 @@
     <Title>DotPulsar</Title>
     <PackageTags>Apache;Pulsar</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReleaseNotes>Beta release - Moved to ValueTask, IAsyncDisposable and IAsyncEnumerable</PackageReleaseNotes>
+    <PackageReleaseNotes>Beta release - Support sending ReadOnlySequence of bytes</PackageReleaseNotes>
     <Description>.NET/C# client library for Apache Pulsar</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

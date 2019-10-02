@@ -67,7 +67,9 @@ namespace DotPulsar
         {
             lock (_lock)
             {
-                ThrowIfClosed();
+                if (_isClosed)
+                    return;
+
                 _isClosed = true;
             }
 
