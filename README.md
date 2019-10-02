@@ -71,17 +71,17 @@ We are feature complete for this release. We just need testing.
 
 ### Future
 
-* Batching
+* [Batching](https://github.com/danske-commodities/dotpulsar/issues/7)
 
 ### If requested by the community
 
-* Get consumer stats
-* Get topics of namespace
+Let us know which features you need by creating an issue or by giving existing issues a "Thumbs up".
+
 * Message encryption
-* Schema
-* Partitioned topics
-* Multi-topic subscriptions
-* TLS Authentication
+* [Schema](https://github.com/danske-commodities/dotpulsar/issues/6)
+* [Partitioned topics](https://github.com/danske-commodities/dotpulsar/issues/4)
+* [Multi-topic subscriptions](https://github.com/danske-commodities/dotpulsar/issues/5)
+* [TLS Authentication](https://github.com/danske-commodities/dotpulsar/issues/3)
 * Athenz Authentication
 * Kerberos Authentication
 * LZ4 message compression
