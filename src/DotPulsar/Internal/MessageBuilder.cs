@@ -1,4 +1,5 @@
 ﻿using DotPulsar.Abstractions;
+using DotPulsar.Internal.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,43 +19,43 @@ namespace DotPulsar.Internal
 
         public IMessageBuilder DeliverAt(long timestamp)
         {
-            _metadata.DeliverAtTime = timestamp;
+            _metadata.Metadata.DeliverAtTime = timestamp;
             return this;
         }
 
-        public IMessageBuilder DeliverAt(DateTimeOffset timestamp)
+        public IMessageBuilder DeliverAt(DateTimeOffset deliverAt)
         {
-            _metadata.DeliverAtTime = timestamp.ToUnixTimeMilliseconds();
+            _metadata.Metadata.SetDeliverAtTime(deliverAt);
             return this;
         }
 
         public IMessageBuilder EventTime(ulong eventTime)
         {
-            _metadata.EventTime = eventTime;
+            _metadata.Metadata.EventTime = eventTime;
             return this;
         }
 
         public IMessageBuilder EventTime(DateTimeOffset eventTime)
         {
-            _metadata.EventTime = (ulong)eventTime.ToUnixTimeMilliseconds();
+            _metadata.Metadata.SetEventTime(eventTime);
             return this;
         }
 
         public IMessageBuilder Key(string key)
         {
-            _metadata.Key = key;
+            _metadata.Metadata.SetKey(key);
             return this;
         }
 
         public IMessageBuilder KeyBytes(byte[] key)
         {
-            _metadata.KeyBytes = key;
+            _metadata.Metadata.SetKey(key);
             return this;
         }
 
         public IMessageBuilder OrderingKey(byte[] key)
         {
-            _metadata.OrderingKey = key;
+            _metadata.Metadata.OrderingKey = key;
             return this;
         }
 
@@ -66,10 +67,11 @@ namespace DotPulsar.Internal
 
         public IMessageBuilder SequenceId(ulong sequenceId)
         {
-            _metadata.SequenceId = sequenceId;
+            _metadata.Metadata.SequenceId = sequenceId;
             return this;
         }
 
-        public async ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken) => await _producer.Send(_metadata, data, cancellationToken);
+        public async ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+            => await _producer.Send(_metadata, data, cancellationToken);
     }
 }

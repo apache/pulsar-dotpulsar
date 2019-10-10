@@ -56,7 +56,7 @@ namespace DotPulsar.Internal
         public async ValueTask<MessageId> Send(MessageMetadata metadata, byte[] data, CancellationToken cancellationToken)
             => await Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
 
-        public async ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken) 
+        public async ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
             => await Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
 
         public async ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)

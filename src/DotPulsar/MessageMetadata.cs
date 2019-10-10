@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DotPulsar.Internal.Extensions;
+using System;
 
 namespace DotPulsar
 {
@@ -14,39 +15,37 @@ namespace DotPulsar
             set => Metadata.DeliverAtTime = value;
         }
 
+        public DateTimeOffset DeliverAtTimeAsDateTimeOffset
+        {
+            get => Metadata.GetDeliverAtTimeAsDateTimeOffset();
+            set => Metadata.SetDeliverAtTime(value);
+        }
+
         public ulong EventTime
         {
             get => Metadata.EventTime;
             set => Metadata.EventTime = value;
         }
 
-        public string Key
+        public DateTimeOffset EventTimeAsDateTimeOffset
+        {
+            get => Metadata.GetEventTimeAsDateTimeOffset();
+            set => Metadata.SetEventTime(value);
+        }
+
+        public string? Key
         {
             get => Metadata.PartitionKey;
-            set
-            {
-                Metadata.PartitionKey = value;
-                Metadata.PartitionKeyB64Encoded = false;
-            }
+            set => Metadata.SetKey(value);
         }
 
         public byte[]? KeyBytes
         {
-            get
-            {
-                if (Metadata.PartitionKey is null)
-                    return null;
-
-                return Convert.FromBase64String(Metadata.PartitionKey);
-            }
-            set
-            {
-                Metadata.PartitionKey = Convert.ToBase64String(value);
-                Metadata.PartitionKeyB64Encoded = true;
-            }
+            get => Metadata.GetKeyAsBytes();
+            set => Metadata.SetKey(value);
         }
 
-        public byte[] OrderingKey
+        public byte[]? OrderingKey
         {
             get => Metadata.OrderingKey;
             set => Metadata.OrderingKey = value;
