@@ -8,7 +8,7 @@ namespace DotPulsar.Internal
         {
             var assemblyName = Assembly.GetCallingAssembly().GetName();
             ClientVersion = assemblyName.Name + " " + assemblyName.Version.ToString(3);
-            ProtocolVersion = 12;
+            ProtocolVersion = 14;
             PulsarScheme = "pulsar";
             PulsarSslScheme = "pulsar+ssl";
             DefaultPulsarPort = 6650;
