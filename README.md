@@ -54,6 +54,7 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 - [X] Consumer unsubscribe
 - [X] Consume compacted topics
 - [X] Reader API
+- [X] Read/Consume/Acknowledge batched messages
 
 ## Roadmap
 
@@ -69,15 +70,12 @@ We are feature complete for this release. We just need testing.
 - [X] Make solution nullable
 - [X] Support .NET Standard 2.0 and 2.1
 
-### Future
-
-* [Batching](https://github.com/danske-commodities/dotpulsar/issues/7)
-
 ### If requested by the community
 
 Let us know which features you need by creating an issue or by giving existing issues a "Thumbs up".
 
 * Message encryption
+* [Batching when producing](https://github.com/danske-commodities/dotpulsar/issues/7)
 * [Schema](https://github.com/danske-commodities/dotpulsar/issues/6)
 * [Partitioned topics](https://github.com/danske-commodities/dotpulsar/issues/4)
 * [Multi-topic subscriptions](https://github.com/danske-commodities/dotpulsar/issues/5)
