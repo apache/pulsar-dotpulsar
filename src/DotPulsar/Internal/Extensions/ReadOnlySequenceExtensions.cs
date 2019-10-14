@@ -30,7 +30,7 @@ namespace DotPulsar.Internal.Extensions
             return false;
         }
 
-        public static uint ReadUInt32(this ReadOnlySequence<byte> sequence, int start, bool isBigEndian)
+        public static uint ReadUInt32(this ReadOnlySequence<byte> sequence, long start, bool isBigEndian)
         {
             if (sequence.Length < (4 + start))
                 throw new ArgumentOutOfRangeException(nameof(start), start, "Sequence must be at least 4 bytes long from 'start' to end");
@@ -48,7 +48,7 @@ namespace DotPulsar.Internal.Extensions
                 }
 
                 var span = memory.Span;
-                for (var i = start; i < span.Length; ++i, ++read)
+                for (var i = (int)start; i < span.Length; ++i, ++read)
                 {
                     switch (read)
                     {

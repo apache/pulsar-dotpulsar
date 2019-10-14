@@ -17,12 +17,6 @@ namespace DotPulsar.Internal.Extensions
         public static void SetEventTime(this Metadata metadata, DateTimeOffset timestamp)
             => metadata.EventTime = (ulong)timestamp.ToUnixTimeMilliseconds();
 
-        public static DateTimeOffset GetPublishTimeAsDateTimeOffset(this Metadata metadata)
-            => DateTimeOffset.FromUnixTimeMilliseconds((long)metadata.PublishTime);
-
-        public static void SetPublishTime(this Metadata metadata, DateTimeOffset timestamp)
-            => metadata.PublishTime = (ulong)timestamp.ToUnixTimeMilliseconds();
-
         public static byte[]? GetKeyAsBytes(this Metadata metadata)
             => metadata.PartitionKeyB64Encoded ? Convert.FromBase64String(metadata.PartitionKey) : null;
 

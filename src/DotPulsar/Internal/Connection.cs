@@ -156,7 +156,7 @@ namespace DotPulsar.Internal
             switch (command.CommandType)
             {
                 case BaseCommand.Type.Message:
-                    _consumerManager.Incoming(new MessagePackage(command.Message, sequence.Slice(commandSize)));
+                    _consumerManager.Incoming(command.Message, sequence.Slice(commandSize));
                     return;
                 case BaseCommand.Type.CloseConsumer:
                     _consumerManager.Incoming(command.CloseConsumer);

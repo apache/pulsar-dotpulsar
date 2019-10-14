@@ -3,15 +3,15 @@ using System.Buffers;
 
 namespace DotPulsar.Internal
 {
-    public sealed class MessagePackage
+    public struct MessagePackage
     {
-        public MessagePackage(CommandMessage command, ReadOnlySequence<byte> data)
+        public MessagePackage(MessageIdData messageId, ReadOnlySequence<byte> data)
         {
-            Command = command;
+            MessageId = messageId;
             Data = data;
         }
 
-        public CommandMessage Command { get; }
+        public MessageIdData MessageId { get; }
         public ReadOnlySequence<byte> Data { get; }
     }
 }

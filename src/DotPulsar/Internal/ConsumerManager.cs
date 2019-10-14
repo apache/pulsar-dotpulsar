@@ -1,6 +1,7 @@
 ﻿using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
 using System;
+using System.Buffers;
 
 namespace DotPulsar.Internal
 {
@@ -22,11 +23,10 @@ namespace DotPulsar.Internal
             }
         }
 
-        public void Incoming(MessagePackage package)
+        public void Incoming(CommandMessage message, ReadOnlySequence<byte> data)
         {
-            var consumerId = package.Command.ConsumerId;
-            var proxy = _proxies[consumerId];
-            proxy?.Enqueue(package);
+            var proxy = _proxies[message.ConsumerId];
+            proxy?.Enqueue(new MessagePackage(message.MessageId, data));
         }
 
         public void Incoming(CommandCloseConsumer command) => RemoveConsumer(command.ConsumerId);

@@ -13,6 +13,7 @@ namespace DotPulsar.Internal
             PulsarSslScheme = "pulsar+ssl";
             DefaultPulsarPort = 6650;
             DefaultPulsarSSLPort = 6651;
+            MagicNumber = new byte[] { 0x0e, 0x01 };
         }
 
         public static string ClientVersion { get; }
@@ -21,5 +22,6 @@ namespace DotPulsar.Internal
         public static string PulsarSslScheme { get; }
         public static int DefaultPulsarPort { get; }
         public static int DefaultPulsarSSLPort { get; }
+        public static byte[] MagicNumber { get; }
     }
 }

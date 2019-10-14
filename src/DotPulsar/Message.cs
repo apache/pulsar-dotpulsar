@@ -1,5 +1,4 @@
-﻿using DotPulsar.Internal.Extensions;
-using System;
+﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,41 +7,61 @@ namespace DotPulsar
 {
     public sealed class Message
     {
-        private readonly Internal.PulsarApi.MessageMetadata _messageMetadata;
+        private readonly List<Internal.PulsarApi.KeyValue> _keyVaues;
         private IReadOnlyDictionary<string, string>? _properties;
 
-        internal Message(MessageId messageId, Internal.PulsarApi.MessageMetadata messageMetadata, ReadOnlySequence<byte> data)
+        internal Message(
+            MessageId messageId,
+            Internal.PulsarApi.MessageMetadata metadata,
+            Internal.PulsarApi.SingleMessageMetadata? singleMetadata,
+            ReadOnlySequence<byte> data)
         {
             MessageId = messageId;
-            _messageMetadata = messageMetadata;
+            ProducerName = metadata.ProducerName;
+            PublishTime = metadata.PublishTime;
             Data = data;
+
+            if (singleMetadata is null)
+            {
+                EventTime = metadata.EventTime;
+                HasBase64EncodedKey = metadata.PartitionKeyB64Encoded;
+                Key = metadata.PartitionKey;
+                SequenceId = metadata.SequenceId;
+                OrderingKey = metadata.OrderingKey;
+                _keyVaues = metadata.Properties;
+            }
+            else
+            {
+                EventTime = singleMetadata.EventTime;
+                HasBase64EncodedKey = singleMetadata.PartitionKeyB64Encoded;
+                Key = singleMetadata.PartitionKey;
+                OrderingKey = singleMetadata.OrderingKey;
+                SequenceId = singleMetadata.SequenceId;
+                _keyVaues = singleMetadata.Properties;
+            }
         }
 
         public MessageId MessageId { get; }
         public ReadOnlySequence<byte> Data { get; }
-        public string ProducerName => _messageMetadata.ProducerName;
-        public ulong SequenceId => _messageMetadata.SequenceId;
+        public string ProducerName { get; }
+        public ulong SequenceId { get; }
 
-        public bool HasEventTime => _messageMetadata.EventTime != 0;
-        public ulong EventTime => _messageMetadata.EventTime;
-        public DateTimeOffset EventTimeAsDateTimeOffset => _messageMetadata.GetEventTimeAsDateTimeOffset();
+        public bool HasEventTime => EventTime != 0;
+        public ulong EventTime { get; }
+        public DateTimeOffset EventTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long)EventTime);
 
-        public bool HasBase64EncodedKey => _messageMetadata.PartitionKeyB64Encoded;
-        public bool HasKey => _messageMetadata.PartitionKey != null;
-        public string? Key => _messageMetadata.PartitionKey;
-        public byte[]? KeyBytes => _messageMetadata.GetKeyAsBytes();
+        public bool HasBase64EncodedKey { get; }
+        public bool HasKey => Key != null;
+        public string? Key { get; }
+        public byte[]? KeyBytes => HasBase64EncodedKey ? Convert.FromBase64String(Key) : null;
 
-        public bool HasOrderingKey => _messageMetadata.OrderingKey != null;
-        public byte[]? OrderingKey => _messageMetadata.OrderingKey;
-
-
-        public ulong PublishTime => _messageMetadata.PublishTime;
-        public DateTimeOffset PublishTimeAsDateTimeOffset => _messageMetadata.GetPublishTimeAsDateTimeOffset();
+        public bool HasOrderingKey => OrderingKey != null;
+        public byte[]? OrderingKey { get; }
 
 
-        public IReadOnlyDictionary<string, string> Properties
-        {
-            get => _properties ??= _messageMetadata.Properties.ToDictionary(p => p.Key, p => p.Value);
-        }
+        public ulong PublishTime { get; }
+        public DateTimeOffset PublishTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long)PublishTime);
+
+        public IReadOnlyDictionary<string, string> Properties => _properties ??= _keyVaues.ToDictionary(p => p.Key, p => p.Value);
     }
 }

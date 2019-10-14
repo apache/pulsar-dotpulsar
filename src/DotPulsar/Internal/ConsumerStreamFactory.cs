@@ -12,12 +12,14 @@ namespace DotPulsar.Internal
         private readonly IFaultStrategy _faultStrategy;
         private readonly CommandSubscribe _subscribe;
         private readonly uint _messagePrefetchCount;
+        private readonly BatchHandler _batchHandler;
 
         public ConsumerStreamFactory(ConnectionPool connectionManager, ConsumerOptions options, IFaultStrategy faultStrategy)
         {
             _connectionTool = connectionManager;
             _faultStrategy = faultStrategy;
             _messagePrefetchCount = options.MessagePrefetchCount;
+            _batchHandler = new BatchHandler(true);
 
             _subscribe = new CommandSubscribe
             {
@@ -36,6 +38,7 @@ namespace DotPulsar.Internal
             _connectionTool = connectionManager;
             _faultStrategy = faultStrategy;
             _messagePrefetchCount = options.MessagePrefetchCount;
+            _batchHandler = new BatchHandler(false);
 
             _subscribe = new CommandSubscribe
             {
@@ -56,7 +59,7 @@ namespace DotPulsar.Internal
                 {
                     var connection = await _connectionTool.FindConnectionForTopic(_subscribe.Topic, cancellationToken);
                     var response = await connection.Send(_subscribe, proxy);
-                    return new ConsumerStream(response.ConsumerId, _messagePrefetchCount, proxy, connection, _faultStrategy, proxy);
+                    return new ConsumerStream(response.ConsumerId, _messagePrefetchCount, proxy, connection, _faultStrategy, proxy, _batchHandler);
                 }
                 catch (OperationCanceledException)
                 {
