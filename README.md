@@ -74,12 +74,12 @@ We are feature complete for this release. We just need testing.
 
 Let us know which features you need by creating an issue or by giving existing issues a "Thumbs up".
 
-* Message encryption
+* [TLS Authentication](https://github.com/danske-commodities/dotpulsar/issues/3)
+* [Message encryption](https://github.com/danske-commodities/dotpulsar/issues/8)
 * [Batching when producing](https://github.com/danske-commodities/dotpulsar/issues/7)
 * [Schema](https://github.com/danske-commodities/dotpulsar/issues/6)
 * [Partitioned topics](https://github.com/danske-commodities/dotpulsar/issues/4)
 * [Multi-topic subscriptions](https://github.com/danske-commodities/dotpulsar/issues/5)
-* [TLS Authentication](https://github.com/danske-commodities/dotpulsar/issues/3)
 * Athenz Authentication
 * Kerberos Authentication
 * LZ4 message compression
