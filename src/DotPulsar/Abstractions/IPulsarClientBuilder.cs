@@ -9,6 +9,11 @@ namespace DotPulsar.Abstractions
     public interface IPulsarClientBuilder
     {
         /// <summary>
+        /// Authenticate using a client certificate. This is optional.
+        /// </summary>
+        IPulsarClientBuilder AuthenticateUsingClientCertificate(X509Certificate2 clientCertificate);
+
+        /// <summary>
         /// Authenticate using a (JSON Web) token. This is optional.
         /// </summary>
         IPulsarClientBuilder AuthenticateUsingToken(string token);

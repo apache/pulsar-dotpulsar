@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
@@ -11,12 +12,14 @@ namespace DotPulsar.Internal
 {
     public sealed class Connector
     {
+        private readonly X509Certificate2Collection _clientCertificates;
         private readonly X509Certificate2? _trustedCertificateAuthority;
         private readonly bool _verifyCertificateAuthority;
         private readonly bool _verifyCertificateName;
 
-        public Connector(X509Certificate2? trustedCertificateAuthority, bool verifyCertificateAuthority, bool verifyCertificateName)
+        public Connector(X509Certificate2Collection clientCertificates, X509Certificate2? trustedCertificateAuthority, bool verifyCertificateAuthority, bool verifyCertificateName)
         {
+            _clientCertificates = clientCertificates;
             _trustedCertificateAuthority = trustedCertificateAuthority;
             _verifyCertificateAuthority = verifyCertificateAuthority;
             _verifyCertificateName = verifyCertificateName;
@@ -69,7 +72,7 @@ namespace DotPulsar.Internal
             try
             {
                 sslStream = new SslStream(stream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), null);
-                await sslStream.AuthenticateAsClientAsync(host);
+                await sslStream.AuthenticateAsClientAsync(host, _clientCertificates, SslProtocols.None, true);
                 return sslStream;
             }
             catch (System.Security.Authentication.AuthenticationException exception)
@@ -79,7 +82,7 @@ namespace DotPulsar.Internal
                 else
                     sslStream.Dispose();
 
-                throw new AuthenticationException("Got an authentication exception while trying to establish an encrypted connection. See inner exception for details.", exception);
+                throw new DotPulsar.Exceptions.AuthenticationException("Got an authentication exception while trying to establish an encrypted connection. See inner exception for details.", exception);
             }
         }
 
