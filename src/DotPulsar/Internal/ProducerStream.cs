@@ -42,7 +42,11 @@ namespace DotPulsar.Internal
             }
         }
 
-        public async Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload) => await Send(_cachedMetadata, payload);
+        public Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload)
+        {
+            _cachedMetadata.SequenceId = _sequenceId.Current;
+            return Send(_cachedMetadata, payload);
+        }
 
         public async Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload)
         {
