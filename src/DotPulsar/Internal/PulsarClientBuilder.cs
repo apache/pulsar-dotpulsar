@@ -34,6 +34,7 @@ namespace DotPulsar.Internal
 
         public IPulsarClientBuilder AuthenticateUsingClientCertificate(X509Certificate2 clientCertificate)
         {
+            _commandConnect.AuthMethodName = "tls";
             _clientCertificates.Add(clientCertificate);
             return this;
         }
