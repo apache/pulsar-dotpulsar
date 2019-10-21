@@ -6,17 +6,12 @@ namespace DotPulsar.Internal.Extensions
 {
     public static class CommandExtensions
     {
-        public static void Expect(this BaseCommand command, params BaseCommand.Type[] types)
+        public static void Expect(this BaseCommand command, BaseCommand.Type type)
         {
-            var actual = command.CommandType;
+            if (command.CommandType == type)
+                return;
 
-            foreach (var type in types)
-            {
-                if (type == actual)
-                    return;
-            }
-
-            switch (actual)
+            switch (command.CommandType)
             {
                 case BaseCommand.Type.Error:
                     command.Error.Throw();
@@ -26,7 +21,7 @@ namespace DotPulsar.Internal.Extensions
                     return;
             }
 
-            throw new UnexpectedResponseException($"Expected '{string.Join(",", types)}' but got '{actual}'");
+            throw new UnexpectedResponseException($"Expected '{type}' but got '{command.CommandType}'");
         }
 
         public static void Throw(this CommandSendError command) => Throw(command.Error, command.Message);
