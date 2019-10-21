@@ -43,6 +43,7 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 - [X] Service discovery
 - [X] Automatic reconnect
 - [X] TLS connections
+- [X] TLS Authentication
 - [X] JSON Web Token Authentication
 - [X] Producer send with custom metadata
 - [X] Producer send with event time, sequence id and delayed message delivery
@@ -74,7 +75,6 @@ We are feature complete for this release. We just need testing.
 
 Let us know which features you need by creating an issue or by giving existing issues a "Thumbs up".
 
-* [TLS Authentication](https://github.com/danske-commodities/dotpulsar/issues/3)
 * [Message encryption](https://github.com/danske-commodities/dotpulsar/issues/8)
 * [Batching when producing](https://github.com/danske-commodities/dotpulsar/issues/7)
 * [Schema](https://github.com/danske-commodities/dotpulsar/issues/6)
