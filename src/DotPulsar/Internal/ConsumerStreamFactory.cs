@@ -8,15 +8,15 @@ namespace DotPulsar.Internal
 {
     public sealed class ConsumerStreamFactory : IConsumerStreamFactory
     {
-        private readonly ConnectionPool _connectionTool;
+        private readonly ConnectionPool _connectionPool;
         private readonly IFaultStrategy _faultStrategy;
         private readonly CommandSubscribe _subscribe;
         private readonly uint _messagePrefetchCount;
         private readonly BatchHandler _batchHandler;
 
-        public ConsumerStreamFactory(ConnectionPool connectionManager, ConsumerOptions options, IFaultStrategy faultStrategy)
+        public ConsumerStreamFactory(ConnectionPool connectionPool, ConsumerOptions options, IFaultStrategy faultStrategy)
         {
-            _connectionTool = connectionManager;
+            _connectionPool = connectionPool;
             _faultStrategy = faultStrategy;
             _messagePrefetchCount = options.MessagePrefetchCount;
             _batchHandler = new BatchHandler(true);
@@ -33,9 +33,9 @@ namespace DotPulsar.Internal
             };
         }
 
-        public ConsumerStreamFactory(ConnectionPool connectionManager, ReaderOptions options, IFaultStrategy faultStrategy)
+        public ConsumerStreamFactory(ConnectionPool connectionPool, ReaderOptions options, IFaultStrategy faultStrategy)
         {
-            _connectionTool = connectionManager;
+            _connectionPool = connectionPool;
             _faultStrategy = faultStrategy;
             _messagePrefetchCount = options.MessagePrefetchCount;
             _batchHandler = new BatchHandler(false);
@@ -57,7 +57,7 @@ namespace DotPulsar.Internal
             {
                 try
                 {
-                    var connection = await _connectionTool.FindConnectionForTopic(_subscribe.Topic, cancellationToken);
+                    var connection = await _connectionPool.FindConnectionForTopic(_subscribe.Topic, cancellationToken);
                     var response = await connection.Send(_subscribe, proxy);
                     return new ConsumerStream(response.ConsumerId, _messagePrefetchCount, proxy, connection, _faultStrategy, proxy, _batchHandler);
                 }
