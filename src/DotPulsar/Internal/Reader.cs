@@ -11,7 +11,6 @@ namespace DotPulsar.Internal
 {
     public sealed class Reader : IReader
     {
-        private readonly Executor _executor;
         private readonly IConsumerStreamFactory _streamFactory;
         private readonly IFaultStrategy _faultStrategy;
         private readonly StateManager<ReaderState> _stateManager;
@@ -22,7 +21,6 @@ namespace DotPulsar.Internal
 
         public Reader(IConsumerStreamFactory streamFactory, IFaultStrategy faultStrategy)
         {
-            _executor = new Executor(ExecutorOnException);
             _stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
             _streamFactory = streamFactory;
             _faultStrategy = faultStrategy;
@@ -39,7 +37,6 @@ namespace DotPulsar.Internal
 
         public async ValueTask DisposeAsync()
         {
-            await _executor.DisposeAsync();
             _connectTokenSource.Cancel();
             await _connectTask;
         }
@@ -48,11 +45,25 @@ namespace DotPulsar.Internal
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                yield return await _executor.Execute(() => Stream.Receive(cancellationToken), cancellationToken);
+                Message message;
+
+                try
+                {
+                    message = await Stream.Receive(cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    if (!cancellationToken.IsCancellationRequested)
+                        await OnException(exception, cancellationToken);
+
+                    continue;
+                }
+
+                yield return message;
             }
         }
 
-        private async Task ExecutorOnException(Exception exception, CancellationToken cancellationToken)
+        private async Task OnException(Exception exception, CancellationToken cancellationToken)
         {
             _throwIfClosedOrFaulted();
 

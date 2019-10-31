@@ -25,7 +25,7 @@ namespace DotPulsar.Internal
 
         public Consumer(IConsumerStreamFactory streamFactory, IFaultStrategy faultStrategy, bool setProxyState)
         {
-            _executor = new Executor(ExecutorOnException);
+            _executor = new Executor(OnException);
             _cachedCommandAck = new CommandAck();
             _stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
             _streamFactory = streamFactory;
@@ -53,7 +53,21 @@ namespace DotPulsar.Internal
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                yield return await _executor.Execute(() => Stream.Receive(cancellationToken), cancellationToken);
+                Message message;
+
+                try
+                {
+                    message = await Stream.Receive(cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    if (!cancellationToken.IsCancellationRequested)
+                        await OnException(exception, cancellationToken);
+
+                    continue;
+                }
+
+                yield return message;
             }
         }
 
@@ -99,7 +113,7 @@ namespace DotPulsar.Internal
             }, cancellationToken);
         }
 
-        private async Task ExecutorOnException(Exception exception, CancellationToken cancellationToken)
+        private async Task OnException(Exception exception, CancellationToken cancellationToken)
         {
             _throwIfClosedOrFaulted();
 

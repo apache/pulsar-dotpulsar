@@ -11,18 +11,23 @@ namespace DotPulsar.Internal
         private readonly object _lock;
         private readonly Queue<T> _queue;
         private readonly LinkedList<CancelableCompletionSource<T>> _pendingDequeues;
+        private bool _isDisposed;
 
         public AsyncQueue()
         {
             _lock = new object();
             _queue = new Queue<T>();
             _pendingDequeues = new LinkedList<CancelableCompletionSource<T>>();
+            _isDisposed = false;
         }
 
         public void Enqueue(T item)
         {
             lock (_lock)
             {
+                if (_isDisposed)
+                    throw new ObjectDisposedException(nameof(AsyncQueue<T>));
+
                 if (_pendingDequeues.Count > 0)
                 {
                     var tcs = _pendingDequeues.First;
@@ -40,6 +45,9 @@ namespace DotPulsar.Internal
 
             lock (_lock)
             {
+                if (_isDisposed)
+                    throw new ObjectDisposedException(nameof(AsyncQueue<T>));
+
                 if (_queue.Count > 0)
                     return new ValueTask<T>(_queue.Dequeue());
 
@@ -54,6 +62,11 @@ namespace DotPulsar.Internal
         {
             lock (_lock)
             {
+                if (_isDisposed)
+                    return;
+
+                _isDisposed = true;
+
                 foreach (var pendingDequeue in _pendingDequeues)
                     pendingDequeue.Dispose();
 
