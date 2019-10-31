@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-    <Version>0.7.0</Version>
+    <Version>0.7.1</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Authors>DanskeCommodities;dblank</Authors>
@@ -11,7 +11,7 @@
     <Title>DotPulsar</Title>
     <PackageTags>Apache;Pulsar</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReleaseNotes>Beta release - Support TLS authentication</PackageReleaseNotes>
+    <PackageReleaseNotes>Beta release - ConfigureAwait(false) all via Fody.ConfigureAwait</PackageReleaseNotes>
     <Description>.NET/C# client library for Apache Pulsar</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -21,13 +21,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ConfigureAwait.Fody" Version="3.3.1" PrivateAssets="All"/>
-    <PackageReference Include="Fody" Version="6.0.2">
+    <PackageReference Include="ConfigureAwait.Fody" Version="3.3.1" PrivateAssets="All" />
+    <PackageReference Include="Fody" Version="6.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
-    <PackageReference Include="protobuf-net" Version="2.4.0" />
+    <PackageReference Include="protobuf-net" Version="2.4.4" />
     <PackageReference Include="System.IO.Pipelines" Version="4.6.0" />
   </ItemGroup>
 
