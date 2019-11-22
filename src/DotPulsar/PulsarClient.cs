@@ -4,6 +4,7 @@ using DotPulsar.Internal;
 using DotPulsar.Internal.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DotPulsar
@@ -65,15 +66,19 @@ namespace DotPulsar
 
         public async ValueTask DisposeAsync()
         {
+            IAsyncDisposable[] disposables;
+
             lock (_lock)
             {
                 if (_isClosed)
                     return;
 
                 _isClosed = true;
+                disposables = _disposabels.ToArray();
             }
 
-            foreach (var disposable in _disposabels)
+            
+            foreach (var disposable in disposables)
             {
                 await disposable.DisposeAsync();
             }
