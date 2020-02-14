@@ -1,23 +1,19 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+﻿/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-﻿using DotPulsar.Exceptions;
+using DotPulsar.Exceptions;
+using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 using System;
@@ -28,7 +24,7 @@ using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
 {
-    public sealed class ConnectionPool : IAsyncDisposable
+    public sealed class ConnectionPool : IConnectionPool
     {
         private readonly AsyncLock _lock;
         private readonly CommandConnect _commandConnect;
@@ -49,7 +45,7 @@ namespace DotPulsar.Internal
             _encryptionPolicy = encryptionPolicy;
             _connections = new ConcurrentDictionary<Uri, Connection>();
             _cancellationTokenSource = new CancellationTokenSource();
-            _closeInactiveConnections = CloseInactiveConnections(TimeSpan.FromSeconds(60), _cancellationTokenSource.Token);
+            _closeInactiveConnections = CloseInactiveConnections(TimeSpan.FromSeconds(60), _cancellationTokenSource.Token);  //TODO Get '60' from configuration
         }
 
         public async ValueTask DisposeAsync()
@@ -61,11 +57,11 @@ namespace DotPulsar.Internal
 
             foreach (var serviceUrl in _connections.Keys.ToArray())
             {
-                await Deregister(serviceUrl);
+                await DisposeConnection(serviceUrl);
             }
         }
 
-        public async Task<Connection> FindConnectionForTopic(string topic, CancellationToken cancellationToken)
+        public async ValueTask<IConnection> FindConnectionForTopic(string topic, CancellationToken cancellationToken)
         {
             var lookup = new CommandLookupTopic
             {
@@ -77,7 +73,7 @@ namespace DotPulsar.Internal
 
             while (true)
             {
-                var connection = await CreateConnection(serviceUrl, cancellationToken);
+                var connection = await GetConnection(serviceUrl, cancellationToken);
                 var response = await connection.Send(lookup);
                 response.Expect(BaseCommand.Type.LookupResponse);
 
@@ -94,7 +90,7 @@ namespace DotPulsar.Internal
                 if (_serviceUrl.IsLoopback) // LookupType is 'Connect', ServiceUrl is local and response is authoritative. Assume the Pulsar server is a standalone docker.
                     return connection;
                 else
-                    return await CreateConnection(serviceUrl, cancellationToken);
+                    return await GetConnection(serviceUrl, cancellationToken);
             }
         }
 
@@ -121,36 +117,36 @@ namespace DotPulsar.Internal
             }
         }
 
-        private async Task<Connection> CreateConnection(Uri serviceUrl, CancellationToken cancellationToken)
+        private async ValueTask<Connection> GetConnection(Uri serviceUrl, CancellationToken cancellationToken)
         {
-
             using (await _lock.Lock(cancellationToken))
             {
                 if (_connections.TryGetValue(serviceUrl, out Connection connection))
                     return connection;
 
-                var stream = await _connector.Connect(serviceUrl);
-
-                connection = new Connection(stream);
-                Register(serviceUrl, connection);
-
-                var response = await connection.Send(_commandConnect);
-                response.Expect(BaseCommand.Type.Connected);
-
-                return connection;
+                return await EstablishNewConnection(serviceUrl);
             }
         }
 
-        private void Register(Uri serviceUrl, Connection connection)
+        private async Task<Connection> EstablishNewConnection(Uri serviceUrl)
         {
+            var stream = await _connector.Connect(serviceUrl);
+            var connection = new Connection(new PulsarStream(stream));
+            DotPulsarEventSource.Log.ConnectionCreated();
             _connections[serviceUrl] = connection;
-            connection.IsClosed.ContinueWith(async t => await Deregister(serviceUrl));
+            _ = connection.ProcessIncommingFrames().ContinueWith(t => DisposeConnection(serviceUrl));
+            var response = await connection.Send(_commandConnect);
+            response.Expect(BaseCommand.Type.Connected);
+            return connection;
         }
 
-        private async ValueTask Deregister(Uri serviceUrl)
+        private async ValueTask DisposeConnection(Uri serviceUrl)
         {
             if (_connections.TryRemove(serviceUrl, out Connection connection))
+            {
                 await connection.DisposeAsync();
+                DotPulsarEventSource.Log.ConnectionDisposed();
+            }
         }
 
         private async Task CloseInactiveConnections(TimeSpan interval, CancellationToken cancellationToken)
@@ -169,8 +165,8 @@ namespace DotPulsar.Internal
                             var connection = _connections[serviceUrl];
                             if (connection is null)
                                 continue;
-                            if (!await connection.IsActive())
-                                await Deregister(serviceUrl);
+                            if (!await connection.HasChannels())
+                                await DisposeConnection(serviceUrl);
                         }
                     }
                 }

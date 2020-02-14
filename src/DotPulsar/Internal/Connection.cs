@@ -1,103 +1,79 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+﻿/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-﻿using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Buffers;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
 {
-    public sealed class Connection : IAsyncDisposable
+    public sealed class Connection : IConnection
     {
         private readonly AsyncLock _lock;
-        private readonly ProducerManager _producerManager;
-        private readonly ConsumerManager _consumerManager;
+        private readonly ChannelManager _channelManager;
         private readonly RequestResponseHandler _requestResponseHandler;
         private readonly PingPongHandler _pingPongHandler;
-        private readonly PulsarStream _stream;
+        private readonly IPulsarStream _stream;
 
-        public Connection(Stream stream)
+        public Connection(IPulsarStream stream)
         {
             _lock = new AsyncLock();
-            _producerManager = new ProducerManager();
-            _consumerManager = new ConsumerManager();
+            _channelManager = new ChannelManager();
             _requestResponseHandler = new RequestResponseHandler();
             _pingPongHandler = new PingPongHandler(this);
-            _stream = new PulsarStream(stream, HandleCommand);
+            _stream = stream;
         }
 
-        public Task IsClosed => _stream.IsClosed;
-
-        public async Task<bool> IsActive()
+        public async ValueTask<bool> HasChannels()
         {
             using (await _lock.Lock())
             {
-                return _producerManager.HasProducers || _consumerManager.HasConsumers;
+                return _channelManager.HasChannels();
             }
         }
 
-        public async Task<ProducerResponse> Send(CommandProducer command, IProducerProxy proxy)
+        public async Task<ProducerResponse> Send(CommandProducer command, IChannel channel)
         {
-            Task<BaseCommand>? responseTask = null;
+            Task<ProducerResponse>? responseTask = null;
+
             using (await _lock.Lock())
             {
-                _producerManager.Outgoing(command, proxy);
                 var baseCommand = command.AsBaseCommand();
-                responseTask = _requestResponseHandler.Outgoing(baseCommand);
+                var requestResponseTask = _requestResponseHandler.Outgoing(baseCommand);
+                responseTask = _channelManager.Outgoing(command, requestResponseTask, channel);
                 var sequence = Serializer.Serialize(baseCommand);
                 await _stream.Send(sequence);
             }
 
-            var response = await responseTask;
-            if (response.CommandType == BaseCommand.Type.Error)
-            {
-                _producerManager.Remove(command.ProducerId);
-                response.Error.Throw();
-            }
-
-            return new ProducerResponse(command.ProducerId, response.ProducerSuccess.ProducerName);
+            return await responseTask;
         }
 
-        public async Task<SubscribeResponse> Send(CommandSubscribe command, IConsumerProxy proxy)
+        public async Task<SubscribeResponse> Send(CommandSubscribe command, IChannel channel)
         {
-            Task<BaseCommand>? responseTask = null;
+            Task<SubscribeResponse>? responseTask = null;
+
             using (await _lock.Lock())
             {
-                _consumerManager.Outgoing(command, proxy);
                 var baseCommand = command.AsBaseCommand();
-                responseTask = _requestResponseHandler.Outgoing(baseCommand);
+                var requestResponseTask = _requestResponseHandler.Outgoing(baseCommand);
+                responseTask = _channelManager.Outgoing(command, requestResponseTask, channel);
                 var sequence = Serializer.Serialize(baseCommand);
                 await _stream.Send(sequence);
             }
 
-            var response = await responseTask;
-            if (response.CommandType == BaseCommand.Type.Error)
-            {
-                _consumerManager.Remove(command.ConsumerId);
-                response.Error.Throw();
-            }
-
-            return new SubscribeResponse(command.ConsumerId);
+            return await responseTask;
         }
 
         public async Task Send(CommandPing command) => await Send(command.AsBaseCommand());
@@ -107,10 +83,18 @@ namespace DotPulsar.Internal
 
         public async Task<BaseCommand> Send(CommandUnsubscribe command)
         {
-            var response = await SendRequestResponse(command.AsBaseCommand());
-            if (response.CommandType == BaseCommand.Type.Success)
-                _consumerManager.Remove(command.ConsumerId);
-            return response;
+            Task<BaseCommand>? responseTask = null;
+
+            using (await _lock.Lock())
+            {
+                var baseCommand = command.AsBaseCommand();
+                responseTask = _requestResponseHandler.Outgoing(baseCommand);
+                _channelManager.Outgoing(command, responseTask);
+                var sequence = Serializer.Serialize(baseCommand);
+                await _stream.Send(sequence);
+            }
+
+            return await responseTask;
         }
 
         public async Task<BaseCommand> Send(CommandConnect command) => await SendRequestResponse(command.AsBaseCommand());
@@ -120,18 +104,34 @@ namespace DotPulsar.Internal
 
         public async Task<BaseCommand> Send(CommandCloseProducer command)
         {
-            var response = await SendRequestResponse(command.AsBaseCommand());
-            if (response.CommandType == BaseCommand.Type.Success)
-                _producerManager.Remove(command.ProducerId);
-            return response;
+            Task<BaseCommand>? responseTask = null;
+
+            using (await _lock.Lock())
+            {
+                var baseCommand = command.AsBaseCommand();
+                responseTask = _requestResponseHandler.Outgoing(baseCommand);
+                _channelManager.Outgoing(command, responseTask);
+                var sequence = Serializer.Serialize(baseCommand);
+                await _stream.Send(sequence);
+            }
+
+            return await responseTask;
         }
 
         public async Task<BaseCommand> Send(CommandCloseConsumer command)
         {
-            var response = await SendRequestResponse(command.AsBaseCommand());
-            if (response.CommandType == BaseCommand.Type.Success)
-                _consumerManager.Remove(command.ConsumerId);
-            return response;
+            Task<BaseCommand>? responseTask = null;
+
+            using (await _lock.Lock())
+            {
+                var baseCommand = command.AsBaseCommand();
+                responseTask = _requestResponseHandler.Outgoing(baseCommand);
+                _channelManager.Outgoing(command, responseTask);
+                var sequence = Serializer.Serialize(baseCommand);
+                await _stream.Send(sequence);
+            }
+
+            return await responseTask;
         }
 
         public async Task<BaseCommand> Send(SendPackage command)
@@ -168,42 +168,47 @@ namespace DotPulsar.Internal
             }
         }
 
-        private void HandleCommand(uint commandSize, ReadOnlySequence<byte> sequence)
+        public async Task ProcessIncommingFrames()
         {
-            var command = Serializer.Deserialize<BaseCommand>(sequence.Slice(0, commandSize));
+            await Task.Yield();
 
-            switch (command.CommandType)
+            await foreach (var frame in _stream.Frames())
             {
-                case BaseCommand.Type.Message:
-                    _consumerManager.Incoming(command.Message, sequence.Slice(commandSize));
-                    return;
-                case BaseCommand.Type.CloseConsumer:
-                    _consumerManager.Incoming(command.CloseConsumer);
-                    return;
-                case BaseCommand.Type.ActiveConsumerChange:
-                    _consumerManager.Incoming(command.ActiveConsumerChange);
-                    return;
-                case BaseCommand.Type.ReachedEndOfTopic:
-                    _consumerManager.Incoming(command.ReachedEndOfTopic);
-                    return;
-                case BaseCommand.Type.CloseProducer:
-                    _producerManager.Incoming(command.CloseProducer);
-                    return;
-                case BaseCommand.Type.Ping:
-                    _pingPongHandler.Incoming(command.Ping);
-                    return;
-                default:
-                    _requestResponseHandler.Incoming(command);
-                    return;
+                var commandSize = frame.ReadUInt32(0, true);
+                var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
+
+                switch (command.CommandType)
+                {
+                    case BaseCommand.Type.Message:
+                        _channelManager.Incoming(command.Message, frame.Slice(commandSize + 4));
+                        break;
+                    case BaseCommand.Type.CloseConsumer:
+                        _channelManager.Incoming(command.CloseConsumer);
+                        break;
+                    case BaseCommand.Type.ActiveConsumerChange:
+                        _channelManager.Incoming(command.ActiveConsumerChange);
+                        break;
+                    case BaseCommand.Type.ReachedEndOfTopic:
+                        _channelManager.Incoming(command.ReachedEndOfTopic);
+                        break;
+                    case BaseCommand.Type.CloseProducer:
+                        _channelManager.Incoming(command.CloseProducer);
+                        break;
+                    case BaseCommand.Type.Ping:
+                        _pingPongHandler.Incoming(command.Ping);
+                        break;
+                    default:
+                        _requestResponseHandler.Incoming(command);
+                        break;
+                }
             }
         }
 
         public async ValueTask DisposeAsync()
         {
             await _lock.DisposeAsync();
-            _consumerManager.Dispose();
-            _producerManager.Dispose();
             _requestResponseHandler.Dispose();
+            _channelManager.Dispose();
             await _stream.DisposeAsync();
         }
     }

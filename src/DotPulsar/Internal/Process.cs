@@ -1,0 +1,78 @@
+﻿/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.Events;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace DotPulsar.Internal
+{
+    public abstract class Process : IProcess
+    {
+        protected ChannelState ChannelState;
+        protected ExecutorState ExecutorState;
+        protected CancellationTokenSource CancellationTokenSource;
+
+        public Guid CorrelationId { get; }
+
+        public Process(Guid correlationId)
+        {
+            ChannelState = ChannelState.Disconnected;
+            ExecutorState = ExecutorState.Ok;
+            CancellationTokenSource = new CancellationTokenSource();
+            CorrelationId = correlationId;
+        }
+
+        protected abstract void CalculateState();
+
+        public void Start() => CalculateState();
+
+        public abstract ValueTask DisposeAsync();
+
+        public void Handle(IEvent e)
+        {
+            switch (e)
+            {
+                case ExecutorFaulted _:
+                    ExecutorState = ExecutorState.Faulted;
+                    break;
+                case ChannelActivated _:
+                    ChannelState = ChannelState.Active;
+                    break;
+                case ChannelClosedByServer _:
+                    ChannelState = ChannelState.ClosedByServer;
+                    break;
+                case ChannelConnected _:
+                    ChannelState = ChannelState.Connected;
+                    break;
+                case ChannelDeactivated _:
+                    ChannelState = ChannelState.Inactive;
+                    break;
+                case ChannelDisconnected _:
+                    ChannelState = ChannelState.Disconnected;
+                    break;
+                case ChannelReachedEndOfTopic _:
+                    ChannelState = ChannelState.ReachedEndOfTopic;
+                    break;
+                case ChannelUnsubscribed _:
+                    ChannelState = ChannelState.Unsubscribed;
+                    break;
+            };
+
+            CalculateState();
+        }
+    }
+}

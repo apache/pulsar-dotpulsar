@@ -1,26 +1,22 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+﻿/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-﻿using DotPulsar.Abstractions;
+using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.PulsarApi;
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -29,6 +25,7 @@ namespace DotPulsar.Internal
     public sealed class PulsarClientBuilder : IPulsarClientBuilder
     {
         private readonly CommandConnect _commandConnect;
+        private List<IHandleException> _exceptionHandlers;
         private EncryptionPolicy? _encryptionPolicy;
         private TimeSpan _retryInterval;
         private Uri _serviceUrl;
@@ -44,6 +41,8 @@ namespace DotPulsar.Internal
                 ProtocolVersion = Constants.ProtocolVersion,
                 ClientVersion = Constants.ClientVersion
             };
+
+            _exceptionHandlers = new List<IHandleException>();
             _retryInterval = TimeSpan.FromSeconds(3);
             _serviceUrl = new Uri(Constants.PulsarScheme + "://localhost:" + Constants.DefaultPulsarPort);
             _clientCertificates = new X509Certificate2Collection();
@@ -68,6 +67,12 @@ namespace DotPulsar.Internal
         public IPulsarClientBuilder ConnectionSecurity(EncryptionPolicy encryptionPolicy)
         {
             _encryptionPolicy = encryptionPolicy;
+            return this;
+        }
+
+        public IPulsarClientBuilder ExceptionHandler(IHandleException exceptionHandler)
+        {
+            _exceptionHandlers.Add(exceptionHandler);
             return this;
         }
 
@@ -126,7 +131,13 @@ namespace DotPulsar.Internal
 
             var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
             var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value);
-            return new PulsarClient(connectionPool, new FaultStrategy(_retryInterval));
+            var exceptionHandlers = new List<IHandleException>(_exceptionHandlers)
+            {
+                new DefaultExceptionHandler(_retryInterval)
+            };
+            var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);
+            var processManager = new ProcessManager(connectionPool);
+            return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline);
         }
     }
 }
