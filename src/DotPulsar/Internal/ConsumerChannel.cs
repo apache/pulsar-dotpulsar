@@ -24,7 +24,7 @@ namespace DotPulsar.Internal
     public sealed class ConsumerChannel : IConsumerChannel, IReaderChannel
     {
         private readonly ulong _id;
-        private readonly IDequeue<MessagePackage> _dequeue;
+        private readonly AsyncQueue<MessagePackage> _queue;
         private readonly IConnection _connection;
         private readonly BatchHandler _batchHandler;
         private readonly CommandFlow _cachedCommandFlow;
@@ -34,12 +34,12 @@ namespace DotPulsar.Internal
         public ConsumerChannel(
             ulong id,
             uint messagePrefetchCount,
-            IDequeue<MessagePackage> dequeue,
+            AsyncQueue<MessagePackage> queue,
             IConnection connection,
             BatchHandler batchHandler)
         {
             _id = id;
-            _dequeue = dequeue;
+            _queue = queue;
             _connection = connection;
             _batchHandler = batchHandler;
             _cachedCommandFlow = new CommandFlow { ConsumerId = id, MessagePermits = messagePrefetchCount };
@@ -60,7 +60,7 @@ namespace DotPulsar.Internal
                 if (message != null)
                     return message;
 
-                var messagePackage = await _dequeue.Dequeue(cancellationToken);
+                var messagePackage = await _queue.Dequeue(cancellationToken);
 
                 if (!await Validate(messagePackage))
                     continue;
@@ -124,6 +124,7 @@ namespace DotPulsar.Internal
         {
             try
             {
+                _queue.Dispose();
                 await _connection.Send(new CommandCloseConsumer { ConsumerId = _id });
             }
             catch

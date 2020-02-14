@@ -53,28 +53,14 @@ namespace DotPulsar.Internal
         }
 
         public async ValueTask<ConsumerState> StateChangedTo(ConsumerState state, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return await _state.StateChangedTo(state, cancellationToken);
-        }
+            => await _state.StateChangedTo(state, cancellationToken);
 
         public async ValueTask<ConsumerState> StateChangedFrom(ConsumerState state, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return await _state.StateChangedFrom(state, cancellationToken);
-        }
+            => await _state.StateChangedFrom(state, cancellationToken);
 
-        public bool IsFinalState()
-        {
-            ThrowIfDisposed();
-            return _state.IsFinalState();
-        }
+        public bool IsFinalState() => _state.IsFinalState();
 
-        public bool IsFinalState(ConsumerState state)
-        {
-            ThrowIfDisposed();
-            return _state.IsFinalState(state);
-        }
+        public bool IsFinalState(ConsumerState state) => _state.IsFinalState(state);
 
         public async ValueTask DisposeAsync()
         {

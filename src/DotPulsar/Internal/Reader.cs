@@ -50,28 +50,14 @@ namespace DotPulsar.Internal
         }
 
         public async ValueTask<ReaderState> StateChangedTo(ReaderState state, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return await _state.StateChangedTo(state, cancellationToken);
-        }
+            => await _state.StateChangedTo(state, cancellationToken);
 
         public async ValueTask<ReaderState> StateChangedFrom(ReaderState state, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-            return await _state.StateChangedFrom(state, cancellationToken);
-        }
+            => await _state.StateChangedFrom(state, cancellationToken);
 
-        public bool IsFinalState()
-        {
-            ThrowIfDisposed();
-            return _state.IsFinalState();
-        }
+        public bool IsFinalState() => _state.IsFinalState();
 
-        public bool IsFinalState(ReaderState state)
-        {
-            ThrowIfDisposed();
-            return _state.IsFinalState(state);
-        }
+        public bool IsFinalState(ReaderState state) => _state.IsFinalState(state);
 
         public async IAsyncEnumerable<Message> Messages([EnumeratorCancellation] CancellationToken cancellationToken)
         {
