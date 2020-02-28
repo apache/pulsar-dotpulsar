@@ -133,7 +133,7 @@ namespace DotPulsar.Internal
                         if (buffer.Length < totalSize)
                             break;
 
-                        yield return buffer.Slice(4, frameSize);
+                        yield return new ReadOnlySequence<byte>(buffer.Slice(4, frameSize).ToArray());
 
                         buffer = buffer.Slice(totalSize);
                     }

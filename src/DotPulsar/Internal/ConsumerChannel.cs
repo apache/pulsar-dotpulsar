@@ -62,20 +62,19 @@ namespace DotPulsar.Internal
 
                 var messagePackage = await _queue.Dequeue(cancellationToken);
 
-                if (!await Validate(messagePackage))
+                if (!messagePackage.IsValid())
                     continue;
 
-                var messageId = messagePackage.MessageId;
-                var data = messagePackage.Data;
+                await AcknowledgePackage(messagePackage);
 
-                var metadataSize = data.ReadUInt32(6, true);
-                var metadata = Serializer.Deserialize<PulsarApi.MessageMetadata>(data.Slice(10, metadataSize));
-                data = data.Slice(10 + metadataSize);
+                var metadataSize = messagePackage.GetMetadataSize();
+                var data         = messagePackage.ExtractData(metadataSize);
+                var metadata     = messagePackage.ExtractMetadata(metadataSize);
+                var messageId    = messagePackage.MessageId;
 
-                if (metadata.NumMessagesInBatch == 1)
-                    return new Message(new MessageId(messageId), metadata, null, data);
-
-                return _batchHandler.Add(messageId, metadata, data);
+                return metadata.NumMessagesInBatch == 1
+                    ? new Message(new MessageId(messageId), metadata, null, data)
+                    : _batchHandler.Add(messageId, metadata, data);
             }
         }
 
@@ -146,24 +145,17 @@ namespace DotPulsar.Internal
             _sendWhenZero = _cachedCommandFlow.MessagePermits;
         }
 
-        private async ValueTask<bool> Validate(MessagePackage messagePackage)
+        private async Task AcknowledgePackage(MessagePackage messagePackage)
         {
-            var magicNumberMatches = messagePackage.Data.StartsWith(Constants.MagicNumber);
-            var expectedChecksum = messagePackage.Data.ReadUInt32(2, true);
-            var actualChecksum = Crc32C.Calculate(messagePackage.Data.Slice(6));
-            if (!magicNumberMatches || expectedChecksum != actualChecksum)
-            {
-                var ack = new CommandAck
-                {
-                    Type = CommandAck.AckType.Individual,
-                    validation_error = CommandAck.ValidationError.ChecksumMismatch
-                };
-                ack.MessageIds.Add(messagePackage.MessageId);
-                await Send(ack);
-                return false;
-            }
+             var ack = new CommandAck
+             {
+                 Type = CommandAck.AckType.Individual,
+                 validation_error = CommandAck.ValidationError.ChecksumMismatch
+             };
 
-            return true;
+            ack.MessageIds.Add(messagePackage.MessageId);
+
+            await Send(ack);
         }
     }
 }
