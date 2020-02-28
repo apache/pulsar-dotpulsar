@@ -73,7 +73,7 @@ namespace DotPulsar.Internal
         {
             if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                 return;
-            
+
             _eventRegister.Register(new ReaderDisposed(_correlationId, this));
             await _channel.DisposeAsync();
         }

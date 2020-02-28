@@ -151,7 +151,7 @@ namespace DotPulsar.Internal
                 return true;
 
             var context = new ExceptionContext(exception, cancellationToken);
-            
+
             await _exceptionHandler.OnException(context);
 
             if (context.Result != FaultAction.Retry)

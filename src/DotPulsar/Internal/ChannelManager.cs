@@ -142,7 +142,7 @@ namespace DotPulsar.Internal
             if (consumer != null)
                 consumer.Received(new MessagePackage(command.MessageId, data));
         }
-        
+
         public void Dispose()
         {
             foreach (var channel in _consumerChannels.RemoveAll())

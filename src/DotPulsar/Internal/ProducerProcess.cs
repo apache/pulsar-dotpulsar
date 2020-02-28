@@ -47,7 +47,7 @@ namespace DotPulsar.Internal
             if (_producer.IsFinalState())
                 return;
 
-            if(ExecutorState == ExecutorState.Faulted)
+            if (ExecutorState == ExecutorState.Faulted)
             {
                 _stateManager.SetState(ProducerState.Faulted);
                 return;

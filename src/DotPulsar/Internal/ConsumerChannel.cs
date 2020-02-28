@@ -69,9 +69,9 @@ namespace DotPulsar.Internal
                 }
 
                 var metadataSize = messagePackage.GetMetadataSize();
-                var data         = messagePackage.ExtractData(metadataSize);
-                var metadata     = messagePackage.ExtractMetadata(metadataSize);
-                var messageId    = messagePackage.MessageId;
+                var data = messagePackage.ExtractData(metadataSize);
+                var metadata = messagePackage.ExtractMetadata(metadataSize);
+                var messageId = messagePackage.MessageId;
 
                 return metadata.NumMessagesInBatch == 1
                     ? new Message(new MessageId(messageId), metadata, null, data)
@@ -148,11 +148,11 @@ namespace DotPulsar.Internal
 
         private async Task RejectPackage(MessagePackage messagePackage)
         {
-             var ack = new CommandAck
-             {
-                 Type = CommandAck.AckType.Individual,
-                 validation_error = CommandAck.ValidationError.ChecksumMismatch
-             };
+            var ack = new CommandAck
+            {
+                Type = CommandAck.AckType.Individual,
+                validation_error = CommandAck.ValidationError.ChecksumMismatch
+            };
 
             ack.MessageIds.Add(messagePackage.MessageId);
 
