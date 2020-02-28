@@ -4,7 +4,7 @@ services:
 
   pulsar:
     container_name: pulsar
-    image: apachepulsar/pulsar
+    image: 'apachepulsar/pulsar:2.5.0'
     ports:
       - '8080:8080'
       - '6650:6650'
@@ -12,20 +12,19 @@ services:
       - 8080
       - 6650
     environment:
-      PULSAR_MEM: " -Xms8g -Xmx8g -XX:MaxDirectMemorySize=8g"
-    command: >
-      /bin/bash -c
-      "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone"
+      PULSAR_MEM: " -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+    command: |
+      /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone"
 
   pulsar-express:
     container_name: pulsar-express
-    image: bbonnin/pulsar-express
+    image: bbonnin/pulsar-express:0.5.1
     depends_on:
       - pulsar
     ports:
       - '3000:3000'
     environment:
-      SERVICE_URL: http://pulsar:8080
+      SERVICE_URL: 'http://pulsar:8080'
 
 networks:
   default:

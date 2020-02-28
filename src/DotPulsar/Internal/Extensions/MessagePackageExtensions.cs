@@ -13,9 +13,8 @@
  */
 
 using System.Buffers;
-using DotPulsar.Internal.Extensions;
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal.Extensions
 {
     public static class MessagePackageExtensions
     {

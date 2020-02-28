@@ -18,6 +18,6 @@ namespace DotPulsar.Internal.Abstractions
 {
     public interface IEvent
     {
-        public Guid CorrelationId { get; }
+        Guid CorrelationId { get; }
     }
 }

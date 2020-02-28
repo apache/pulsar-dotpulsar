@@ -18,8 +18,9 @@ namespace DotPulsar.Internal.Abstractions
 {
     public interface IProcess : IAsyncDisposable
     {
-        public Guid CorrelationId { get; }
-        public void Start();
-        public void Handle(IEvent @event);
+        Guid CorrelationId { get; }
+
+        void Start();
+        void Handle(IEvent @event);
     }
 }
