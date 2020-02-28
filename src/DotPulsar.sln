@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotPulsar", "DotPulsar\DotP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotPulsar.Tests", "DotPulsar.Tests\DotPulsar.Tests.csproj", "{B3FCD2D5-8009-4281-ACDB-6A7BC99606B4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotPulsar.Stress.Tests", "DotPulsar.Stress.Tests\DotPulsar.Stress.Tests.csproj", "{DDC68F51-DE1B-4794-9EE7-392C303CF5EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B3FCD2D5-8009-4281-ACDB-6A7BC99606B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3FCD2D5-8009-4281-ACDB-6A7BC99606B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3FCD2D5-8009-4281-ACDB-6A7BC99606B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDC68F51-DE1B-4794-9EE7-392C303CF5EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDC68F51-DE1B-4794-9EE7-392C303CF5EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDC68F51-DE1B-4794-9EE7-392C303CF5EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDC68F51-DE1B-4794-9EE7-392C303CF5EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
