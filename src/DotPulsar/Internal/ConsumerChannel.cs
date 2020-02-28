@@ -63,9 +63,10 @@ namespace DotPulsar.Internal
                 var messagePackage = await _queue.Dequeue(cancellationToken);
 
                 if (!messagePackage.IsValid())
+                {
+                    await RejectPackage(messagePackage);
                     continue;
-
-                await AcknowledgePackage(messagePackage);
+                }
 
                 var metadataSize = messagePackage.GetMetadataSize();
                 var data         = messagePackage.ExtractData(metadataSize);
@@ -145,7 +146,7 @@ namespace DotPulsar.Internal
             _sendWhenZero = _cachedCommandFlow.MessagePermits;
         }
 
-        private async Task AcknowledgePackage(MessagePackage messagePackage)
+        private async Task RejectPackage(MessagePackage messagePackage)
         {
              var ack = new CommandAck
              {
