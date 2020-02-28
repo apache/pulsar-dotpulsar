@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
 {
@@ -73,6 +74,12 @@ namespace DotPulsar.Internal
         public IPulsarClientBuilder ExceptionHandler(IHandleException exceptionHandler)
         {
             _exceptionHandlers.Add(exceptionHandler);
+            return this;
+        }
+
+        public IPulsarClientBuilder ExceptionHandler(Func<ExceptionContext, ValueTask> exceptionHandler)
+        {
+            _exceptionHandlers.Add(new FuncExceptionHandler(exceptionHandler));
             return this;
         }
 
