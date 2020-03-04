@@ -87,6 +87,10 @@ Let us know which features you need by creating an issue or by giving existing i
 * ZSTD message compression
 * SNAPPY message compression
 
+## Join Our Community
+
+Apache Pulsar has a [Slack instance](https://pulsar.apache.org/contact/) and there you'll find us in the #dev-dotpulsar channel. Just waiting for you to pop by :-)
+
 ## Built With
 
 * [protobuf-net](https://github.com/mgravell/protobuf-net) - Provides simple access to fast and efficient "Protocol Buffers" serialization from .NET applications
