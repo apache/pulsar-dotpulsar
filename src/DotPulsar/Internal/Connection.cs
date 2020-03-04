@@ -172,36 +172,40 @@ namespace DotPulsar.Internal
         {
             await Task.Yield();
 
-            await foreach (var frame in _stream.Frames())
+            try
             {
-                var commandSize = frame.ReadUInt32(0, true);
-                var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
-
-                switch (command.CommandType)
+                await foreach (var frame in _stream.Frames())
                 {
-                    case BaseCommand.Type.Message:
-                        _channelManager.Incoming(command.Message, frame.Slice(commandSize + 4));
-                        break;
-                    case BaseCommand.Type.CloseConsumer:
-                        _channelManager.Incoming(command.CloseConsumer);
-                        break;
-                    case BaseCommand.Type.ActiveConsumerChange:
-                        _channelManager.Incoming(command.ActiveConsumerChange);
-                        break;
-                    case BaseCommand.Type.ReachedEndOfTopic:
-                        _channelManager.Incoming(command.ReachedEndOfTopic);
-                        break;
-                    case BaseCommand.Type.CloseProducer:
-                        _channelManager.Incoming(command.CloseProducer);
-                        break;
-                    case BaseCommand.Type.Ping:
-                        _pingPongHandler.Incoming(command.Ping);
-                        break;
-                    default:
-                        _requestResponseHandler.Incoming(command);
-                        break;
+                    var commandSize = frame.ReadUInt32(0, true);
+                    var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
+
+                    switch (command.CommandType)
+                    {
+                        case BaseCommand.Type.Message:
+                            _channelManager.Incoming(command.Message, frame.Slice(commandSize + 4));
+                            break;
+                        case BaseCommand.Type.CloseConsumer:
+                            _channelManager.Incoming(command.CloseConsumer);
+                            break;
+                        case BaseCommand.Type.ActiveConsumerChange:
+                            _channelManager.Incoming(command.ActiveConsumerChange);
+                            break;
+                        case BaseCommand.Type.ReachedEndOfTopic:
+                            _channelManager.Incoming(command.ReachedEndOfTopic);
+                            break;
+                        case BaseCommand.Type.CloseProducer:
+                            _channelManager.Incoming(command.CloseProducer);
+                            break;
+                        case BaseCommand.Type.Ping:
+                            _pingPongHandler.Incoming(command.Ping);
+                            break;
+                        default:
+                            _requestResponseHandler.Incoming(command);
+                            break;
+                    }
                 }
             }
+            catch { }
         }
 
         public async ValueTask DisposeAsync()

@@ -104,6 +104,7 @@ namespace DotPulsar.Internal
                         break;
                 }
             }
+            catch { }
             finally
             {
                 _writer.Complete();
