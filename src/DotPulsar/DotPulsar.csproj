@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-    <Version>0.8.0</Version>
+    <Version>0.8.1</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Authors>DanskeCommodities;dblank</Authors>
@@ -11,7 +11,7 @@
     <Title>DotPulsar</Title>
     <PackageTags>Apache;Pulsar</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReleaseNotes>Beta release - Fixed bug causing consumers to fault under load and added support custom exception handling</PackageReleaseNotes>
+    <PackageReleaseNotes>Beta release - Ignore internal exceptions when closing connections so the UnobservedTaskException handler is not invoked</PackageReleaseNotes>
     <Description>.NET/C# client library for Apache Pulsar</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
