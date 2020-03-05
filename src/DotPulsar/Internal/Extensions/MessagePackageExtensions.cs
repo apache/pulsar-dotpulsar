@@ -19,22 +19,13 @@ namespace DotPulsar.Internal.Extensions
     public static class MessagePackageExtensions
     {
         public static uint GetMetadataSize(this MessagePackage package)
-        {
-            var offset = Constants.MagicNumber.Length + Constants.ChecksumLengthInBytes;
-            return package.Data.ReadUInt32(offset, true);
-        }
-
-        public static ReadOnlySequence<byte> ExtractData(this MessagePackage package, uint metadataSize)
-        {
-            var offset = Constants.MagicNumber.Length + Constants.ChecksumLengthInBytes + Constants.MetadataSizeLengthInBytes + metadataSize;
-            return package.Data.Slice(offset);
-        }
+            => package.Data.ReadUInt32(Constants.MetadataSizeOffset, true);
 
         public static PulsarApi.MessageMetadata ExtractMetadata(this MessagePackage package, uint metadataSize)
-        {
-            var offset = Constants.MagicNumber.Length + Constants.ChecksumLengthInBytes + Constants.MetadataSizeLengthInBytes;
-            return Serializer.Deserialize<PulsarApi.MessageMetadata>(package.Data.Slice(offset, metadataSize));
-        }
+            => Serializer.Deserialize<PulsarApi.MessageMetadata>(package.Data.Slice(Constants.MetadataOffset, metadataSize));
+
+        public static ReadOnlySequence<byte> ExtractData(this MessagePackage package, uint metadataSize)
+            => package.Data.Slice(Constants.MetadataOffset + metadataSize);
 
         public static bool IsValid(this MessagePackage package)
             => StartsWithMagicNumber(package.Data) && HasValidCheckSum(package.Data);
@@ -43,10 +34,6 @@ namespace DotPulsar.Internal.Extensions
             => input.StartsWith(Constants.MagicNumber);
 
         private static bool HasValidCheckSum(ReadOnlySequence<byte> input)
-        {
-            var providedChecksum = input.ReadUInt32(Constants.MagicNumber.Length, true);
-            var calculatedChecksum = Crc32C.Calculate(input.Slice(Constants.MagicNumber.Length + Constants.ChecksumLengthInBytes));
-            return providedChecksum == calculatedChecksum;
-        }
+            => input.ReadUInt32(Constants.MagicNumber.Length, true) == Crc32C.Calculate(input.Slice(Constants.MetadataSizeOffset));
     }
 }

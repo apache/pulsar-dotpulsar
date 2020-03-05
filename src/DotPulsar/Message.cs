@@ -21,7 +21,7 @@ namespace DotPulsar
 {
     public sealed class Message
     {
-        private readonly List<Internal.PulsarApi.KeyValue> _keyVaues;
+        private readonly List<Internal.PulsarApi.KeyValue> _keyValues;
         private IReadOnlyDictionary<string, string>? _properties;
 
         internal Message(
@@ -42,7 +42,7 @@ namespace DotPulsar
                 Key = metadata.PartitionKey;
                 SequenceId = metadata.SequenceId;
                 OrderingKey = metadata.OrderingKey;
-                _keyVaues = metadata.Properties;
+                _keyValues = metadata.Properties;
             }
             else
             {
@@ -51,7 +51,7 @@ namespace DotPulsar
                 Key = singleMetadata.PartitionKey;
                 OrderingKey = singleMetadata.OrderingKey;
                 SequenceId = singleMetadata.SequenceId;
-                _keyVaues = singleMetadata.Properties;
+                _keyValues = singleMetadata.Properties;
             }
         }
 
@@ -76,6 +76,6 @@ namespace DotPulsar
         public ulong PublishTime { get; }
         public DateTimeOffset PublishTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long)PublishTime);
 
-        public IReadOnlyDictionary<string, string> Properties => _properties ??= _keyVaues.ToDictionary(p => p.Key, p => p.Value);
+        public IReadOnlyDictionary<string, string> Properties => _properties ??= _keyValues.ToDictionary(p => p.Key, p => p.Value);
     }
 }
