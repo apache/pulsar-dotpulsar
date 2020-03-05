@@ -34,6 +34,7 @@ namespace DotPulsar.Internal
         private X509Certificate2Collection _clientCertificates;
         private bool _verifyCertificateAuthority;
         private bool _verifyCertificateName;
+        private TimeSpan _closeInactiveConnectionsInterval;
 
         public PulsarClientBuilder()
         {
@@ -49,6 +50,7 @@ namespace DotPulsar.Internal
             _clientCertificates = new X509Certificate2Collection();
             _verifyCertificateAuthority = true;
             _verifyCertificateName = false;
+            _closeInactiveConnectionsInterval = TimeSpan.FromSeconds(60);
         }
 
         public IPulsarClientBuilder AuthenticateUsingClientCertificate(X509Certificate2 clientCertificate)
@@ -113,6 +115,12 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IPulsarClientBuilder CloseInactiveConnectionsInterval(TimeSpan interval)
+        {
+            _closeInactiveConnectionsInterval = interval;
+            return this;
+        }
+
         public IPulsarClient Build()
         {
             var scheme = _serviceUrl.Scheme;
@@ -137,7 +145,7 @@ namespace DotPulsar.Internal
                 throw new InvalidSchemeException($"Invalid scheme '{scheme}'. Expected '{Constants.PulsarScheme}' or '{Constants.PulsarSslScheme}'");
 
             var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
-            var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value);
+            var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval);
             var exceptionHandlers = new List<IHandleException>(_exceptionHandlers)
             {
                 new DefaultExceptionHandler(_retryInterval)
