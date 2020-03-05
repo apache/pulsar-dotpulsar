@@ -103,6 +103,7 @@ namespace DotPulsar.Internal
                 PriorityLevel = _priorityLevel,
                 ReadCompacted = _readCompacted,
                 SubscriptionType = _subscriptionType
+
             };
 
             return _pulsarClient.CreateConsumer(options);
