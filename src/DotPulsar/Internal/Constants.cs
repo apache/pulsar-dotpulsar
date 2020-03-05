@@ -28,6 +28,8 @@ namespace DotPulsar.Internal
             DefaultPulsarPort = 6650;
             DefaultPulsarSSLPort = 6651;
             MagicNumber = new byte[] { 0x0e, 0x01 };
+            MetadataSizeOffset = 6;
+            MetadataOffset = 10;
         }
 
         public static string ClientVersion { get; }
@@ -37,5 +39,7 @@ namespace DotPulsar.Internal
         public static int DefaultPulsarPort { get; }
         public static int DefaultPulsarSSLPort { get; }
         public static byte[] MagicNumber { get; }
+        public static int MetadataSizeOffset { get; }
+        public static int MetadataOffset { get; }
     }
 }

@@ -36,7 +36,7 @@ namespace DotPulsar.Internal
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _closeInactiveConnections;
 
-        public ConnectionPool(CommandConnect commandConnect, Uri serviceUrl, Connector connector, EncryptionPolicy encryptionPolicy)
+        public ConnectionPool(CommandConnect commandConnect, Uri serviceUrl, Connector connector, EncryptionPolicy encryptionPolicy, TimeSpan closeInactiveConnectionsInterval)
         {
             _lock = new AsyncLock();
             _commandConnect = commandConnect;
@@ -45,7 +45,7 @@ namespace DotPulsar.Internal
             _encryptionPolicy = encryptionPolicy;
             _connections = new ConcurrentDictionary<Uri, Connection>();
             _cancellationTokenSource = new CancellationTokenSource();
-            _closeInactiveConnections = CloseInactiveConnections(TimeSpan.FromSeconds(60), _cancellationTokenSource.Token);  //TODO Get '60' from configuration
+            _closeInactiveConnections = CloseInactiveConnections(closeInactiveConnectionsInterval, _cancellationTokenSource.Token);
         }
 
         public async ValueTask DisposeAsync()
