@@ -19,13 +19,22 @@ namespace DotPulsar.Internal.Extensions
     public static class MessagePackageExtensions
     {
         public static uint GetMetadataSize(this MessagePackage package)
-            => package.Data.ReadUInt32(6, true);  //TODO RK: 6 should be a constant
+        {
+            var offset = Constants.MagicNumber.Length + Constants.ChecksumLengthInBytes;
+            return package.Data.ReadUInt32(offset, true);
+        }
 
         public static ReadOnlySequence<byte> ExtractData(this MessagePackage package, uint metadataSize)
-            => package.Data.Slice(10 + metadataSize); //TODO RK: 10 should be a constant
+        {
+            var offset = Constants.MagicNumber.Length + Constants.ChecksumLengthInBytes + Constants.MetadataSizeLengthInBytes + metadataSize;
+            return package.Data.Slice(offset);
+        }
 
         public static PulsarApi.MessageMetadata ExtractMetadata(this MessagePackage package, uint metadataSize)
-            => Serializer.Deserialize<PulsarApi.MessageMetadata>(package.Data.Slice(10, metadataSize)); //TODO RK: 10 should be a constant
+        {
+            var offset = Constants.MagicNumber.Length + Constants.ChecksumLengthInBytes + Constants.MetadataSizeLengthInBytes;
+            return Serializer.Deserialize<PulsarApi.MessageMetadata>(package.Data.Slice(offset, metadataSize));
+        }
 
         public static bool IsValid(this MessagePackage package)
             => StartsWithMagicNumber(package.Data) && HasValidCheckSum(package.Data);
@@ -34,6 +43,10 @@ namespace DotPulsar.Internal.Extensions
             => input.StartsWith(Constants.MagicNumber);
 
         private static bool HasValidCheckSum(ReadOnlySequence<byte> input)
-            => input.ReadUInt32(2, true) == Crc32C.Calculate(input.Slice(6));
+        {
+            var providedChecksum = input.ReadUInt32(Constants.MagicNumber.Length, true);
+            var calculatedChecksum = Crc32C.Calculate(input.Slice(Constants.MagicNumber.Length + Constants.ChecksumLengthInBytes));
+            return providedChecksum == calculatedChecksum;
+        }
     }
 }
