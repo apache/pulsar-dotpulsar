@@ -24,59 +24,77 @@ namespace DotPulsar.Internal
 
         public bool IsEmpty()
         {
-            for (var i = 0; i < _items.Length; ++i)
+            lock (_items)
             {
-                if (_items[i] != null)
-                    return false;
-            }
+                for (var i = 0; i < _items.Length; ++i)
+                {
+                    if (_items[i] != null)
+                        return false;
+                }
 
-            return true;
+                return true;
+            }
         }
 
         public ulong Add(T item)
         {
-            for (var i = 0; i < _items.Length; ++i)
+            lock (_items)
             {
-                if (_items[i] != null)
-                    continue;
+                for (var i = 0; i < _items.Length; ++i)
+                {
+                    if (_items[i] != null)
+                        continue;
 
-                _items[i] = item;
-                return (ulong)i;
+                    _items[i] = item;
+                    return (ulong)i;
+                }
+
+                var newArray = new T[_items.Length + 1];
+                _items.CopyTo(newArray, 0);
+                var id = newArray.Length - 1;
+                newArray[id] = item;
+                _items = newArray;
+                return (ulong)id;
             }
-
-            var newArray = new T[_items.Length + 1];
-            _items.CopyTo(newArray, 0);
-            var id = newArray.Length - 1;
-            newArray[id] = item;
-            _items = newArray;
-            return (ulong)id;
         }
 
         public T? Remove(ulong id)
         {
-            var item = _items[(int)id];
-            _items[(int)id] = null;
-            return item;
+            lock (_items)
+            {
+                var item = _items[(int)id];
+                _items[(int)id] = null;
+                return item;
+            }
         }
 
         public T[] RemoveAll()
         {
-            var items = new List<T>();
-            for (var i = 0; i < _items.Length; ++i)
+            lock (_items)
             {
-                var item = _items[i];
-                if (item != null)
+                var items = new List<T>();
+                for (var i = 0; i < _items.Length; ++i)
                 {
-                    items.Add(item);
-                    _items[i] = null;
+                    var item = _items[i];
+                    if (item != null)
+                    {
+                        items.Add(item);
+                        _items[i] = null;
+                    }
                 }
+                return items.ToArray();
             }
-            return items.ToArray();
         }
 
         public T? this[ulong id]
         {
-            get => _items[(int)id];
+            get
+            {
+                lock (_items)
+                {
+                    return _items[(int)id];
+                }
+            }
         }
     }
 }
