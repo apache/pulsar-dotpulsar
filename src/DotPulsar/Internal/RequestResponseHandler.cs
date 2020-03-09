@@ -23,12 +23,13 @@ namespace DotPulsar.Internal
         private const string ConnectResponseIdentifier = "Connected";
 
         private readonly Awaitor<string, BaseCommand> _responses;
-        private ulong _requestId;
+        private SequenceId _requestId;
+        private bool _pastInitialRequestId = false;
 
         public RequestResponseHandler()
         {
             _responses = new Awaitor<string, BaseCommand>();
-            _requestId = 1;
+            _requestId = new SequenceId(1);
         }
 
         public void Dispose() => _responses.Dispose();
@@ -51,31 +52,40 @@ namespace DotPulsar.Internal
             switch (cmd.CommandType)
             {
                 case BaseCommand.Type.Seek:
-                    cmd.Seek.RequestId = _requestId++;
+                    cmd.Seek.RequestId = _requestId.FetchNext();
+                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.Lookup:
-                    cmd.LookupTopic.RequestId = _requestId++;
+                    cmd.LookupTopic.RequestId = _requestId.FetchNext();
+                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.Error:
-                    cmd.Error.RequestId = _requestId++;
+                    cmd.Error.RequestId = _requestId.FetchNext();
+                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.Producer:
-                    cmd.Producer.RequestId = _requestId++;
+                    cmd.Producer.RequestId = _requestId.FetchNext();
+                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.CloseProducer:
-                    cmd.CloseProducer.RequestId = _requestId++;
+                    cmd.CloseProducer.RequestId = _requestId.FetchNext();
+                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.Subscribe:
-                    cmd.Subscribe.RequestId = _requestId++;
+                    cmd.Subscribe.RequestId = _requestId.FetchNext();
+                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.Unsubscribe:
-                    cmd.Unsubscribe.RequestId = _requestId++;
+                    cmd.Unsubscribe.RequestId = _requestId.FetchNext();
+                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.CloseConsumer:
-                    cmd.CloseConsumer.RequestId = _requestId++;
+                    cmd.CloseConsumer.RequestId = _requestId.FetchNext();
+                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.GetLastMessageId:
-                    cmd.GetLastMessageId.RequestId = _requestId++;
+                    cmd.GetLastMessageId.RequestId = _requestId.FetchNext();
+                    _pastInitialRequestId = true;
                     return;
             }
         }
@@ -89,7 +99,7 @@ namespace DotPulsar.Internal
                 case BaseCommand.Type.Send: return cmd.Send.ProducerId.ToString() + '-' + cmd.Send.SequenceId.ToString();
                 case BaseCommand.Type.SendError: return cmd.SendError.ProducerId.ToString() + '-' + cmd.SendError.SequenceId.ToString();
                 case BaseCommand.Type.SendReceipt: return cmd.SendReceipt.ProducerId.ToString() + '-' + cmd.SendReceipt.SequenceId.ToString();
-                case BaseCommand.Type.Error: return _requestId == 1 ? ConnectResponseIdentifier : cmd.Error.RequestId.ToString();
+                case BaseCommand.Type.Error: return !_pastInitialRequestId ? ConnectResponseIdentifier : cmd.Error.RequestId.ToString();
                 case BaseCommand.Type.Producer: return cmd.Producer.RequestId.ToString();
                 case BaseCommand.Type.ProducerSuccess: return cmd.ProducerSuccess.RequestId.ToString();
                 case BaseCommand.Type.CloseProducer: return cmd.CloseProducer.RequestId.ToString();

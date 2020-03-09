@@ -12,19 +12,24 @@
  * limitations under the License.
  */
 
+using System.Threading;
+
 namespace DotPulsar.Internal
 {
     public sealed class SequenceId
     {
+        private long _current;
+
         public SequenceId(ulong initialSequenceId)
         {
-            Current = initialSequenceId;
-            if (initialSequenceId > 0)
-                Increment();
+            // Subtracting one because Interlocked.Increment will return the post-incremented value
+            // which is expected to be the initialSequenceId for the first call
+            _current = unchecked((long)initialSequenceId - 1);
         }
 
-        public ulong Current { get; private set; }
-
-        public void Increment() => ++Current;
+        public ulong FetchNext()
+        {
+            return unchecked((ulong)Interlocked.Increment(ref _current));
+        }
     }
 }

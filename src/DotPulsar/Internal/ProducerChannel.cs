@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,7 +24,6 @@ namespace DotPulsar.Internal
     public sealed class ProducerChannel : IProducerChannel
     {
         private readonly PulsarApi.MessageMetadata _cachedMetadata;
-        private readonly SendPackage _cachedSendPackage;
         private readonly ulong _id;
         private readonly SequenceId _sequenceId;
         private readonly IConnection _connection;
@@ -41,8 +40,6 @@ namespace DotPulsar.Internal
                 ProducerId = id,
                 NumMessages = 1
             };
-
-            _cachedSendPackage = new SendPackage(commandSend, _cachedMetadata);
 
             _id = id;
             _sequenceId = sequenceId;
@@ -63,46 +60,41 @@ namespace DotPulsar.Internal
 
         public async Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload)
         {
-            _cachedSendPackage.Metadata = _cachedMetadata;
-            _cachedSendPackage.Payload = payload;
-            return await SendPackage(true);
+            var package = GetNewSendPackage(payload, new PulsarApi.MessageMetadata());
+            return await SendPackage(package);
         }
 
         public async Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload)
         {
-            metadata.ProducerName = _cachedMetadata.ProducerName;
-            _cachedSendPackage.Metadata = metadata;
-            _cachedSendPackage.Payload = payload;
-            return await SendPackage(metadata.SequenceId == 0);
+            var package = GetNewSendPackage(payload, metadata);
+            return await SendPackage(package);
         }
 
-        private async Task<CommandSendReceipt> SendPackage(bool autoAssignSequenceId)
+        private SendPackage GetNewSendPackage(ReadOnlySequence<byte> payload, PulsarApi.MessageMetadata metadata)
         {
-            try
+            metadata.ProducerName = _cachedMetadata.ProducerName;
+            var package = new SendPackage(new CommandSend() { ProducerId = _id, NumMessages = 1 }, metadata);
+            package.Payload = payload;
+
+            if (metadata.SequenceId == 0)
             {
-                _cachedSendPackage.Metadata.PublishTime = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-                if (autoAssignSequenceId)
-                {
-                    _cachedSendPackage.Command.SequenceId = _sequenceId.Current;
-                    _cachedSendPackage.Metadata.SequenceId = _sequenceId.Current;
-                }
-                else
-                    _cachedSendPackage.Command.SequenceId = _cachedSendPackage.Metadata.SequenceId;
-
-                var response = await _connection.Send(_cachedSendPackage);
-                response.Expect(BaseCommand.Type.SendReceipt);
-
-                if (autoAssignSequenceId)
-                    _sequenceId.Increment();
-
-                return response.SendReceipt;
+                // Auto assign sequence id
+                package.Metadata.SequenceId = _sequenceId.FetchNext();
             }
-            finally
-            {
-                if (autoAssignSequenceId)
-                    _cachedSendPackage.Metadata.SequenceId = 0; // Reset in case the user reuse the MessageMetadata, but is not explicitly setting the sequenceId
-            }
+
+            package.Command.SequenceId = package.Metadata.SequenceId;
+            return package;
+        }
+
+        private async Task<CommandSendReceipt> SendPackage(SendPackage sendPackage)
+        {
+            sendPackage.Metadata.PublishTime = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+            var response = await _connection.Send(sendPackage);
+            response.Expect(BaseCommand.Type.SendReceipt);
+
+            return response.SendReceipt;
         }
     }
 }
+
