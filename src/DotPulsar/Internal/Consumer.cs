@@ -96,21 +96,21 @@ namespace DotPulsar.Internal
         public async ValueTask Unsubscribe(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            _ = await _executor.Execute(() => _channel.Send(new CommandUnsubscribe()), cancellationToken);
+            _ = await _executor.Execute(() => _channel.Send(new CommandUnsubscribe(), cancellationToken), cancellationToken);
         }
 
         public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             var seek = new CommandSeek { MessageId = messageId.Data };
-            _ = await _executor.Execute(() => _channel.Send(seek), cancellationToken);
+            _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken);
             return;
         }
 
         public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            var response = await _executor.Execute(() => _channel.Send(new CommandGetLastMessageId()), cancellationToken);
+            var response = await _executor.Execute(() => _channel.Send(new CommandGetLastMessageId(), cancellationToken), cancellationToken);
             return new MessageId(response.LastMessageId);
         }
 
@@ -122,7 +122,7 @@ namespace DotPulsar.Internal
                 _cachedCommandAck.Type = ackType;
                 _cachedCommandAck.MessageIds.Clear();
                 _cachedCommandAck.MessageIds.Add(messageIdData);
-                return _channel.Send(_cachedCommandAck);
+                return _channel.Send(_cachedCommandAck, cancellationToken);
             }, cancellationToken);
         }
 
