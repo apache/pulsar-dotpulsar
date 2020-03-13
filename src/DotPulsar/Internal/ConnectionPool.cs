@@ -74,7 +74,7 @@ namespace DotPulsar.Internal
             while (true)
             {
                 var connection = await GetConnection(serviceUrl, cancellationToken);
-                var response = await connection.Send(lookup);
+                var response = await connection.Send(lookup, cancellationToken);
                 response.Expect(BaseCommand.Type.LookupResponse);
 
                 if (response.LookupTopicResponse.Response == CommandLookupTopicResponse.LookupType.Failed)
@@ -124,18 +124,18 @@ namespace DotPulsar.Internal
                 if (_connections.TryGetValue(serviceUrl, out Connection connection))
                     return connection;
 
-                return await EstablishNewConnection(serviceUrl);
+                return await EstablishNewConnection(serviceUrl, cancellationToken);
             }
         }
 
-        private async Task<Connection> EstablishNewConnection(Uri serviceUrl)
+        private async Task<Connection> EstablishNewConnection(Uri serviceUrl, CancellationToken cancellationToken)
         {
             var stream = await _connector.Connect(serviceUrl);
             var connection = new Connection(new PulsarStream(stream));
             DotPulsarEventSource.Log.ConnectionCreated();
             _connections[serviceUrl] = connection;
-            _ = connection.ProcessIncommingFrames().ContinueWith(t => DisposeConnection(serviceUrl));
-            var response = await connection.Send(_commandConnect);
+            _ = connection.ProcessIncommingFrames(cancellationToken).ContinueWith(t => DisposeConnection(serviceUrl));
+            var response = await connection.Send(_commandConnect, cancellationToken);
             response.Expect(BaseCommand.Type.Connected);
             return connection;
         }
@@ -165,7 +165,7 @@ namespace DotPulsar.Internal
                             var connection = _connections[serviceUrl];
                             if (connection is null)
                                 continue;
-                            if (!await connection.HasChannels())
+                            if (!await connection.HasChannels(cancellationToken))
                                 await DisposeConnection(serviceUrl);
                         }
                     }

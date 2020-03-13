@@ -15,13 +15,14 @@
 using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Buffers;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DotPulsar.Internal.Abstractions
 {
     public interface IProducerChannel : IAsyncDisposable
     {
-        Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload);
-        Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload);
+        Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload, CancellationToken cancellationToken);
+        Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken);
     }
 }

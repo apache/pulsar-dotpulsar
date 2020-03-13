@@ -21,10 +21,10 @@ namespace DotPulsar.Internal.Abstractions
 {
     public interface IConsumerChannel : IAsyncDisposable
     {
-        Task Send(CommandAck command);
-        Task<CommandSuccess> Send(CommandUnsubscribe command);
-        Task<CommandSuccess> Send(CommandSeek command);
-        Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command);
-        ValueTask<Message> Receive(CancellationToken cancellationToken = default);
+        Task Send(CommandAck command, CancellationToken cancellationToken);
+        Task<CommandSuccess> Send(CommandUnsubscribe command, CancellationToken cancellationToken);
+        Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken);
+        Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
+        ValueTask<Message> Receive(CancellationToken cancellationToken);
     }
 }

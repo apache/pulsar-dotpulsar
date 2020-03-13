@@ -52,7 +52,7 @@ namespace DotPulsar.Internal
             while (true)
             {
                 if (_sendWhenZero == 0)
-                    await SendFlow();
+                    await SendFlow(cancellationToken);
 
                 _sendWhenZero--;
 
@@ -64,7 +64,7 @@ namespace DotPulsar.Internal
 
                 if (!messagePackage.IsValid())
                 {
-                    await RejectPackage(messagePackage);
+                    await RejectPackage(messagePackage, cancellationToken);
                     continue;
                 }
 
@@ -79,7 +79,7 @@ namespace DotPulsar.Internal
             }
         }
 
-        public async Task Send(CommandAck command)
+        public async Task Send(CommandAck command, CancellationToken cancellationToken)
         {
             var messageId = command.MessageIds[0];
             if (messageId.BatchIndex != -1)
@@ -92,30 +92,30 @@ namespace DotPulsar.Internal
             }
 
             command.ConsumerId = _id;
-            await _connection.Send(command);
+            await _connection.Send(command, cancellationToken);
         }
 
-        public async Task<CommandSuccess> Send(CommandUnsubscribe command)
+        public async Task<CommandSuccess> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
-            var response = await _connection.Send(command);
+            var response = await _connection.Send(command, cancellationToken);
             response.Expect(BaseCommand.Type.Success);
             return response.Success;
         }
 
-        public async Task<CommandSuccess> Send(CommandSeek command)
+        public async Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
-            var response = await _connection.Send(command);
+            var response = await _connection.Send(command, cancellationToken);
             response.Expect(BaseCommand.Type.Success);
             _batchHandler.Clear();
             return response.Success;
         }
 
-        public async Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command)
+        public async Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
-            var response = await _connection.Send(command);
+            var response = await _connection.Send(command, cancellationToken);
             response.Expect(BaseCommand.Type.GetLastMessageIdResponse);
             return response.GetLastMessageIdResponse;
         }
@@ -125,7 +125,7 @@ namespace DotPulsar.Internal
             try
             {
                 _queue.Dispose();
-                await _connection.Send(new CommandCloseConsumer { ConsumerId = _id });
+                await _connection.Send(new CommandCloseConsumer { ConsumerId = _id }, CancellationToken.None);
             }
             catch
             {
@@ -133,9 +133,10 @@ namespace DotPulsar.Internal
             }
         }
 
-        private async ValueTask SendFlow()
+        private async ValueTask SendFlow(CancellationToken cancellationToken)
         {
-            await _connection.Send(_cachedCommandFlow); //TODO Should sending the flow command be handled on another thread and thereby not slow down the consumer?
+            //TODO Should sending the flow command be handled on another thread and thereby not slow down the consumer?
+            await _connection.Send(_cachedCommandFlow, cancellationToken);
 
             if (_firstFlow)
             {
@@ -146,7 +147,7 @@ namespace DotPulsar.Internal
             _sendWhenZero = _cachedCommandFlow.MessagePermits;
         }
 
-        private async Task RejectPackage(MessagePackage messagePackage)
+        private async Task RejectPackage(MessagePackage messagePackage, CancellationToken cancellationToken)
         {
             var ack = new CommandAck
             {
@@ -156,7 +157,7 @@ namespace DotPulsar.Internal
 
             ack.MessageIds.Add(messagePackage.MessageId);
 
-            await Send(ack);
+            await Send(ack, cancellationToken);
         }
     }
 }

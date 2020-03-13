@@ -17,6 +17,7 @@ using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Buffers;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DotPulsar.Internal
@@ -53,7 +54,7 @@ namespace DotPulsar.Internal
         {
             try
             {
-                await _connection.Send(new CommandCloseProducer { ProducerId = _id });
+                await _connection.Send(new CommandCloseProducer { ProducerId = _id }, CancellationToken.None);
             }
             catch
             {
@@ -61,22 +62,22 @@ namespace DotPulsar.Internal
             }
         }
 
-        public async Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload)
+        public async Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
         {
             _cachedSendPackage.Metadata = _cachedMetadata;
             _cachedSendPackage.Payload = payload;
-            return await SendPackage(true);
+            return await SendPackage(true, cancellationToken);
         }
 
-        public async Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload)
+        public async Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
         {
             metadata.ProducerName = _cachedMetadata.ProducerName;
             _cachedSendPackage.Metadata = metadata;
             _cachedSendPackage.Payload = payload;
-            return await SendPackage(metadata.SequenceId == 0);
+            return await SendPackage(metadata.SequenceId == 0, cancellationToken);
         }
 
-        private async Task<CommandSendReceipt> SendPackage(bool autoAssignSequenceId)
+        private async Task<CommandSendReceipt> SendPackage(bool autoAssignSequenceId, CancellationToken cancellationToken)
         {
             try
             {
@@ -90,7 +91,7 @@ namespace DotPulsar.Internal
                 else
                     _cachedSendPackage.Command.SequenceId = _cachedSendPackage.Metadata.SequenceId;
 
-                var response = await _connection.Send(_cachedSendPackage);
+                var response = await _connection.Send(_cachedSendPackage, cancellationToken);
                 response.Expect(BaseCommand.Type.SendReceipt);
 
                 if (autoAssignSequenceId)

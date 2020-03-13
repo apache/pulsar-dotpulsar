@@ -64,7 +64,7 @@ namespace DotPulsar.Internal
             var connection = await _connectionPool.FindConnectionForTopic(_subscribe.Topic, cancellationToken);
             var messageQueue = new AsyncQueue<MessagePackage>();
             var channel = new Channel(_correlationId, _eventRegister, messageQueue);
-            var response = await connection.Send(_subscribe, channel);
+            var response = await connection.Send(_subscribe, channel, cancellationToken);
             return new ConsumerChannel(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler);
         }
     }
