@@ -17,7 +17,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DotPulsar.Stress.Tests
+namespace DotPulsar.IntegrationTests
 {
     public static class EnumerableValueTaskExtensions
     {

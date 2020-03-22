@@ -15,7 +15,7 @@
 using DotPulsar.Internal;
 using Xunit;
 
-namespace DotPulsar.Tests.Internal
+namespace DotPulsar.UnitTests.Internal
 {
     public class SerializerTests
     {

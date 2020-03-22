@@ -17,7 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DotPulsar.Tests.Internal
+namespace DotPulsar.UnitTests.Internal
 {
     public class StateManagerTests
     {

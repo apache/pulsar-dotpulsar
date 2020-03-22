@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace DotPulsar.Stress.Tests
+namespace DotPulsar.IntegrationTests
 {
     public class ConsumerTests
     {

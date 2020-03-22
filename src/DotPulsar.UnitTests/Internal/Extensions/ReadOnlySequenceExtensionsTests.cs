@@ -16,7 +16,7 @@ using DotPulsar.Internal;
 using DotPulsar.Internal.Extensions;
 using Xunit;
 
-namespace DotPulsar.Tests.Internal.Extensions
+namespace DotPulsar.UnitTests.Internal.Extensions
 {
     public class ReadOnlySequenceExtensionsTests
     {
