@@ -12,21 +12,6 @@ services:
       - 8080
       - 6650
     environment:
-      PULSAR_MEM: " -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+      PULSAR_MEM: " -Xms1g -Xmx1g -XX:MaxDirectMemorySize=2g"
     command: |
-      /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone"
-
-  pulsar-express:
-    container_name: pulsar-express
-    image: bbonnin/pulsar-express:0.5.1
-    depends_on:
-      - pulsar
-    ports:
-      - '3000:3000'
-    environment:
-      SERVICE_URL: 'http://pulsar:8080'
-
-networks:
-  default:
-    name: pulsar-network
-    driver: bridge
+      /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone --no-functions-worker"

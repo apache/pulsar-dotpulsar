@@ -25,6 +25,7 @@ using Xunit.Abstractions;
 
 namespace DotPulsar.IntegrationTests
 {
+    [Collection(nameof(IntegrationTest))]
     public class ConsumerTests
     {
         private readonly ITestOutputHelper _output;
