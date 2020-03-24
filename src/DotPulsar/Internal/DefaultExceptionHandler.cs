@@ -44,6 +44,10 @@ namespace DotPulsar.Internal
                 case TooManyRequestsException _: return FaultAction.Retry;
                 case ChannelNotReadyException _: return FaultAction.Retry;
                 case ServiceNotReadyException _: return FaultAction.Retry;
+                case ConnectionDisposedException _: return FaultAction.Retry;
+                case AsyncLockDisposedException _: return FaultAction.Retry;
+                case PulsarStreamDisposedException _: return FaultAction.Retry;
+                case AsyncQueueDisposedException _: return FaultAction.Retry;
                 case OperationCanceledException _: return cancellationToken.IsCancellationRequested ? FaultAction.Rethrow : FaultAction.Retry;
                 case DotPulsarException _: return FaultAction.Rethrow;
                 case SocketException socketException:

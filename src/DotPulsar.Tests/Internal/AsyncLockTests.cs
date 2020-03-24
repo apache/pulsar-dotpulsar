@@ -13,6 +13,7 @@
  */
 
 using DotPulsar.Internal;
+using DotPulsar.Internal.Exceptions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,7 +60,7 @@ namespace DotPulsar.Tests.Internal
         }
 
         [Fact]
-        public async Task Lock_GivenLockIsDisposed_ShouldThrowObjectDisposedException()
+        public async Task Lock_GivenLockIsDisposed_ShouldThrowAsyncLockDisposedException()
         {
             //Arrange
             var sut = new AsyncLock();
@@ -69,11 +70,11 @@ namespace DotPulsar.Tests.Internal
             var exception = await Record.ExceptionAsync(() => sut.Lock(CancellationToken.None));
 
             //Assert
-            Assert.IsType<ObjectDisposedException>(exception);
+            Assert.IsType<AsyncLockDisposedException>(exception);
         }
 
         [Fact]
-        public async Task Lock_GivenLockIsDisposedWhileAwaitingLock_ShouldThrowObjectDisposedException()
+        public async Task Lock_GivenLockIsDisposedWhileAwaitingLock_ShouldThrowTaskCanceledException()
         {
             //Arrange
             var sut = new AsyncLock();
@@ -85,7 +86,7 @@ namespace DotPulsar.Tests.Internal
             var exception = await Record.ExceptionAsync(() => awaiting);
 
             //Assert
-            Assert.IsType<ObjectDisposedException>(exception);
+            Assert.IsType<TaskCanceledException>(exception);
 
             //Annihilate
             await sut.DisposeAsync();

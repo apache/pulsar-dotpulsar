@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 
+using DotPulsar.Internal.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -25,7 +26,7 @@ namespace DotPulsar.Internal
         private readonly SemaphoreSlim _semaphoreSlim;
         private readonly Releaser _releaser;
         private readonly Task<IDisposable> _completedTask;
-        private bool _isDisposed;
+        private int _isDisposed;
 
         public AsyncLock()
         {
@@ -33,7 +34,6 @@ namespace DotPulsar.Internal
             _semaphoreSlim = new SemaphoreSlim(1, 1);
             _releaser = new Releaser(Release);
             _completedTask = Task.FromResult((IDisposable)_releaser);
-            _isDisposed = false;
         }
 
         public Task<IDisposable> Lock(CancellationToken cancellationToken)
@@ -42,8 +42,7 @@ namespace DotPulsar.Internal
 
             lock (_pending)
             {
-                if (_isDisposed)
-                    throw new ObjectDisposedException(nameof(AsyncLock));
+                ThrowIfDisposed();
 
                 if (_semaphoreSlim.CurrentCount == 1) //Lock is free
                 {
@@ -65,14 +64,11 @@ namespace DotPulsar.Internal
         {
             lock (_pending)
             {
-                if (_isDisposed)
+                if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                     return;
-
-                _isDisposed = true;
 
                 foreach (var pending in _pending)
                 {
-                    pending.SetException(new ObjectDisposedException(nameof(AsyncLock)));
                     pending.Dispose();
                 }
 
@@ -116,6 +112,12 @@ namespace DotPulsar.Internal
                 if (_semaphoreSlim.CurrentCount == 0)
                     _semaphoreSlim.Release();
             }
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_isDisposed != 0)
+                throw new AsyncLockDisposedException();
         }
 
         private class Releaser : IDisposable

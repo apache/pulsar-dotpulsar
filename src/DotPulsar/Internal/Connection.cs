@@ -13,6 +13,7 @@
  */
 
 using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.Exceptions;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 using System.Threading;
@@ -27,6 +28,7 @@ namespace DotPulsar.Internal
         private readonly RequestResponseHandler _requestResponseHandler;
         private readonly PingPongHandler _pingPongHandler;
         private readonly IPulsarStream _stream;
+        private int _isDisposed;
 
         public Connection(IPulsarStream stream)
         {
@@ -39,6 +41,8 @@ namespace DotPulsar.Internal
 
         public async ValueTask<bool> HasChannels(CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
             using (await _lock.Lock(cancellationToken))
             {
                 return _channelManager.HasChannels();
@@ -47,6 +51,8 @@ namespace DotPulsar.Internal
 
         public async Task<ProducerResponse> Send(CommandProducer command, IChannel channel, CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
             Task<ProducerResponse>? responseTask = null;
 
             using (await _lock.Lock(cancellationToken))
@@ -63,6 +69,8 @@ namespace DotPulsar.Internal
 
         public async Task<SubscribeResponse> Send(CommandSubscribe command, IChannel channel, CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
             Task<SubscribeResponse>? responseTask = null;
 
             using (await _lock.Lock(cancellationToken))
@@ -91,6 +99,8 @@ namespace DotPulsar.Internal
 
         public async Task<BaseCommand> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
             Task<BaseCommand>? responseTask = null;
 
             using (await _lock.Lock(cancellationToken))
@@ -119,6 +129,8 @@ namespace DotPulsar.Internal
 
         public async Task<BaseCommand> Send(CommandCloseProducer command, CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
             Task<BaseCommand>? responseTask = null;
 
             using (await _lock.Lock(cancellationToken))
@@ -135,6 +147,8 @@ namespace DotPulsar.Internal
 
         public async Task<BaseCommand> Send(CommandCloseConsumer command, CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
             Task<BaseCommand>? responseTask = null;
 
             using (await _lock.Lock(cancellationToken))
@@ -151,7 +165,10 @@ namespace DotPulsar.Internal
 
         public async Task<BaseCommand> Send(SendPackage command, CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
             Task<BaseCommand>? response = null;
+
             using (await _lock.Lock(cancellationToken))
             {
                 var baseCommand = command.Command.AsBaseCommand();
@@ -159,23 +176,30 @@ namespace DotPulsar.Internal
                 var sequence = Serializer.Serialize(baseCommand, command.Metadata, command.Payload);
                 await _stream.Send(sequence);
             }
+
             return await response;
         }
 
         private async Task<BaseCommand> SendRequestResponse(BaseCommand command, CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
             Task<BaseCommand>? response = null;
+
             using (await _lock.Lock(cancellationToken))
             {
                 response = _requestResponseHandler.Outgoing(command);
                 var sequence = Serializer.Serialize(command);
                 await _stream.Send(sequence);
             }
+
             return await response;
         }
 
         private async Task Send(BaseCommand command, CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
             using (await _lock.Lock(cancellationToken))
             {
                 var sequence = Serializer.Serialize(command);
@@ -225,10 +249,19 @@ namespace DotPulsar.Internal
 
         public async ValueTask DisposeAsync()
         {
+            if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
+                return;
+
             await _lock.DisposeAsync();
             _requestResponseHandler.Dispose();
             _channelManager.Dispose();
             await _stream.DisposeAsync();
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_isDisposed != 0)
+                throw new ConnectionDisposedException();
         }
     }
 }

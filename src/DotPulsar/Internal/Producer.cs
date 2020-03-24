@@ -13,6 +13,7 @@
  */
 
 using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Events;
 using System;
@@ -102,7 +103,7 @@ namespace DotPulsar.Internal
         private void ThrowIfDisposed()
         {
             if (_isDisposed != 0)
-                throw new ObjectDisposedException(nameof(Producer));
+                throw new ProducerDisposedException();
         }
     }
 }

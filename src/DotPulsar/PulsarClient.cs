@@ -13,6 +13,7 @@
  */
 
 using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
 using DotPulsar.Internal;
 using DotPulsar.Internal.Abstractions;
 using System;
@@ -95,7 +96,7 @@ namespace DotPulsar
         private void ThrowIfDisposed()
         {
             if (_isDisposed != 0)
-                throw new ObjectDisposedException(nameof(PulsarClient));
+                throw new PulsarClientDisposedException();
         }
     }
 }
