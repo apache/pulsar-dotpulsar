@@ -57,14 +57,14 @@ namespace DotPulsar.Internal
         }
 
         public async Task<IReaderChannel> Create(CancellationToken cancellationToken)
-            => await _executor.Execute(() => GetChannel(cancellationToken), cancellationToken);
+            => await _executor.Execute(() => GetChannel(cancellationToken), cancellationToken).ConfigureAwait(false);
 
         private async ValueTask<IReaderChannel> GetChannel(CancellationToken cancellationToken)
         {
-            var connection = await _connectionPool.FindConnectionForTopic(_subscribe.Topic, cancellationToken);
+            var connection = await _connectionPool.FindConnectionForTopic(_subscribe.Topic, cancellationToken).ConfigureAwait(false);
             var messageQueue = new AsyncQueue<MessagePackage>();
             var channel = new Channel(_correlationId, _eventRegister, messageQueue);
-            var response = await connection.Send(_subscribe, channel, cancellationToken);
+            var response = await connection.Send(_subscribe, channel, cancellationToken).ConfigureAwait(false);
             return new ConsumerChannel(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler);
         }
     }

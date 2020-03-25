@@ -88,7 +88,7 @@ namespace DotPulsar
                 return;
 
             if (_processManager is IAsyncDisposable disposable)
-                await disposable.DisposeAsync();
+                await disposable.DisposeAsync().ConfigureAwait(false);
 
             DotPulsarEventSource.Log.ClientDisposed();
         }

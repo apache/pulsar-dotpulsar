@@ -54,7 +54,7 @@ namespace DotPulsar.Internal
         {
             try
             {
-                await _connection.Send(new CommandCloseProducer { ProducerId = _id }, CancellationToken.None);
+                await _connection.Send(new CommandCloseProducer { ProducerId = _id }, CancellationToken.None).ConfigureAwait(false);
             }
             catch
             {
@@ -66,7 +66,7 @@ namespace DotPulsar.Internal
         {
             _cachedSendPackage.Metadata = _cachedMetadata;
             _cachedSendPackage.Payload = payload;
-            return await SendPackage(true, cancellationToken);
+            return await SendPackage(true, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
@@ -74,7 +74,7 @@ namespace DotPulsar.Internal
             metadata.ProducerName = _cachedMetadata.ProducerName;
             _cachedSendPackage.Metadata = metadata;
             _cachedSendPackage.Payload = payload;
-            return await SendPackage(metadata.SequenceId == 0, cancellationToken);
+            return await SendPackage(metadata.SequenceId == 0, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<CommandSendReceipt> SendPackage(bool autoAssignSequenceId, CancellationToken cancellationToken)
@@ -91,7 +91,7 @@ namespace DotPulsar.Internal
                 else
                     _cachedSendPackage.Command.SequenceId = _cachedSendPackage.Metadata.SequenceId;
 
-                var response = await _connection.Send(_cachedSendPackage, cancellationToken);
+                var response = await _connection.Send(_cachedSendPackage, cancellationToken).ConfigureAwait(false);
                 response.Expect(BaseCommand.Type.SendReceipt);
 
                 if (autoAssignSequenceId)

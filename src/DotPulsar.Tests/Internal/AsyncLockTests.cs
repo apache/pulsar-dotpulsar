@@ -37,7 +37,7 @@ namespace DotPulsar.Tests.Internal
 
             //Annihilate 
             actual.Result.Dispose();
-            await sut.DisposeAsync();
+            await sut.DisposeAsync().ConfigureAwait(false);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace DotPulsar.Tests.Internal
         {
             //Arrange
             var sut = new AsyncLock();
-            var alreadyTaken = await sut.Lock(CancellationToken.None);
+            var alreadyTaken = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
 
             //Act
             var actual = sut.Lock(CancellationToken.None);
@@ -56,7 +56,7 @@ namespace DotPulsar.Tests.Internal
             //Annihilate
             alreadyTaken.Dispose();
             actual.Result.Dispose();
-            await sut.DisposeAsync();
+            await sut.DisposeAsync().ConfigureAwait(false);
         }
 
         [Fact]
@@ -64,10 +64,10 @@ namespace DotPulsar.Tests.Internal
         {
             //Arrange
             var sut = new AsyncLock();
-            await sut.DisposeAsync();
+            await sut.DisposeAsync().ConfigureAwait(false);
 
             //Act
-            var exception = await Record.ExceptionAsync(() => sut.Lock(CancellationToken.None));
+            var exception = await Record.ExceptionAsync(() => sut.Lock(CancellationToken.None)).ConfigureAwait(false);
 
             //Assert
             Assert.IsType<AsyncLockDisposedException>(exception);
@@ -78,18 +78,18 @@ namespace DotPulsar.Tests.Internal
         {
             //Arrange
             var sut = new AsyncLock();
-            var gotLock = await sut.Lock(CancellationToken.None);
+            var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
             var awaiting = sut.Lock(CancellationToken.None);
-            _ = Task.Run(async () => await sut.DisposeAsync());
+            _ = Task.Run(async () => await sut.DisposeAsync().ConfigureAwait(false));
 
             //Act
-            var exception = await Record.ExceptionAsync(() => awaiting);
+            var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
 
             //Assert
             Assert.IsType<TaskCanceledException>(exception);
 
             //Annihilate
-            await sut.DisposeAsync();
+            await sut.DisposeAsync().ConfigureAwait(false);
             gotLock.Dispose();
         }
 
@@ -99,12 +99,12 @@ namespace DotPulsar.Tests.Internal
             //Arrange
             var cts = new CancellationTokenSource();
             var sut = new AsyncLock();
-            var gotLock = await sut.Lock(CancellationToken.None);
+            var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
             var awaiting = sut.Lock(cts.Token);
 
             //Act
             cts.Cancel();
-            var exception = await Record.ExceptionAsync(() => awaiting);
+            var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
 
             //Assert
             Assert.IsType<TaskCanceledException>(exception);
@@ -112,7 +112,7 @@ namespace DotPulsar.Tests.Internal
             //Annihilate
             cts.Dispose();
             gotLock.Dispose();
-            await sut.DisposeAsync();
+            await sut.DisposeAsync().ConfigureAwait(false);
         }
 
         [Fact]
@@ -120,19 +120,19 @@ namespace DotPulsar.Tests.Internal
         {
             //Arrange
             var sut = new AsyncLock();
-            var gotLock = await sut.Lock(CancellationToken.None);
-            var disposeTask = Task.Run(async () => await sut.DisposeAsync());
+            var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
+            var disposeTask = Task.Run(async () => await sut.DisposeAsync().ConfigureAwait(false));
             Assert.False(disposeTask.IsCompleted);
 
             //Act
             gotLock.Dispose();
-            await disposeTask;
+            await disposeTask.ConfigureAwait(false);
 
             //Assert
             Assert.True(disposeTask.IsCompleted);
 
             //Annihilate
-            await sut.DisposeAsync();
+            await sut.DisposeAsync().ConfigureAwait(false);
         }
 
         [Fact]
@@ -142,8 +142,8 @@ namespace DotPulsar.Tests.Internal
             var sut = new AsyncLock();
 
             //Act
-            await sut.DisposeAsync();
-            var exception = await Record.ExceptionAsync(() => sut.DisposeAsync().AsTask()); // xUnit can't record ValueTask yet
+            await sut.DisposeAsync().ConfigureAwait(false);
+            var exception = await Record.ExceptionAsync(() => sut.DisposeAsync().AsTask()).ConfigureAwait(false); // xUnit can't record ValueTask yet
 
             //Assert
             Assert.Null(exception);

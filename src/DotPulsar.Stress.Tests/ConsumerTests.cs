@@ -61,15 +61,15 @@ namespace DotPulsar.Stress.Tests
             var consume = ConsumeMessages(cts.Token);
             var produce = ProduceMessages(cts.Token);
 
-            var consumed = await consume;
-            var produced = await produce;
+            var consumed = await consume.ConfigureAwait(false);
+            var produced = await produce.ConfigureAwait(false);
 
             //Assert
             consumed.Should().BeEquivalentTo(produced);
 
             Task<MessageId[]> ProduceMessages(CancellationToken ct)
                 => Enumerable.Range(1, numberOfMessages)
-                    .Select(async n => await producer.Send(Encoding.UTF8.GetBytes($"Sent #{n} at {DateTimeOffset.UtcNow:s}"), ct))
+                    .Select(async n => await producer.Send(Encoding.UTF8.GetBytes($"Sent #{n} at {DateTimeOffset.UtcNow:s}"), ct).ConfigureAwait(false))
                     .WhenAll();
 
             async Task<List<MessageId>> ConsumeMessages(CancellationToken ct)
@@ -82,7 +82,7 @@ namespace DotPulsar.Stress.Tests
 
                     if (ids.Count != numberOfMessages) continue;
 
-                    await consumer.AcknowledgeCumulative(message, ct);
+                    await consumer.AcknowledgeCumulative(message, ct).ConfigureAwait(false);
 
                     break;
                 }

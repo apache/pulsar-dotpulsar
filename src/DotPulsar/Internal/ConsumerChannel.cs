@@ -52,7 +52,7 @@ namespace DotPulsar.Internal
             while (true)
             {
                 if (_sendWhenZero == 0)
-                    await SendFlow(cancellationToken);
+                    await SendFlow(cancellationToken).ConfigureAwait(false);
 
                 _sendWhenZero--;
 
@@ -60,11 +60,11 @@ namespace DotPulsar.Internal
                 if (message != null)
                     return message;
 
-                var messagePackage = await _queue.Dequeue(cancellationToken);
+                var messagePackage = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);
 
                 if (!messagePackage.IsValid())
                 {
-                    await RejectPackage(messagePackage, cancellationToken);
+                    await RejectPackage(messagePackage, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -92,13 +92,13 @@ namespace DotPulsar.Internal
             }
 
             command.ConsumerId = _id;
-            await _connection.Send(command, cancellationToken);
+            await _connection.Send(command, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<CommandSuccess> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
-            var response = await _connection.Send(command, cancellationToken);
+            var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.Success);
             return response.Success;
         }
@@ -106,7 +106,7 @@ namespace DotPulsar.Internal
         public async Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
-            var response = await _connection.Send(command, cancellationToken);
+            var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.Success);
             _batchHandler.Clear();
             return response.Success;
@@ -115,7 +115,7 @@ namespace DotPulsar.Internal
         public async Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
-            var response = await _connection.Send(command, cancellationToken);
+            var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.GetLastMessageIdResponse);
             return response.GetLastMessageIdResponse;
         }
@@ -125,7 +125,7 @@ namespace DotPulsar.Internal
             try
             {
                 _queue.Dispose();
-                await _connection.Send(new CommandCloseConsumer { ConsumerId = _id }, CancellationToken.None);
+                await _connection.Send(new CommandCloseConsumer { ConsumerId = _id }, CancellationToken.None).ConfigureAwait(false);
             }
             catch
             {
@@ -136,7 +136,7 @@ namespace DotPulsar.Internal
         private async ValueTask SendFlow(CancellationToken cancellationToken)
         {
             //TODO Should sending the flow command be handled on another thread and thereby not slow down the consumer?
-            await _connection.Send(_cachedCommandFlow, cancellationToken);
+            await _connection.Send(_cachedCommandFlow, cancellationToken).ConfigureAwait(false);
 
             if (_firstFlow)
             {
@@ -157,7 +157,7 @@ namespace DotPulsar.Internal
 
             ack.MessageIds.Add(messagePackage.MessageId);
 
-            await Send(ack, cancellationToken);
+            await Send(ack, cancellationToken).ConfigureAwait(false);
         }
     }
 }

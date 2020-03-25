@@ -49,11 +49,11 @@ namespace Reading
 
             cts.Cancel();
 
-            await reading;
+            await reading.ConfigureAwait(false);
 
-            await reader.DisposeAsync();
+            await reader.DisposeAsync().ConfigureAwait(false);
 
-            await monitoring;
+            await monitoring.ConfigureAwait(false);
         }
 
         private static async Task ReadMessages(IReader reader, CancellationToken cancellationToken)
@@ -82,7 +82,7 @@ namespace Reading
 
             while (true)
             {
-                state = await reader.StateChangedFrom(state);
+                state = await reader.StateChangedFrom(state).ConfigureAwait(false);
 
                 var stateMessage = state switch
                 {

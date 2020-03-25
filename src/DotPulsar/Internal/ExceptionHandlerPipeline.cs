@@ -29,7 +29,7 @@ namespace DotPulsar.Internal
         {
             foreach (var handler in _handlers)
             {
-                await handler.OnException(exceptionContext);
+                await handler.OnException(exceptionContext).ConfigureAwait(false);
                 if (exceptionContext.ExceptionHandled)
                     break;
             }

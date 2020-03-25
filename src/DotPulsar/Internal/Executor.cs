@@ -45,7 +45,7 @@ namespace DotPulsar.Internal
                 }
                 catch (Exception exception)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(exception, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -59,12 +59,12 @@ namespace DotPulsar.Internal
             {
                 try
                 {
-                    await func();
+                    await func().ConfigureAwait(false);
                     return;
                 }
                 catch (Exception exception)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(exception, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -78,12 +78,12 @@ namespace DotPulsar.Internal
             {
                 try
                 {
-                    await func();
+                    await func().ConfigureAwait(false);
                     return;
                 }
                 catch (Exception exception)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(exception, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -101,7 +101,7 @@ namespace DotPulsar.Internal
                 }
                 catch (Exception exception)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(exception, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -115,11 +115,11 @@ namespace DotPulsar.Internal
             {
                 try
                 {
-                    return await func();
+                    return await func().ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(exception, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -133,11 +133,11 @@ namespace DotPulsar.Internal
             {
                 try
                 {
-                    return await func();
+                    return await func().ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(exception, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -152,7 +152,7 @@ namespace DotPulsar.Internal
 
             var context = new ExceptionContext(exception, cancellationToken);
 
-            await _exceptionHandler.OnException(context);
+            await _exceptionHandler.OnException(context).ConfigureAwait(false);
 
             if (context.Result != FaultAction.Retry)
                 _eventRegister.Register(new ExecutorFaulted(_correlationId));

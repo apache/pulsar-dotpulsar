@@ -39,7 +39,7 @@ namespace DotPulsar.Internal
         {
             _stateManager.SetState(ProducerState.Closed);
             CancellationTokenSource.Cancel();
-            await _producer.DisposeAsync();
+            await _producer.DisposeAsync().ConfigureAwait(false);
         }
 
         protected override void CalculateState()
@@ -72,13 +72,13 @@ namespace DotPulsar.Internal
 
             try
             {
-                channel = await _factory.Create(CancellationTokenSource.Token);
+                channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
                 _producer.SetChannel(channel);
             }
             catch
             {
                 if (channel != null)
-                    await channel.DisposeAsync();
+                    await channel.DisposeAsync().ConfigureAwait(false);
             }
         }
     }

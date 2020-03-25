@@ -53,12 +53,12 @@ namespace DotPulsar.Internal
             foreach (var segment in sequence)
             {
                 var data = segment.ToArray();
-                await _stream.WriteAsync(data, 0, data.Length);
+                await _stream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
             }
 #else
             foreach (var segment in sequence)
             {
-                await _stream.WriteAsync(segment);
+                await _stream.WriteAsync(segment).ConfigureAwait(false);
             }
 #endif
         }
@@ -73,7 +73,7 @@ namespace DotPulsar.Internal
 #if NETSTANDARD2_0
             _stream.Dispose();
 #else
-            await _stream.DisposeAsync();
+            await _stream.DisposeAsync().ConfigureAwait(false);
 #endif
         }
 
@@ -90,17 +90,17 @@ namespace DotPulsar.Internal
                 {
                     var memory = _writer.GetMemory(84999); // LOH - 1 byte
 #if NETSTANDARD2_0
-                    var bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+                    var bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
                     new Memory<byte>(buffer, 0, bytesRead).CopyTo(memory);
 #else
-                    var bytesRead = await _stream.ReadAsync(memory, cancellationToken);
+                    var bytesRead = await _stream.ReadAsync(memory, cancellationToken).ConfigureAwait(false);
 #endif
                     if (bytesRead == 0)
                         break;
 
                     _writer.Advance(bytesRead);
 
-                    var result = await _writer.FlushAsync(cancellationToken);
+                    var result = await _writer.FlushAsync(cancellationToken).ConfigureAwait(false);
                     if (result.IsCompleted)
                         break;
                 }
@@ -122,7 +122,7 @@ namespace DotPulsar.Internal
             {
                 while (true)
                 {
-                    var result = await _reader.ReadAsync(cancellationToken);
+                    var result = await _reader.ReadAsync(cancellationToken).ConfigureAwait(false);
                     var buffer = result.Buffer;
 
                     while (true)
