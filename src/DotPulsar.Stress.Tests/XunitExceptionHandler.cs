@@ -37,7 +37,7 @@ namespace DotPulsar.Stress.Tests
 
         public async ValueTask OnException(ExceptionContext exceptionContext)
         {
-            await _exceptionHandler.OnException(exceptionContext);
+            await _exceptionHandler.OnException(exceptionContext).ConfigureAwait(false);
 
             if (!exceptionContext.ExceptionHandled)
                 _output.WriteLine(

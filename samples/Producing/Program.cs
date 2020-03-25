@@ -44,11 +44,11 @@ namespace Producing
 
             cts.Cancel();
 
-            await producing;
+            await producing.ConfigureAwait(false);
 
-            await producer.DisposeAsync();
+            await producer.DisposeAsync().ConfigureAwait(false);
 
-            await monitoring;
+            await monitoring.ConfigureAwait(false);
         }
 
         private static async Task ProduceMessages(IProducer producer, CancellationToken cancellationToken)
@@ -62,8 +62,8 @@ namespace Producing
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var data = Encoding.UTF8.GetBytes("Sent " + DateTime.UtcNow.ToString());
-                    _ = await producer.Send(data, cancellationToken);
-                    await Task.Delay(delay);
+                    _ = await producer.Send(data, cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(delay).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException) // If not using the cancellationToken, then just dispose the producer and catch ObjectDisposedException instead
@@ -80,7 +80,7 @@ namespace Producing
 
             while (true)
             {
-                state = await producer.StateChangedFrom(state);
+                state = await producer.StateChangedFrom(state).ConfigureAwait(false);
 
                 var stateMessage = state switch
                 {

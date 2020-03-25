@@ -37,9 +37,9 @@ namespace DotPulsar.Internal
             var processes = _processes.Values.ToArray();
 
             for (var i = 0; i < processes.Length; ++i)
-                await processes[i].DisposeAsync();
+                await processes[i].DisposeAsync().ConfigureAwait(false);
 
-            await _connectionPool.DisposeAsync();
+            await _connectionPool.DisposeAsync().ConfigureAwait(false);
         }
 
         public void Add(IProcess process) => _processes[process.CorrelationId] = process;
@@ -47,7 +47,7 @@ namespace DotPulsar.Internal
         private async void Remove(Guid correlationId)
         {
             if (_processes.TryRemove(correlationId, out IProcess process))
-                await process.DisposeAsync();
+                await process.DisposeAsync().ConfigureAwait(false);
         }
 
         public void Register(IEvent e)

@@ -50,13 +50,13 @@ namespace DotPulsar.Internal
         }
 
         public async Task<IProducerChannel> Create(CancellationToken cancellationToken)
-            => await _executor.Execute(() => GetChannel(cancellationToken), cancellationToken);
+            => await _executor.Execute(() => GetChannel(cancellationToken), cancellationToken).ConfigureAwait(false);
 
         private async ValueTask<IProducerChannel> GetChannel(CancellationToken cancellationToken)
         {
-            var connection = await _connectionPool.FindConnectionForTopic(_commandProducer.Topic, cancellationToken);
+            var connection = await _connectionPool.FindConnectionForTopic(_commandProducer.Topic, cancellationToken).ConfigureAwait(false);
             var channel = new Channel(_correlationId, _eventRegister, new AsyncQueue<MessagePackage>());
-            var response = await connection.Send(_commandProducer, channel, cancellationToken);
+            var response = await connection.Send(_commandProducer, channel, cancellationToken).ConfigureAwait(false);
             return new ProducerChannel(response.ProducerId, response.ProducerName, _sequenceId, connection);
         }
     }

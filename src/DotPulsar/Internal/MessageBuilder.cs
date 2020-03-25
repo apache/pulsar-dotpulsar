@@ -86,6 +86,6 @@ namespace DotPulsar.Internal
         }
 
         public async ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => await _producer.Send(_metadata, data, cancellationToken);
+            => await _producer.Send(_metadata, data, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -32,7 +32,7 @@ namespace DotPulsar.Internal
         {
             exceptionContext.Result = DetermineFaultAction(exceptionContext.Exception, exceptionContext.CancellationToken);
             if (exceptionContext.Result == FaultAction.Retry)
-                await Task.Delay(_retryInterval, exceptionContext.CancellationToken);
+                await Task.Delay(_retryInterval, exceptionContext.CancellationToken).ConfigureAwait(false);
 
             exceptionContext.ExceptionHandled = true;
         }

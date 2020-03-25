@@ -48,10 +48,10 @@ namespace DotPulsar.Internal
             if (port == -1)
                 port = encrypt ? Constants.DefaultPulsarSSLPort : Constants.DefaultPulsarPort;
 
-            var stream = await GetStream(host, port);
+            var stream = await GetStream(host, port).ConfigureAwait(false);
 
             if (encrypt)
-                stream = await EncryptStream(stream, host);
+                stream = await EncryptStream(stream, host).ConfigureAwait(false);
 
             return stream;
         }
@@ -65,9 +65,9 @@ namespace DotPulsar.Internal
                 var type = Uri.CheckHostName(host);
 
                 if (type == UriHostNameType.IPv4 || type == UriHostNameType.IPv6)
-                    await tcpClient.ConnectAsync(IPAddress.Parse(host), port);
+                    await tcpClient.ConnectAsync(IPAddress.Parse(host), port).ConfigureAwait(false);
                 else
-                    await tcpClient.ConnectAsync(host, port);
+                    await tcpClient.ConnectAsync(host, port).ConfigureAwait(false);
 
                 return tcpClient.GetStream();
             }
@@ -85,7 +85,7 @@ namespace DotPulsar.Internal
             try
             {
                 sslStream = new SslStream(stream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), null);
-                await sslStream.AuthenticateAsClientAsync(host, _clientCertificates, SslProtocols.None, true);
+                await sslStream.AuthenticateAsClientAsync(host, _clientCertificates, SslProtocols.None, true).ConfigureAwait(false);
                 return sslStream;
             }
             catch

@@ -48,11 +48,11 @@ namespace Consuming
 
             cts.Cancel();
 
-            await consuming;
+            await consuming.ConfigureAwait(false);
 
-            await consumer.DisposeAsync();
+            await consumer.DisposeAsync().ConfigureAwait(false);
 
-            await monitoring;
+            await monitoring.ConfigureAwait(false);
         }
 
         private static async Task ConsumeMessages(IConsumer consumer, CancellationToken cancellationToken)
@@ -65,7 +65,7 @@ namespace Consuming
                 {
                     var data = Encoding.UTF8.GetString(message.Data.ToArray());
                     Console.WriteLine("Received: " + data);
-                    await consumer.Acknowledge(message, cancellationToken);
+                    await consumer.Acknowledge(message, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch(OperationCanceledException)
@@ -82,7 +82,7 @@ namespace Consuming
 
             while (true)
             {
-                state = await consumer.StateChangedFrom(state);
+                state = await consumer.StateChangedFrom(state).ConfigureAwait(false);
 
                 var stateMessage = state switch
                 {
