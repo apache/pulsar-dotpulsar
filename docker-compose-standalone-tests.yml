@@ -1,0 +1,17 @@
+version: '3.5'
+
+services:
+
+  pulsar:
+    container_name: pulsar
+    image: 'apachepulsar/pulsar:2.5.0'
+    ports:
+      - '8080:8080'
+      - '6650:6650'
+    expose:
+      - 8080
+      - 6650
+    environment:
+      PULSAR_MEM: " -Xms1g -Xmx1g -XX:MaxDirectMemorySize=2g"
+    command: |
+      /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone --no-functions-worker"

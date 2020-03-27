@@ -23,4 +23,7 @@
     <ProjectReference Include="..\DotPulsar\DotPulsar.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\..\docker-compose-standalone-tests.yml" CopyToOutputDirectory="Always" />
+  </ItemGroup>
 </Project>
