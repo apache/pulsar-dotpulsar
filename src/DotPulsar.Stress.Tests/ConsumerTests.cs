@@ -20,11 +20,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DotPulsar.Stress.Tests.Fixtures;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace DotPulsar.Stress.Tests
 {
+    [Collection(nameof(StandaloneClusterTest))]
     public class ConsumerTests
     {
         private readonly ITestOutputHelper _output;
