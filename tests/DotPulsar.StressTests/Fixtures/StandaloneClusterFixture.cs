@@ -1,10 +1,24 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 using System;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DotPulsar.Stress.Tests.Fixtures
+namespace DotPulsar.StressTests.Fixtures
 {
     public class StandaloneClusterFixture : IAsyncLifetime
     {
@@ -15,10 +29,13 @@ namespace DotPulsar.Stress.Tests.Fixtures
             RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml build");
             RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml up -d");
 
-            int waitTries = 10;
+            var waitTries = 10;
 
-            using var handler = new HttpClientHandler();
-            handler.AllowAutoRedirect = true;
+            using var handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = true
+            };
+
             using var client = new HttpClient(handler);
 
             while (waitTries > 0)
@@ -28,7 +45,7 @@ namespace DotPulsar.Stress.Tests.Fixtures
                     await client.GetAsync("http://localhost:8080/metrics/").ConfigureAwait(false);
                     return;
                 }
-                catch (Exception ex)
+                catch
                 {
                     waitTries--;
                     await Task.Delay(5000).ConfigureAwait(false);
@@ -38,9 +55,10 @@ namespace DotPulsar.Stress.Tests.Fixtures
             throw new Exception("Unable to confirm Pulsar has initialized");
         }
 
-        public async Task DisposeAsync()
+        public Task DisposeAsync()
         {
             RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml down");
+            return Task.CompletedTask;
         }
 
         private void RunProcess(string name, string arguments)

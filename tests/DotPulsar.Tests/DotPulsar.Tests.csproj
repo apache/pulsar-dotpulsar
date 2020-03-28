@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0;netcoreapp22</TargetFrameworks>
@@ -16,14 +16,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FluentAssertions" Version="5.10.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DotPulsar\DotPulsar.csproj" />
+    <ProjectReference Include="..\..\src\DotPulsar\DotPulsar.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\docker-compose-standalone-tests.yml" CopyToOutputDirectory="Always" />
-  </ItemGroup>
 </Project>

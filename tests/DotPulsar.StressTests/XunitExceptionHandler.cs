@@ -18,7 +18,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
-namespace DotPulsar.Stress.Tests
+namespace DotPulsar.StressTests
 {
     internal class XunitExceptionHandler : IHandleException
     {

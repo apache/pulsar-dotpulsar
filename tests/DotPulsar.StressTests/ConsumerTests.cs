@@ -20,11 +20,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using DotPulsar.Stress.Tests.Fixtures;
+using DotPulsar.StressTests.Fixtures;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace DotPulsar.Stress.Tests
+namespace DotPulsar.StressTests
 {
     [Collection(nameof(StandaloneClusterTest))]
     public class ConsumerTests
@@ -34,7 +34,7 @@ namespace DotPulsar.Stress.Tests
         public ConsumerTests(ITestOutputHelper output) => _output = output;
 
         [Theory]
-        [InlineData(1000)]
+        [InlineData(10000)]
         public async Task Messages_GivenTopicWithMessages_ShouldConsumeAll(int numberOfMessages)
         {
             //Arrange

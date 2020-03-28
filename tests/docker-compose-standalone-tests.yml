@@ -3,7 +3,7 @@ version: '3.5'
 services:
 
   pulsar:
-    container_name: pulsar
+    container_name: pulsar-stresstests
     image: 'apachepulsar/pulsar:2.5.0'
     ports:
       - '8080:8080'
