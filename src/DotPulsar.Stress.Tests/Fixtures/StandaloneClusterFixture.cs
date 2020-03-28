@@ -6,7 +6,7 @@ using Xunit;
 
 namespace DotPulsar.Stress.Tests.Fixtures
 {
-    public class StandaloneClusterFixture : IDisposable, IAsyncLifetime
+    public class StandaloneClusterFixture : IAsyncLifetime
     {
         public async Task InitializeAsync()
         {
@@ -16,21 +16,22 @@ namespace DotPulsar.Stress.Tests.Fixtures
             RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml up -d");
 
             int waitTries = 10;
-            var handler = new HttpClientHandler();
+
+            using var handler = new HttpClientHandler();
             handler.AllowAutoRedirect = true;
-            var client = new HttpClient(handler);
+            using var client = new HttpClient(handler);
 
             while (waitTries > 0)
             {
                 try
                 {
-                    await client.GetAsync("http://localhost:8080/metrics/");
+                    await client.GetAsync("http://localhost:8080/metrics/").ConfigureAwait(false);
                     return;
                 }
                 catch (Exception ex)
                 {
                     waitTries--;
-                    await Task.Delay(5000);
+                    await Task.Delay(5000).ConfigureAwait(false);
                 }
             }
 
@@ -38,10 +39,6 @@ namespace DotPulsar.Stress.Tests.Fixtures
         }
 
         public async Task DisposeAsync()
-        {
-        }
-
-        public void Dispose()
         {
             RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml down");
         }
