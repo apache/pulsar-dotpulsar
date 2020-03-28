@@ -24,9 +24,8 @@ namespace DotPulsar.StressTests.Fixtures
     {
         public async Task InitializeAsync()
         {
-            // clean-up if anything was left running from previous run
-            RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml down");
-            RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml build");
+            TakeDownPulsar();  // clean-up if anything was left running from previous run
+
             RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml up -d");
 
             var waitTries = 10;
@@ -42,7 +41,7 @@ namespace DotPulsar.StressTests.Fixtures
             {
                 try
                 {
-                    await client.GetAsync("http://localhost:8080/metrics/").ConfigureAwait(false);
+                    await client.GetAsync("http://localhost:54546/metrics/").ConfigureAwait(false);
                     return;
                 }
                 catch
@@ -57,11 +56,14 @@ namespace DotPulsar.StressTests.Fixtures
 
         public Task DisposeAsync()
         {
-            RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml down");
+            TakeDownPulsar();
             return Task.CompletedTask;
         }
 
-        private void RunProcess(string name, string arguments)
+        private static void TakeDownPulsar()
+            => RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml down");
+
+        private static void RunProcess(string name, string arguments)
         {
             var processStartInfo = new ProcessStartInfo()
             {

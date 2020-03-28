@@ -6,11 +6,8 @@ services:
     container_name: pulsar-stresstests
     image: 'apachepulsar/pulsar:2.5.0'
     ports:
-      - '8080:8080'
-      - '6650:6650'
-    expose:
-      - 8080
-      - 6650
+      - '54546:8080'
+      - '54545:6650'
     environment:
       PULSAR_MEM: " -Xms1g -Xmx1g -XX:MaxDirectMemorySize=2g"
     command: |

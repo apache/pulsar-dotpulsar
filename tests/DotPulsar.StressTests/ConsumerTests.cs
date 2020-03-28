@@ -44,6 +44,7 @@ namespace DotPulsar.StressTests
 
             await using var client = PulsarClient.Builder()
                 .ExceptionHandler(new XunitExceptionHandler(_output))
+                .ServiceUrl(new Uri("pulsar://localhost:54545"))
                 .Build(); //Connecting to pulsar://localhost:6650
 
             await using var consumer = client.NewConsumer()
