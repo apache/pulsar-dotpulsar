@@ -91,10 +91,17 @@ namespace DotPulsar.Internal
             }
             catch
             {
+#if NETSTANDARD2_0
                 if (sslStream is null)
                     stream.Dispose();
                 else
                     sslStream.Dispose();
+#else
+                if (sslStream is null)
+                    await stream.DisposeAsync().ConfigureAwait(false);
+                else
+                    await sslStream.DisposeAsync().ConfigureAwait(false);
+#endif
 
                 throw;
             }
@@ -119,9 +126,9 @@ namespace DotPulsar.Internal
                 chain.ChainPolicy.ExtraStore.Add(_trustedCertificateAuthority);
                 _ = chain.Build((X509Certificate2) certificate);
 
-                for (var i = 0; i < chain.ChainElements.Count; i++)
+                foreach (var element in chain.ChainElements)
                 {
-                    if (chain.ChainElements[i].Certificate.Thumbprint == _trustedCertificateAuthority.Thumbprint)
+                    if (element.Certificate.Thumbprint == _trustedCertificateAuthority.Thumbprint)
                         return true;
                 }
 

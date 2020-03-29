@@ -22,19 +22,19 @@ namespace DotPulsar.Internal
 {
     public abstract class Process : IProcess
     {
+        protected readonly CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
+
         protected ChannelState ChannelState;
         protected ExecutorState ExecutorState;
-        protected CancellationTokenSource CancellationTokenSource;
-
-        public Guid CorrelationId { get; }
 
         public Process(Guid correlationId)
         {
             ChannelState = ChannelState.Disconnected;
             ExecutorState = ExecutorState.Ok;
-            CancellationTokenSource = new CancellationTokenSource();
             CorrelationId = correlationId;
         }
+
+        public Guid CorrelationId { get; }
 
         protected abstract void CalculateState();
 
