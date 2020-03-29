@@ -12,15 +12,14 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal;
-using DotPulsar.Internal.Exceptions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
-
 namespace DotPulsar.Tests.Internal
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+    using DotPulsar.Internal;
+    using DotPulsar.Internal.Exceptions;
+    using Xunit;
+
     public class AsyncLockTests
     {
         [Fact]

@@ -12,15 +12,16 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-
 namespace DotPulsar.Internal
 {
+    using System.Collections.Generic;
+
     public sealed class IdLookup<T> where T : class
     {
         private T?[] _items;
 
-        public IdLookup() => _items = new T[1];
+        public IdLookup()
+            => _items = new T[1];
 
         public bool IsEmpty()
         {
@@ -46,7 +47,7 @@ namespace DotPulsar.Internal
                         continue;
 
                     _items[i] = item;
-                    return (ulong)i;
+                    return (ulong) i;
                 }
 
                 var newArray = new T[_items.Length + 1];
@@ -54,7 +55,7 @@ namespace DotPulsar.Internal
                 var id = newArray.Length - 1;
                 newArray[id] = item;
                 _items = newArray;
-                return (ulong)id;
+                return (ulong) id;
             }
         }
 
@@ -62,8 +63,8 @@ namespace DotPulsar.Internal
         {
             lock (_items)
             {
-                var item = _items[(int)id];
-                _items[(int)id] = null;
+                var item = _items[(int) id];
+                _items[(int) id] = null;
                 return item;
             }
         }
@@ -73,15 +74,18 @@ namespace DotPulsar.Internal
             lock (_items)
             {
                 var items = new List<T>();
+
                 for (var i = 0; i < _items.Length; ++i)
                 {
                     var item = _items[i];
+
                     if (item != null)
                     {
                         items.Add(item);
                         _items[i] = null;
                     }
                 }
+
                 return items.ToArray();
             }
         }
@@ -92,7 +96,7 @@ namespace DotPulsar.Internal
             {
                 lock (_items)
                 {
-                    return _items[(int)id];
+                    return _items[(int) id];
                 }
             }
         }

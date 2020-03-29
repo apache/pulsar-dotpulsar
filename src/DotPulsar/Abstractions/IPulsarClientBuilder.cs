@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-using System;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Abstractions
 {
+    using System;
+    using System.Security.Cryptography.X509Certificates;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// A pulsar client building abstraction.
     /// </summary>

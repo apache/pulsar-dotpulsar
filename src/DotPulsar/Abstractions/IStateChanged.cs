@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Abstractions
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// A state change monitoring abstraction.
     /// </summary>

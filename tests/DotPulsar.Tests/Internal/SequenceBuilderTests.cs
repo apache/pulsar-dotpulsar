@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal;
-using System.Buffers;
-using Xunit;
-
 namespace DotPulsar.Tests.Internal
 {
+    using System.Buffers;
+    using DotPulsar.Internal;
+    using Xunit;
+
     public class SequenceBuilderTests
     {
         [Fact]
@@ -34,6 +34,7 @@ namespace DotPulsar.Tests.Internal
 
             //Assert
             var array = sequence.ToArray();
+
             for (byte i = 0; i < array.Length; ++i)
                 Assert.Equal(i, array[i]);
         }
@@ -55,6 +56,7 @@ namespace DotPulsar.Tests.Internal
 
             //Assert
             var array = sequence.ToArray();
+
             for (byte i = 0; i < array.Length; ++i)
                 Assert.Equal(i, array[i]);
         }
@@ -73,6 +75,7 @@ namespace DotPulsar.Tests.Internal
 
             //Assert
             var array = sequence.ToArray();
+
             for (byte i = 0; i < array.Length; ++i)
                 Assert.Equal(i, array[i]);
         }
@@ -94,6 +97,7 @@ namespace DotPulsar.Tests.Internal
 
             //Assert
             var array = sequence.ToArray();
+
             for (byte i = 0; i < array.Length; ++i)
                 Assert.Equal(i, array[i]);
         }

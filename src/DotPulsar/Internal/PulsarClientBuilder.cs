@@ -12,37 +12,33 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Exceptions;
-using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Security.Cryptography.X509Certificates;
+    using System.Text;
+    using System.Threading.Tasks;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+    using PulsarApi;
+
     public sealed class PulsarClientBuilder : IPulsarClientBuilder
     {
         private readonly CommandConnect _commandConnect;
-        private List<IHandleException> _exceptionHandlers;
+        private readonly List<IHandleException> _exceptionHandlers;
         private EncryptionPolicy? _encryptionPolicy;
         private TimeSpan _retryInterval;
         private Uri _serviceUrl;
         private X509Certificate2? _trustedCertificateAuthority;
-        private X509Certificate2Collection _clientCertificates;
+        private readonly X509Certificate2Collection _clientCertificates;
         private bool _verifyCertificateAuthority;
         private bool _verifyCertificateName;
         private TimeSpan _closeInactiveConnectionsInterval;
 
         public PulsarClientBuilder()
         {
-            _commandConnect = new CommandConnect
-            {
-                ProtocolVersion = Constants.ProtocolVersion,
-                ClientVersion = Constants.ClientVersion
-            };
+            _commandConnect = new CommandConnect { ProtocolVersion = Constants.ProtocolVersion, ClientVersion = Constants.ClientVersion };
 
             _exceptionHandlers = new List<IHandleException>();
             _retryInterval = TimeSpan.FromSeconds(3);
@@ -131,7 +127,8 @@ namespace DotPulsar.Internal
                     _encryptionPolicy = EncryptionPolicy.EnforceUnencrypted;
 
                 if (_encryptionPolicy.Value == EncryptionPolicy.EnforceEncrypted)
-                    throw new ConnectionSecurityException($"The scheme of the ServiceUrl ({_serviceUrl}) is '{Constants.PulsarScheme}' and cannot be used with an encryption policy of 'EnforceEncrypted'");
+                    throw new ConnectionSecurityException(
+                        $"The scheme of the ServiceUrl ({_serviceUrl}) is '{Constants.PulsarScheme}' and cannot be used with an encryption policy of 'EnforceEncrypted'");
             }
             else if (scheme == Constants.PulsarSslScheme)
             {
@@ -139,17 +136,17 @@ namespace DotPulsar.Internal
                     _encryptionPolicy = EncryptionPolicy.EnforceEncrypted;
 
                 if (_encryptionPolicy.Value == EncryptionPolicy.EnforceUnencrypted)
-                    throw new ConnectionSecurityException($"The scheme of the ServiceUrl ({_serviceUrl}) is '{Constants.PulsarSslScheme}' and cannot be used with an encryption policy of 'EnforceUnencrypted'");
+                    throw new ConnectionSecurityException(
+                        $"The scheme of the ServiceUrl ({_serviceUrl}) is '{Constants.PulsarSslScheme}' and cannot be used with an encryption policy of 'EnforceUnencrypted'");
             }
             else
+            {
                 throw new InvalidSchemeException($"Invalid scheme '{scheme}'. Expected '{Constants.PulsarScheme}' or '{Constants.PulsarSslScheme}'");
+            }
 
             var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
             var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval);
-            var exceptionHandlers = new List<IHandleException>(_exceptionHandlers)
-            {
-                new DefaultExceptionHandler(_retryInterval)
-            };
+            var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
             var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);
             var processManager = new ProcessManager(connectionPool);
             return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline);

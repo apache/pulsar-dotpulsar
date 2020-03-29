@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using DotPulsar.Abstractions;
+    using Events;
+
     public sealed class Executor : IExecute
     {
         private readonly Guid _correlationId;

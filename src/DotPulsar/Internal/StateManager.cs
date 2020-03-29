@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+
     public sealed class StateManager<TState> : IStateManager<TState> where TState : notnull
     {
         private readonly object _lock;
@@ -84,6 +84,7 @@ namespace DotPulsar.Internal
             return false;
         }
 
-        public bool IsFinalState() => IsFinalState(CurrentState);
+        public bool IsFinalState()
+            => IsFinalState(CurrentState);
     }
 }

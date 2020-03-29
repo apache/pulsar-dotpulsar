@@ -12,10 +12,10 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace DotPulsar.Internal
 {
+    using System;
+
     public sealed class StateTask<TState> : IDisposable where TState : notnull
     {
         private readonly TState _state;
@@ -30,7 +30,8 @@ namespace DotPulsar.Internal
 
         public CancelableCompletionSource<TState> CancelableCompletionSource { get; }
 
-        public void Dispose() => CancelableCompletionSource.Dispose();
+        public void Dispose()
+            => CancelableCompletionSource.Dispose();
 
         public bool IsAwaiting(TState state)
         {

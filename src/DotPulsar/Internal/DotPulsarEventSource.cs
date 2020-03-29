@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-using System.Diagnostics.Tracing;
-using System.Threading;
-
 namespace DotPulsar.Internal
 {
 #if NETSTANDARD2_1
+    using System.Diagnostics.Tracing;
+    using System.Threading;
+
     public sealed class DotPulsarEventSource : EventSource
     {
         private readonly PollingCounter _totalClientsCounter;
@@ -164,16 +164,25 @@ namespace DotPulsar.Internal
     public sealed class DotPulsarEventSource
     {
         public static readonly DotPulsarEventSource Log = new DotPulsarEventSource();
-        public DotPulsarEventSource() { }
+
         public void ClientCreated() { }
+
         public void ClientDisposed() { }
+
         public void ConnectionCreated() { }
+
         public void ConnectionDisposed() { }
+
         public void ConsumerCreated() { }
+
         public void ConsumerDisposed() { }
+
         public void ProducerCreated() { }
+
         public void ProducerDisposed() { }
+
         public void ReaderCreated() { }
+
         public void ReaderDisposed() { }
     }
 #endif

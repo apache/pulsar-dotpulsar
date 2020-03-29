@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using PulsarApi;
+
     public sealed class ProducerChannelFactory : IProducerChannelFactory
     {
         private readonly Guid _correlationId;
@@ -42,11 +42,7 @@ namespace DotPulsar.Internal
             _executor = executor;
             _sequenceId = new SequenceId(options.InitialSequenceId);
 
-            _commandProducer = new CommandProducer
-            {
-                ProducerName = options.ProducerName,
-                Topic = options.Topic
-            };
+            _commandProducer = new CommandProducer { ProducerName = options.ProducerName, Topic = options.Topic };
         }
 
         public async Task<IProducerChannel> Create(CancellationToken cancellationToken)

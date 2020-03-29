@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Exceptions;
-using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using Exceptions;
+    using Extensions;
+    using PulsarApi;
+
     public sealed class Connection : IConnection
     {
         private readonly AsyncLock _lock;
@@ -85,17 +85,17 @@ namespace DotPulsar.Internal
             return await responseTask.ConfigureAwait(false);
         }
 
-        public async Task Send(CommandPing command, CancellationToken cancellationToken) =>
-            await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public async Task Send(CommandPing command, CancellationToken cancellationToken)
+            => await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
 
-        public async Task Send(CommandPong command, CancellationToken cancellationToken) =>
-            await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public async Task Send(CommandPong command, CancellationToken cancellationToken)
+            => await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
 
-        public async Task Send(CommandAck command, CancellationToken cancellationToken) =>
-            await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public async Task Send(CommandAck command, CancellationToken cancellationToken)
+            => await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
 
-        public async Task Send(CommandFlow command, CancellationToken cancellationToken) =>
-            await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public async Task Send(CommandFlow command, CancellationToken cancellationToken)
+            => await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
 
         public async Task<BaseCommand> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
         {
@@ -115,17 +115,17 @@ namespace DotPulsar.Internal
             return await responseTask.ConfigureAwait(false);
         }
 
-        public async Task<BaseCommand> Send(CommandConnect command, CancellationToken cancellationToken) =>
-            await SendRequestResponse(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public async Task<BaseCommand> Send(CommandConnect command, CancellationToken cancellationToken)
+            => await SendRequestResponse(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
 
-        public async Task<BaseCommand> Send(CommandLookupTopic command, CancellationToken cancellationToken) =>
-            await SendRequestResponse(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public async Task<BaseCommand> Send(CommandLookupTopic command, CancellationToken cancellationToken)
+            => await SendRequestResponse(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
 
-        public async Task<BaseCommand> Send(CommandSeek command, CancellationToken cancellationToken) =>
-            await SendRequestResponse(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public async Task<BaseCommand> Send(CommandSeek command, CancellationToken cancellationToken)
+            => await SendRequestResponse(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
 
-        public async Task<BaseCommand> Send(CommandGetLastMessageId command, CancellationToken cancellationToken) =>
-            await SendRequestResponse(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public async Task<BaseCommand> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
+            => await SendRequestResponse(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
 
         public async Task<BaseCommand> Send(CommandCloseProducer command, CancellationToken cancellationToken)
         {

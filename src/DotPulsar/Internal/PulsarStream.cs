@@ -12,20 +12,20 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Exceptions;
-using DotPulsar.Internal.Extensions;
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Buffers;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.IO.Pipelines;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using Exceptions;
+    using Extensions;
+
     public sealed class PulsarStream : IPulsarStream
     {
         private const long PauseAtMoreThan10Mb = 10485760;
@@ -101,6 +101,7 @@ namespace DotPulsar.Internal
                     _writer.Advance(bytesRead);
 
                     var result = await _writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+
                     if (result.IsCompleted)
                         break;
                 }
@@ -132,6 +133,7 @@ namespace DotPulsar.Internal
 
                         var frameSize = buffer.ReadUInt32(0, true);
                         var totalSize = frameSize + 4;
+
                         if (buffer.Length < totalSize)
                             break;
 

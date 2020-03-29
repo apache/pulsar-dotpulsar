@@ -12,22 +12,23 @@
  * limitations under the License.
  */
 
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace DotPulsar
 {
+    using System;
+    using System.Buffers;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Internal.PulsarApi;
+
     public sealed class Message
     {
-        private readonly List<Internal.PulsarApi.KeyValue> _keyValues;
+        private readonly List<KeyValue> _keyValues;
         private IReadOnlyDictionary<string, string>? _properties;
 
         internal Message(
             MessageId messageId,
             Internal.PulsarApi.MessageMetadata metadata,
-            Internal.PulsarApi.SingleMessageMetadata? singleMetadata,
+            SingleMessageMetadata? singleMetadata,
             ReadOnlySequence<byte> data)
         {
             MessageId = messageId;
@@ -62,7 +63,7 @@ namespace DotPulsar
 
         public bool HasEventTime => EventTime != 0;
         public ulong EventTime { get; }
-        public DateTimeOffset EventTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long)EventTime);
+        public DateTimeOffset EventTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) EventTime);
 
         public bool HasBase64EncodedKey { get; }
         public bool HasKey => Key != null;
@@ -72,9 +73,8 @@ namespace DotPulsar
         public bool HasOrderingKey => OrderingKey != null;
         public byte[]? OrderingKey { get; }
 
-
         public ulong PublishTime { get; }
-        public DateTimeOffset PublishTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long)PublishTime);
+        public DateTimeOffset PublishTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) PublishTime);
 
         public IReadOnlyDictionary<string, string> Properties => _properties ??= _keyValues.ToDictionary(p => p.Key, p => p.Value);
     }

@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using System;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Threading.Tasks;
+    using Abstractions;
+
     public sealed class ReaderProcess : Process
     {
         private readonly IStateManager<ReaderState> _stateManager;
@@ -35,7 +35,7 @@ namespace DotPulsar.Internal
             _reader = reader;
         }
 
-        public async override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             _stateManager.SetState(ReaderState.Closed);
             CancellationTokenSource.Cancel();

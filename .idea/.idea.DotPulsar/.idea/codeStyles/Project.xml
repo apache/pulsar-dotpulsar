@@ -1,8 +1,8 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
     <option name="AUTODETECT_INDENTS" value="false" />
-    <option name="RIGHT_MARGIN" value="160" />
+    <option name="RIGHT_MARGIN" value="180" />
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="true" />
-    <option name="SOFT_MARGINS" value="140,160" />
+    <option name="SOFT_MARGINS" value="180" />
   </code_scheme>
 </component>

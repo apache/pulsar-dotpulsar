@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using Extensions;
+    using PulsarApi;
+
     public sealed class ConsumerChannel : IConsumerChannel, IReaderChannel
     {
         private readonly ulong _id;
@@ -57,6 +57,7 @@ namespace DotPulsar.Internal
                 _sendWhenZero--;
 
                 var message = _batchHandler.GetNext();
+
                 if (message != null)
                     return message;
 
@@ -82,9 +83,11 @@ namespace DotPulsar.Internal
         public async Task Send(CommandAck command, CancellationToken cancellationToken)
         {
             var messageId = command.MessageIds[0];
+
             if (messageId.BatchIndex != -1)
             {
                 var batchMessageId = _batchHandler.Acknowledge(messageId);
+
                 if (batchMessageId is null)
                     return;
 
@@ -140,7 +143,7 @@ namespace DotPulsar.Internal
 
             if (_firstFlow)
             {
-                _cachedCommandFlow.MessagePermits = (uint)Math.Ceiling(_cachedCommandFlow.MessagePermits * 0.5);
+                _cachedCommandFlow.MessagePermits = (uint) Math.Ceiling(_cachedCommandFlow.MessagePermits * 0.5);
                 _firstFlow = false;
             }
 
@@ -149,11 +152,7 @@ namespace DotPulsar.Internal
 
         private async Task RejectPackage(MessagePackage messagePackage, CancellationToken cancellationToken)
         {
-            var ack = new CommandAck
-            {
-                Type = CommandAck.AckType.Individual,
-                validation_error = CommandAck.ValidationError.ChecksumMismatch
-            };
+            var ack = new CommandAck { Type = CommandAck.AckType.Individual, validation_error = CommandAck.ValidationError.ChecksumMismatch };
 
             ack.MessageIds.Add(messagePackage.MessageId);
 

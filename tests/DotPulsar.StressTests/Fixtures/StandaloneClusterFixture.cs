@@ -12,28 +12,25 @@
  * limitations under the License.
  */
 
-using System;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Xunit;
-
 namespace DotPulsar.StressTests.Fixtures
 {
+    using System;
+    using System.Diagnostics;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using Xunit;
+
     public class StandaloneClusterFixture : IAsyncLifetime
     {
         public async Task InitializeAsync()
         {
-            TakeDownPulsar();  // clean-up if anything was left running from previous run
+            TakeDownPulsar(); // clean-up if anything was left running from previous run
 
             RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml up -d");
 
             var waitTries = 10;
 
-            using var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = true
-            };
+            using var handler = new HttpClientHandler { AllowAutoRedirect = true };
 
             using var client = new HttpClient(handler);
 
@@ -65,11 +62,7 @@ namespace DotPulsar.StressTests.Fixtures
 
         private static void RunProcess(string name, string arguments)
         {
-            var processStartInfo = new ProcessStartInfo()
-            {
-                FileName = name,
-                Arguments = arguments
-            };
+            var processStartInfo = new ProcessStartInfo { FileName = name, Arguments = arguments };
 
             processStartInfo.Environment["TAG"] = "test";
             processStartInfo.Environment["CONFIGURATION"] = "Debug";
@@ -80,9 +73,7 @@ namespace DotPulsar.StressTests.Fixtures
             process.WaitForExit();
 
             if (process.ExitCode != 0)
-            {
                 throw new Exception($"Exit code {process.ExitCode} when running process {name} with arguments {arguments}");
-            }
         }
     }
 }

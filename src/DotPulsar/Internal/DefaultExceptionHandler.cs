@@ -12,25 +12,27 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Exceptions;
-using DotPulsar.Internal.Exceptions;
-using System;
-using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Net.Sockets;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+    using Exceptions;
+
     public sealed class DefaultExceptionHandler : IHandleException
     {
         private readonly TimeSpan _retryInterval;
 
-        public DefaultExceptionHandler(TimeSpan retryInterval) => _retryInterval = retryInterval;
+        public DefaultExceptionHandler(TimeSpan retryInterval)
+            => _retryInterval = retryInterval;
 
         public async ValueTask OnException(ExceptionContext exceptionContext)
         {
             exceptionContext.Result = DetermineFaultAction(exceptionContext.Exception, exceptionContext.CancellationToken);
+
             if (exceptionContext.Result == FaultAction.Retry)
                 await Task.Delay(_retryInterval, exceptionContext.CancellationToken).ConfigureAwait(false);
 
@@ -41,15 +43,24 @@ namespace DotPulsar.Internal
         {
             switch (exception)
             {
-                case TooManyRequestsException _: return FaultAction.Retry;
-                case ChannelNotReadyException _: return FaultAction.Retry;
-                case ServiceNotReadyException _: return FaultAction.Retry;
-                case ConnectionDisposedException _: return FaultAction.Retry;
-                case AsyncLockDisposedException _: return FaultAction.Retry;
-                case PulsarStreamDisposedException _: return FaultAction.Retry;
-                case AsyncQueueDisposedException _: return FaultAction.Retry;
-                case OperationCanceledException _: return cancellationToken.IsCancellationRequested ? FaultAction.Rethrow : FaultAction.Retry;
-                case DotPulsarException _: return FaultAction.Rethrow;
+                case TooManyRequestsException _:
+                    return FaultAction.Retry;
+                case ChannelNotReadyException _:
+                    return FaultAction.Retry;
+                case ServiceNotReadyException _:
+                    return FaultAction.Retry;
+                case ConnectionDisposedException _:
+                    return FaultAction.Retry;
+                case AsyncLockDisposedException _:
+                    return FaultAction.Retry;
+                case PulsarStreamDisposedException _:
+                    return FaultAction.Retry;
+                case AsyncQueueDisposedException _:
+                    return FaultAction.Retry;
+                case OperationCanceledException _:
+                    return cancellationToken.IsCancellationRequested ? FaultAction.Rethrow : FaultAction.Retry;
+                case DotPulsarException _:
+                    return FaultAction.Rethrow;
                 case SocketException socketException:
                     switch (socketException.SocketErrorCode)
                     {
@@ -58,6 +69,7 @@ namespace DotPulsar.Internal
                         case SocketError.NetworkUnreachable:
                             return FaultAction.Rethrow;
                     }
+
                     return FaultAction.Retry;
             }
 

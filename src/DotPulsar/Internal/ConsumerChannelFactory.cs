@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using PulsarApi;
+
     public sealed class ConsumerChannelFactory : IConsumerChannelFactory
     {
         private readonly Guid _correlationId;
@@ -46,12 +46,12 @@ namespace DotPulsar.Internal
             _subscribe = new CommandSubscribe
             {
                 ConsumerName = options.ConsumerName,
-                initialPosition = (CommandSubscribe.InitialPosition)options.InitialPosition,
+                initialPosition = (CommandSubscribe.InitialPosition) options.InitialPosition,
                 PriorityLevel = options.PriorityLevel,
                 ReadCompacted = options.ReadCompacted,
                 Subscription = options.SubscriptionName,
                 Topic = options.Topic,
-                Type = (CommandSubscribe.SubType)options.SubscriptionType
+                Type = (CommandSubscribe.SubType) options.SubscriptionType
             };
 
             _batchHandler = new BatchHandler(true);

@@ -19,12 +19,14 @@ namespace DotPulsar.Internal
         public SequenceId(ulong initialSequenceId)
         {
             Current = initialSequenceId;
+
             if (initialSequenceId > 0)
                 Increment();
         }
 
         public ulong Current { get; private set; }
 
-        public void Increment() => ++Current;
+        public void Increment()
+            => ++Current;
     }
 }

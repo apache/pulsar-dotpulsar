@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Abstractions
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// A message building abstraction.
     /// </summary>

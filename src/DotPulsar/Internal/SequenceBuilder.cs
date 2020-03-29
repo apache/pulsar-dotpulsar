@@ -12,18 +12,19 @@
  * limitations under the License.
  */
 
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Buffers;
+    using System.Collections.Generic;
+    using System.Linq;
+
     public sealed class SequenceBuilder<T> where T : notnull
     {
         private readonly LinkedList<ReadOnlyMemory<T>> _elements;
 
-        public SequenceBuilder() => _elements = new LinkedList<ReadOnlyMemory<T>>();
+        public SequenceBuilder()
+            => _elements = new LinkedList<ReadOnlyMemory<T>>();
 
         public SequenceBuilder<T> Prepend(ReadOnlyMemory<T> memory)
         {
@@ -37,10 +38,9 @@ namespace DotPulsar.Internal
 
             foreach (var memory in sequence)
             {
-                if (index is null)
-                    index = _elements.AddFirst(memory);
-                else
-                    index = _elements.AddAfter(index, memory);
+                index = index is null
+                    ? _elements.AddFirst(memory)
+                    : _elements.AddAfter(index, memory);
             }
 
             return this;
@@ -78,7 +78,9 @@ namespace DotPulsar.Internal
                     start = current;
                 }
                 else
+                {
                     current = current.CreateNext(element);
+                }
             }
 
             return new ReadOnlySequence<T>(start, 0, current, current!.Memory.Length);

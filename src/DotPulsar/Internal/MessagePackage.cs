@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.PulsarApi;
-using System.Buffers;
-
 namespace DotPulsar.Internal
 {
+    using System.Buffers;
+    using PulsarApi;
+
     public struct MessagePackage
     {
         public MessagePackage(MessageIdData messageId, ReadOnlySequence<byte> data)

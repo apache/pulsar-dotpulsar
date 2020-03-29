@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Internal;
-using System;
-using System.Threading.Tasks;
-using Xunit.Abstractions;
-
 namespace DotPulsar.StressTests
 {
+    using System;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using Internal;
+    using Xunit.Abstractions;
+
     internal class XunitExceptionHandler : IHandleException
     {
         private readonly ITestOutputHelper _output;
@@ -31,9 +31,7 @@ namespace DotPulsar.StressTests
             _exceptionHandler = exceptionHandler;
         }
 
-        public XunitExceptionHandler(ITestOutputHelper output) : this(output, new DefaultExceptionHandler(TimeSpan.FromSeconds(3)))
-        {
-        }
+        public XunitExceptionHandler(ITestOutputHelper output) : this(output, new DefaultExceptionHandler(TimeSpan.FromSeconds(3))) { }
 
         public async ValueTask OnException(ExceptionContext exceptionContext)
         {

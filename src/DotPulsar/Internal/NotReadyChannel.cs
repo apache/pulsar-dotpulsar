@@ -12,35 +12,43 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Exceptions;
-using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Buffers;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Buffers;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using Exceptions;
+    using PulsarApi;
+
     public sealed class NotReadyChannel : IConsumerChannel, IProducerChannel, IReaderChannel
     {
-        public ValueTask DisposeAsync() => new ValueTask();
+        public ValueTask DisposeAsync()
+            => new ValueTask();
 
-        public ValueTask<Message> Receive(CancellationToken cancellationToken = default) => throw GetException();
+        public ValueTask<Message> Receive(CancellationToken cancellationToken = default)
+            => throw GetException();
 
-        public Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload, CancellationToken cancellationToken) => throw GetException();
+        public Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
+            => throw GetException();
 
-        public Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken) =>
-            throw GetException();
+        public Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
+            => throw GetException();
 
-        public Task Send(CommandAck command, CancellationToken cancellationToken) => throw GetException();
+        public Task Send(CommandAck command, CancellationToken cancellationToken)
+            => throw GetException();
 
-        public Task<CommandSuccess> Send(CommandUnsubscribe command, CancellationToken cancellationToken) => throw GetException();
+        public Task<CommandSuccess> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
+            => throw GetException();
 
-        public Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken) => throw GetException();
+        public Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken)
+            => throw GetException();
 
-        public Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken) => throw GetException();
+        public Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
+            => throw GetException();
 
-        private Exception GetException() => new ChannelNotReadyException();
+        private Exception GetException()
+            => new ChannelNotReadyException();
     }
 }

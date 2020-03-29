@@ -12,14 +12,15 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using System;
-
 namespace DotPulsar.Internal.Events
 {
+    using System;
+    using Abstractions;
+
     public sealed class ChannelDeactivated : IEvent
     {
-        public ChannelDeactivated(Guid correlationId) => CorrelationId = correlationId;
+        public ChannelDeactivated(Guid correlationId)
+            => CorrelationId = correlationId;
 
         public Guid CorrelationId { get; }
     }

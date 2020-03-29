@@ -12,17 +12,17 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Exceptions;
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using System;
-using System.Buffers;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Buffers;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+    using Events;
+
     public sealed class Producer : IProducer
     {
         private readonly Guid _correlationId;
@@ -55,9 +55,11 @@ namespace DotPulsar.Internal
         public async ValueTask<ProducerState> StateChangedFrom(ProducerState state, CancellationToken cancellationToken)
             => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 
-        public bool IsFinalState() => _state.IsFinalState();
+        public bool IsFinalState()
+            => _state.IsFinalState();
 
-        public bool IsFinalState(ProducerState state) => _state.IsFinalState(state);
+        public bool IsFinalState(ProducerState state)
+            => _state.IsFinalState(state);
 
         public async ValueTask DisposeAsync()
         {

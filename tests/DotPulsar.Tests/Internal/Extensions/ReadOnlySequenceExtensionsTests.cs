@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal;
-using DotPulsar.Internal.Extensions;
-using Xunit;
-
 namespace DotPulsar.Tests.Internal.Extensions
 {
+    using DotPulsar.Internal;
+    using DotPulsar.Internal.Extensions;
+    using Xunit;
+
     public class ReadOnlySequenceExtensionsTests
     {
         [Fact]
