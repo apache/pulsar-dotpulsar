@@ -34,9 +34,7 @@ namespace DotPulsar.Internal
 
         public async ValueTask DisposeAsync()
         {
-            var processes = _processes.Values.ToArray();
-
-            foreach (var proc in processes)
+            foreach (var proc in _processes.Values.ToArray())
                 await proc.DisposeAsync().ConfigureAwait(false);
 
             await _connectionPool.DisposeAsync().ConfigureAwait(false);
