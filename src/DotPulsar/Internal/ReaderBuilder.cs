@@ -71,14 +71,12 @@ namespace DotPulsar.Internal
             if (string.IsNullOrEmpty(_topic))
                 throw new ConfigurationException("Topic may not be null or empty");
 
-            var options = new ReaderOptions(_startMessageId, _topic!)
+            return _pulsarClient.CreateReader(new ReaderOptions(_startMessageId, _topic!)
             {
                 MessagePrefetchCount = _messagePrefetchCount,
                 ReadCompacted = _readCompacted,
                 ReaderName = _readerName
-            };
-
-            return _pulsarClient.CreateReader(options);
+            });
         }
     }
 }

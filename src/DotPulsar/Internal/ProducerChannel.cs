@@ -106,9 +106,9 @@ namespace DotPulsar.Internal
             }
             finally
             {
+                // Reset in case the user reuse the MessageMetadata, but is not explicitly setting the sequenceId
                 if (autoAssignSequenceId)
-                    _cachedSendPackage.Metadata.SequenceId =
-                        0; // Reset in case the user reuse the MessageMetadata, but is not explicitly setting the sequenceId
+                    _cachedSendPackage.Metadata.SequenceId =  0;
             }
         }
     }

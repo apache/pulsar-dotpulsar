@@ -39,6 +39,7 @@ namespace DotPulsar.Internal
             }
 
             node.Value.CancelableCompletionSource.SetupCancellation(() => TaskWasCanceled(node), cancellationToken);
+
             return node.Value.CancelableCompletionSource.Task;
         }
 

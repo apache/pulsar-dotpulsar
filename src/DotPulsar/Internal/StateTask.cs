@@ -30,15 +30,10 @@ namespace DotPulsar.Internal
 
         public CancelableCompletionSource<TState> CancelableCompletionSource { get; }
 
+        public bool IsAwaiting(TState state)
+            => _change == StateChanged.To ? _state.Equals(state) : !_state.Equals(state);
+
         public void Dispose()
             => CancelableCompletionSource.Dispose();
-
-        public bool IsAwaiting(TState state)
-        {
-            if (_change == StateChanged.To)
-                return _state.Equals(state);
-
-            return !_state.Equals(state);
-        }
     }
 }

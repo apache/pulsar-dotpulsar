@@ -145,19 +145,17 @@ namespace DotPulsar.Internal
             {
                 throw new InvalidSchemeException($"Invalid scheme '{scheme}'. Expected '{Constants.PulsarScheme}' or '{Constants.PulsarSslScheme}'");
             }
-
+            
             var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
 
             var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval);
 
-            var exceptionHandlers = new List<IHandleException>(_exceptionHandlers)
+            var processManager = new ProcessManager(connectionPool);
+
+            var exceptionHandlerPipeline = new ExceptionHandlerPipeline(new List<IHandleException>(_exceptionHandlers)
             {
                 new DefaultExceptionHandler(_retryInterval)
-            };
-
-            var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);
-
-            var processManager = new ProcessManager(connectionPool);
+            });
 
             return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline);
         }
