@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <None Include="..\docker-compose-standalone-tests.yml" CopyToOutputDirectory="Always" />
-    <None Include="..\..\haproxy.cfg" CopyToOutputDirectory="Always" />
+    <None Include="..\haproxy.cfg" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
   <ItemGroup>
