@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using Events;
+
     public sealed class ProcessManager : IRegisterEvent, IAsyncDisposable
     {
         private readonly ConcurrentDictionary<Guid, IProcess> _processes;
@@ -42,11 +42,12 @@ namespace DotPulsar.Internal
             await _connectionPool.DisposeAsync().ConfigureAwait(false);
         }
 
-        public void Add(IProcess process) => _processes[process.CorrelationId] = process;
+        public void Add(IProcess process)
+            => _processes[process.CorrelationId] = process;
 
         private async void Remove(Guid correlationId)
         {
-            if (_processes.TryRemove(correlationId, out IProcess process))
+            if (_processes.TryRemove(correlationId, out var process))
                 await process.DisposeAsync().ConfigureAwait(false);
         }
 
@@ -76,10 +77,12 @@ namespace DotPulsar.Internal
                     DotPulsarEventSource.Log.ReaderDisposed();
                     break;
                 default:
-                    if (_processes.TryGetValue(e.CorrelationId, out IProcess process))
+                    if (_processes.TryGetValue(e.CorrelationId, out var process))
                         process.Handle(e);
                     break;
-            };
+            }
+
+            ;
         }
     }
 }

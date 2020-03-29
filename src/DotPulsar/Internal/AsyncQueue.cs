@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using Exceptions;
+
     public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
     {
         private readonly object _lock;
@@ -48,7 +48,9 @@ namespace DotPulsar.Internal
                     tcs.Value.SetResult(item);
                 }
                 else
+                {
                     _queue.Enqueue(item);
+                }
             }
         }
 

@@ -12,20 +12,20 @@
  * limitations under the License.
  */
 
-using DotPulsar;
-using DotPulsar.Abstractions;
-using DotPulsar.Extensions;
-using System;
-using System.Buffers;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Reading
 {
-    class Program
+    using System;
+    using System.Buffers;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using DotPulsar;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Extensions;
+
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             const string myTopic = "persistent://public/default/mytopic";
 
@@ -36,7 +36,6 @@ namespace Reading
                 .Topic(myTopic)
                 .Create();
 
-
             var monitoring = Monitor(reader);
 
             var cts = new CancellationTokenSource();
@@ -44,7 +43,7 @@ namespace Reading
             var reading = ReadMessages(reader, cts.Token);
 
             Console.WriteLine("Press a key to exit");
-            
+
             _ = Console.ReadKey();
 
             cts.Cancel();
@@ -68,10 +67,7 @@ namespace Reading
                     Console.WriteLine("Received: " + data);
                 }
             }
-            catch(OperationCanceledException)
-            {
-                return;
-            }
+            catch (OperationCanceledException) { }
         }
 
         private static async Task Monitor(IReader reader)

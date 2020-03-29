@@ -12,16 +12,16 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Exceptions;
-using DotPulsar.Internal;
-using DotPulsar.Internal.Abstractions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using Exceptions;
+    using Internal;
+    using Internal.Abstractions;
+
     public sealed class PulsarClient : IPulsarClient
     {
         private readonly IConnectionPool _connectionPool;
@@ -38,7 +38,8 @@ namespace DotPulsar
             DotPulsarEventSource.Log.ClientCreated();
         }
 
-        public static IPulsarClientBuilder Builder() => new PulsarClientBuilder();
+        public static IPulsarClientBuilder Builder()
+            => new PulsarClientBuilder();
 
         public IProducer CreateProducer(ProducerOptions options)
         {
@@ -60,7 +61,9 @@ namespace DotPulsar
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
-            var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
+
+            var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic,
+                ConsumerState.Faulted);
             var consumer = new Consumer(correlationId, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
             var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
             _processManager.Add(process);

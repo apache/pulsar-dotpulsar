@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using PulsarApi;
+
     public sealed class ReaderChannelFactory : IReaderChannelFactory
     {
         private readonly Guid _correlationId;

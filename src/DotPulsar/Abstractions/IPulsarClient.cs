@@ -12,10 +12,10 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace DotPulsar.Abstractions
 {
+    using System;
+
     /// <summary>
     /// A pulsar client abstraction.
     /// </summary>

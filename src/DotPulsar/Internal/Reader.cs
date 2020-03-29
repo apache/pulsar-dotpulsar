@@ -12,18 +12,18 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Exceptions;
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Abstractions;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+    using Events;
+
     public sealed class Reader : IReader
     {
         private readonly Guid _correlationId;
@@ -56,18 +56,18 @@ namespace DotPulsar.Internal
         public async ValueTask<ReaderState> StateChangedFrom(ReaderState state, CancellationToken cancellationToken)
             => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 
-        public bool IsFinalState() => _state.IsFinalState();
+        public bool IsFinalState()
+            => _state.IsFinalState();
 
-        public bool IsFinalState(ReaderState state) => _state.IsFinalState(state);
+        public bool IsFinalState(ReaderState state)
+            => _state.IsFinalState(state);
 
         public async IAsyncEnumerable<Message> Messages([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
             while (!cancellationToken.IsCancellationRequested)
-            {
                 yield return await _executor.Execute(() => _channel.Receive(cancellationToken), cancellationToken).ConfigureAwait(false);
-            }
         }
 
         public async ValueTask DisposeAsync()

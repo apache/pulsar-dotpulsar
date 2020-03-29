@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Exceptions;
+
     public sealed class AsyncLock : IAsyncDisposable
     {
         private readonly LinkedList<CancelableCompletionSource<IDisposable>> _pending;
@@ -33,7 +33,7 @@ namespace DotPulsar.Internal
             _pending = new LinkedList<CancelableCompletionSource<IDisposable>>();
             _semaphoreSlim = new SemaphoreSlim(1, 1);
             _releaser = new Releaser(Release);
-            _completedTask = Task.FromResult((IDisposable)_releaser);
+            _completedTask = Task.FromResult((IDisposable) _releaser);
         }
 
         public Task<IDisposable> Lock(CancellationToken cancellationToken)
@@ -68,9 +68,7 @@ namespace DotPulsar.Internal
                     return;
 
                 foreach (var pending in _pending)
-                {
                     pending.Dispose();
-                }
 
                 _pending.Clear();
             }
@@ -124,9 +122,11 @@ namespace DotPulsar.Internal
         {
             private readonly Action _release;
 
-            public Releaser(Action release) => _release = release;
+            public Releaser(Action release)
+                => _release = release;
 
-            public void Dispose() => _release();
+            public void Dispose()
+                => _release();
         }
     }
 }

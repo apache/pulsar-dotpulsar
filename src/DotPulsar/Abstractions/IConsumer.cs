@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Abstractions
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// A consumer abstraction.
     /// </summary>

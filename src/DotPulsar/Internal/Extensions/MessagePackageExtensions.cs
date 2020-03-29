@@ -12,17 +12,18 @@
  * limitations under the License.
  */
 
-using System.Buffers;
-
 namespace DotPulsar.Internal.Extensions
 {
+    using System.Buffers;
+    using PulsarApi;
+
     public static class MessagePackageExtensions
     {
         public static uint GetMetadataSize(this MessagePackage package)
             => package.Data.ReadUInt32(Constants.MetadataSizeOffset, true);
 
-        public static PulsarApi.MessageMetadata ExtractMetadata(this MessagePackage package, uint metadataSize)
-            => Serializer.Deserialize<PulsarApi.MessageMetadata>(package.Data.Slice(Constants.MetadataOffset, metadataSize));
+        public static MessageMetadata ExtractMetadata(this MessagePackage package, uint metadataSize)
+            => Serializer.Deserialize<MessageMetadata>(package.Data.Slice(Constants.MetadataOffset, metadataSize));
 
         public static ReadOnlySequence<byte> ExtractData(this MessagePackage package, uint metadataSize)
             => package.Data.Slice(Constants.MetadataOffset + metadataSize);

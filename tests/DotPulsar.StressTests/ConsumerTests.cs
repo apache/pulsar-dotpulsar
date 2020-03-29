@@ -12,26 +12,27 @@
  * limitations under the License.
  */
 
-using DotPulsar.Extensions;
-using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using DotPulsar.StressTests.Fixtures;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace DotPulsar.StressTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Extensions;
+    using Fixtures;
+    using FluentAssertions;
+    using Xunit;
+    using Xunit.Abstractions;
+
     [Collection(nameof(StandaloneClusterTest))]
     public class ConsumerTests
     {
         private readonly ITestOutputHelper _output;
 
-        public ConsumerTests(ITestOutputHelper output) => _output = output;
+        public ConsumerTests(ITestOutputHelper output)
+            => _output = output;
 
         [Theory]
         [InlineData(10000)]
@@ -83,7 +84,8 @@ namespace DotPulsar.StressTests
                 {
                     ids.Add(message.MessageId);
 
-                    if (ids.Count != numberOfMessages) continue;
+                    if (ids.Count != numberOfMessages)
+                        continue;
 
                     await consumer.AcknowledgeCumulative(message, ct).ConfigureAwait(false);
 

@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Exceptions;
-
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+
     public sealed class ProducerBuilder : IProducerBuilder
     {
         private readonly IPulsarClient _pulsarClient;
@@ -53,11 +53,7 @@ namespace DotPulsar.Internal
             if (string.IsNullOrEmpty(_topic))
                 throw new ConfigurationException("ProducerOptions.Topic may not be null or empty");
 
-            var options = new ProducerOptions(_topic!)
-            {
-                InitialSequenceId = _initialSequenceId,
-                ProducerName = _producerName
-            };
+            var options = new ProducerOptions(_topic!) { InitialSequenceId = _initialSequenceId, ProducerName = _producerName };
 
             return _pulsarClient.CreateProducer(options);
         }

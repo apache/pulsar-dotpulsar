@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
-using System;
-using System.Threading;
-
 namespace DotPulsar
 {
+    using System;
+    using System.Threading;
+
     public sealed class ExceptionContext
     {
         internal ExceptionContext(Exception exception, CancellationToken cancellationToken)

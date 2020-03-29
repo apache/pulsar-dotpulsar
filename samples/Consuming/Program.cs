@@ -12,20 +12,20 @@
  * limitations under the License.
  */
 
-using DotPulsar;
-using DotPulsar.Abstractions;
-using DotPulsar.Extensions;
-using System;
-using System.Buffers;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Consuming
 {
-    class Program
+    using System;
+    using System.Buffers;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using DotPulsar;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Extensions;
+
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             const string myTopic = "persistent://public/default/mytopic";
 
@@ -68,10 +68,7 @@ namespace Consuming
                     await consumer.Acknowledge(message, cancellationToken).ConfigureAwait(false);
                 }
             }
-            catch(OperationCanceledException)
-            {
-                return;
-            }
+            catch (OperationCanceledException) { }
         }
 
         private static async Task Monitor(IConsumer consumer)

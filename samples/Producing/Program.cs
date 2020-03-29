@@ -12,19 +12,19 @@
  * limitations under the License.
  */
 
-using DotPulsar;
-using DotPulsar.Abstractions;
-using DotPulsar.Extensions;
-using System;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Producing
 {
-    class Program
+    using System;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using DotPulsar;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Extensions;
+
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             const string myTopic = "persistent://public/default/mytopic";
 
@@ -61,15 +61,13 @@ namespace Producing
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var data = Encoding.UTF8.GetBytes("Sent " + DateTime.UtcNow.ToString());
+                    var data = Encoding.UTF8.GetBytes("Sent " + DateTime.UtcNow);
                     _ = await producer.Send(data, cancellationToken).ConfigureAwait(false);
                     await Task.Delay(delay).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException) // If not using the cancellationToken, then just dispose the producer and catch ObjectDisposedException instead
-            {
-                return;
-            }
+            { }
         }
 
         private static async Task Monitor(IProducer producer)
@@ -84,10 +82,10 @@ namespace Producing
 
                 var stateMessage = state switch
                 {
-                    ProducerState.Connected => $"The producer is connected",
-                    ProducerState.Disconnected => $"The producer is disconnected",
-                    ProducerState.Closed => $"The producer has closed",
-                    ProducerState.Faulted => $"The producer has faulted",
+                    ProducerState.Connected => "The producer is connected",
+                    ProducerState.Disconnected => "The producer is disconnected",
+                    ProducerState.Closed => "The producer has closed",
+                    ProducerState.Faulted => "The producer has faulted",
                     _ => $"The producer has an unknown state '{state}'"
                 };
 

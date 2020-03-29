@@ -12,10 +12,10 @@
  * limitations under the License.
  */
 
-using System.Reflection;
-
 namespace DotPulsar.Internal
 {
+    using System.Reflection;
+
     public static class Constants
     {
         static Constants()

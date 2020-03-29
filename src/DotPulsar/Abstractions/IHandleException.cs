@@ -12,10 +12,10 @@
  * limitations under the License.
  */
 
-using System.Threading.Tasks;
-
 namespace DotPulsar.Abstractions
 {
+    using System.Threading.Tasks;
+
     /// <summary>
     /// An exception handling abstraction.
     /// </summary>

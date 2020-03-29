@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using System;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Threading.Tasks;
+    using Abstractions;
+
     public sealed class ConsumerProcess : Process
     {
         private readonly IStateManager<ConsumerState> _stateManager;
@@ -38,7 +38,7 @@ namespace DotPulsar.Internal
             _isFailoverSubscription = isFailoverSubscription;
         }
 
-        public async override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             _stateManager.SetState(ConsumerState.Closed);
             CancellationTokenSource.Cancel();

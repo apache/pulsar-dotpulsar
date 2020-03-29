@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using System;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System;
+    using System.Threading.Tasks;
+    using Abstractions;
+
     public sealed class ProducerProcess : Process
     {
         private readonly IStateManager<ProducerState> _stateManager;

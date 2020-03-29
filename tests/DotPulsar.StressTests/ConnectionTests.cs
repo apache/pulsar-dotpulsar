@@ -12,22 +12,23 @@
  * limitations under the License.
  */
 
-using DotPulsar.Extensions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using DotPulsar.StressTests.Fixtures;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace DotPulsar.StressTests
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Extensions;
+    using Fixtures;
+    using Xunit;
+    using Xunit.Abstractions;
+
     [Collection(nameof(StandaloneClusterTest))]
     public class ConnectionTests
     {
         private readonly ITestOutputHelper _output;
 
-        public ConnectionTests(ITestOutputHelper output) => _output = output;
+        public ConnectionTests(ITestOutputHelper output)
+            => _output = output;
 
         [Theory]
         [InlineData("pulsar://localhost:54545")] // test that we can connect directly to a broker
@@ -43,9 +44,7 @@ namespace DotPulsar.StressTests
                 .ExceptionHandler(new XunitExceptionHandler(_output));
 
             if (!string.IsNullOrEmpty(serviceUrl))
-            {
                 builder.ServiceUrl(new Uri(serviceUrl));
-            }
 
             await using var client = builder.Build();
 

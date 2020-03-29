@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal.Abstractions
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public interface IConsumerChannelFactory
     {
         Task<IConsumerChannel> Create(CancellationToken cancellationToken = default);
