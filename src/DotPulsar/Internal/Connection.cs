@@ -53,7 +53,7 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            Task<ProducerResponse>? responseTask = null;
+            Task<ProducerResponse>? responseTask;
 
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
@@ -71,7 +71,7 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            Task<SubscribeResponse>? responseTask = null;
+            Task<SubscribeResponse>? responseTask;
 
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
@@ -101,7 +101,7 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            Task<BaseCommand>? responseTask = null;
+            Task<BaseCommand>? responseTask;
 
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
@@ -131,7 +131,7 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            Task<BaseCommand>? responseTask = null;
+            Task<BaseCommand>? responseTask;
 
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
@@ -149,7 +149,7 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            Task<BaseCommand>? responseTask = null;
+            Task<BaseCommand>? responseTask;
 
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
@@ -167,7 +167,7 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            Task<BaseCommand>? response = null;
+            Task<BaseCommand>? response;
 
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
@@ -184,7 +184,7 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            Task<BaseCommand>? response = null;
+            Task<BaseCommand>? response;
 
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
@@ -244,7 +244,10 @@ namespace DotPulsar.Internal
                     }
                 }
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
 
         public async ValueTask DisposeAsync()

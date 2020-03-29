@@ -36,8 +36,8 @@ namespace DotPulsar.Internal
         {
             var processes = _processes.Values.ToArray();
 
-            for (var i = 0; i < processes.Length; ++i)
-                await processes[i].DisposeAsync().ConfigureAwait(false);
+            foreach (var proc in processes)
+                await proc.DisposeAsync().ConfigureAwait(false);
 
             await _connectionPool.DisposeAsync().ConfigureAwait(false);
         }
@@ -81,8 +81,6 @@ namespace DotPulsar.Internal
                         process.Handle(e);
                     break;
             }
-
-            ;
         }
     }
 }

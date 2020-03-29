@@ -98,7 +98,7 @@ namespace DotPulsar.Internal.Extensions
 
                 if (read == 3)
                     break;
-                
+
                 start = 0;
             }
 

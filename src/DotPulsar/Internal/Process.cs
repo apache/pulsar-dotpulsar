@@ -70,7 +70,7 @@ namespace DotPulsar.Internal
                 case ChannelUnsubscribed _:
                     ChannelState = ChannelState.Unsubscribed;
                     break;
-            };
+            }
 
             CalculateState();
         }

@@ -23,7 +23,7 @@ namespace Consuming
     using DotPulsar.Abstractions;
     using DotPulsar.Extensions;
 
-    internal class Program
+    internal static class Program
     {
         private static async Task Main(string[] args)
         {

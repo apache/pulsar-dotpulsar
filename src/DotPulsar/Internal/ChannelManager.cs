@@ -38,6 +38,7 @@ namespace DotPulsar.Internal
         public Task<ProducerResponse> Outgoing(CommandProducer command, Task<BaseCommand> response, IChannel channel)
         {
             var producerId = _producerChannels.Add(channel);
+
             command.ProducerId = producerId;
 
             return response.ContinueWith(result =>
@@ -49,6 +50,7 @@ namespace DotPulsar.Internal
                 }
 
                 channel.Connected();
+
                 return new ProducerResponse(producerId, result.Result.ProducerSuccess.ProducerName);
             }, TaskContinuationOptions.OnlyOnRanToCompletion);
         }
@@ -56,6 +58,7 @@ namespace DotPulsar.Internal
         public Task<SubscribeResponse> Outgoing(CommandSubscribe command, Task<BaseCommand> response, IChannel channel)
         {
             var consumerId = _consumerChannels.Add(channel);
+
             command.ConsumerId = consumerId;
 
             return response.ContinueWith(result =>
@@ -103,27 +106,16 @@ namespace DotPulsar.Internal
                 {
                     var channel = _consumerChannels.Remove(consumerId);
 
-                    if (channel != null)
-                        channel.Unsubscribed();
+                    channel?.Unsubscribed();
                 }
             }, TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 
         public void Incoming(CommandCloseConsumer command)
-        {
-            var channel = _consumerChannels.Remove(command.ConsumerId);
-
-            if (channel != null)
-                channel.ClosedByServer();
-        }
+            => _consumerChannels.Remove(command.ConsumerId)?.ClosedByServer();
 
         public void Incoming(CommandCloseProducer command)
-        {
-            var inbox = _producerChannels.Remove(command.ProducerId);
-
-            if (inbox != null)
-                inbox.ClosedByServer();
-        }
+            => _producerChannels.Remove(command.ProducerId)?.ClosedByServer();
 
         public void Incoming(CommandActiveConsumerChange command)
         {
@@ -139,20 +131,10 @@ namespace DotPulsar.Internal
         }
 
         public void Incoming(CommandReachedEndOfTopic command)
-        {
-            var channel = _consumerChannels[command.ConsumerId];
-
-            if (channel != null)
-                channel.ReachedEndOfTopic();
-        }
+            => _consumerChannels[command.ConsumerId]?.ReachedEndOfTopic();
 
         public void Incoming(CommandMessage command, ReadOnlySequence<byte> data)
-        {
-            var consumer = _consumerChannels[command.ConsumerId];
-
-            if (consumer != null)
-                consumer.Received(new MessagePackage(command.MessageId, data));
-        }
+            => _consumerChannels[command.ConsumerId]?.Received(new MessagePackage(command.MessageId, data));
 
         public void Dispose()
         {

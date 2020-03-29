@@ -49,7 +49,7 @@ namespace DotPulsar.Internal
                 Durable = false,
                 ReadCompacted = options.ReadCompacted,
                 StartMessageId = options.StartMessageId.Data,
-                Subscription = "Reader-" + Guid.NewGuid().ToString("N"),
+                Subscription = $"Reader-{Guid.NewGuid():N}",
                 Topic = options.Topic
             };
 

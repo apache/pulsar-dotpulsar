@@ -30,8 +30,8 @@ namespace DotPulsar.Internal
             _executor = executor;
         }
 
-        public async ValueTask DisposeAsync()
-            => await _lock.DisposeAsync().ConfigureAwait(false);
+        public ValueTask DisposeAsync()
+            => _lock.DisposeAsync();
 
         public async ValueTask Execute(Action action, CancellationToken cancellationToken)
         {

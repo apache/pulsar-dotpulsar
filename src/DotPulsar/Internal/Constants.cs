@@ -21,13 +21,16 @@ namespace DotPulsar.Internal
         static Constants()
         {
             var assemblyName = Assembly.GetCallingAssembly().GetName();
-            ClientVersion = assemblyName.Name + " " + assemblyName.Version.ToString(3);
+            ClientVersion = $"{assemblyName.Name} {assemblyName.Version.ToString(3)}";
             ProtocolVersion = 14;
             PulsarScheme = "pulsar";
             PulsarSslScheme = "pulsar+ssl";
             DefaultPulsarPort = 6650;
             DefaultPulsarSSLPort = 6651;
-            MagicNumber = new byte[] { 0x0e, 0x01 };
+            MagicNumber = new byte[]
+            {
+                0x0e, 0x01
+            };
             MetadataSizeOffset = 6;
             MetadataOffset = 10;
         }

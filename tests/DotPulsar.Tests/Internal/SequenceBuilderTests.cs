@@ -27,10 +27,9 @@ namespace DotPulsar.Tests.Internal
             var a = new byte[] { 0x00, 0x01, 0x02, 0x03 };
             var b = new byte[] { 0x04, 0x05, 0x06, 0x07, 0x08 };
             var c = new byte[] { 0x09 };
-            var builder = new SequenceBuilder<byte>().Append(a).Append(b).Append(c);
 
             //Act
-            var sequence = builder.Build();
+            var sequence = new SequenceBuilder<byte>().Append(a).Append(b).Append(c).Build();
 
             //Assert
             var array = sequence.ToArray();
@@ -48,11 +47,11 @@ namespace DotPulsar.Tests.Internal
             var c = new byte[] { 0x04, 0x05 };
             var d = new byte[] { 0x06, 0x07 };
             var e = new byte[] { 0x08, 0x09 };
+
             var seq = new SequenceBuilder<byte>().Append(b).Append(c).Append(d).Build();
-            var builder = new SequenceBuilder<byte>().Append(a).Append(seq).Append(e);
 
             //Act
-            var sequence = builder.Build();
+            var sequence = new SequenceBuilder<byte>().Append(a).Append(seq).Append(e).Build();
 
             //Assert
             var array = sequence.ToArray();
@@ -68,10 +67,9 @@ namespace DotPulsar.Tests.Internal
             var a = new byte[] { 0x00, 0x01, 0x02, 0x03 };
             var b = new byte[] { 0x04, 0x05, 0x06, 0x07, 0x08 };
             var c = new byte[] { 0x09 };
-            var builder = new SequenceBuilder<byte>().Prepend(c).Prepend(b).Prepend(a);
 
             //Act
-            var sequence = builder.Build();
+            var sequence = new SequenceBuilder<byte>().Prepend(c).Prepend(b).Prepend(a).Build();
 
             //Assert
             var array = sequence.ToArray();
@@ -89,11 +87,11 @@ namespace DotPulsar.Tests.Internal
             var c = new byte[] { 0x04, 0x05 };
             var d = new byte[] { 0x06, 0x07 };
             var e = new byte[] { 0x08, 0x09 };
+
             var seq = new SequenceBuilder<byte>().Prepend(d).Prepend(c).Prepend(b).Build();
-            var builder = new SequenceBuilder<byte>().Prepend(e).Prepend(seq).Prepend(a);
 
             //Act
-            var sequence = builder.Build();
+            var sequence = new SequenceBuilder<byte>().Prepend(e).Prepend(seq).Prepend(a).Build();
 
             //Assert
             var array = sequence.ToArray();

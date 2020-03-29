@@ -49,11 +49,11 @@ namespace DotPulsar.Internal
             _eventRegister.Register(new ProducerCreated(_correlationId, this));
         }
 
-        public async ValueTask<ProducerState> StateChangedTo(ProducerState state, CancellationToken cancellationToken)
-            => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
+        public ValueTask<ProducerState> StateChangedTo(ProducerState state, CancellationToken cancellationToken)
+            => _state.StateChangedTo(state, cancellationToken);
 
-        public async ValueTask<ProducerState> StateChangedFrom(ProducerState state, CancellationToken cancellationToken)
-            => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
+        public ValueTask<ProducerState> StateChangedFrom(ProducerState state, CancellationToken cancellationToken)
+            => _state.StateChangedFrom(state, cancellationToken);
 
         public bool IsFinalState()
             => _state.IsFinalState();
@@ -67,27 +67,29 @@ namespace DotPulsar.Internal
                 return;
 
             _eventRegister.Register(new ProducerDisposed(_correlationId, this));
+
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
-        public async ValueTask<MessageId> Send(byte[] data, CancellationToken cancellationToken)
-            => await Send(new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
+        public ValueTask<MessageId> Send(byte[] data, CancellationToken cancellationToken)
+            => Send(new ReadOnlySequence<byte>(data), cancellationToken);
 
-        public async ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => await Send(new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
+        public ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+            => Send(new ReadOnlySequence<byte>(data), cancellationToken);
 
         public async ValueTask<MessageId> Send(ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
             var response = await _executor.Execute(() => _channel.Send(data, cancellationToken), cancellationToken).ConfigureAwait(false);
+
             return new MessageId(response.MessageId);
         }
 
-        public async ValueTask<MessageId> Send(MessageMetadata metadata, byte[] data, CancellationToken cancellationToken)
-            => await Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
+        public ValueTask<MessageId> Send(MessageMetadata metadata, byte[] data, CancellationToken cancellationToken)
+            => Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
 
-        public async ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => await Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
+        public ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+            => Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
 
         public async ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {

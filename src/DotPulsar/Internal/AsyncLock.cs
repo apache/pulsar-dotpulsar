@@ -46,7 +46,7 @@ namespace DotPulsar.Internal
 
                 if (_semaphoreSlim.CurrentCount == 1) //Lock is free
                 {
-                    _semaphoreSlim.Wait(); //Will never block
+                    _semaphoreSlim.Wait(cancellationToken); //Will never block
                     return _completedTask;
                 }
 

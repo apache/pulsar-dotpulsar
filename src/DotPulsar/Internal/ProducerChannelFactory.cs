@@ -42,7 +42,11 @@ namespace DotPulsar.Internal
             _executor = executor;
             _sequenceId = new SequenceId(options.InitialSequenceId);
 
-            _commandProducer = new CommandProducer { ProducerName = options.ProducerName, Topic = options.Topic };
+            _commandProducer = new CommandProducer
+            {
+                ProducerName = options.ProducerName,
+                Topic = options.Topic
+            };
         }
 
         public async Task<IProducerChannel> Create(CancellationToken cancellationToken)

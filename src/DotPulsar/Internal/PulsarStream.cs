@@ -106,10 +106,13 @@ namespace DotPulsar.Internal
                         break;
                 }
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
             finally
             {
-                _writer.Complete();
+                await _writer.CompleteAsync();
             }
         }
 
@@ -150,7 +153,7 @@ namespace DotPulsar.Internal
             }
             finally
             {
-                _reader.Complete();
+                await _reader.CompleteAsync();
             }
         }
 

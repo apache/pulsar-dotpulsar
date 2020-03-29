@@ -103,7 +103,11 @@ namespace DotPulsar.Internal
         public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            var seek = new CommandSeek { MessageId = messageId.Data };
+
+            var seek = new CommandSeek
+            {
+                MessageId = messageId.Data
+            };
             _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 

@@ -32,9 +32,16 @@ namespace DotPulsar.Internal
 
         public ProducerChannel(ulong id, string name, SequenceId sequenceId, IConnection connection)
         {
-            _cachedMetadata = new MessageMetadata { ProducerName = name };
+            _cachedMetadata = new MessageMetadata
+            {
+                ProducerName = name
+            };
 
-            var commandSend = new CommandSend { ProducerId = id, NumMessages = 1 };
+            var commandSend = new CommandSend
+            {
+                ProducerId = id,
+                NumMessages = 1
+            };
 
             _cachedSendPackage = new SendPackage(commandSend, _cachedMetadata);
 
@@ -47,7 +54,10 @@ namespace DotPulsar.Internal
         {
             try
             {
-                await _connection.Send(new CommandCloseProducer { ProducerId = _id }, CancellationToken.None).ConfigureAwait(false);
+                await _connection.Send(new CommandCloseProducer
+                {
+                    ProducerId = _id
+                }, CancellationToken.None).ConfigureAwait(false);
             }
             catch
             {
