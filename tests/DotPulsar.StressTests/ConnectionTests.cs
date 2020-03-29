@@ -55,7 +55,7 @@ namespace DotPulsar.StressTests
 
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
-            //Act // Assert
+            //Act & Assert
             await producer.StateChangedTo(ProducerState.Connected, cts.Token);
         }
     }

@@ -30,7 +30,10 @@ namespace DotPulsar.StressTests.Fixtures
 
             var waitTries = 10;
 
-            using var handler = new HttpClientHandler { AllowAutoRedirect = true };
+            using var handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = true
+            };
 
             using var client = new HttpClient(handler);
 
@@ -62,7 +65,11 @@ namespace DotPulsar.StressTests.Fixtures
 
         private static void RunProcess(string name, string arguments)
         {
-            var processStartInfo = new ProcessStartInfo { FileName = name, Arguments = arguments };
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = name,
+                Arguments = arguments
+            };
 
             processStartInfo.Environment["TAG"] = "test";
             processStartInfo.Environment["CONFIGURATION"] = "Debug";

@@ -38,11 +38,15 @@ namespace DotPulsar.Internal
 
         public PulsarClientBuilder()
         {
-            _commandConnect = new CommandConnect { ProtocolVersion = Constants.ProtocolVersion, ClientVersion = Constants.ClientVersion };
+            _commandConnect = new CommandConnect
+            {
+                ProtocolVersion = Constants.ProtocolVersion,
+                ClientVersion = Constants.ClientVersion
+            };
 
             _exceptionHandlers = new List<IHandleException>();
             _retryInterval = TimeSpan.FromSeconds(3);
-            _serviceUrl = new Uri(Constants.PulsarScheme + "://localhost:" + Constants.DefaultPulsarPort);
+            _serviceUrl = new Uri($"{Constants.PulsarScheme}://localhost:{Constants.DefaultPulsarPort}");
             _clientCertificates = new X509Certificate2Collection();
             _verifyCertificateAuthority = true;
             _verifyCertificateName = false;
@@ -123,8 +127,7 @@ namespace DotPulsar.Internal
 
             if (scheme == Constants.PulsarScheme)
             {
-                if (!_encryptionPolicy.HasValue)
-                    _encryptionPolicy = EncryptionPolicy.EnforceUnencrypted;
+                _encryptionPolicy ??= EncryptionPolicy.EnforceUnencrypted;
 
                 if (_encryptionPolicy.Value == EncryptionPolicy.EnforceEncrypted)
                     throw new ConnectionSecurityException(
@@ -132,8 +135,7 @@ namespace DotPulsar.Internal
             }
             else if (scheme == Constants.PulsarSslScheme)
             {
-                if (!_encryptionPolicy.HasValue)
-                    _encryptionPolicy = EncryptionPolicy.EnforceEncrypted;
+                _encryptionPolicy ??= EncryptionPolicy.EnforceEncrypted;
 
                 if (_encryptionPolicy.Value == EncryptionPolicy.EnforceUnencrypted)
                     throw new ConnectionSecurityException(
@@ -145,10 +147,18 @@ namespace DotPulsar.Internal
             }
 
             var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
+
             var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval);
-            var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
+
+            var exceptionHandlers = new List<IHandleException>(_exceptionHandlers)
+            {
+                new DefaultExceptionHandler(_retryInterval)
+            };
+
             var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);
+
             var processManager = new ProcessManager(connectionPool);
+
             return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline);
         }
     }

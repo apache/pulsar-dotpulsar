@@ -111,7 +111,6 @@ namespace DotPulsar.Internal
                     return response.BrokerServiceUrl;
                 case EncryptionPolicy.PreferEncrypted:
                     return hasBrokerServiceUrlTls ? response.BrokerServiceUrlTls : response.BrokerServiceUrl;
-                case EncryptionPolicy.PreferUnencrypted:
                 default:
                     return hasBrokerServiceUrl ? response.BrokerServiceUrl : response.BrokerServiceUrlTls;
             }
@@ -170,7 +169,10 @@ namespace DotPulsar.Internal
                         }
                     }
                 }
-                catch { }
+                catch
+                {
+                    // ignored
+                }
             }
         }
     }

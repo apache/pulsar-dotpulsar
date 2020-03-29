@@ -96,7 +96,10 @@ namespace DotPulsar.Internal
                     node.Value.Dispose();
                     _pendingDequeues.Remove(node);
                 }
-                catch { }
+                catch
+                {
+                    // ignored
+                }
             }
         }
 

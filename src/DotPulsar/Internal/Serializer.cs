@@ -65,8 +65,14 @@ namespace DotPulsar.Internal
             var union = new UIntUnion(integer);
 
             return BitConverter.IsLittleEndian
-                ? new[] { union.B3, union.B2, union.B1, union.B0 }
-                : new[] { union.B0, union.B1, union.B2, union.B3 };
+                ? new[]
+                {
+                    union.B3, union.B2, union.B1, union.B0
+                }
+                : new[]
+                {
+                    union.B0, union.B1, union.B2, union.B3
+                };
         }
 
         private static byte[] Serialize<T>(T item)

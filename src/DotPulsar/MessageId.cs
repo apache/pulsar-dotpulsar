@@ -32,7 +32,13 @@ namespace DotPulsar
             => Data = messageIdData;
 
         public MessageId(ulong ledgerId, ulong entryId, int partition, int batchIndex)
-            => Data = new MessageIdData { LedgerId = ledgerId, EntryId = entryId, Partition = partition, BatchIndex = batchIndex };
+            => Data = new MessageIdData
+            {
+                LedgerId = ledgerId,
+                EntryId = entryId,
+                Partition = partition,
+                BatchIndex = batchIndex
+            };
 
         internal MessageIdData Data { get; }
 
@@ -42,7 +48,7 @@ namespace DotPulsar
         public int BatchIndex => Data.BatchIndex;
 
         public override bool Equals(object o)
-            => o is MessageId ? Equals((MessageId) o) : false;
+            => o is MessageId id && Equals(id);
 
         public bool Equals(MessageId other)
             => LedgerId == other.LedgerId && EntryId == other.EntryId && Partition == other.Partition && BatchIndex == other.BatchIndex;
