@@ -22,12 +22,12 @@ namespace DotPulsar.Internal
     {
         private const string ConnectResponseIdentifier = "Connected";
 
-        private readonly Awaitor<string, BaseCommand> _responses;
+        private readonly Awaiter<string, BaseCommand> _responses;
         private ulong _requestId;
 
         public RequestResponseHandler()
         {
-            _responses = new Awaitor<string, BaseCommand>();
+            _responses = new Awaiter<string, BaseCommand>();
             _requestId = 1;
         }
 

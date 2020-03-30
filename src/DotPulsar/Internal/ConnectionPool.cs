@@ -75,6 +75,7 @@ namespace DotPulsar.Internal
             {
                 var connection = await GetConnection(serviceUrl, cancellationToken).ConfigureAwait(false);
                 var response = await connection.Send(lookup, cancellationToken).ConfigureAwait(false);
+
                 response.Expect(BaseCommand.Type.LookupResponse);
 
                 if (response.LookupTopicResponse.Response == CommandLookupTopicResponse.LookupType.Failed)
@@ -87,10 +88,8 @@ namespace DotPulsar.Internal
                 if (response.LookupTopicResponse.Response == CommandLookupTopicResponse.LookupType.Redirect || !response.LookupTopicResponse.Authoritative)
                     continue;
 
-                if (_serviceUrl.IsLoopback) // LookupType is 'Connect', ServiceUrl is local and response is authoritative. Assume the Pulsar server is a standalone docker.
-                    return connection;
-                else
-                    return await GetConnection(serviceUrl, cancellationToken).ConfigureAwait(false);
+                // LookupType is 'Connect', ServiceUrl is local and response is authoritative. Assume the Pulsar server is a standalone docker.
+                return _serviceUrl.IsLoopback ? connection : await GetConnection(serviceUrl, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -164,6 +163,7 @@ namespace DotPulsar.Internal
                             var connection = _connections[serviceUrl];
                             if (connection is null)
                                 continue;
+
                             if (!await connection.HasChannels(cancellationToken).ConfigureAwait(false))
                                 await DisposeConnection(serviceUrl).ConfigureAwait(false);
                         }

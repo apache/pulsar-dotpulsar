@@ -25,16 +25,12 @@ namespace DotPulsar.Internal.Extensions
             if (command.CommandType == type)
                 return;
 
-            switch (command.CommandType)
-            {
-                case BaseCommand.Type.Error:
-                    command.Error.Throw();
-                    return;
-                case BaseCommand.Type.SendError:
-                    command.SendError.Throw();
-                    return;
-            }
+            if (command.CommandType == BaseCommand.Type.Error)
+                command.Error.Throw();
 
+            if (command.CommandType == BaseCommand.Type.SendError)
+                command.SendError.Throw();
+           
             throw new UnexpectedResponseException($"Expected '{type}' but got '{command.CommandType}'");
         }
 

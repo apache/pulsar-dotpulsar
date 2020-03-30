@@ -27,10 +27,7 @@ namespace DotPulsar.Internal
             PulsarSslScheme = "pulsar+ssl";
             DefaultPulsarPort = 6650;
             DefaultPulsarSSLPort = 6651;
-            MagicNumber = new byte[]
-            {
-                0x0e, 0x01
-            };
+            MagicNumber = new byte[] {  0x0e, 0x01 };
             MetadataSizeOffset = 6;
             MetadataOffset = 10;
         }

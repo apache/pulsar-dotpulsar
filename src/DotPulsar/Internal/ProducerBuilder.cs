@@ -53,11 +53,13 @@ namespace DotPulsar.Internal
             if (string.IsNullOrEmpty(_topic))
                 throw new ConfigurationException("ProducerOptions.Topic may not be null or empty");
 
-            return _pulsarClient.CreateProducer(new ProducerOptions(_topic!)
+            var options = new ProducerOptions(_topic!)
             {
                 InitialSequenceId = _initialSequenceId,
                 ProducerName = _producerName
-            });
+            };
+
+            return _pulsarClient.CreateProducer(options);
         }
     }
 }

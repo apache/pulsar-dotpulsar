@@ -103,11 +103,7 @@ namespace DotPulsar.Internal
             _ = response.ContinueWith(result =>
             {
                 if (result.Result.CommandType == BaseCommand.Type.Success)
-                {
-                    var channel = _consumerChannels.Remove(consumerId);
-
-                    channel?.Unsubscribed();
-                }
+                    _consumerChannels.Remove(consumerId)?.Unsubscribed();
             }, TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 

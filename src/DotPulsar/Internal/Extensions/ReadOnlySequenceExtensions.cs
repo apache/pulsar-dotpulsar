@@ -70,28 +70,20 @@ namespace DotPulsar.Internal.Extensions
                     switch (read)
                     {
                         case 0:
-                            if (reverse)
-                                union.B0 = span[i];
-                            else
-                                union.B3 = span[i];
+                            if (reverse) union.B0 = span[i];
+                            else union.B3 = span[i];
                             continue;
                         case 1:
-                            if (reverse)
-                                union.B1 = span[i];
-                            else
-                                union.B2 = span[i];
+                            if (reverse) union.B1 = span[i];
+                            else union.B2 = span[i];
                             continue;
                         case 2:
-                            if (reverse)
-                                union.B2 = span[i];
-                            else
-                                union.B1 = span[i];
+                            if (reverse) union.B2 = span[i];
+                            else union.B1 = span[i];
                             continue;
                         case 3:
-                            if (reverse)
-                                union.B3 = span[i];
-                            else
-                                union.B0 = span[i];
+                            if (reverse) union.B3 = span[i];
+                            else union.B0 = span[i];
                             break;
                     }
                 }
