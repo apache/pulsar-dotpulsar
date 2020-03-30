@@ -18,11 +18,11 @@ namespace DotPulsar.Internal
     using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
-    public sealed class Awaitor<T, TResult> : IDisposable
+    public sealed class Awaiter<T, TResult> : IDisposable
     {
         private readonly ConcurrentDictionary<T, TaskCompletionSource<TResult>> _items;
 
-        public Awaitor()
+        public Awaiter()
             => _items = new ConcurrentDictionary<T, TaskCompletionSource<TResult>>();
 
         public Task<TResult> CreateTask(T item)

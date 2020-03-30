@@ -27,7 +27,7 @@ namespace DotPulsar.Internal
             => _source = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public void SetupCancellation(Action callback, CancellationToken token)
-            => _registration = token.Register(() => callback());
+            => _registration = token.Register(callback);
 
         public void SetResult(T result)
             => _ = _source.TrySetResult(result);

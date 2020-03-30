@@ -74,6 +74,7 @@ namespace DotPulsar.Internal
             }
 
             await _semaphoreSlim.WaitAsync().ConfigureAwait(false); //Wait for possible lock-holder to finish
+
             _semaphoreSlim.Release();
             _semaphoreSlim.Dispose();
         }

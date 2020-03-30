@@ -40,29 +40,25 @@ namespace DotPulsar.Internal
         }
 
         private FaultAction DetermineFaultAction(Exception exception, CancellationToken cancellationToken)
-        {
-            switch (exception)
+            => exception switch
             {
-                case TooManyRequestsException _: return FaultAction.Retry;
-                case ChannelNotReadyException _: return FaultAction.Retry;
-                case ServiceNotReadyException _: return FaultAction.Retry;
-                case ConnectionDisposedException _: return FaultAction.Retry;
-                case AsyncLockDisposedException _: return FaultAction.Retry;
-                case PulsarStreamDisposedException _: return FaultAction.Retry;
-                case AsyncQueueDisposedException _: return FaultAction.Retry;
-                case OperationCanceledException _: return cancellationToken.IsCancellationRequested ? FaultAction.Rethrow : FaultAction.Retry;
-                case DotPulsarException _: return FaultAction.Rethrow;
-                case SocketException socketException:
-                    return socketException.SocketErrorCode switch
-                    {
-                        SocketError.HostNotFound => FaultAction.Rethrow,
-                        SocketError.HostUnreachable => FaultAction.Rethrow,
-                        SocketError.NetworkUnreachable => FaultAction.Rethrow,
-                        _ => FaultAction.Retry
-                    };
-            }
-
-            return FaultAction.Rethrow;
-        }
+                TooManyRequestsException _ => FaultAction.Retry,
+                ChannelNotReadyException _ => FaultAction.Retry,
+                ServiceNotReadyException _ => FaultAction.Retry,
+                ConnectionDisposedException _ => FaultAction.Retry,
+                AsyncLockDisposedException _ => FaultAction.Retry,
+                PulsarStreamDisposedException _ => FaultAction.Retry,
+                AsyncQueueDisposedException _ => FaultAction.Retry,
+                OperationCanceledException _ => cancellationToken.IsCancellationRequested ? FaultAction.Rethrow : FaultAction.Retry,
+                DotPulsarException _ => FaultAction.Rethrow,
+                SocketException socketException => socketException.SocketErrorCode switch
+                {
+                    SocketError.HostNotFound => FaultAction.Rethrow,
+                    SocketError.HostUnreachable => FaultAction.Rethrow,
+                    SocketError.NetworkUnreachable => FaultAction.Rethrow,
+                    _ => FaultAction.Retry
+                },
+                _ => FaultAction.Rethrow
+            };
     }
 }

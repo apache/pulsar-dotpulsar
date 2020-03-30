@@ -97,6 +97,7 @@ namespace DotPulsar.Internal
         public async ValueTask Unsubscribe(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
+
             _ = await _executor.Execute(() => _channel.Send(new CommandUnsubscribe(), cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
@@ -108,6 +109,7 @@ namespace DotPulsar.Internal
             {
                 MessageId = messageId.Data
             };
+
             _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
@@ -117,6 +119,7 @@ namespace DotPulsar.Internal
 
             var response = await _executor.Execute(() => _channel.Send(new CommandGetLastMessageId(), cancellationToken), cancellationToken)
                 .ConfigureAwait(false);
+
             return new MessageId(response.LastMessageId);
         }
 

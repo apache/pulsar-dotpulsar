@@ -17,7 +17,7 @@ namespace DotPulsar.Internal
     using System.Buffers;
     using PulsarApi;
 
-    public struct MessagePackage
+    public readonly struct MessagePackage
     {
         public MessagePackage(MessageIdData messageId, ReadOnlySequence<byte> data)
         {
