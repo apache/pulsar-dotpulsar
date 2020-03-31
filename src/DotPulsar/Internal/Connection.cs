@@ -85,17 +85,17 @@ namespace DotPulsar.Internal
             return await responseTask.ConfigureAwait(false);
         }
 
-        public async Task Send(CommandPing command, CancellationToken cancellationToken)
-            => await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public Task Send(CommandPing command, CancellationToken cancellationToken)
+            => Send(command.AsBaseCommand(), cancellationToken);
 
-        public async Task Send(CommandPong command, CancellationToken cancellationToken)
-            => await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public Task Send(CommandPong command, CancellationToken cancellationToken)
+            => Send(command.AsBaseCommand(), cancellationToken);
 
-        public async Task Send(CommandAck command, CancellationToken cancellationToken)
-            => await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public Task Send(CommandAck command, CancellationToken cancellationToken)
+            => Send(command.AsBaseCommand(), cancellationToken);
 
-        public async Task Send(CommandFlow command, CancellationToken cancellationToken)
-            => await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
+        public Task Send(CommandFlow command, CancellationToken cancellationToken)
+            => Send(command.AsBaseCommand(), cancellationToken);
 
         public async Task<BaseCommand> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
         {
