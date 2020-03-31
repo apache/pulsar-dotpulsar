@@ -48,9 +48,7 @@ namespace DotPulsar.Internal
                     tcs.Value.SetResult(item);
                 }
                 else
-                {
                     _queue.Enqueue(item);
-                }
             }
         }
 

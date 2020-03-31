@@ -117,8 +117,7 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            var response = await _executor.Execute(() => _channel.Send(new CommandGetLastMessageId(), cancellationToken), cancellationToken)
-                .ConfigureAwait(false);
+            var response = await _executor.Execute(() => _channel.Send(new CommandGetLastMessageId(), cancellationToken), cancellationToken).ConfigureAwait(false);
 
             return new MessageId(response.LastMessageId);
         }

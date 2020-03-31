@@ -126,9 +126,9 @@ namespace DotPulsar.Internal
                 chain.ChainPolicy.ExtraStore.Add(_trustedCertificateAuthority);
                 _ = chain.Build((X509Certificate2) certificate);
 
-                foreach (var element in chain.ChainElements)
+                for (var i = 0; i < chain.ChainElements.Count; i++)
                 {
-                    if (element.Certificate.Thumbprint == _trustedCertificateAuthority.Thumbprint)
+                    if (chain.ChainElements[i].Certificate.Thumbprint == _trustedCertificateAuthority.Thumbprint)
                         return true;
                 }
 
