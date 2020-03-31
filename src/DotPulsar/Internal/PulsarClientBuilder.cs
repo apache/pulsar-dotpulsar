@@ -142,18 +142,14 @@ namespace DotPulsar.Internal
                         $"The scheme of the ServiceUrl ({_serviceUrl}) is '{Constants.PulsarSslScheme}' and cannot be used with an encryption policy of 'EnforceUnencrypted'");
             }
             else
-            {
                 throw new InvalidSchemeException($"Invalid scheme '{scheme}'. Expected '{Constants.PulsarScheme}' or '{Constants.PulsarSslScheme}'");
-            }
+
 
             var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
             var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval);
             var processManager = new ProcessManager(connectionPool);
-
-            var exceptionHandlerPipeline = new ExceptionHandlerPipeline(new List<IHandleException>(_exceptionHandlers)
-            {
-                new DefaultExceptionHandler(_retryInterval)
-            });
+            var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
+            var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);
 
             return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline);
         }

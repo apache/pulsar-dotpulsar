@@ -32,16 +32,9 @@ namespace DotPulsar.Internal
 
         public ProducerChannel(ulong id, string name, SequenceId sequenceId, IConnection connection)
         {
-            _cachedMetadata = new MessageMetadata
-            {
-                ProducerName = name
-            };
+            _cachedMetadata = new MessageMetadata { ProducerName = name };
 
-            var commandSend = new CommandSend
-            {
-                ProducerId = id,
-                NumMessages = 1
-            };
+            var commandSend = new CommandSend { ProducerId = id, NumMessages = 1 };
 
             _cachedSendPackage = new SendPackage(commandSend, _cachedMetadata);
 
@@ -54,10 +47,7 @@ namespace DotPulsar.Internal
         {
             try
             {
-                await _connection.Send(new CommandCloseProducer
-                {
-                    ProducerId = _id
-                }, CancellationToken.None).ConfigureAwait(false);
+                await _connection.Send(new CommandCloseProducer { ProducerId = _id }, CancellationToken.None).ConfigureAwait(false);
             }
             catch
             {
@@ -65,19 +55,21 @@ namespace DotPulsar.Internal
             }
         }
 
-        public async Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
+        public Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
         {
             _cachedSendPackage.Metadata = _cachedMetadata;
             _cachedSendPackage.Payload = payload;
-            return await SendPackage(true, cancellationToken).ConfigureAwait(false);
+
+            return SendPackage(true, cancellationToken);
         }
 
-        public async Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
+        public Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
         {
             metadata.ProducerName = _cachedMetadata.ProducerName;
             _cachedSendPackage.Metadata = metadata;
             _cachedSendPackage.Payload = payload;
-            return await SendPackage(metadata.SequenceId == 0, cancellationToken).ConfigureAwait(false);
+
+            return SendPackage(metadata.SequenceId == 0, cancellationToken);
         }
 
         private async Task<CommandSendReceipt> SendPackage(bool autoAssignSequenceId, CancellationToken cancellationToken)
@@ -92,9 +84,7 @@ namespace DotPulsar.Internal
                     _cachedSendPackage.Metadata.SequenceId = _sequenceId.Current;
                 }
                 else
-                {
                     _cachedSendPackage.Command.SequenceId = _cachedSendPackage.Metadata.SequenceId;
-                }
 
                 var response = await _connection.Send(_cachedSendPackage, cancellationToken).ConfigureAwait(false);
                 response.Expect(BaseCommand.Type.SendReceipt);
@@ -108,7 +98,7 @@ namespace DotPulsar.Internal
             {
                 // Reset in case the user reuse the MessageMetadata, but is not explicitly setting the sequenceId
                 if (autoAssignSequenceId)
-                    _cachedSendPackage.Metadata.SequenceId =  0;
+                    _cachedSendPackage.Metadata.SequenceId = 0;
             }
         }
     }
