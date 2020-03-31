@@ -135,10 +135,7 @@ namespace DotPulsar.Internal
             {
                 _queue.Dispose();
 
-                await _connection.Send(new CommandCloseConsumer
-                {
-                    ConsumerId = _id
-                }, CancellationToken.None).ConfigureAwait(false);
+                await _connection.Send(new CommandCloseConsumer { ConsumerId = _id }, CancellationToken.None).ConfigureAwait(false);
             }
             catch
             {
@@ -162,11 +159,7 @@ namespace DotPulsar.Internal
 
         private async Task RejectPackage(MessagePackage messagePackage, CancellationToken cancellationToken)
         {
-            var ack = new CommandAck
-            {
-                Type = CommandAck.AckType.Individual,
-                validation_error = CommandAck.ValidationError.ChecksumMismatch
-            };
+            var ack = new CommandAck { Type = CommandAck.AckType.Individual, validation_error = CommandAck.ValidationError.ChecksumMismatch };
 
             ack.MessageIds.Add(messagePackage.MessageId);
 

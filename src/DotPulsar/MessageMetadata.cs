@@ -71,8 +71,10 @@ namespace DotPulsar
         {
             get
             {
-                foreach (var prop in Metadata.Properties)
+                for (var i = 0; i < Metadata.Properties.Count; i++)
                 {
+                    var prop = Metadata.Properties[i];
+
                     if (prop.Key == key)
                         return prop.Value;
                 }
@@ -81,8 +83,10 @@ namespace DotPulsar
             }
             set
             {
-                foreach (var prop in Metadata.Properties)
+                for (var i = 0; i < Metadata.Properties.Count; i++)
                 {
+                    var prop = Metadata.Properties[i];
+
                     if (prop.Key != key)
                         continue;
 
@@ -91,11 +95,7 @@ namespace DotPulsar
                     return;
                 }
 
-                Metadata.Properties.Add(new KeyValue
-                {
-                    Key = key,
-                    Value = value
-                });
+                Metadata.Properties.Add(new KeyValue { Key = key, Value = value });
             }
         }
 
