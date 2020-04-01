@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -71,7 +71,7 @@ namespace DotPulsar
         {
             get
             {
-                for (var i = 0; i < Metadata.Properties.Count; i++)
+                for (var i = 0; i < Metadata.Properties.Count; ++i)
                 {
                     var prop = Metadata.Properties[i];
 
@@ -83,7 +83,7 @@ namespace DotPulsar
             }
             set
             {
-                for (var i = 0; i < Metadata.Properties.Count; i++)
+                for (var i = 0; i < Metadata.Properties.Count; ++i)
                 {
                     var prop = Metadata.Properties[i];
 

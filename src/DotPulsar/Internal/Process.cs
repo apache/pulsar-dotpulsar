@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,13 +22,13 @@ namespace DotPulsar.Internal
 {
     public abstract class Process : IProcess
     {
-        protected readonly CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
-
+        protected readonly CancellationTokenSource CancellationTokenSource;
         protected ChannelState ChannelState;
         protected ExecutorState ExecutorState;
 
-        public Process(Guid correlationId)
+        protected Process(Guid correlationId)
         {
+            CancellationTokenSource = new CancellationTokenSource();
             ChannelState = ChannelState.Disconnected;
             ExecutorState = ExecutorState.Ok;
             CorrelationId = correlationId;

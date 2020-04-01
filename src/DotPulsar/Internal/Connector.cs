@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,7 +30,10 @@ namespace DotPulsar.Internal
         private readonly bool _verifyCertificateAuthority;
         private readonly bool _verifyCertificateName;
 
-        public Connector(X509Certificate2Collection clientCertificates, X509Certificate2? trustedCertificateAuthority, bool verifyCertificateAuthority,
+        public Connector(
+            X509Certificate2Collection clientCertificates,
+            X509Certificate2? trustedCertificateAuthority,
+            bool verifyCertificateAuthority,
             bool verifyCertificateName)
         {
             _clientCertificates = clientCertificates;
