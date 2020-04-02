@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,14 +33,18 @@ namespace DotPulsar.Internal
         private readonly IStateChanged<ReaderState> _state;
         private int _isDisposed;
 
+        public string Topic { get; }
+
         public Reader(
             Guid correlationId,
+            string topic,
             IRegisterEvent eventRegister,
             IReaderChannel initialChannel,
             IExecute executor,
             IStateChanged<ReaderState> state)
         {
             _correlationId = correlationId;
+            Topic = topic;
             _eventRegister = eventRegister;
             _channel = initialChannel;
             _executor = executor;

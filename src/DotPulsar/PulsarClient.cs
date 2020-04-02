@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,7 +48,7 @@ namespace DotPulsar
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var producer = new Producer(correlationId, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
+            var producer = new Producer(correlationId, options.Topic, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
             var process = new ProducerProcess(correlationId, stateManager, factory, producer);
             _processManager.Add(process);
             process.Start();
@@ -62,9 +62,8 @@ namespace DotPulsar
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
 
-            var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic,
-                ConsumerState.Faulted);
-            var consumer = new Consumer(correlationId, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
+            var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
+            var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
             var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
             _processManager.Add(process);
             process.Start();
@@ -78,7 +77,7 @@ namespace DotPulsar
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var factory = new ReaderChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
             var stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
-            var reader = new Reader(correlationId, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
+            var reader = new Reader(correlationId, options.Topic, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
             var process = new ReaderProcess(correlationId, stateManager, factory, reader);
             _processManager.Add(process);
             process.Start();

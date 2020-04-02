@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -58,6 +58,11 @@ namespace DotPulsar.Abstractions
         /// Reset the subscription associated with this consumer to a specific MessageId.
         /// </summary>
         ValueTask Seek(MessageId messageId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// The topic of the consumer.
+        /// </summary>
+        string Topic { get; }
 
         /// <summary>
         /// Unsubscribe the consumer.
