@@ -53,11 +53,17 @@ namespace DotPulsar.Internal
             _eventRegister.Register(new ProducerCreated(_correlationId, this));
         }
 
-        public ValueTask<ProducerState> StateChangedTo(ProducerState state, CancellationToken cancellationToken)
-            => _state.StateChangedTo(state, cancellationToken);
+        public async ValueTask<ProducerStateChanged> StateChangedTo(ProducerState state, CancellationToken cancellationToken)
+        {
+            var newState = await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
+            return new ProducerStateChanged(this, newState);
+        }
 
-        public ValueTask<ProducerState> StateChangedFrom(ProducerState state, CancellationToken cancellationToken)
-            => _state.StateChangedFrom(state, cancellationToken);
+        public async ValueTask<ProducerStateChanged> StateChangedFrom(ProducerState state, CancellationToken cancellationToken)
+        {
+            var newState = await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
+            return new ProducerStateChanged(this, newState);
+        }
 
         public bool IsFinalState()
             => _state.IsFinalState();

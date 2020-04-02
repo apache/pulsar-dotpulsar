@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -78,19 +78,21 @@ namespace Reading
 
             while (true)
             {
-                state = await reader.StateChangedFrom(state).ConfigureAwait(false);
+                var stateChanged = await reader.StateChangedFrom(state).ConfigureAwait(false);
+                state = stateChanged.ReaderState;
 
                 var stateMessage = state switch
                 {
-                    ReaderState.Connected => "The reader is connected",
-                    ReaderState.Disconnected => "The reader is disconnected",
-                    ReaderState.Closed => "The reader has closed",
-                    ReaderState.ReachedEndOfTopic => "The reader has reached end of topic",
-                    ReaderState.Faulted => "The reader has faulted",
-                    _ => $"The reader has an unknown state '{state}'"
+                    ReaderState.Connected => "is connected",
+                    ReaderState.Disconnected => "is disconnected",
+                    ReaderState.Closed => "has closed",
+                    ReaderState.ReachedEndOfTopic => "has reached end of topic",
+                    ReaderState.Faulted => "has faulted",
+                    _ => $"has an unknown state '{state}'"
                 };
 
-                Console.WriteLine(stateMessage);
+                var topic = stateChanged.Reader.Topic;
+                Console.WriteLine($"The reader for topic '{topic}' " + stateMessage);
 
                 if (reader.IsFinalState(state))
                     return;

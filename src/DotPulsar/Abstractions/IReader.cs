@@ -17,16 +17,55 @@ namespace DotPulsar.Abstractions
     using System;
     using System.Collections.Generic;
     using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// A reader abstraction.
     /// </summary>
-    public interface IReader : IStateChanged<ReaderState>, IAsyncDisposable
+    public interface IReader : IAsyncDisposable
     {
+        /// <summary>
+        /// Ask whether the current state is final, meaning that it will never change.
+        /// </summary>
+        /// <returns>
+        /// True if it's final and False if it's not.
+        /// </returns>
+        bool IsFinalState();
+
+        /// <summary>
+        /// Ask whether the provided state is final, meaning that it will never change.
+        /// </summary>
+        /// <returns>
+        /// True if it's final and False if it's not.
+        /// </returns>
+        bool IsFinalState(ReaderState state);
+
         /// <summary>
         /// Get an IAsyncEnumerable for reading messages
         /// </summary>
         IAsyncEnumerable<Message> Messages(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Wait for the state to change to a specific state.
+        /// </summary>
+        /// <returns>
+        /// The current state.
+        /// </returns>
+        /// <remarks>
+        /// If the state change to a final state, then all awaiting tasks will complete.
+        /// </remarks>
+        ValueTask<ReaderStateChanged> StateChangedTo(ReaderState state, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Wait for the state to change from a specific state.
+        /// </summary>
+        /// <returns>
+        /// The current state.
+        /// </returns>
+        /// <remarks>
+        /// If the state change to a final state, then all awaiting tasks will complete.
+        /// </remarks>
+        ValueTask<ReaderStateChanged> StateChangedFrom(ReaderState state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// The topic of the reader.

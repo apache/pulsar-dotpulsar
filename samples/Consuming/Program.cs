@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -79,20 +79,22 @@ namespace Consuming
 
             while (true)
             {
-                state = await consumer.StateChangedFrom(state).ConfigureAwait(false);
+                var stateChanged = await consumer.StateChangedFrom(state).ConfigureAwait(false);
+                state = stateChanged.ConsumerState;
 
                 var stateMessage = state switch
                 {
-                    ConsumerState.Active => "The consumer is active",
-                    ConsumerState.Inactive => "The consumer is inactive",
-                    ConsumerState.Disconnected => "The consumer is disconnected",
-                    ConsumerState.Closed => "The consumer has closed",
-                    ConsumerState.ReachedEndOfTopic => "The consumer has reached end of topic",
-                    ConsumerState.Faulted => "The consumer has faulted",
-                    _ => $"The consumer has an unknown state '{state}'"
+                    ConsumerState.Active => "is active",
+                    ConsumerState.Inactive => "is inactive",
+                    ConsumerState.Disconnected => "is disconnected",
+                    ConsumerState.Closed => "has closed",
+                    ConsumerState.ReachedEndOfTopic => "has reached end of topic",
+                    ConsumerState.Faulted => "has faulted",
+                    _ => $"has an unknown state '{state}'"
                 };
 
-                Console.WriteLine(stateMessage);
+                var topic = stateChanged.Consumer.Topic;
+                Console.WriteLine($"The consumer for topic '{topic}' " + stateMessage);
 
                 if (consumer.IsFinalState(state))
                     return;

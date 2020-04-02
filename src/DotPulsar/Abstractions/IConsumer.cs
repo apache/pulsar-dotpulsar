@@ -22,7 +22,7 @@ namespace DotPulsar.Abstractions
     /// <summary>
     /// A consumer abstraction.
     /// </summary>
-    public interface IConsumer : IStateChanged<ConsumerState>, IAsyncDisposable
+    public interface IConsumer : IAsyncDisposable
     {
         /// <summary>
         /// Acknowledge the consumption of a single message.
@@ -50,6 +50,22 @@ namespace DotPulsar.Abstractions
         ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Ask whether the current state is final, meaning that it will never change.
+        /// </summary>
+        /// <returns>
+        /// True if it's final and False if it's not.
+        /// </returns>
+        bool IsFinalState();
+
+        /// <summary>
+        /// Ask whether the provided state is final, meaning that it will never change.
+        /// </summary>
+        /// <returns>
+        /// True if it's final and False if it's not.
+        /// </returns>
+        bool IsFinalState(ConsumerState state);
+
+        /// <summary>
         /// Get an IAsyncEnumerable for consuming messages
         /// </summary>
         IAsyncEnumerable<Message> Messages(CancellationToken cancellationToken = default);
@@ -58,6 +74,28 @@ namespace DotPulsar.Abstractions
         /// Reset the subscription associated with this consumer to a specific MessageId.
         /// </summary>
         ValueTask Seek(MessageId messageId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Wait for the state to change to a specific state.
+        /// </summary>
+        /// <returns>
+        /// The current state.
+        /// </returns>
+        /// <remarks>
+        /// If the state change to a final state, then all awaiting tasks will complete.
+        /// </remarks>
+        ValueTask<ConsumerStateChanged> StateChangedTo(ConsumerState state, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Wait for the state to change from a specific state.
+        /// </summary>
+        /// <returns>
+        /// The current state.
+        /// </returns>
+        /// <remarks>
+        /// If the state change to a final state, then all awaiting tasks will complete.
+        /// </remarks>
+        ValueTask<ConsumerStateChanged> StateChangedFrom(ConsumerState state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// The topic of the consumer.

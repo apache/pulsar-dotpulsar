@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -78,18 +78,20 @@ namespace Producing
 
             while (true)
             {
-                state = await producer.StateChangedFrom(state).ConfigureAwait(false);
+                var stateChanged = await producer.StateChangedFrom(state).ConfigureAwait(false);
+                state = stateChanged.ProducerState;
 
                 var stateMessage = state switch
                 {
-                    ProducerState.Connected => "The producer is connected",
-                    ProducerState.Disconnected => "The producer is disconnected",
-                    ProducerState.Closed => "The producer has closed",
-                    ProducerState.Faulted => "The producer has faulted",
-                    _ => $"The producer has an unknown state '{state}'"
+                    ProducerState.Connected => "is connected",
+                    ProducerState.Disconnected => "is disconnected",
+                    ProducerState.Closed => "has closed",
+                    ProducerState.Faulted => "has faulted",
+                    _ => $"has an unknown state '{state}'"
                 };
 
-                Console.WriteLine(stateMessage);
+                var topic = stateChanged.Producer.Topic;
+                Console.WriteLine($"The producer for topic '{topic}' " + stateMessage);
 
                 if (producer.IsFinalState(state))
                     return;

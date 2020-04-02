@@ -57,11 +57,17 @@ namespace DotPulsar.Internal
             _eventRegister.Register(new ConsumerCreated(_correlationId, this));
         }
 
-        public async ValueTask<ConsumerState> StateChangedTo(ConsumerState state, CancellationToken cancellationToken)
-            => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
+        public async ValueTask<ConsumerStateChanged> StateChangedTo(ConsumerState state, CancellationToken cancellationToken)
+        {
+            var newState = await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
+            return new ConsumerStateChanged(this, newState);
+        }
 
-        public async ValueTask<ConsumerState> StateChangedFrom(ConsumerState state, CancellationToken cancellationToken)
-            => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
+        public async ValueTask<ConsumerStateChanged> StateChangedFrom(ConsumerState state, CancellationToken cancellationToken)
+        {
+            var newState = await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
+            return new ConsumerStateChanged(this, newState);
+        }
 
         public bool IsFinalState()
             => _state.IsFinalState();

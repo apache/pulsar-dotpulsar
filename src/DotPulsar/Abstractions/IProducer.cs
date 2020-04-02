@@ -22,8 +22,24 @@ namespace DotPulsar.Abstractions
     /// <summary>
     /// A producer abstraction.
     /// </summary>
-    public interface IProducer : IStateChanged<ProducerState>, IAsyncDisposable
+    public interface IProducer : IAsyncDisposable
     {
+        /// <summary>
+        /// Ask whether the current state is final, meaning that it will never change.
+        /// </summary>
+        /// <returns>
+        /// True if it's final and False if it's not.
+        /// </returns>
+        bool IsFinalState();
+
+        /// <summary>
+        /// Ask whether the provided state is final, meaning that it will never change.
+        /// </summary>
+        /// <returns>
+        /// True if it's final and False if it's not.
+        /// </returns>
+        bool IsFinalState(ProducerState state);
+
         /// <summary>
         /// Sends a message.
         /// </summary>
@@ -53,6 +69,28 @@ namespace DotPulsar.Abstractions
         /// Sends a message with metadata.
         /// </summary>
         ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Wait for the state to change to a specific state.
+        /// </summary>
+        /// <returns>
+        /// The current state.
+        /// </returns>
+        /// <remarks>
+        /// If the state change to a final state, then all awaiting tasks will complete.
+        /// </remarks>
+        ValueTask<ProducerStateChanged> StateChangedTo(ProducerState state, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Wait for the state to change from a specific state.
+        /// </summary>
+        /// <returns>
+        /// The current state.
+        /// </returns>
+        /// <remarks>
+        /// If the state change to a final state, then all awaiting tasks will complete.
+        /// </remarks>
+        ValueTask<ProducerStateChanged> StateChangedFrom(ProducerState state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// The topic of the producer.
