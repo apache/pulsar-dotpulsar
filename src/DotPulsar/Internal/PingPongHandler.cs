@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,12 +12,13 @@
  * limitations under the License.
  */
 
-using System.Threading;
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.PulsarApi;
-
 namespace DotPulsar.Internal
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+    using DotPulsar.Internal.Abstractions;
+    using DotPulsar.Internal.PulsarApi;
+
     public sealed class PingPongHandler
     {
         private readonly IConnection _connection;
@@ -30,8 +31,15 @@ namespace DotPulsar.Internal
         }
 
         public void Incoming(CommandPing ping, CancellationToken cancellationToken)
+            => Task.Factory.StartNew(() => SendPong(cancellationToken));
+
+        private async Task SendPong(CancellationToken cancellationToken)
         {
-            _ = _connection.Send(_pong, cancellationToken);
+            try
+            {
+                await _connection.Send(_pong, cancellationToken).ConfigureAwait(false);
+            }
+            catch { }
         }
     }
 }

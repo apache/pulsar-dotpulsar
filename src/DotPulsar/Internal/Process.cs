@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Internal.Abstractions;
+    using DotPulsar.Internal.Events;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public abstract class Process : IProcess
     {
         protected readonly CancellationTokenSource CancellationTokenSource;
