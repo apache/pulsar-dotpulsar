@@ -1,8 +1,8 @@
 ﻿namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
     using System;
     using System.Threading.Tasks;
-    using DotPulsar.Abstractions;
 
     public sealed class FuncExceptionHandler : IHandleException
     {

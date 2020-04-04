@@ -14,7 +14,7 @@
 
 namespace DotPulsar
 {
-    using DotPulsar.Abstractions;
+    using Abstractions;
 
     public sealed class ReaderStateChanged
     {

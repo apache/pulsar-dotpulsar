@@ -14,14 +14,14 @@
 
 namespace DotPulsar.Internal
 {
-    using System;
-    using System.Buffers;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Abstractions;
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
     using Events;
+    using System;
+    using System.Buffers;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public sealed class Producer : IProducer
     {

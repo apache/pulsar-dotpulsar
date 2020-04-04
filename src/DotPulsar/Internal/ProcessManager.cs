@@ -14,12 +14,12 @@
 
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using Events;
     using System;
     using System.Collections.Concurrent;
     using System.Linq;
     using System.Threading.Tasks;
-    using Abstractions;
-    using Events;
 
     public sealed class ProcessManager : IRegisterEvent, IAsyncDisposable
     {

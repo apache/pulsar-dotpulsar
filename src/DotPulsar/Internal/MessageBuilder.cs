@@ -14,11 +14,11 @@
 
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
+    using Extensions;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using DotPulsar.Abstractions;
-    using Extensions;
 
     public sealed class MessageBuilder : IMessageBuilder
     {

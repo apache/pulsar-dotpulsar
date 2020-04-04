@@ -14,8 +14,8 @@
 
 namespace DotPulsar.Internal.Exceptions
 {
-    using System;
     using DotPulsar.Exceptions;
+    using System;
 
     public sealed class UnexpectedResponseException : DotPulsarException
     {

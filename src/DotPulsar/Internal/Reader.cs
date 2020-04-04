@@ -14,15 +14,15 @@
 
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+    using Events;
     using System;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
-    using Abstractions;
-    using DotPulsar.Abstractions;
-    using DotPulsar.Exceptions;
-    using Events;
 
     public sealed class Reader : IReader
     {

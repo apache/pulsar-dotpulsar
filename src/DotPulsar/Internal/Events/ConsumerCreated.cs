@@ -14,8 +14,8 @@
 
 namespace DotPulsar.Internal.Events
 {
-    using System;
     using Abstractions;
+    using System;
 
     public sealed class ConsumerCreated : IEvent
     {

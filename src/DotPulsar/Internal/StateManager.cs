@@ -14,9 +14,9 @@
 
 namespace DotPulsar.Internal
 {
+    using Abstractions;
     using System.Threading;
     using System.Threading.Tasks;
-    using Abstractions;
 
     public sealed class StateManager<TState> : IStateManager<TState> where TState : notnull
     {

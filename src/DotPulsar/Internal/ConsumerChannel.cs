@@ -14,12 +14,12 @@
 
 namespace DotPulsar.Internal
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Abstractions;
     using Extensions;
     using PulsarApi;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public sealed class ConsumerChannel : IConsumerChannel, IReaderChannel
     {

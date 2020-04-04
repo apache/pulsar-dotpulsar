@@ -30,7 +30,7 @@ namespace DotPulsar.Internal.Extensions
 
             if (command.CommandType == BaseCommand.Type.SendError)
                 command.SendError.Throw();
-           
+
             throw new UnexpectedResponseException($"Expected '{type}' but got '{command.CommandType}'");
         }
 

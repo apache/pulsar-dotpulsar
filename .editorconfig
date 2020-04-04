@@ -1,4 +1,4 @@
-[*]
+﻿[*]
 charset = utf-8-bom
 indent_style = space
 indent_size = 4
@@ -7,23 +7,24 @@ trim_trailing_whitespace = true
 insert_final_newline=true
 
 # Microsoft .NET properties
-csharp_using_directive_placement = inside_namespace:silent
+csharp_using_directive_placement = inside_namespace:error
+csharp_space_after_cast = true
 
 # ReSharper properties
-resharper_constructor_or_destructor_body=expression_body
-resharper_local_function_body=expression_body
-resharper_method_or_operator_body=expression_body
-resharper_wrap_before_arrow_with_expressions=true
-resharper_csharp_insert_final_newline=true
-resharper_csharp_keep_blank_lines_in_code=1
-resharper_csharp_keep_blank_lines_in_declarations=1
-resharper_empty_block_style=together_same_line
-resharper_keep_existing_expr_member_arrangement=false
-resharper_place_expr_accessor_on_single_line=true
-resharper_place_expr_property_on_single_line=true
-resharper_space_within_single_line_array_initializer_braces=true
-resharper_use_indent_from_vs=false
+resharper_constructor_or_destructor_body = expression_body
+resharper_local_function_body = expression_body
+resharper_method_or_operator_body = expression_body
+resharper_wrap_before_arrow_with_expressions = true
+resharper_csharp_insert_final_newline = true
+resharper_csharp_keep_blank_lines_in_code = 1
+resharper_csharp_keep_blank_lines_in_declarations = 1
+resharper_empty_block_style = together_same_line
+resharper_keep_existing_expr_member_arrangement = false
+resharper_place_expr_accessor_on_single_line = true
+resharper_place_expr_property_on_single_line = true
+resharper_space_within_single_line_array_initializer_braces = true
+resharper_use_indent_from_vs = false
+resharper_sort_usings_with_system_first = false
 
 [{*.yaml, *.yml}]
 indent_size = 2
-

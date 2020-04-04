@@ -14,8 +14,8 @@
 
 namespace DotPulsar.Internal.Extensions
 {
-    using System.Buffers;
     using PulsarApi;
+    using System.Buffers;
 
     public static class MessagePackageExtensions
     {

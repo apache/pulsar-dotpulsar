@@ -14,9 +14,9 @@
 
 namespace DotPulsar.Internal
 {
-    using System;
     using Abstractions;
     using Events;
+    using System;
 
     public sealed class Channel : IChannel
     {

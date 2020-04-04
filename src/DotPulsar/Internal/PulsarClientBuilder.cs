@@ -14,14 +14,14 @@
 
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+    using PulsarApi;
     using System;
     using System.Collections.Generic;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading.Tasks;
-    using DotPulsar.Abstractions;
-    using DotPulsar.Exceptions;
-    using PulsarApi;
 
     public sealed class PulsarClientBuilder : IPulsarClientBuilder
     {

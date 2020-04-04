@@ -14,10 +14,10 @@
 
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using DotPulsar.Abstractions;
 
     public sealed class ExceptionHandlerPipeline : IHandleException
     {

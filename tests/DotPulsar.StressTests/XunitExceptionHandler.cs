@@ -14,10 +14,10 @@
 
 namespace DotPulsar.StressTests
 {
-    using System;
-    using System.Threading.Tasks;
     using Abstractions;
     using Internal;
+    using System;
+    using System.Threading.Tasks;
     using Xunit.Abstractions;
 
     internal class XunitExceptionHandler : IHandleException

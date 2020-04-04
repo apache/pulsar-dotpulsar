@@ -14,10 +14,10 @@
 
 namespace DotPulsar.Tests.Internal
 {
-    using System.Threading;
-    using System.Threading.Tasks;
     using DotPulsar.Internal;
     using DotPulsar.Internal.Exceptions;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Xunit;
 
     public class AsyncLockTests

@@ -14,10 +14,10 @@
 
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using PulsarApi;
     using System.Threading;
     using System.Threading.Tasks;
-    using DotPulsar.Internal.Abstractions;
-    using DotPulsar.Internal.PulsarApi;
 
     public sealed class PingPongHandler
     {

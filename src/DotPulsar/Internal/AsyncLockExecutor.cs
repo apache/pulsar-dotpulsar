@@ -14,10 +14,10 @@
 
 namespace DotPulsar.Internal
 {
+    using Abstractions;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using Abstractions;
 
     public sealed class AsyncLockExecutor : IExecute, IAsyncDisposable
     {

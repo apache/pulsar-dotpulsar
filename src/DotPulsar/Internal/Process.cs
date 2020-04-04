@@ -14,8 +14,8 @@
 
 namespace DotPulsar.Internal
 {
-    using DotPulsar.Internal.Abstractions;
-    using DotPulsar.Internal.Events;
+    using Abstractions;
+    using Events;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
@@ -36,9 +36,8 @@ namespace DotPulsar.Internal
 
         public Guid CorrelationId { get; }
 
-        protected abstract void CalculateState();
-
-        public void Start() => CalculateState();
+        public void Start()
+            => CalculateState();
 
         public abstract ValueTask DisposeAsync();
 
@@ -74,5 +73,7 @@ namespace DotPulsar.Internal
 
             CalculateState();
         }
+
+        protected abstract void CalculateState();
     }
 }

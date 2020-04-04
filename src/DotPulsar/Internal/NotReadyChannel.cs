@@ -14,13 +14,13 @@
 
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using Exceptions;
+    using PulsarApi;
     using System;
     using System.Buffers;
     using System.Threading;
     using System.Threading.Tasks;
-    using Abstractions;
-    using Exceptions;
-    using PulsarApi;
 
     public sealed class NotReadyChannel : IConsumerChannel, IProducerChannel, IReaderChannel
     {

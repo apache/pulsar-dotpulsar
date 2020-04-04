@@ -14,11 +14,11 @@
 
 namespace DotPulsar.Internal.Abstractions
 {
+    using PulsarApi;
     using System;
     using System.Buffers;
     using System.Threading;
     using System.Threading.Tasks;
-    using PulsarApi;
 
     public interface IProducerChannel : IAsyncDisposable
     {

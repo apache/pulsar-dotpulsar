@@ -14,9 +14,9 @@
 
 namespace DotPulsar.Tests.Internal
 {
+    using DotPulsar.Internal;
     using System.Threading;
     using System.Threading.Tasks;
-    using DotPulsar.Internal;
     using Xunit;
 
     public class StateManagerTests

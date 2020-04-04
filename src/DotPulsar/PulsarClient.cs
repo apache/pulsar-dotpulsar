@@ -14,13 +14,13 @@
 
 namespace DotPulsar
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Abstractions;
     using Exceptions;
     using Internal;
     using Internal.Abstractions;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public sealed class PulsarClient : IPulsarClient
     {

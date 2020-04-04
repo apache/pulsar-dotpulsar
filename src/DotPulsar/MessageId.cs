@@ -14,8 +14,8 @@
 
 namespace DotPulsar
 {
-    using System;
     using Internal.PulsarApi;
+    using System;
 
     public sealed class MessageId : IEquatable<MessageId>
     {

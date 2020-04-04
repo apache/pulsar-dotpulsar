@@ -14,9 +14,9 @@
 
 namespace DotPulsar
 {
-    using System;
     using Internal.Extensions;
     using Internal.PulsarApi;
+    using System;
 
     public sealed class MessageMetadata
     {

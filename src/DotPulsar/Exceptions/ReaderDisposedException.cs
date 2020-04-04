@@ -1,7 +1,7 @@
 ﻿namespace DotPulsar.Exceptions
 {
-    using System;
     using Internal;
+    using System;
 
     public sealed class ReaderDisposedException : ObjectDisposedException
     {

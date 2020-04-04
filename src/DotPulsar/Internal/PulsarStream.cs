@@ -14,6 +14,9 @@
 
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using Exceptions;
+    using Extensions;
     using System;
     using System.Buffers;
     using System.Collections.Generic;
@@ -22,9 +25,6 @@ namespace DotPulsar.Internal
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
-    using Abstractions;
-    using Exceptions;
-    using Extensions;
 
     public sealed class PulsarStream : IPulsarStream
     {

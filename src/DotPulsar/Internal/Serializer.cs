@@ -14,10 +14,10 @@
 
 namespace DotPulsar.Internal
 {
+    using PulsarApi;
     using System;
     using System.Buffers;
     using System.IO;
-    using PulsarApi;
 
     public static class Serializer
     {

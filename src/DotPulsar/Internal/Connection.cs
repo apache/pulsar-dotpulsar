@@ -14,12 +14,12 @@
 
 namespace DotPulsar.Internal
 {
-    using System.Threading;
-    using System.Threading.Tasks;
     using Abstractions;
     using Exceptions;
     using Extensions;
     using PulsarApi;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public sealed class Connection : IConnection
     {

@@ -14,16 +14,16 @@
 
 namespace DotPulsar.Internal
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Abstractions;
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
     using Events;
     using PulsarApi;
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public sealed class Consumer : IConsumer
     {

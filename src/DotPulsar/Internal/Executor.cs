@@ -14,12 +14,12 @@
 
 namespace DotPulsar.Internal
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Abstractions;
     using DotPulsar.Abstractions;
     using Events;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public sealed class Executor : IExecute
     {

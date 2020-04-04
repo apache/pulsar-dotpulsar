@@ -14,11 +14,11 @@
 
 namespace DotPulsar.StressTests
 {
+    using Extensions;
+    using Fixtures;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using Extensions;
-    using Fixtures;
     using Xunit;
     using Xunit.Abstractions;
 

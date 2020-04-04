@@ -14,14 +14,14 @@
 
 namespace Reading
 {
+    using DotPulsar;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Extensions;
     using System;
     using System.Buffers;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using DotPulsar;
-    using DotPulsar.Abstractions;
-    using DotPulsar.Extensions;
 
     internal static class Program
     {

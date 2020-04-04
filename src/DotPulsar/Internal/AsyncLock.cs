@@ -14,11 +14,11 @@
 
 namespace DotPulsar.Internal
 {
+    using Exceptions;
     using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
-    using Exceptions;
 
     public sealed class AsyncLock : IAsyncDisposable
     {

@@ -14,13 +14,13 @@
 
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+    using Exceptions;
     using System;
     using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
-    using DotPulsar.Abstractions;
-    using DotPulsar.Exceptions;
-    using Exceptions;
 
     public sealed class DefaultExceptionHandler : IHandleException
     {

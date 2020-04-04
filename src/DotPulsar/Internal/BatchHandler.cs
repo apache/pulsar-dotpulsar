@@ -14,11 +14,11 @@
 
 namespace DotPulsar.Internal
 {
+    using Extensions;
+    using PulsarApi;
     using System.Buffers;
     using System.Collections;
     using System.Collections.Generic;
-    using Extensions;
-    using PulsarApi;
 
     public sealed class BatchHandler
     {

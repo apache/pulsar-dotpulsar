@@ -14,8 +14,8 @@
 
 namespace DotPulsar.Tests.Internal
 {
-    using System.Buffers;
     using DotPulsar.Internal;
+    using System.Buffers;
     using Xunit;
 
     public class SequenceBuilderTests

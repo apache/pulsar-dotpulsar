@@ -14,13 +14,13 @@
 
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using Extensions;
+    using PulsarApi;
     using System;
     using System.Buffers;
     using System.Threading;
     using System.Threading.Tasks;
-    using Abstractions;
-    using Extensions;
-    using PulsarApi;
 
     public sealed class ProducerChannel : IProducerChannel
     {

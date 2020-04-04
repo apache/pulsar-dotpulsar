@@ -14,11 +14,11 @@
 
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using PulsarApi;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using Abstractions;
-    using PulsarApi;
 
     public sealed class ReaderChannelFactory : IReaderChannelFactory
     {

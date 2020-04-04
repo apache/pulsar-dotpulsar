@@ -14,9 +14,9 @@
 
 namespace DotPulsar.Internal
 {
+    using Abstractions;
     using System;
     using System.Threading.Tasks;
-    using Abstractions;
 
     public sealed class ProducerProcess : Process
     {
