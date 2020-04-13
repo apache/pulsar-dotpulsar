@@ -27,8 +27,7 @@ github:
     - streaming
     - queuing
     - event-streaming
-    - .NET
-    - C#
+    - dotnet
   features:
     # Enable wiki for documentation
     wiki: true
