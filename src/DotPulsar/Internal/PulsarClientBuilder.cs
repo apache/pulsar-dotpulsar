@@ -63,7 +63,7 @@ namespace DotPulsar.Internal
         public IPulsarClientBuilder AuthenticateUsingToken(string token)
         {
             _commandConnect.AuthMethodName = "token";
-            _commandConnect.AuthData = Encoding.ASCII.GetBytes(token);
+            _commandConnect.AuthData = Encoding.UTF8.GetBytes(token);
             return this;
         }
 
