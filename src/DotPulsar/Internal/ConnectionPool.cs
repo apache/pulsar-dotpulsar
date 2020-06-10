@@ -36,7 +36,12 @@ namespace DotPulsar.Internal
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _closeInactiveConnections;
 
-        public ConnectionPool(CommandConnect commandConnect, Uri serviceUrl, Connector connector, EncryptionPolicy encryptionPolicy, TimeSpan closeInactiveConnectionsInterval)
+        public ConnectionPool(
+            CommandConnect commandConnect,
+            Uri serviceUrl,
+            Connector connector,
+            EncryptionPolicy encryptionPolicy,
+            TimeSpan closeInactiveConnectionsInterval)
         {
             _lock = new AsyncLock();
             _commandConnect = commandConnect;
@@ -51,6 +56,7 @@ namespace DotPulsar.Internal
         public async ValueTask DisposeAsync()
         {
             _cancellationTokenSource.Cancel();
+
             await _closeInactiveConnections.ConfigureAwait(false);
 
             await _lock.DisposeAsync().ConfigureAwait(false);
@@ -152,9 +158,7 @@ namespace DotPulsar.Internal
             var commandConnect = _commandConnect;
 
             if (url.ProxyThroughServiceUrl)
-            {
                 commandConnect = WithProxyToBroker(_commandConnect, url.Logical);
-            }
 
             var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.Connected);
@@ -215,7 +219,7 @@ namespace DotPulsar.Internal
             }
         }
 
-        private class PulsarUrl: IEquatable<PulsarUrl>
+        private sealed class PulsarUrl : IEquatable<PulsarUrl>
         {
             public PulsarUrl(Uri physical, Uri logical)
             {
@@ -223,33 +227,26 @@ namespace DotPulsar.Internal
                 Logical = logical;
                 ProxyThroughServiceUrl = physical != logical;
             }
+
             public Uri Physical { get; }
+
             public Uri Logical { get; }
 
             public bool ProxyThroughServiceUrl { get; }
 
             public bool Equals(PulsarUrl? other)
             {
-                if (ReferenceEquals(null, other))
+                if (other is null)
                     return false;
 
                 if (ReferenceEquals(this, other))
                     return true;
+
                 return Physical.Equals(other.Physical) && Logical.Equals(other.Logical);
             }
 
             public override bool Equals(object? obj)
-            {
-                if (ReferenceEquals(null, obj))
-                    return false;
-
-                if (ReferenceEquals(this, obj))
-                    return true;
-
-                if (obj.GetType() != this.GetType())
-                    return false;
-                return Equals((PulsarUrl) obj);
-            }
+                => obj is PulsarUrl url && Equals(url);
 
             public override int GetHashCode()
                 => HashCode.Combine(Physical, Logical);
