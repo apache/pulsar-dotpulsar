@@ -95,26 +95,25 @@ namespace DotPulsar.Internal
         private string GetResponseIdentifier(BaseCommand cmd)
             => cmd.CommandType switch
             {
-                case BaseCommand.Type.Connect:
-                case BaseCommand.Type.Connected: return ConnectResponseIdentifier;
-                case BaseCommand.Type.Send: return cmd.Send.ProducerId.ToString() + '-' + cmd.Send.SequenceId.ToString();
-                case BaseCommand.Type.SendError: return cmd.SendError.ProducerId.ToString() + '-' + cmd.SendError.SequenceId.ToString();
-                case BaseCommand.Type.SendReceipt: return cmd.SendReceipt.ProducerId.ToString() + '-' + cmd.SendReceipt.SequenceId.ToString();
-                case BaseCommand.Type.Error: return !_pastInitialRequestId ? ConnectResponseIdentifier : cmd.Error.RequestId.ToString();
-                case BaseCommand.Type.Producer: return cmd.Producer.RequestId.ToString();
-                case BaseCommand.Type.ProducerSuccess: return cmd.ProducerSuccess.RequestId.ToString();
-                case BaseCommand.Type.CloseProducer: return cmd.CloseProducer.RequestId.ToString();
-                case BaseCommand.Type.Lookup: return cmd.LookupTopic.RequestId.ToString();
-                case BaseCommand.Type.LookupResponse: return cmd.LookupTopicResponse.RequestId.ToString();
-                case BaseCommand.Type.Unsubscribe: return cmd.Unsubscribe.RequestId.ToString();
-                case BaseCommand.Type.Subscribe: return cmd.Subscribe.RequestId.ToString();
-                case BaseCommand.Type.Success: return cmd.Success.RequestId.ToString();
-                case BaseCommand.Type.Seek: return cmd.Seek.RequestId.ToString();
-                case BaseCommand.Type.CloseConsumer: return cmd.CloseConsumer.RequestId.ToString();
-                case BaseCommand.Type.GetLastMessageId: return cmd.GetLastMessageId.RequestId.ToString();
-                case BaseCommand.Type.GetLastMessageIdResponse: return cmd.GetLastMessageIdResponse.RequestId.ToString();
-                default: throw new ArgumentOutOfRangeException("CommandType", cmd.CommandType, "CommandType not supported as request/response type");
-            }
-        }
+                BaseCommand.Type.Connect => ConnectResponseIdentifier,
+                BaseCommand.Type.Connected => ConnectResponseIdentifier,
+                BaseCommand.Type.Send => $"{cmd.Send.ProducerId}-{cmd.Send.SequenceId}",
+                BaseCommand.Type.SendError => $"{cmd.SendError.ProducerId}-{cmd.SendError.SequenceId}",
+                BaseCommand.Type.SendReceipt => $"{cmd.SendReceipt.ProducerId}-{cmd.SendReceipt.SequenceId}",
+                BaseCommand.Type.Error => !_pastInitialRequestId ? ConnectResponseIdentifier : cmd.Error.RequestId.ToString(),
+                BaseCommand.Type.Producer => cmd.Producer.RequestId.ToString(),
+                BaseCommand.Type.ProducerSuccess => cmd.ProducerSuccess.RequestId.ToString(),
+                BaseCommand.Type.CloseProducer => cmd.CloseProducer.RequestId.ToString(),
+                BaseCommand.Type.Lookup => cmd.LookupTopic.RequestId.ToString(),
+                BaseCommand.Type.LookupResponse => cmd.LookupTopicResponse.RequestId.ToString(),
+                BaseCommand.Type.Unsubscribe => cmd.Unsubscribe.RequestId.ToString(),
+                BaseCommand.Type.Subscribe => cmd.Subscribe.RequestId.ToString(),
+                BaseCommand.Type.Success => cmd.Success.RequestId.ToString(),
+                BaseCommand.Type.Seek => cmd.Seek.RequestId.ToString(),
+                BaseCommand.Type.CloseConsumer => cmd.CloseConsumer.RequestId.ToString(),
+                BaseCommand.Type.GetLastMessageId => cmd.GetLastMessageId.RequestId.ToString(),
+                BaseCommand.Type.GetLastMessageIdResponse => cmd.GetLastMessageIdResponse.RequestId.ToString(),
+                _ => throw new ArgumentOutOfRangeException(nameof(cmd.CommandType), cmd.CommandType, "CommandType not supported as request/response type")
+            };
     }
 }
