@@ -12,20 +12,20 @@
  * limitations under the License.
  */
 
-using DotPulsar;
-using DotPulsar.Abstractions;
-using DotPulsar.Extensions;
-using System;
-using System.Buffers;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Reading
 {
-    class Program
+    using DotPulsar;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Extensions;
+    using System;
+    using System.Buffers;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    internal static class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             const string myTopic = "persistent://public/default/mytopic";
 
@@ -36,7 +36,6 @@ namespace Reading
                 .Topic(myTopic)
                 .Create();
 
-
             var monitoring = Monitor(reader);
 
             var cts = new CancellationTokenSource();
@@ -44,16 +43,16 @@ namespace Reading
             var reading = ReadMessages(reader, cts.Token);
 
             Console.WriteLine("Press a key to exit");
-            
+
             _ = Console.ReadKey();
 
             cts.Cancel();
 
-            await reading;
+            await reading.ConfigureAwait(false);
 
-            await reader.DisposeAsync();
+            await reader.DisposeAsync().ConfigureAwait(false);
 
-            await monitoring;
+            await monitoring.ConfigureAwait(false);
         }
 
         private static async Task ReadMessages(IReader reader, CancellationToken cancellationToken)
@@ -68,10 +67,7 @@ namespace Reading
                     Console.WriteLine("Received: " + data);
                 }
             }
-            catch(OperationCanceledException)
-            {
-                return;
-            }
+            catch (OperationCanceledException) { }
         }
 
         private static async Task Monitor(IReader reader)
@@ -82,19 +78,21 @@ namespace Reading
 
             while (true)
             {
-                state = await reader.StateChangedFrom(state);
+                var stateChanged = await reader.StateChangedFrom(state).ConfigureAwait(false);
+                state = stateChanged.ReaderState;
 
                 var stateMessage = state switch
                 {
-                    ReaderState.Connected => "The reader is connected",
-                    ReaderState.Disconnected => "The reader is disconnected",
-                    ReaderState.Closed => "The reader has closed",
-                    ReaderState.ReachedEndOfTopic => "The reader has reached end of topic",
-                    ReaderState.Faulted => "The reader has faulted",
-                    _ => $"The reader has an unknown state '{state}'"
+                    ReaderState.Connected => "is connected",
+                    ReaderState.Disconnected => "is disconnected",
+                    ReaderState.Closed => "has closed",
+                    ReaderState.ReachedEndOfTopic => "has reached end of topic",
+                    ReaderState.Faulted => "has faulted",
+                    _ => $"has an unknown state '{state}'"
                 };
 
-                Console.WriteLine(stateMessage);
+                var topic = stateChanged.Reader.Topic;
+                Console.WriteLine($"The reader for topic '{topic}' " + stateMessage);
 
                 if (reader.IsFinalState(state))
                     return;

@@ -12,16 +12,17 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using System;
-using System.Buffers;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+    using Events;
+    using System;
+    using System.Buffers;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class Producer : IProducer
     {
         private readonly Guid _correlationId;
@@ -31,14 +32,18 @@ namespace DotPulsar.Internal
         private readonly IStateChanged<ProducerState> _state;
         private int _isDisposed;
 
+        public string Topic { get; }
+
         public Producer(
             Guid correlationId,
+            string topic,
             IRegisterEvent registerEvent,
             IProducerChannel initialChannel,
             IExecute executor,
             IStateChanged<ProducerState> state)
         {
             _correlationId = correlationId;
+            Topic = topic;
             _eventRegister = registerEvent;
             _channel = initialChannel;
             _executor = executor;
@@ -48,15 +53,23 @@ namespace DotPulsar.Internal
             _eventRegister.Register(new ProducerCreated(_correlationId, this));
         }
 
-        public async ValueTask<ProducerState> StateChangedTo(ProducerState state, CancellationToken cancellationToken)
-            => await _state.StateChangedTo(state, cancellationToken);
+        public async ValueTask<ProducerStateChanged> StateChangedTo(ProducerState state, CancellationToken cancellationToken)
+        {
+            var newState = await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
+            return new ProducerStateChanged(this, newState);
+        }
 
-        public async ValueTask<ProducerState> StateChangedFrom(ProducerState state, CancellationToken cancellationToken)
-            => await _state.StateChangedFrom(state, cancellationToken);
+        public async ValueTask<ProducerStateChanged> StateChangedFrom(ProducerState state, CancellationToken cancellationToken)
+        {
+            var newState = await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
+            return new ProducerStateChanged(this, newState);
+        }
 
-        public bool IsFinalState() => _state.IsFinalState();
+        public bool IsFinalState()
+            => _state.IsFinalState();
 
-        public bool IsFinalState(ProducerState state) => _state.IsFinalState(state);
+        public bool IsFinalState(ProducerState state)
+            => _state.IsFinalState(state);
 
         public async ValueTask DisposeAsync()
         {
@@ -64,32 +77,34 @@ namespace DotPulsar.Internal
                 return;
 
             _eventRegister.Register(new ProducerDisposed(_correlationId, this));
-            await _channel.DisposeAsync();
+
+            await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
-        public async ValueTask<MessageId> Send(byte[] data, CancellationToken cancellationToken)
-            => await Send(new ReadOnlySequence<byte>(data), cancellationToken);
+        public ValueTask<MessageId> Send(byte[] data, CancellationToken cancellationToken)
+            => Send(new ReadOnlySequence<byte>(data), cancellationToken);
 
-        public async ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => await Send(new ReadOnlySequence<byte>(data), cancellationToken);
+        public ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+            => Send(new ReadOnlySequence<byte>(data), cancellationToken);
 
         public async ValueTask<MessageId> Send(ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            var response = await _executor.Execute(() => _channel.Send(data), cancellationToken);
+            var response = await _executor.Execute(() => _channel.Send(data, cancellationToken), cancellationToken).ConfigureAwait(false);
+
             return new MessageId(response.MessageId);
         }
 
-        public async ValueTask<MessageId> Send(MessageMetadata metadata, byte[] data, CancellationToken cancellationToken)
-            => await Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
+        public ValueTask<MessageId> Send(MessageMetadata metadata, byte[] data, CancellationToken cancellationToken)
+            => Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
 
-        public async ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => await Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
+        public ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+            => Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
 
         public async ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            var response = await _executor.Execute(() => _channel.Send(metadata.Metadata, data), cancellationToken);
+            var response = await _executor.Execute(() => _channel.Send(metadata.Metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
             return new MessageId(response.MessageId);
         }
 
@@ -102,7 +117,7 @@ namespace DotPulsar.Internal
         private void ThrowIfDisposed()
         {
             if (_isDisposed != 0)
-                throw new ObjectDisposedException(nameof(Producer));
+                throw new ProducerDisposedException();
         }
     }
 }

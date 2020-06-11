@@ -12,15 +12,16 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Internal;
-using DotPulsar.Internal.Abstractions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar
 {
+    using Abstractions;
+    using Exceptions;
+    using Internal;
+    using Internal.Abstractions;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class PulsarClient : IPulsarClient
     {
         private readonly IConnectionPool _connectionPool;
@@ -37,7 +38,8 @@ namespace DotPulsar
             DotPulsarEventSource.Log.ClientCreated();
         }
 
-        public static IPulsarClientBuilder Builder() => new PulsarClientBuilder();
+        public static IPulsarClientBuilder Builder()
+            => new PulsarClientBuilder();
 
         public IProducer CreateProducer(ProducerOptions options)
         {
@@ -46,7 +48,7 @@ namespace DotPulsar
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var producer = new Producer(correlationId, _processManager, new NotReadyChannel(), executor, stateManager);
+            var producer = new Producer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             var process = new ProducerProcess(correlationId, stateManager, factory, producer);
             _processManager.Add(process);
             process.Start();
@@ -59,8 +61,9 @@ namespace DotPulsar
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
+
             var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
-            var consumer = new Consumer(correlationId, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
+            var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
             var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
             _processManager.Add(process);
             process.Start();
@@ -74,7 +77,7 @@ namespace DotPulsar
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var factory = new ReaderChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
             var stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
-            var reader = new Reader(correlationId, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
+            var reader = new Reader(correlationId, options.Topic, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
             var process = new ReaderProcess(correlationId, stateManager, factory, reader);
             _processManager.Add(process);
             process.Start();
@@ -87,7 +90,7 @@ namespace DotPulsar
                 return;
 
             if (_processManager is IAsyncDisposable disposable)
-                await disposable.DisposeAsync();
+                await disposable.DisposeAsync().ConfigureAwait(false);
 
             DotPulsarEventSource.Log.ClientDisposed();
         }
@@ -95,7 +98,7 @@ namespace DotPulsar
         private void ThrowIfDisposed()
         {
             if (_isDisposed != 0)
-                throw new ObjectDisposedException(nameof(PulsarClient));
+                throw new PulsarClientDisposedException();
         }
     }
 }

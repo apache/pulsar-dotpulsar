@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
-
 namespace DotPulsar.Tests.Internal
 {
+    using DotPulsar.Internal;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Xunit;
+
     public class StateManagerTests
     {
         [Theory]
@@ -233,7 +233,7 @@ namespace DotPulsar.Tests.Internal
 
             //Act
             cts.Cancel();
-            var exception = await Record.ExceptionAsync(() => task.AsTask()); // xUnit can't record ValueTask yet
+            var exception = await Record.ExceptionAsync(() => task.AsTask()).ConfigureAwait(false); // xUnit can't record ValueTask yet
 
             //Assert
             Assert.IsType<TaskCanceledException>(exception);

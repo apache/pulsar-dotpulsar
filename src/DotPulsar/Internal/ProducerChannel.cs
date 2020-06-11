@@ -12,34 +12,28 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Buffers;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using Extensions;
+    using PulsarApi;
+    using System;
+    using System.Buffers;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class ProducerChannel : IProducerChannel
     {
-        private readonly PulsarApi.MessageMetadata _cachedMetadata;
+        private readonly MessageMetadata _cachedMetadata;
         private readonly ulong _id;
         private readonly SequenceId _sequenceId;
         private readonly IConnection _connection;
 
         public ProducerChannel(ulong id, string name, SequenceId sequenceId, IConnection connection)
         {
-            _cachedMetadata = new PulsarApi.MessageMetadata
-            {
-                ProducerName = name
-            };
+            _cachedMetadata = new MessageMetadata { ProducerName = name };
 
-            var commandSend = new CommandSend
-            {
-                ProducerId = id,
-                NumMessages = 1
-            };
+            var commandSend = new CommandSend { ProducerId = id, NumMessages = 1 };
 
             _id = id;
             _sequenceId = sequenceId;
@@ -50,7 +44,7 @@ namespace DotPulsar.Internal
         {
             try
             {
-                await _connection.Send(new CommandCloseProducer { ProducerId = _id });
+                await _connection.Send(new CommandCloseProducer { ProducerId = _id }, CancellationToken.None).ConfigureAwait(false);
             }
             catch
             {
@@ -58,16 +52,16 @@ namespace DotPulsar.Internal
             }
         }
 
-        public async Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload)
+        public Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
         {
             var package = GetNewSendPackage(payload, new PulsarApi.MessageMetadata());
-            return await SendPackage(package);
+            return SendPackage(package, cancellationToken);
         }
 
-        public async Task<CommandSendReceipt> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload)
+        public Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
         {
             var package = GetNewSendPackage(payload, metadata);
-            return await SendPackage(package);
+            return SendPackage(package, cancellationToken);
         }
 
         private SendPackage GetNewSendPackage(ReadOnlySequence<byte> payload, PulsarApi.MessageMetadata metadata)
@@ -86,11 +80,11 @@ namespace DotPulsar.Internal
             return package;
         }
 
-        private async Task<CommandSendReceipt> SendPackage(SendPackage sendPackage)
+        private async Task<CommandSendReceipt> SendPackage(SendPackage sendPackage, CancellationToken cancellationToken)
         {
             sendPackage.Metadata.PublishTime = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            var response = await _connection.Send(sendPackage);
+            var response = await _connection.Send(sendPackage, cancellationToken);
             response.Expect(BaseCommand.Type.SendReceipt);
 
             return response.SendReceipt;

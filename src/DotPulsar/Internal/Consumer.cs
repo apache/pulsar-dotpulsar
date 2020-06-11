@@ -12,18 +12,19 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+    using Events;
+    using PulsarApi;
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class Consumer : IConsumer
     {
         private readonly Guid _correlationId;
@@ -34,14 +35,18 @@ namespace DotPulsar.Internal
         private readonly IStateChanged<ConsumerState> _state;
         private int _isDisposed;
 
+        public string Topic { get; }
+
         public Consumer(
             Guid correlationId,
+            string topic,
             IRegisterEvent eventRegister,
             IConsumerChannel initialChannel,
             IExecute executor,
             IStateChanged<ConsumerState> state)
         {
             _correlationId = correlationId;
+            Topic = topic;
             _eventRegister = eventRegister;
             _channel = initialChannel;
             _executor = executor;
@@ -52,15 +57,23 @@ namespace DotPulsar.Internal
             _eventRegister.Register(new ConsumerCreated(_correlationId, this));
         }
 
-        public async ValueTask<ConsumerState> StateChangedTo(ConsumerState state, CancellationToken cancellationToken)
-            => await _state.StateChangedTo(state, cancellationToken);
+        public async ValueTask<ConsumerStateChanged> StateChangedTo(ConsumerState state, CancellationToken cancellationToken)
+        {
+            var newState = await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
+            return new ConsumerStateChanged(this, newState);
+        }
 
-        public async ValueTask<ConsumerState> StateChangedFrom(ConsumerState state, CancellationToken cancellationToken)
-            => await _state.StateChangedFrom(state, cancellationToken);
+        public async ValueTask<ConsumerStateChanged> StateChangedFrom(ConsumerState state, CancellationToken cancellationToken)
+        {
+            var newState = await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
+            return new ConsumerStateChanged(this, newState);
+        }
 
-        public bool IsFinalState() => _state.IsFinalState();
+        public bool IsFinalState()
+            => _state.IsFinalState();
 
-        public bool IsFinalState(ConsumerState state) => _state.IsFinalState(state);
+        public bool IsFinalState(ConsumerState state)
+            => _state.IsFinalState(state);
 
         public async ValueTask DisposeAsync()
         {
@@ -68,7 +81,7 @@ namespace DotPulsar.Internal
                 return;
 
             _eventRegister.Register(new ConsumerDisposed(_correlationId, this));
-            await _channel.DisposeAsync();
+            await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
         public async IAsyncEnumerable<Message> Messages([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -76,54 +89,60 @@ namespace DotPulsar.Internal
             ThrowIfDisposed();
 
             while (!cancellationToken.IsCancellationRequested)
-            {
-                yield return await _executor.Execute(() => _channel.Receive(cancellationToken), cancellationToken);
-            }
+                yield return await _executor.Execute(() => _channel.Receive(cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask Acknowledge(Message message, CancellationToken cancellationToken)
-            => await Acknowledge(message.MessageId.Data, CommandAck.AckType.Individual, cancellationToken);
+            => await Acknowledge(message.MessageId.Data, CommandAck.AckType.Individual, cancellationToken).ConfigureAwait(false);
 
         public async ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken)
-            => await Acknowledge(messageId.Data, CommandAck.AckType.Individual, cancellationToken);
+            => await Acknowledge(messageId.Data, CommandAck.AckType.Individual, cancellationToken).ConfigureAwait(false);
 
         public async ValueTask AcknowledgeCumulative(Message message, CancellationToken cancellationToken)
-            => await Acknowledge(message.MessageId.Data, CommandAck.AckType.Cumulative, cancellationToken);
+            => await Acknowledge(message.MessageId.Data, CommandAck.AckType.Cumulative, cancellationToken).ConfigureAwait(false);
 
         public async ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken)
-            => await Acknowledge(messageId.Data, CommandAck.AckType.Cumulative, cancellationToken);
+            => await Acknowledge(messageId.Data, CommandAck.AckType.Cumulative, cancellationToken).ConfigureAwait(false);
 
         public async ValueTask Unsubscribe(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            _ = await _executor.Execute(() => _channel.Send(new CommandUnsubscribe()), cancellationToken);
+
+            _ = await _executor.Execute(() => _channel.Send(new CommandUnsubscribe(), cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            var seek = new CommandSeek { MessageId = messageId.Data };
-            _ = await _executor.Execute(() => _channel.Send(seek), cancellationToken);
-            return;
+
+            var seek = new CommandSeek
+            {
+                MessageId = messageId.Data
+            };
+
+            _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            var response = await _executor.Execute(() => _channel.Send(new CommandGetLastMessageId()), cancellationToken);
+
+            var response = await _executor.Execute(() => _channel.Send(new CommandGetLastMessageId(), cancellationToken), cancellationToken).ConfigureAwait(false);
+
             return new MessageId(response.LastMessageId);
         }
 
         private async ValueTask Acknowledge(MessageIdData messageIdData, CommandAck.AckType ackType, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
+
             await _executor.Execute(() =>
             {
                 _cachedCommandAck.Type = ackType;
                 _cachedCommandAck.MessageIds.Clear();
                 _cachedCommandAck.MessageIds.Add(messageIdData);
-                return _channel.Send(_cachedCommandAck);
-            }, cancellationToken);
+                return _channel.Send(_cachedCommandAck, cancellationToken);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         internal void SetChannel(IConsumerChannel channel)
@@ -135,7 +154,7 @@ namespace DotPulsar.Internal
         private void ThrowIfDisposed()
         {
             if (_isDisposed != 0)
-                throw new ObjectDisposedException(GetType().FullName);
+                throw new ConsumerDisposedException();
         }
     }
 }

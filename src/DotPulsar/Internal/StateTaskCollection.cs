@@ -12,21 +12,21 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class StateTaskCollection<TState> where TState : notnull
     {
         private readonly object _lock;
-        private readonly LinkedList<StateTask<TState>> _awaitors;
+        private readonly LinkedList<StateTask<TState>> _awaiters;
 
         public StateTaskCollection()
         {
             _lock = new object();
-            _awaitors = new LinkedList<StateTask<TState>>();
+            _awaiters = new LinkedList<StateTask<TState>>();
         }
 
         public Task<TState> CreateTaskFor(TState state, StateChanged changed, CancellationToken cancellationToken)
@@ -35,10 +35,11 @@ namespace DotPulsar.Internal
 
             lock (_lock)
             {
-                node = _awaitors.AddFirst(new StateTask<TState>(state, changed));
+                node = _awaiters.AddFirst(new StateTask<TState>(state, changed));
             }
 
             node.Value.CancelableCompletionSource.SetupCancellation(() => TaskWasCanceled(node), cancellationToken);
+
             return node.Value.CancelableCompletionSource.Task;
         }
 
@@ -46,17 +47,20 @@ namespace DotPulsar.Internal
         {
             lock (_lock)
             {
-                var awaitor = _awaitors.First;
-                while (awaitor != null)
+                var awaiter = _awaiters.First;
+
+                while (awaiter != null)
                 {
-                    var next = awaitor.Next;
-                    if (awaitor.Value.IsAwaiting(state))
+                    var next = awaiter.Next;
+
+                    if (awaiter.Value.IsAwaiting(state))
                     {
-                        _awaitors.Remove(awaitor);
-                        awaitor.Value.CancelableCompletionSource.SetResult(state);
-                        awaitor.Value.CancelableCompletionSource.Dispose();
+                        _awaiters.Remove(awaiter);
+                        awaiter.Value.CancelableCompletionSource.SetResult(state);
+                        awaiter.Value.CancelableCompletionSource.Dispose();
                     }
-                    awaitor = next;
+
+                    awaiter = next;
                 }
             }
         }
@@ -65,12 +69,13 @@ namespace DotPulsar.Internal
         {
             lock (_lock)
             {
-                foreach (var awaitor in _awaitors)
+                foreach (var awaiter in _awaiters)
                 {
-                    awaitor.CancelableCompletionSource.SetResult(state);
-                    awaitor.CancelableCompletionSource.Dispose();
+                    awaiter.CancelableCompletionSource.SetResult(state);
+                    awaiter.CancelableCompletionSource.Dispose();
                 }
-                _awaitors.Clear();
+
+                _awaiters.Clear();
             }
         }
 
@@ -80,7 +85,7 @@ namespace DotPulsar.Internal
             {
                 try
                 {
-                    _awaitors.Remove(node);
+                    _awaiters.Remove(node);
                     node.Value.Dispose();
                 }
                 catch

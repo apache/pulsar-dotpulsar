@@ -12,20 +12,20 @@
  * limitations under the License.
  */
 
-using DotPulsar;
-using DotPulsar.Abstractions;
-using DotPulsar.Extensions;
-using System;
-using System.Buffers;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Consuming
 {
-    class Program
+    using DotPulsar;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Extensions;
+    using System;
+    using System.Buffers;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    internal static class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             const string myTopic = "persistent://public/default/mytopic";
 
@@ -48,11 +48,11 @@ namespace Consuming
 
             cts.Cancel();
 
-            await consuming;
+            await consuming.ConfigureAwait(false);
 
-            await consumer.DisposeAsync();
+            await consumer.DisposeAsync().ConfigureAwait(false);
 
-            await monitoring;
+            await monitoring.ConfigureAwait(false);
         }
 
         private static async Task ConsumeMessages(IConsumer consumer, CancellationToken cancellationToken)
@@ -65,13 +65,10 @@ namespace Consuming
                 {
                     var data = Encoding.UTF8.GetString(message.Data.ToArray());
                     Console.WriteLine("Received: " + data);
-                    await consumer.Acknowledge(message, cancellationToken);
+                    await consumer.Acknowledge(message, cancellationToken).ConfigureAwait(false);
                 }
             }
-            catch(OperationCanceledException)
-            {
-                return;
-            }
+            catch (OperationCanceledException) { }
         }
 
         private static async Task Monitor(IConsumer consumer)
@@ -82,20 +79,22 @@ namespace Consuming
 
             while (true)
             {
-                state = await consumer.StateChangedFrom(state);
+                var stateChanged = await consumer.StateChangedFrom(state).ConfigureAwait(false);
+                state = stateChanged.ConsumerState;
 
                 var stateMessage = state switch
                 {
-                    ConsumerState.Active => "The consumer is active",
-                    ConsumerState.Inactive => "The consumer is inactive",
-                    ConsumerState.Disconnected => "The consumer is disconnected",
-                    ConsumerState.Closed => "The consumer has closed",
-                    ConsumerState.ReachedEndOfTopic => "The consumer has reached end of topic",
-                    ConsumerState.Faulted => "The consumer has faulted",
-                    _ => $"The consumer has an unknown state '{state}'"
+                    ConsumerState.Active => "is active",
+                    ConsumerState.Inactive => "is inactive",
+                    ConsumerState.Disconnected => "is disconnected",
+                    ConsumerState.Closed => "has closed",
+                    ConsumerState.ReachedEndOfTopic => "has reached end of topic",
+                    ConsumerState.Faulted => "has faulted",
+                    _ => $"has an unknown state '{state}'"
                 };
 
-                Console.WriteLine(stateMessage);
+                var topic = stateChanged.Consumer.Topic;
+                Console.WriteLine($"The consumer for topic '{topic}' " + stateMessage);
 
                 if (consumer.IsFinalState(state))
                     return;

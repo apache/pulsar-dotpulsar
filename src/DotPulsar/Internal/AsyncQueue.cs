@@ -12,35 +12,34 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using Exceptions;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
     {
         private readonly object _lock;
         private readonly Queue<T> _queue;
         private readonly LinkedList<CancelableCompletionSource<T>> _pendingDequeues;
-        private bool _isDisposed;
+        private int _isDisposed;
 
         public AsyncQueue()
         {
             _lock = new object();
             _queue = new Queue<T>();
             _pendingDequeues = new LinkedList<CancelableCompletionSource<T>>();
-            _isDisposed = false;
         }
 
         public void Enqueue(T item)
         {
             lock (_lock)
             {
-                if (_isDisposed)
-                    throw new ObjectDisposedException(nameof(AsyncQueue<T>));
+                ThrowIfDisposed();
 
                 if (_pendingDequeues.Count > 0)
                 {
@@ -59,8 +58,7 @@ namespace DotPulsar.Internal
 
             lock (_lock)
             {
-                if (_isDisposed)
-                    throw new ObjectDisposedException(nameof(AsyncQueue<T>));
+                ThrowIfDisposed();
 
                 if (_queue.Count > 0)
                     return new ValueTask<T>(_queue.Dequeue());
@@ -76,10 +74,8 @@ namespace DotPulsar.Internal
         {
             lock (_lock)
             {
-                if (_isDisposed)
+                if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                     return;
-
-                _isDisposed = true;
 
                 foreach (var pendingDequeue in _pendingDequeues)
                     pendingDequeue.Dispose();
@@ -98,8 +94,17 @@ namespace DotPulsar.Internal
                     node.Value.Dispose();
                     _pendingDequeues.Remove(node);
                 }
-                catch { }
+                catch
+                {
+                    // ignored
+                }
             }
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_isDisposed != 0)
+                throw new AsyncQueueDisposedException();
         }
     }
 }

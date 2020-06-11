@@ -1,0 +1,27 @@
+version: '3.5'
+
+services:
+
+  pulsar:
+    container_name: pulsar-stresstests
+    image: 'apachepulsar/pulsar:2.5.0'
+    ports:
+      - '54546:8080'
+      - '54545:6650'
+    environment:
+      PULSAR_MEM: " -Xms1g -Xmx1g -XX:MaxDirectMemorySize=2g"
+    command: |
+      /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone --no-functions-worker"
+
+  loadbalancer:
+    container_name: loadbalancer
+    image: 'haproxy:2.1.3'
+    ports:
+      - '8888:8888'
+      - '6666:6666'
+      - '9999:9999'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - pulsar

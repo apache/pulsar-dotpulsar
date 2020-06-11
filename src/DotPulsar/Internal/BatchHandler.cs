@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
-using System.Buffers;
-using System.Collections;
-using System.Collections.Generic;
-
 namespace DotPulsar.Internal
 {
+    using Extensions;
+    using PulsarApi;
+    using System.Buffers;
+    using System.Collections;
+    using System.Collections.Generic;
+
     public sealed class BatchHandler
     {
         private readonly bool _trackBatches;
@@ -33,12 +33,13 @@ namespace DotPulsar.Internal
             _batches = new LinkedList<Batch>();
         }
 
-        public Message Add(MessageIdData messageId, PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data)
+        public Message Add(MessageIdData messageId, MessageMetadata metadata, ReadOnlySequence<byte> data)
         {
             if (_trackBatches)
                 _batches.AddLast(new Batch(messageId, metadata.NumMessagesInBatch));
 
             long index = 0;
+
             for (var i = 0; i < metadata.NumMessagesInBatch; ++i)
             {
                 var singleMetadataSize = data.ReadUInt32(index, true);
@@ -48,13 +49,14 @@ namespace DotPulsar.Internal
                 var singleMessageId = new MessageId(messageId.LedgerId, messageId.EntryId, messageId.Partition, i);
                 var message = new Message(singleMessageId, metadata, singleMetadata, data.Slice(index, singleMetadata.PayloadSize));
                 _messages.Enqueue(message);
-                index += (uint)singleMetadata.PayloadSize;
+                index += (uint) singleMetadata.PayloadSize;
             }
 
             return _messages.Dequeue();
         }
 
-        public Message? GetNext() => _messages.Count == 0 ? null : _messages.Dequeue();
+        public Message? GetNext()
+            => _messages.Count == 0 ? null : _messages.Dequeue();
 
         public void Clear()
         {
@@ -72,11 +74,13 @@ namespace DotPulsar.Internal
                     continue;
 
                 batch.Acknowledge(messageId.BatchIndex);
+
                 if (batch.IsAcknowledged())
                 {
                     _batches.Remove(batch);
                     return batch.MessageId;
                 }
+
                 break;
             }
 
@@ -95,7 +99,8 @@ namespace DotPulsar.Internal
 
             public MessageIdData MessageId { get; }
 
-            public void Acknowledge(int batchIndex) => _acknowledgementIndex.Set(batchIndex, true);
+            public void Acknowledge(int batchIndex)
+                => _acknowledgementIndex.Set(batchIndex, true);
 
             public bool IsAcknowledged()
             {

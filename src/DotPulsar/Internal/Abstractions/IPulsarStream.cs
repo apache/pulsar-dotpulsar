@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal.Abstractions
 {
+    using System;
+    using System.Buffers;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public interface IPulsarStream : IAsyncDisposable
     {
         Task Send(ReadOnlySequence<byte> sequence);

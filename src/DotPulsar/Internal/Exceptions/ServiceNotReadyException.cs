@@ -12,10 +12,10 @@
  * limitations under the License.
  */
 
-using DotPulsar.Exceptions;
-
 namespace DotPulsar.Internal.Exceptions
 {
+    using DotPulsar.Exceptions;
+
     public sealed class ServiceNotReadyException : DotPulsarException
     {
         public ServiceNotReadyException(string message) : base(message) { }

@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Exceptions;
-
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+
     public sealed class ConsumerBuilder : IConsumerBuilder
     {
         private readonly IPulsarClient _pulsarClient;

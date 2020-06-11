@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
-
 namespace DotPulsar.Tests.Internal
 {
+    using DotPulsar.Internal;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Xunit;
+
     public class AsyncQueueTests
     {
         [Fact]
@@ -31,7 +31,7 @@ namespace DotPulsar.Tests.Internal
             queue.Enqueue(value);
 
             //Act
-            var actual = await dequeueTask;
+            var actual = await dequeueTask.ConfigureAwait(false);
 
             //Assert
             Assert.Equal(value, actual);
@@ -49,7 +49,7 @@ namespace DotPulsar.Tests.Internal
             queue.Enqueue(value);
 
             //Act
-            var actual = await queue.Dequeue();
+            var actual = await queue.Dequeue().ConfigureAwait(false);
 
             //Assert
             Assert.Equal(value, actual);
@@ -70,8 +70,8 @@ namespace DotPulsar.Tests.Internal
             queue.Enqueue(value2);
 
             //Act
-            var actual1 = await dequeue1;
-            var actual2 = await dequeue2;
+            var actual1 = await dequeue1.ConfigureAwait(false);
+            var actual2 = await dequeue2.ConfigureAwait(false);
 
             //Assert
             Assert.Equal(value1, actual1);
@@ -91,8 +91,8 @@ namespace DotPulsar.Tests.Internal
             queue.Enqueue(value2);
 
             //Act
-            var actual1 = await queue.Dequeue();
-            var actual2 = await queue.Dequeue();
+            var actual1 = await queue.Dequeue().ConfigureAwait(false);
+            var actual2 = await queue.Dequeue().ConfigureAwait(false);
 
             //Assert
             Assert.Equal(value1, actual1);
@@ -115,8 +115,8 @@ namespace DotPulsar.Tests.Internal
             //Act
             source1.Cancel();
             queue.Enqueue(excepted);
-            var exception = await Record.ExceptionAsync(() => task1.AsTask()); // xUnit can't record ValueTask yet
-            await task2;
+            var exception = await Record.ExceptionAsync(() => task1.AsTask()).ConfigureAwait(false); // xUnit can't record ValueTask yet
+            await task2.ConfigureAwait(false);
 
             //Assert
             Assert.IsType<TaskCanceledException>(exception);

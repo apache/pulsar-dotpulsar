@@ -12,33 +12,32 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using Events;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public abstract class Process : IProcess
     {
+        protected readonly CancellationTokenSource CancellationTokenSource;
         protected ChannelState ChannelState;
         protected ExecutorState ExecutorState;
-        protected CancellationTokenSource CancellationTokenSource;
 
-        public Guid CorrelationId { get; }
-
-        public Process(Guid correlationId)
+        protected Process(Guid correlationId)
         {
+            CancellationTokenSource = new CancellationTokenSource();
             ChannelState = ChannelState.Disconnected;
             ExecutorState = ExecutorState.Ok;
-            CancellationTokenSource = new CancellationTokenSource();
             CorrelationId = correlationId;
         }
 
-        protected abstract void CalculateState();
+        public Guid CorrelationId { get; }
 
-        public void Start() => CalculateState();
+        public void Start()
+            => CalculateState();
 
         public abstract ValueTask DisposeAsync();
 
@@ -70,9 +69,11 @@ namespace DotPulsar.Internal
                 case ChannelUnsubscribed _:
                     ChannelState = ChannelState.Unsubscribed;
                     break;
-            };
+            }
 
             CalculateState();
         }
+
+        protected abstract void CalculateState();
     }
 }

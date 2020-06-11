@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Internal;
-using System;
-using System.Threading.Tasks;
-using Xunit.Abstractions;
-
-namespace DotPulsar.Stress.Tests
+namespace DotPulsar.StressTests
 {
+    using Abstractions;
+    using Internal;
+    using System;
+    using System.Threading.Tasks;
+    using Xunit.Abstractions;
+
     internal class XunitExceptionHandler : IHandleException
     {
         private readonly ITestOutputHelper _output;
@@ -31,13 +31,11 @@ namespace DotPulsar.Stress.Tests
             _exceptionHandler = exceptionHandler;
         }
 
-        public XunitExceptionHandler(ITestOutputHelper output) : this(output, new DefaultExceptionHandler(TimeSpan.FromSeconds(3)))
-        {
-        }
+        public XunitExceptionHandler(ITestOutputHelper output) : this(output, new DefaultExceptionHandler(TimeSpan.FromSeconds(3))) { }
 
         public async ValueTask OnException(ExceptionContext exceptionContext)
         {
-            await _exceptionHandler.OnException(exceptionContext);
+            await _exceptionHandler.OnException(exceptionContext).ConfigureAwait(false);
 
             if (!exceptionContext.ExceptionHandled)
                 _output.WriteLine(

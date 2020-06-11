@@ -12,16 +12,16 @@
  * limitations under the License.
  */
 
-using System.Reflection;
-
 namespace DotPulsar.Internal
 {
+    using System.Reflection;
+
     public static class Constants
     {
         static Constants()
         {
             var assemblyName = Assembly.GetCallingAssembly().GetName();
-            ClientVersion = assemblyName.Name + " " + assemblyName.Version.ToString(3);
+            ClientVersion = $"{assemblyName.Name} {assemblyName.Version.ToString(3)}";
             ProtocolVersion = 14;
             PulsarScheme = "pulsar";
             PulsarSslScheme = "pulsar+ssl";

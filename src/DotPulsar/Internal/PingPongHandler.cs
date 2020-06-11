@@ -12,11 +12,13 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.PulsarApi;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using PulsarApi;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class PingPongHandler
     {
         private readonly IConnection _connection;
@@ -28,9 +30,16 @@ namespace DotPulsar.Internal
             _pong = new CommandPong();
         }
 
-        public void Incoming(CommandPing ping)
+        public void Incoming(CommandPing ping, CancellationToken cancellationToken)
+            => Task.Factory.StartNew(() => SendPong(cancellationToken));
+
+        private async Task SendPong(CancellationToken cancellationToken)
         {
-            _ = _connection.Send(_pong);
+            try
+            {
+                await _connection.Send(_pong, cancellationToken).ConfigureAwait(false);
+            }
+            catch { }
         }
     }
 }

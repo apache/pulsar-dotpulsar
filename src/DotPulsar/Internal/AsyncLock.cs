@@ -12,42 +12,41 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using Exceptions;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class AsyncLock : IAsyncDisposable
     {
         private readonly LinkedList<CancelableCompletionSource<IDisposable>> _pending;
         private readonly SemaphoreSlim _semaphoreSlim;
         private readonly Releaser _releaser;
         private readonly Task<IDisposable> _completedTask;
-        private bool _isDisposed;
+        private int _isDisposed;
 
         public AsyncLock()
         {
             _pending = new LinkedList<CancelableCompletionSource<IDisposable>>();
             _semaphoreSlim = new SemaphoreSlim(1, 1);
             _releaser = new Releaser(Release);
-            _completedTask = Task.FromResult((IDisposable)_releaser);
-            _isDisposed = false;
+            _completedTask = Task.FromResult((IDisposable) _releaser);
         }
 
-        public Task<IDisposable> Lock(CancellationToken cancellationToken = default)
+        public Task<IDisposable> Lock(CancellationToken cancellationToken)
         {
             LinkedListNode<CancelableCompletionSource<IDisposable>>? node = null;
 
             lock (_pending)
             {
-                if (_isDisposed)
-                    throw new ObjectDisposedException(nameof(AsyncLock));
+                ThrowIfDisposed();
 
                 if (_semaphoreSlim.CurrentCount == 1) //Lock is free
                 {
-                    _semaphoreSlim.Wait(); //Will never block
+                    _semaphoreSlim.Wait(cancellationToken); //Will never block
                     return _completedTask;
                 }
 
@@ -65,21 +64,17 @@ namespace DotPulsar.Internal
         {
             lock (_pending)
             {
-                if (_isDisposed)
+                if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                     return;
 
-                _isDisposed = true;
-
                 foreach (var pending in _pending)
-                {
-                    pending.SetException(new ObjectDisposedException(nameof(AsyncLock)));
                     pending.Dispose();
-                }
 
                 _pending.Clear();
             }
 
-            await _semaphoreSlim.WaitAsync(); //Wait for possible lock-holder to finish
+            await _semaphoreSlim.WaitAsync().ConfigureAwait(false); //Wait for possible lock-holder to finish
+
             _semaphoreSlim.Release();
             _semaphoreSlim.Dispose();
         }
@@ -118,13 +113,21 @@ namespace DotPulsar.Internal
             }
         }
 
+        private void ThrowIfDisposed()
+        {
+            if (_isDisposed != 0)
+                throw new AsyncLockDisposedException();
+        }
+
         private class Releaser : IDisposable
         {
             private readonly Action _release;
 
-            public Releaser(Action release) => _release = release;
+            public Releaser(Action release)
+                => _release = release;
 
-            public void Dispose() => _release();
+            public void Dispose()
+                => _release();
         }
     }
 }

@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using System;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using Events;
+    using System;
+
     public sealed class Channel : IChannel
     {
         private readonly Guid _correlationId;
@@ -31,13 +31,28 @@ namespace DotPulsar.Internal
             _enqueue = enqueue;
         }
 
-        public void Received(MessagePackage message) => _enqueue.Enqueue(message);
-        public void Activated() => _eventRegister.Register(new ChannelActivated(_correlationId));
-        public void ClosedByServer() => _eventRegister.Register(new ChannelClosedByServer(_correlationId));
-        public void Connected() => _eventRegister.Register(new ChannelConnected(_correlationId));
-        public void Deactivated() => _eventRegister.Register(new ChannelDeactivated(_correlationId));
-        public void Disconnected() => _eventRegister.Register(new ChannelDisconnected(_correlationId));
-        public void ReachedEndOfTopic() => _eventRegister.Register(new ChannelReachedEndOfTopic(_correlationId));
-        public void Unsubscribed() => _eventRegister.Register(new ChannelUnsubscribed(_correlationId));
+        public void Received(MessagePackage message)
+            => _enqueue.Enqueue(message);
+
+        public void Activated()
+            => _eventRegister.Register(new ChannelActivated(_correlationId));
+
+        public void ClosedByServer()
+            => _eventRegister.Register(new ChannelClosedByServer(_correlationId));
+
+        public void Connected()
+            => _eventRegister.Register(new ChannelConnected(_correlationId));
+
+        public void Deactivated()
+            => _eventRegister.Register(new ChannelDeactivated(_correlationId));
+
+        public void Disconnected()
+            => _eventRegister.Register(new ChannelDisconnected(_correlationId));
+
+        public void ReachedEndOfTopic()
+            => _eventRegister.Register(new ChannelReachedEndOfTopic(_correlationId));
+
+        public void Unsubscribed()
+            => _eventRegister.Register(new ChannelUnsubscribed(_correlationId));
     }
 }

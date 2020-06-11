@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using Events;
+    using System;
+    using System.Collections.Concurrent;
+    using System.Linq;
+    using System.Threading.Tasks;
+
     public sealed class ProcessManager : IRegisterEvent, IAsyncDisposable
     {
         private readonly ConcurrentDictionary<Guid, IProcess> _processes;
@@ -34,20 +34,19 @@ namespace DotPulsar.Internal
 
         public async ValueTask DisposeAsync()
         {
-            var processes = _processes.Values.ToArray();
+            foreach (var proc in _processes.Values.ToArray())
+                await proc.DisposeAsync().ConfigureAwait(false);
 
-            for (var i = 0; i < processes.Length; ++i)
-                await processes[i].DisposeAsync();
-
-            await _connectionPool.DisposeAsync();
+            await _connectionPool.DisposeAsync().ConfigureAwait(false);
         }
 
-        public void Add(IProcess process) => _processes[process.CorrelationId] = process;
+        public void Add(IProcess process)
+            => _processes[process.CorrelationId] = process;
 
         private async void Remove(Guid correlationId)
         {
-            if (_processes.TryRemove(correlationId, out IProcess process))
-                await process.DisposeAsync();
+            if (_processes.TryRemove(correlationId, out var process))
+                await process.DisposeAsync().ConfigureAwait(false);
         }
 
         public void Register(IEvent e)
@@ -76,10 +75,10 @@ namespace DotPulsar.Internal
                     DotPulsarEventSource.Log.ReaderDisposed();
                     break;
                 default:
-                    if (_processes.TryGetValue(e.CorrelationId, out IProcess process))
+                    if (_processes.TryGetValue(e.CorrelationId, out var process))
                         process.Handle(e);
                     break;
-            };
+            }
         }
     }
 }

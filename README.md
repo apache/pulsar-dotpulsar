@@ -36,7 +36,7 @@ await foreach (var message in consumer.Messages())
 }
 ```
 
-For a more in-depth tour of the API, please visit the [Wiki](https://github.com/danske-commodities/dotpulsar/wiki).
+For a more in-depth tour of the API, please visit the [Wiki](https://github.com/apache/pulsar-dotpulsar/wiki).
 
 ## Supported features
 
@@ -56,6 +56,7 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 - [X] Consume compacted topics
 - [X] Reader API
 - [X] Read/Consume/Acknowledge batched messages
+- [X] Pulsar Proxy
 
 ## Roadmap
 
@@ -75,11 +76,11 @@ We are feature complete for this release. We just need testing.
 
 Let us know which features you need by creating an issue or by giving existing issues a "Thumbs up".
 
-* [Message encryption](https://github.com/danske-commodities/dotpulsar/issues/8)
-* [Batching when producing](https://github.com/danske-commodities/dotpulsar/issues/7)
-* [Schema](https://github.com/danske-commodities/dotpulsar/issues/6)
-* [Partitioned topics](https://github.com/danske-commodities/dotpulsar/issues/4)
-* [Multi-topic subscriptions](https://github.com/danske-commodities/dotpulsar/issues/5)
+* [Message encryption](https://github.com/apache/pulsar-dotpulsar/issues/8)
+* [Batching when producing](https://github.com/apache/pulsar-dotpulsar/issues/7)
+* [Schema](https://github.com/apache/pulsar-dotpulsar/issues/6)
+* [Partitioned topics](https://github.com/apache/pulsar-dotpulsar/issues/4)
+* [Multi-topic subscriptions](https://github.com/apache/pulsar-dotpulsar/issues/5)
 * Athenz Authentication
 * Kerberos Authentication
 * LZ4 message compression
@@ -98,13 +99,13 @@ Apache Pulsar has a [Slack instance](https://pulsar.apache.org/contact/) and the
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/danske-commodities/dotpulsar/tags).
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/apache/pulsar-dotpulsar/tags).
 
 ## Authors
 
 * **Daniel Blankensteiner** - *Initial work* - [Danske Commodities](https://github.com/danske-commodities)
 
-See also the list of [contributors](https://github.com/danske-commodities/dotpulsar/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/apache/pulsar-dotpulsar/contributors) who participated in this project.
 
 ## License
 

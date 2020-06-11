@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using DotPulsar.Abstractions;
+    using Events;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class Executor : IExecute
     {
         private readonly Guid _correlationId;
@@ -43,9 +43,9 @@ namespace DotPulsar.Internal
                     action();
                     return;
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -59,12 +59,12 @@ namespace DotPulsar.Internal
             {
                 try
                 {
-                    await func();
+                    await func().ConfigureAwait(false);
                     return;
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -78,12 +78,12 @@ namespace DotPulsar.Internal
             {
                 try
                 {
-                    await func();
+                    await func().ConfigureAwait(false);
                     return;
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -99,9 +99,9 @@ namespace DotPulsar.Internal
                 {
                     return func();
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -115,11 +115,11 @@ namespace DotPulsar.Internal
             {
                 try
                 {
-                    return await func();
+                    return await func().ConfigureAwait(false);
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -133,11 +133,11 @@ namespace DotPulsar.Internal
             {
                 try
                 {
-                    return await func();
+                    return await func().ConfigureAwait(false);
                 }
-                catch (Exception exception)
+                catch (Exception ex)
                 {
-                    if (await Handle(exception, cancellationToken))
+                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
                         throw;
                 }
 
@@ -152,15 +152,14 @@ namespace DotPulsar.Internal
 
             var context = new ExceptionContext(exception, cancellationToken);
 
-            await _exceptionHandler.OnException(context);
+            await _exceptionHandler.OnException(context).ConfigureAwait(false);
 
             if (context.Result != FaultAction.Retry)
                 _eventRegister.Register(new ExecutorFaulted(_correlationId));
 
-            if (context.Result == FaultAction.ThrowException)
-                throw context.Exception;
-
-            return context.Result == FaultAction.Rethrow;
+            return context.Result == FaultAction.ThrowException
+                ? throw context.Exception
+                : context.Result == FaultAction.Rethrow;
         }
     }
 }

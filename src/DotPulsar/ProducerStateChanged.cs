@@ -12,25 +12,19 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal;
-using Xunit;
-
-namespace DotPulsar.Tests.Internal
+namespace DotPulsar
 {
-    public class SerializerTests
+    using Abstractions;
+
+    public sealed class ProducerStateChanged
     {
-        [Fact]
-        public void ToBigEndianBytes_GivenUnsignedInteger_ShouldReturnExpectedBytes()
+        internal ProducerStateChanged(IProducer producer, ProducerState producerState)
         {
-            //Arrange
-            uint value = 66051;
-
-            //Act
-            var actual = Serializer.ToBigEndianBytes(value);
-
-            //Assert
-            var expected = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-            Assert.Equal(expected, actual);
+            Producer = producer;
+            ProducerState = producerState;
         }
+
+        public IProducer Producer { get; }
+        public ProducerState ProducerState { get; }
     }
 }

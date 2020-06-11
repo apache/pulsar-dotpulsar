@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class AsyncLockExecutor : IExecute, IAsyncDisposable
     {
         private readonly AsyncLock _lock;
@@ -30,53 +30,54 @@ namespace DotPulsar.Internal
             _executor = executor;
         }
 
-        public async ValueTask DisposeAsync() => await _lock.DisposeAsync();
+        public ValueTask DisposeAsync()
+            => _lock.DisposeAsync();
 
         public async ValueTask Execute(Action action, CancellationToken cancellationToken)
         {
-            using (await _lock.Lock(cancellationToken))
+            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
-                await _executor.Execute(action, cancellationToken);
+                await _executor.Execute(action, cancellationToken).ConfigureAwait(false);
             }
         }
 
         public async ValueTask Execute(Func<Task> func, CancellationToken cancellationToken)
         {
-            using (await _lock.Lock(cancellationToken))
+            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
-                await _executor.Execute(func, cancellationToken);
+                await _executor.Execute(func, cancellationToken).ConfigureAwait(false);
             }
         }
 
         public async ValueTask Execute(Func<ValueTask> func, CancellationToken cancellationToken)
         {
-            using (await _lock.Lock(cancellationToken))
+            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
-                await _executor.Execute(func, cancellationToken);
+                await _executor.Execute(func, cancellationToken).ConfigureAwait(false);
             }
         }
 
         public async ValueTask<TResult> Execute<TResult>(Func<TResult> func, CancellationToken cancellationToken)
         {
-            using (await _lock.Lock(cancellationToken))
+            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
-                return await _executor.Execute(func, cancellationToken);
+                return await _executor.Execute(func, cancellationToken).ConfigureAwait(false);
             }
         }
 
         public async ValueTask<TResult> Execute<TResult>(Func<Task<TResult>> func, CancellationToken cancellationToken)
         {
-            using (await _lock.Lock(cancellationToken))
+            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
-                return await _executor.Execute(func, cancellationToken);
+                return await _executor.Execute(func, cancellationToken).ConfigureAwait(false);
             }
         }
 
         public async ValueTask<TResult> Execute<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken)
         {
-            using (await _lock.Lock(cancellationToken))
+            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
-                return await _executor.Execute(func, cancellationToken);
+                return await _executor.Execute(func, cancellationToken).ConfigureAwait(false);
             }
         }
     }

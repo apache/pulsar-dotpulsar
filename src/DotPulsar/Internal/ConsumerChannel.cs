@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using Extensions;
+    using PulsarApi;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class ConsumerChannel : IConsumerChannel, IReaderChannel
     {
         private readonly ulong _id;
@@ -42,7 +42,13 @@ namespace DotPulsar.Internal
             _queue = queue;
             _connection = connection;
             _batchHandler = batchHandler;
-            _cachedCommandFlow = new CommandFlow { ConsumerId = id, MessagePermits = messagePrefetchCount };
+
+            _cachedCommandFlow = new CommandFlow
+            {
+                ConsumerId = id,
+                MessagePermits = messagePrefetchCount
+            };
+
             _sendWhenZero = 0;
             _firstFlow = true;
         }
@@ -52,19 +58,20 @@ namespace DotPulsar.Internal
             while (true)
             {
                 if (_sendWhenZero == 0)
-                    await SendFlow();
+                    await SendFlow(cancellationToken).ConfigureAwait(false);
 
                 _sendWhenZero--;
 
                 var message = _batchHandler.GetNext();
+
                 if (message != null)
                     return message;
 
-                var messagePackage = await _queue.Dequeue(cancellationToken);
+                var messagePackage = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);
 
                 if (!messagePackage.IsValid())
                 {
-                    await RejectPackage(messagePackage);
+                    await RejectPackage(messagePackage, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -79,12 +86,14 @@ namespace DotPulsar.Internal
             }
         }
 
-        public async Task Send(CommandAck command)
+        public async Task Send(CommandAck command, CancellationToken cancellationToken)
         {
             var messageId = command.MessageIds[0];
+
             if (messageId.BatchIndex != -1)
             {
                 var batchMessageId = _batchHandler.Acknowledge(messageId);
+
                 if (batchMessageId is null)
                     return;
 
@@ -92,30 +101,30 @@ namespace DotPulsar.Internal
             }
 
             command.ConsumerId = _id;
-            await _connection.Send(command);
+            await _connection.Send(command, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<CommandSuccess> Send(CommandUnsubscribe command)
+        public async Task<CommandSuccess> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
-            var response = await _connection.Send(command);
+            var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.Success);
             return response.Success;
         }
 
-        public async Task<CommandSuccess> Send(CommandSeek command)
+        public async Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
-            var response = await _connection.Send(command);
+            var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.Success);
             _batchHandler.Clear();
             return response.Success;
         }
 
-        public async Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command)
+        public async Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
-            var response = await _connection.Send(command);
+            var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.GetLastMessageIdResponse);
             return response.GetLastMessageIdResponse;
         }
@@ -125,7 +134,8 @@ namespace DotPulsar.Internal
             try
             {
                 _queue.Dispose();
-                await _connection.Send(new CommandCloseConsumer { ConsumerId = _id });
+
+                await _connection.Send(new CommandCloseConsumer { ConsumerId = _id }, CancellationToken.None).ConfigureAwait(false);
             }
             catch
             {
@@ -133,30 +143,27 @@ namespace DotPulsar.Internal
             }
         }
 
-        private async ValueTask SendFlow()
+        private async ValueTask SendFlow(CancellationToken cancellationToken)
         {
-            await _connection.Send(_cachedCommandFlow); //TODO Should sending the flow command be handled on another thread and thereby not slow down the consumer?
+            //TODO Should sending the flow command be handled on another thread and thereby not slow down the consumer?
+            await _connection.Send(_cachedCommandFlow, cancellationToken).ConfigureAwait(false);
 
             if (_firstFlow)
             {
-                _cachedCommandFlow.MessagePermits = (uint)Math.Ceiling(_cachedCommandFlow.MessagePermits * 0.5);
+                _cachedCommandFlow.MessagePermits = (uint) Math.Ceiling(_cachedCommandFlow.MessagePermits * 0.5);
                 _firstFlow = false;
             }
 
             _sendWhenZero = _cachedCommandFlow.MessagePermits;
         }
 
-        private async Task RejectPackage(MessagePackage messagePackage)
+        private async Task RejectPackage(MessagePackage messagePackage, CancellationToken cancellationToken)
         {
-            var ack = new CommandAck
-            {
-                Type = CommandAck.AckType.Individual,
-                validation_error = CommandAck.ValidationError.ChecksumMismatch
-            };
+            var ack = new CommandAck { Type = CommandAck.AckType.Individual, validation_error = CommandAck.ValidationError.ChecksumMismatch };
 
             ack.MessageIds.Add(messagePackage.MessageId);
 
-            await Send(ack);
+            await Send(ack, cancellationToken).ConfigureAwait(false);
         }
     }
 }

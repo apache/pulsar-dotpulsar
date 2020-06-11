@@ -12,17 +12,18 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.Events;
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using Abstractions;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Exceptions;
+    using Events;
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class Reader : IReader
     {
         private readonly Guid _correlationId;
@@ -32,14 +33,18 @@ namespace DotPulsar.Internal
         private readonly IStateChanged<ReaderState> _state;
         private int _isDisposed;
 
+        public string Topic { get; }
+
         public Reader(
             Guid correlationId,
+            string topic,
             IRegisterEvent eventRegister,
             IReaderChannel initialChannel,
             IExecute executor,
             IStateChanged<ReaderState> state)
         {
             _correlationId = correlationId;
+            Topic = topic;
             _eventRegister = eventRegister;
             _channel = initialChannel;
             _executor = executor;
@@ -49,24 +54,30 @@ namespace DotPulsar.Internal
             _eventRegister.Register(new ReaderCreated(_correlationId, this));
         }
 
-        public async ValueTask<ReaderState> StateChangedTo(ReaderState state, CancellationToken cancellationToken)
-            => await _state.StateChangedTo(state, cancellationToken);
+        public async ValueTask<ReaderStateChanged> StateChangedTo(ReaderState state, CancellationToken cancellationToken)
+        {
+            var newState = await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
+            return new ReaderStateChanged(this, newState);
+        }
 
-        public async ValueTask<ReaderState> StateChangedFrom(ReaderState state, CancellationToken cancellationToken)
-            => await _state.StateChangedFrom(state, cancellationToken);
+        public async ValueTask<ReaderStateChanged> StateChangedFrom(ReaderState state, CancellationToken cancellationToken)
+        {
+            var newState = await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
+            return new ReaderStateChanged(this, newState);
+        }
 
-        public bool IsFinalState() => _state.IsFinalState();
+        public bool IsFinalState()
+            => _state.IsFinalState();
 
-        public bool IsFinalState(ReaderState state) => _state.IsFinalState(state);
+        public bool IsFinalState(ReaderState state)
+            => _state.IsFinalState(state);
 
         public async IAsyncEnumerable<Message> Messages([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
             while (!cancellationToken.IsCancellationRequested)
-            {
-                yield return await _executor.Execute(() => _channel.Receive(cancellationToken), cancellationToken);
-            }
+                yield return await _executor.Execute(() => _channel.Receive(cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask DisposeAsync()
@@ -75,7 +86,7 @@ namespace DotPulsar.Internal
                 return;
 
             _eventRegister.Register(new ReaderDisposed(_correlationId, this));
-            await _channel.DisposeAsync();
+            await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
         internal void SetChannel(IReaderChannel channel)
@@ -87,7 +98,7 @@ namespace DotPulsar.Internal
         private void ThrowIfDisposed()
         {
             if (_isDisposed != 0)
-                throw new ObjectDisposedException(nameof(Reader));
+                throw new ReaderDisposedException();
         }
     }
 }

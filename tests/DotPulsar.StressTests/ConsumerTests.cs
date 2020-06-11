@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,27 +12,30 @@
  * limitations under the License.
  */
 
-using DotPulsar.Extensions;
-using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
-using Xunit.Abstractions;
-
-namespace DotPulsar.Stress.Tests
+namespace DotPulsar.StressTests
 {
+    using Extensions;
+    using Fixtures;
+    using FluentAssertions;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Xunit;
+    using Xunit.Abstractions;
+
+    [Collection(nameof(StandaloneClusterTest))]
     public class ConsumerTests
     {
         private readonly ITestOutputHelper _output;
 
-        public ConsumerTests(ITestOutputHelper output) => _output = output;
+        public ConsumerTests(ITestOutputHelper output)
+            => _output = output;
 
         [Theory]
-        [InlineData(1000)]
+        [InlineData(10000)]
         public async Task Messages_GivenTopicWithMessages_ShouldConsumeAll(int numberOfMessages)
         {
             //Arrange
@@ -42,6 +45,7 @@ namespace DotPulsar.Stress.Tests
 
             await using var client = PulsarClient.Builder()
                 .ExceptionHandler(new XunitExceptionHandler(_output))
+                .ServiceUrl(new Uri("pulsar://localhost:54545"))
                 .Build(); //Connecting to pulsar://localhost:6650
 
             await using var consumer = client.NewConsumer()
@@ -61,15 +65,15 @@ namespace DotPulsar.Stress.Tests
             var consume = ConsumeMessages(cts.Token);
             var produce = ProduceMessages(cts.Token);
 
-            var consumed = await consume;
-            var produced = await produce;
+            var consumed = await consume.ConfigureAwait(false);
+            var produced = await produce.ConfigureAwait(false);
 
             //Assert
             consumed.Should().BeEquivalentTo(produced);
 
             Task<MessageId[]> ProduceMessages(CancellationToken ct)
                 => Enumerable.Range(1, numberOfMessages)
-                    .Select(async n => await producer.Send(Encoding.UTF8.GetBytes($"Sent #{n} at {DateTimeOffset.UtcNow:s}"), ct))
+                    .Select(async n => await producer.Send(Encoding.UTF8.GetBytes($"Sent #{n} at {DateTimeOffset.UtcNow:s}"), ct).ConfigureAwait(false))
                     .WhenAll();
 
             async Task<List<MessageId>> ConsumeMessages(CancellationToken ct)
@@ -80,9 +84,10 @@ namespace DotPulsar.Stress.Tests
                 {
                     ids.Add(message.MessageId);
 
-                    if (ids.Count != numberOfMessages) continue;
+                    if (ids.Count != numberOfMessages)
+                        continue;
 
-                    await consumer.AcknowledgeCumulative(message, ct);
+                    await consumer.AcknowledgeCumulative(message, ct).ConfigureAwait(false);
 
                     break;
                 }

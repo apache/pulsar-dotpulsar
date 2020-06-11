@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Internal.Extensions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
+    using Extensions;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public sealed class MessageBuilder : IMessageBuilder
     {
         private readonly IProducer _producer;
@@ -86,6 +86,6 @@ namespace DotPulsar.Internal
         }
 
         public async ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => await _producer.Send(_metadata, data, cancellationToken);
+            => await _producer.Send(_metadata, data, cancellationToken).ConfigureAwait(false);
     }
 }

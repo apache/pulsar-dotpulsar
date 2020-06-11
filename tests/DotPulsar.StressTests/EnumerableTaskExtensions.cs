@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,13 +12,16 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+#pragma warning disable 8601
+#pragma warning disable 8625
 
-namespace DotPulsar.Stress.Tests
+namespace DotPulsar.StressTests
 {
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Threading.Tasks;
+
     public static class EnumerableValueTaskExtensions
     {
         [DebuggerStepThrough]
@@ -47,19 +50,19 @@ namespace DotPulsar.Stress.Tests
         public static async IAsyncEnumerable<TResult> Enumerate<TResult>(this IEnumerable<ValueTask<TResult>> source)
         {
             foreach (var operation in source.Select(GetInfo))
+            {
                 yield return operation.IsTask
                     ? await operation.Task.ConfigureAwait(false)
                     : operation.Result;
+            }
         }
 
         private static ValueTaskInfo<TResult> GetInfo<TResult>(this ValueTask<TResult> source)
-        {
-            return source.IsCompleted
+            => source.IsCompleted
                 ? new ValueTaskInfo<TResult>(source.Result)
                 : new ValueTaskInfo<TResult>(source.AsTask());
-        }
 
-        private struct ValueTaskInfo<TResult>
+        private readonly struct ValueTaskInfo<TResult>
         {
             public ValueTaskInfo(Task<TResult> task)
             {
@@ -84,9 +87,11 @@ namespace DotPulsar.Stress.Tests
     public static class EnumerableTaskExtensions
     {
         [DebuggerStepThrough]
-        public static Task WhenAll(this IEnumerable<Task> source) => Task.WhenAll(source);
+        public static Task WhenAll(this IEnumerable<Task> source)
+            => Task.WhenAll(source);
 
         [DebuggerStepThrough]
-        public static Task<T[]> WhenAll<T>(this IEnumerable<Task<T>> source) => Task.WhenAll(source);
+        public static Task<T[]> WhenAll<T>(this IEnumerable<Task<T>> source)
+            => Task.WhenAll(source);
     }
 }

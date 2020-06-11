@@ -12,13 +12,14 @@
  * limitations under the License.
  */
 
-using DotPulsar.Abstractions;
-using DotPulsar.Internal;
-
 namespace DotPulsar.Extensions
 {
+    using Abstractions;
+    using Internal;
+
     public static class ProducerExtensions
     {
-        public static IMessageBuilder NewMessage(this IProducer producer) => new MessageBuilder(producer);
+        public static IMessageBuilder NewMessage(this IProducer producer)
+            => new MessageBuilder(producer);
     }
 }

@@ -12,26 +12,27 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
-    public sealed class Awaitor<T, Result> : IDisposable
+    using System;
+    using System.Collections.Concurrent;
+    using System.Threading.Tasks;
+
+    public sealed class Awaiter<T, TResult> : IDisposable
     {
-        private readonly ConcurrentDictionary<T, TaskCompletionSource<Result>> _items;
+        private readonly ConcurrentDictionary<T, TaskCompletionSource<TResult>> _items;
 
-        public Awaitor() => _items = new ConcurrentDictionary<T, TaskCompletionSource<Result>>();
+        public Awaiter()
+            => _items = new ConcurrentDictionary<T, TaskCompletionSource<TResult>>();
 
-        public Task<Result> CreateTask(T item)
+        public Task<TResult> CreateTask(T item)
         {
-            var tcs = new TaskCompletionSource<Result>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             _ = _items.TryAdd(item, tcs);
             return tcs.Task;
         }
 
-        public void SetResult(T item, Result result)
+        public void SetResult(T item, TResult result)
         {
             if (_items.TryRemove(item, out var tcs))
                 tcs.SetResult(result);
@@ -40,9 +41,7 @@ namespace DotPulsar.Internal
         public void Dispose()
         {
             foreach (var item in _items.Values)
-            {
                 item.SetCanceled();
-            }
 
             _items.Clear();
         }

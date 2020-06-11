@@ -12,14 +12,15 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.Abstractions;
-using System;
-
 namespace DotPulsar.Internal.Events
 {
+    using Abstractions;
+    using System;
+
     public sealed class ExecutorFaulted : IEvent
     {
-        public ExecutorFaulted(Guid correlationId) => CorrelationId = correlationId;
+        public ExecutorFaulted(Guid correlationId)
+            => CorrelationId = correlationId;
 
         public Guid CorrelationId { get; }
     }

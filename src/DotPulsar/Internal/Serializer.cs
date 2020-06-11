@@ -12,26 +12,27 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Buffers;
-using System.IO;
-
 namespace DotPulsar.Internal
 {
+    using PulsarApi;
+    using System;
+    using System.Buffers;
+    using System.IO;
+
     public static class Serializer
     {
         public static T Deserialize<T>(ReadOnlySequence<byte> sequence)
         {
-            using var ms = new MemoryStream(sequence.ToArray()); //TODO Fix this when protobuf-net start supporting sequences or .NET supports creating a stream from a sequence
+            //TODO Fix this when protobuf-net start supporting sequences or .NET supports creating a stream from a sequence
+            using var ms = new MemoryStream(sequence.ToArray());
             return ProtoBuf.Serializer.Deserialize<T>(ms);
         }
 
         public static ReadOnlySequence<byte> Serialize(BaseCommand command)
         {
             var commandBytes = Serialize<BaseCommand>(command);
-            var commandSizeBytes = ToBigEndianBytes((uint)commandBytes.Length);
-            var totalSizeBytes = ToBigEndianBytes((uint)commandBytes.Length + 4);
+            var commandSizeBytes = ToBigEndianBytes((uint) commandBytes.Length);
+            var totalSizeBytes = ToBigEndianBytes((uint) commandBytes.Length + 4);
 
             return new SequenceBuilder<byte>()
                 .Append(totalSizeBytes)
@@ -40,13 +41,13 @@ namespace DotPulsar.Internal
                 .Build();
         }
 
-        public static ReadOnlySequence<byte> Serialize(BaseCommand command, PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> payload)
+        public static ReadOnlySequence<byte> Serialize(BaseCommand command, MessageMetadata metadata, ReadOnlySequence<byte> payload)
         {
             var commandBytes = Serialize<BaseCommand>(command);
-            var commandSizeBytes = ToBigEndianBytes((uint)commandBytes.Length);
+            var commandSizeBytes = ToBigEndianBytes((uint) commandBytes.Length);
 
             var metadataBytes = Serialize(metadata);
-            var metadataSizeBytes = ToBigEndianBytes((uint)metadataBytes.Length);
+            var metadataSizeBytes = ToBigEndianBytes((uint) metadataBytes.Length);
 
             var sb = new SequenceBuilder<byte>().Append(metadataSizeBytes).Append(metadataBytes).Append(payload);
             var checksum = Crc32C.Calculate(sb.Build());
@@ -55,17 +56,17 @@ namespace DotPulsar.Internal
                 .Prepend(Constants.MagicNumber)
                 .Prepend(commandBytes)
                 .Prepend(commandSizeBytes)
-                .Prepend(ToBigEndianBytes((uint)sb.Length))
+                .Prepend(ToBigEndianBytes((uint) sb.Length))
                 .Build();
         }
 
         public static byte[] ToBigEndianBytes(uint integer)
         {
             var union = new UIntUnion(integer);
-            if (BitConverter.IsLittleEndian)
-                return new[] { union.B3, union.B2, union.B1, union.B0 };
-            else
-                return new[] { union.B0, union.B1, union.B2, union.B3 };
+
+            return BitConverter.IsLittleEndian
+                ? new[] { union.B3, union.B2, union.B1, union.B0 }
+                : new[] { union.B0, union.B1, union.B2, union.B3 };
         }
 
         private static byte[] Serialize<T>(T item)

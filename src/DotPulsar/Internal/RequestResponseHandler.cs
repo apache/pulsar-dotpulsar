@@ -12,27 +12,28 @@
  * limitations under the License.
  */
 
-using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Threading.Tasks;
-
 namespace DotPulsar.Internal
 {
+    using PulsarApi;
+    using System;
+    using System.Threading.Tasks;
+
     public sealed class RequestResponseHandler : IDisposable
     {
         private const string ConnectResponseIdentifier = "Connected";
 
-        private readonly Awaitor<string, BaseCommand> _responses;
+        private readonly Awaiter<string, BaseCommand> _responses;
         private SequenceId _requestId;
         private bool _pastInitialRequestId = false;
 
         public RequestResponseHandler()
         {
-            _responses = new Awaitor<string, BaseCommand>();
+            _responses = new Awaiter<string, BaseCommand>();
             _requestId = new SequenceId(1);
         }
 
-        public void Dispose() => _responses.Dispose();
+        public void Dispose()
+            => _responses.Dispose();
 
         public Task<BaseCommand> Outgoing(BaseCommand command)
         {
@@ -43,6 +44,7 @@ namespace DotPulsar.Internal
         public void Incoming(BaseCommand command)
         {
             var identifier = GetResponseIdentifier(command);
+
             if (identifier != null)
                 _responses.SetResult(identifier, command);
         }
@@ -91,8 +93,7 @@ namespace DotPulsar.Internal
         }
 
         private string GetResponseIdentifier(BaseCommand cmd)
-        {
-            switch (cmd.CommandType)
+            => cmd.CommandType switch
             {
                 case BaseCommand.Type.Connect:
                 case BaseCommand.Type.Connected: return ConnectResponseIdentifier;
