@@ -76,13 +76,14 @@ namespace DotPulsar.Internal
                 }
 
                 var metadataSize = messagePackage.GetMetadataSize();
+                var redeliveryCount = messagePackage.RedeliveryCount;
                 var data = messagePackage.ExtractData(metadataSize);
                 var metadata = messagePackage.ExtractMetadata(metadataSize);
                 var messageId = messagePackage.MessageId;
 
                 return metadata.NumMessagesInBatch == 1
-                    ? new Message(new MessageId(messageId), metadata, null, data)
-                    : _batchHandler.Add(messageId, metadata, data);
+                    ? new Message(new MessageId(messageId), redeliveryCount, metadata, null, data)
+                    : _batchHandler.Add(messageId, redeliveryCount, metadata, data);
             }
         }
 

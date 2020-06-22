@@ -130,7 +130,7 @@ namespace DotPulsar.Internal
             => _consumerChannels[command.ConsumerId]?.ReachedEndOfTopic();
 
         public void Incoming(CommandMessage command, ReadOnlySequence<byte> data)
-            => _consumerChannels[command.ConsumerId]?.Received(new MessagePackage(command.MessageId, data));
+            => _consumerChannels[command.ConsumerId]?.Received(new MessagePackage(command.MessageId, command.RedeliveryCount, data));
 
         public void Dispose()
         {

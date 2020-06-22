@@ -27,11 +27,13 @@ namespace DotPulsar
 
         internal Message(
             MessageId messageId,
+            uint redeliveryCount,
             Internal.PulsarApi.MessageMetadata metadata,
             SingleMessageMetadata? singleMetadata,
             ReadOnlySequence<byte> data)
         {
             MessageId = messageId;
+            RedeliveryCount = redeliveryCount;
             ProducerName = metadata.ProducerName;
             PublishTime = metadata.PublishTime;
             Data = data;
@@ -60,6 +62,7 @@ namespace DotPulsar
         public ReadOnlySequence<byte> Data { get; }
         public string ProducerName { get; }
         public ulong SequenceId { get; }
+        public uint RedeliveryCount { get; }
 
         public bool HasEventTime => EventTime != 0;
         public ulong EventTime { get; }

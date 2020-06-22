@@ -19,13 +19,15 @@ namespace DotPulsar.Internal
 
     public readonly struct MessagePackage
     {
-        public MessagePackage(MessageIdData messageId, ReadOnlySequence<byte> data)
+        public MessagePackage(MessageIdData messageId, uint redeliveryCount, ReadOnlySequence<byte> data)
         {
             MessageId = messageId;
+            RedeliveryCount = redeliveryCount;
             Data = data;
         }
 
         public MessageIdData MessageId { get; }
+        public uint RedeliveryCount { get; }
         public ReadOnlySequence<byte> Data { get; }
     }
 }

@@ -33,7 +33,7 @@ namespace DotPulsar.Internal
             _batches = new LinkedList<Batch>();
         }
 
-        public Message Add(MessageIdData messageId, MessageMetadata metadata, ReadOnlySequence<byte> data)
+        public Message Add(MessageIdData messageId, uint redeliveryCount, MessageMetadata metadata, ReadOnlySequence<byte> data)
         {
             if (_trackBatches)
                 _batches.AddLast(new Batch(messageId, metadata.NumMessagesInBatch));
@@ -47,7 +47,7 @@ namespace DotPulsar.Internal
                 var singleMetadata = Serializer.Deserialize<SingleMessageMetadata>(data.Slice(index, singleMetadataSize));
                 index += singleMetadataSize;
                 var singleMessageId = new MessageId(messageId.LedgerId, messageId.EntryId, messageId.Partition, i);
-                var message = new Message(singleMessageId, metadata, singleMetadata, data.Slice(index, singleMetadata.PayloadSize));
+                var message = new Message(singleMessageId, redeliveryCount, metadata, singleMetadata, data.Slice(index, singleMetadata.PayloadSize));
                 _messages.Enqueue(message);
                 index += (uint) singleMetadata.PayloadSize;
             }
