@@ -47,7 +47,7 @@ jobs:
         with:
           dotnet-version: '2.2.x'
 
-      - name: setup dotnet SxS
+      - name: set up dotnet SxS
         shell: pwsh
         run: |
           $version = Split-Path (Split-Path $ENV:DOTNET_ROOT -Parent) -Leaf;
@@ -61,7 +61,7 @@ jobs:
           }
 
       - name: run unit tests
-        run: dotnet test --logger "trx;verbosity=detailed"
+        run: dotnet test .\tests\DotPulsar.Tests\DotPulsar.Tests.csproj --logger "trx;verbosity=detailed"
 
       - name: package artifacts
         if: failure()
