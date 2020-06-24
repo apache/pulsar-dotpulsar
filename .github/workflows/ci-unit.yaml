@@ -37,10 +37,28 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: set up dotnet
+      - name: set up dotnet 3
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '3.1.x'
+
+      - name: set up dotnet 2
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '2.2.x'
+
+      - name: setup dotnet SxS
+        shell: pwsh
+        run: |
+          $version = Split-Path (Split-Path $ENV:DOTNET_ROOT -Parent) -Leaf;
+          $root = Split-Path (Split-Path $ENV:DOTNET_ROOT -Parent) -Parent;
+          $directories = Get-ChildItem $root | Where-Object { $_.Name -ne $version };
+          foreach ($dir in $directories) {
+            $from = $dir.FullName;
+            $to = "$root/$version";
+            Write-Host Copying from $from to $to;
+            Copy-Item "$from\*" $to -Recurse -Force;
+          }
 
       - name: run unit tests
         run: dotnet test --logger "trx;verbosity=detailed"
@@ -50,7 +68,7 @@ jobs:
         run: |
           rm -rf artifacts
           mkdir artifacts
-          cp -r tests/DotPulsar.Tests/TestResults/ artifacts/DotPulsar.Tests;cp -r tests/DotPulsar.StressTests/TestResults/ artifacts/DotPulsar.StressTests;
+          find . -type d -name "TestResults" -exec cp --parents -R {} artifacts/ \;
           zip -r artifacts.zip artifacts
 
       - name: upload artifacts
