@@ -61,7 +61,7 @@ jobs:
           }
 
       - name: run unit tests
-        run: dotnet test .\tests\DotPulsar.Tests\DotPulsar.Tests.csproj --logger "trx;verbosity=detailed"
+        run: dotnet test ./tests/DotPulsar.Tests/DotPulsar.Tests.csproj --logger "trx;verbosity=detailed"
 
       - name: package artifacts
         if: failure()
