@@ -1,4 +1,6 @@
-# DotPulsar
+﻿# DotPulsar
+
+![CI - Unit](https://github.com/apache/pulsar-dotpulsar/workflows/CI%20-%20Unit/badge.svg)
 
 .NET/C# client library for [Apache Pulsar](https://pulsar.apache.org/).
 
