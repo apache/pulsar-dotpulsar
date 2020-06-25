@@ -166,5 +166,12 @@ namespace DotPulsar.Internal.Extensions
                 CommandType = BaseCommand.Type.Seek,
                 Seek = command
             };
+        
+        public static BaseCommand AsBaseCommand(this CommandRedeliverUnacknowledgedMessages command)
+            => new BaseCommand
+            {
+                CommandType = BaseCommand.Type.RedeliverUnacknowledgedMessages,
+                RedeliverUnacknowledgedMessages = command
+            };
     }
 }
