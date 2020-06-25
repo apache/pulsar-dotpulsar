@@ -14,91 +14,93 @@
 
 namespace Consuming
 {
-    using DotPulsar;
-    using DotPulsar.Abstractions;
-    using DotPulsar.Extensions;
-    using System;
-    using System.Buffers;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
+  using DotPulsar;
+  using DotPulsar.Abstractions;
+  using DotPulsar.Extensions;
+  using System;
+  using System.Buffers;
+  using System.Text;
+  using System.Threading;
+  using System.Threading.Tasks;
 
-    internal static class Program
+  internal static class Program
+  {
+    private static async Task Main(string[] args)
     {
-        private static async Task Main(string[] args)
-        {
-            const string myTopic = "persistent://public/default/mytopic";
+      const string myTopic = "persistent://public/default/mytopic";
 
-            await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
+      await using var client = PulsarClient.Builder()
+        .ServiceUrl(new Uri("pulsar://host.docker.internal:6650"))
+        .Build();
 
-            var consumer = client.NewConsumer()
-                .SubscriptionName("MySubscription")
-                .Topic(myTopic)
-                .Create();
+      var consumer = client.NewConsumer()
+          .SubscriptionName("MySubscription")
+          .Topic(myTopic)
+          .Create();
 
-            var monitoring = Monitor(consumer);
+      var monitoring = Monitor(consumer);
 
-            var cts = new CancellationTokenSource();
+      var cts = new CancellationTokenSource();
 
-            var consuming = ConsumeMessages(consumer, cts.Token);
+      var consuming = ConsumeMessages(consumer, cts.Token);
 
-            Console.WriteLine("Press a key to exit");
+      Console.WriteLine("Press a key to exit");
 
-            _ = Console.ReadKey();
+      _ = Console.ReadKey();
 
-            cts.Cancel();
+      cts.Cancel();
 
-            await consuming.ConfigureAwait(false);
+      await consuming.ConfigureAwait(false);
 
-            await consumer.DisposeAsync().ConfigureAwait(false);
+      await consumer.DisposeAsync().ConfigureAwait(false);
 
-            await monitoring.ConfigureAwait(false);
-        }
-
-        private static async Task ConsumeMessages(IConsumer consumer, CancellationToken cancellationToken)
-        {
-            await Task.Yield();
-
-            try
-            {
-                await foreach (var message in consumer.Messages(cancellationToken))
-                {
-                    var data = Encoding.UTF8.GetString(message.Data.ToArray());
-                    Console.WriteLine("Received: " + data);
-                    await consumer.Acknowledge(message, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException) { }
-        }
-
-        private static async Task Monitor(IConsumer consumer)
-        {
-            await Task.Yield();
-
-            var state = ConsumerState.Disconnected;
-
-            while (true)
-            {
-                var stateChanged = await consumer.StateChangedFrom(state).ConfigureAwait(false);
-                state = stateChanged.ConsumerState;
-
-                var stateMessage = state switch
-                {
-                    ConsumerState.Active => "is active",
-                    ConsumerState.Inactive => "is inactive",
-                    ConsumerState.Disconnected => "is disconnected",
-                    ConsumerState.Closed => "has closed",
-                    ConsumerState.ReachedEndOfTopic => "has reached end of topic",
-                    ConsumerState.Faulted => "has faulted",
-                    _ => $"has an unknown state '{state}'"
-                };
-
-                var topic = stateChanged.Consumer.Topic;
-                Console.WriteLine($"The consumer for topic '{topic}' " + stateMessage);
-
-                if (consumer.IsFinalState(state))
-                    return;
-            }
-        }
+      await monitoring.ConfigureAwait(false);
     }
+
+    private static async Task ConsumeMessages(IConsumer consumer, CancellationToken cancellationToken)
+    {
+      await Task.Yield();
+
+      try
+      {
+        await foreach (var message in consumer.Messages(cancellationToken))
+        {
+          var data = Encoding.UTF8.GetString(message.Data.ToArray());
+          Console.WriteLine("Received: " + data);
+          await consumer.Acknowledge(message, cancellationToken).ConfigureAwait(false);
+        }
+      }
+      catch (OperationCanceledException) { }
+    }
+
+    private static async Task Monitor(IConsumer consumer)
+    {
+      await Task.Yield();
+
+      var state = ConsumerState.Disconnected;
+
+      while (true)
+      {
+        var stateChanged = await consumer.StateChangedFrom(state).ConfigureAwait(false);
+        state = stateChanged.ConsumerState;
+
+        var stateMessage = state switch
+        {
+          ConsumerState.Active => "is active",
+          ConsumerState.Inactive => "is inactive",
+          ConsumerState.Disconnected => "is disconnected",
+          ConsumerState.Closed => "has closed",
+          ConsumerState.ReachedEndOfTopic => "has reached end of topic",
+          ConsumerState.Faulted => "has faulted",
+          _ => $"has an unknown state '{state}'"
+        };
+
+        var topic = stateChanged.Consumer.Topic;
+        Console.WriteLine($"The consumer for topic '{topic}' " + stateMessage);
+
+        if (consumer.IsFinalState(state))
+          return;
+      }
+    }
+  }
 }

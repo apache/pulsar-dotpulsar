@@ -14,88 +14,90 @@
 
 namespace Producing
 {
-    using DotPulsar;
-    using DotPulsar.Abstractions;
-    using DotPulsar.Extensions;
-    using System;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
+  using DotPulsar;
+  using DotPulsar.Abstractions;
+  using DotPulsar.Extensions;
+  using System;
+  using System.Text;
+  using System.Threading;
+  using System.Threading.Tasks;
 
-    internal static class Program
+  internal static class Program
+  {
+    private static async Task Main(string[] args)
     {
-        private static async Task Main(string[] args)
-        {
-            const string myTopic = "persistent://public/default/mytopic";
+      const string myTopic = "persistent://public/default/mytopic";
 
-            await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
+      await using var client = PulsarClient.Builder()
+          .ServiceUrl(new Uri("pulsar://host.docker.internal:6650"))
+          .Build();
 
-            var producer = client.NewProducer().Topic(myTopic).Create();
+      var producer = client.NewProducer().Topic(myTopic).Create();
 
-            var monitoring = Monitor(producer);
+      var monitoring = Monitor(producer);
 
-            var cts = new CancellationTokenSource();
+      var cts = new CancellationTokenSource();
 
-            var producing = ProduceMessages(producer, cts.Token);
+      var producing = ProduceMessages(producer, cts.Token);
 
-            Console.WriteLine("Press a key to exit");
+      Console.WriteLine("Press a key to exit");
 
-            _ = Console.ReadKey();
+      _ = Console.ReadKey();
 
-            cts.Cancel();
+      cts.Cancel();
 
-            await producing.ConfigureAwait(false);
+      await producing.ConfigureAwait(false);
 
-            await producer.DisposeAsync().ConfigureAwait(false);
+      await producer.DisposeAsync().ConfigureAwait(false);
 
-            await monitoring.ConfigureAwait(false);
-        }
-
-        private static async Task ProduceMessages(IProducer producer, CancellationToken cancellationToken)
-        {
-            await Task.Yield();
-
-            var delay = TimeSpan.FromSeconds(5);
-
-            try
-            {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    var data = Encoding.UTF8.GetBytes("Sent " + DateTime.UtcNow);
-                    _ = await producer.Send(data, cancellationToken).ConfigureAwait(false);
-                    await Task.Delay(delay).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException) // If not using the cancellationToken, then just dispose the producer and catch ObjectDisposedException instead
-            { }
-        }
-
-        private static async Task Monitor(IProducer producer)
-        {
-            await Task.Yield();
-
-            var state = ProducerState.Disconnected;
-
-            while (true)
-            {
-                var stateChanged = await producer.StateChangedFrom(state).ConfigureAwait(false);
-                state = stateChanged.ProducerState;
-
-                var stateMessage = state switch
-                {
-                    ProducerState.Connected => "is connected",
-                    ProducerState.Disconnected => "is disconnected",
-                    ProducerState.Closed => "has closed",
-                    ProducerState.Faulted => "has faulted",
-                    _ => $"has an unknown state '{state}'"
-                };
-
-                var topic = stateChanged.Producer.Topic;
-                Console.WriteLine($"The producer for topic '{topic}' " + stateMessage);
-
-                if (producer.IsFinalState(state))
-                    return;
-            }
-        }
+      await monitoring.ConfigureAwait(false);
     }
+
+    private static async Task ProduceMessages(IProducer producer, CancellationToken cancellationToken)
+    {
+      await Task.Yield();
+
+      var delay = TimeSpan.FromSeconds(5);
+
+      try
+      {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+          var data = Encoding.UTF8.GetBytes("Sent " + DateTime.UtcNow);
+          _ = await producer.Send(data, cancellationToken).ConfigureAwait(false);
+          await Task.Delay(delay).ConfigureAwait(false);
+        }
+      }
+      catch (OperationCanceledException) // If not using the cancellationToken, then just dispose the producer and catch ObjectDisposedException instead
+      { }
+    }
+
+    private static async Task Monitor(IProducer producer)
+    {
+      await Task.Yield();
+
+      var state = ProducerState.Disconnected;
+
+      while (true)
+      {
+        var stateChanged = await producer.StateChangedFrom(state).ConfigureAwait(false);
+        state = stateChanged.ProducerState;
+
+        var stateMessage = state switch
+        {
+          ProducerState.Connected => "is connected",
+          ProducerState.Disconnected => "is disconnected",
+          ProducerState.Closed => "has closed",
+          ProducerState.Faulted => "has faulted",
+          _ => $"has an unknown state '{state}'"
+        };
+
+        var topic = stateChanged.Producer.Topic;
+        Console.WriteLine($"The producer for topic '{topic}' " + stateMessage);
+
+        if (producer.IsFinalState(state))
+          return;
+      }
+    }
+  }
 }
