@@ -30,6 +30,7 @@ namespace DotPulsar.Internal.Abstractions
         Task Send(CommandPong command, CancellationToken cancellationToken);
         Task Send(CommandAck command, CancellationToken cancellationToken);
         Task Send(CommandFlow command, CancellationToken cancellationToken);
+        Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken);
 
         Task<BaseCommand> Send(CommandUnsubscribe command, CancellationToken cancellationToken);
         Task<BaseCommand> Send(CommandConnect command, CancellationToken cancellationToken);
