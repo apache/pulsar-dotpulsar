@@ -105,6 +105,12 @@ namespace DotPulsar.Internal
             await _connection.Send(command, cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken)
+        {
+            command.ConsumerId = _id;
+            await _connection.Send(command, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<CommandSuccess> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
