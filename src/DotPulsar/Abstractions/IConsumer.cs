@@ -110,7 +110,7 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Redeliver the pending messages that were pushed to this consumer that are not yet acknowledged.
         /// </summary>
-        ValueTask RedeliverUnacknowledgedMessages(List<MessageId> messageIds, CancellationToken cancellationToken);
+        ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken);
 
         /// <summary>
         /// Redeliver all pending messages that were pushed to this consumer that are not yet acknowledged.
