@@ -98,8 +98,8 @@ namespace DotPulsar.Internal
             => Send(command.AsBaseCommand(), cancellationToken);
 
         public Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken)
-          => Send(command.AsBaseCommand(), cancellationToken);
-          
+            => Send(command.AsBaseCommand(), cancellationToken);
+
         public async Task<BaseCommand> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
