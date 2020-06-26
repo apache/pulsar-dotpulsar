@@ -89,10 +89,19 @@ namespace DotPulsar.Internal
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
-        internal void SetChannel(IReaderChannel channel)
+        internal async ValueTask SetChannel(IReaderChannel channel)
         {
-            ThrowIfDisposed();
+            if (_isDisposed != 0)
+            {
+                await channel.DisposeAsync().ConfigureAwait(false);
+                return;
+            }
+
+            var oldChannel = _channel;
             _channel = channel;
+
+            if (oldChannel != null)
+                await oldChannel.DisposeAsync().ConfigureAwait(false);
         }
 
         private void ThrowIfDisposed()

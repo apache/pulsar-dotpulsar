@@ -108,10 +108,19 @@ namespace DotPulsar.Internal
             return new MessageId(response.MessageId);
         }
 
-        internal void SetChannel(IProducerChannel channel)
+        internal async ValueTask SetChannel(IProducerChannel channel)
         {
-            ThrowIfDisposed();
+            if (_isDisposed != 0)
+            {
+                await channel.DisposeAsync().ConfigureAwait(false);
+                return;
+            }
+
+            var oldChannel = _channel;
             _channel = channel;
+
+            if (oldChannel != null)
+                await oldChannel.DisposeAsync().ConfigureAwait(false);
         }
 
         private void ThrowIfDisposed()
