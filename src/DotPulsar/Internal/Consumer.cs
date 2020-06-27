@@ -111,7 +111,7 @@ namespace DotPulsar.Internal
             => await RedeliverUnacknowledgedMessages(messageIds.Select(m => m.Data).ToList(), cancellationToken);
 
         public async ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken)
-            => await RedeliverUnacknowledgedMessages(new List<MessageIdData>(), cancellationToken);
+            => await RedeliverUnacknowledgedMessages(Enumerable.Empty<MessageId>(), cancellationToken);
 
         public async ValueTask Unsubscribe(CancellationToken cancellationToken)
         {
