@@ -39,6 +39,9 @@ namespace DotPulsar.Internal
         public Task Send(CommandAck command, CancellationToken cancellationToken)
             => throw GetException();
 
+        public Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken)
+            => throw GetException();
+
         public Task<CommandSuccess> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
             => throw GetException();
 

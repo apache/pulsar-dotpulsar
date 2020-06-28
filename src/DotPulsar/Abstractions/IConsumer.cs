@@ -106,5 +106,15 @@ namespace DotPulsar.Abstractions
         /// Unsubscribe the consumer.
         /// </summary>
         ValueTask Unsubscribe(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Redeliver the pending messages that were pushed to this consumer that are not yet acknowledged.
+        /// </summary>
+        ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Redeliver all pending messages that were pushed to this consumer that are not yet acknowledged.
+        /// </summary>
+        ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken);
     }
 }
