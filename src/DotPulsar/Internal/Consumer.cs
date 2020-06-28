@@ -108,10 +108,10 @@ namespace DotPulsar.Internal
             => await Acknowledge(messageId.Data, CommandAck.AckType.Cumulative, cancellationToken).ConfigureAwait(false);
 
         public async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken)
-            => await RedeliverUnacknowledgedMessages(messageIds.Select(m => m.Data).ToList(), cancellationToken);
+            => await RedeliverUnacknowledgedMessages(messageIds.Select(m => m.Data).ToList(), cancellationToken).ConfigureAwait(false);
 
         public async ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken)
-            => await RedeliverUnacknowledgedMessages(Enumerable.Empty<MessageId>(), cancellationToken);
+            => await RedeliverUnacknowledgedMessages(Enumerable.Empty<MessageId>(), cancellationToken).ConfigureAwait(false);
 
         public async ValueTask Unsubscribe(CancellationToken cancellationToken)
         {
