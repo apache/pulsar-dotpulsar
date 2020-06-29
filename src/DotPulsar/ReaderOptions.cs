@@ -14,6 +14,9 @@
 
 namespace DotPulsar
 {
+    /// <summary>
+    /// The reader building options.
+    /// </summary>
     public sealed class ReaderOptions
     {
         internal const uint DefaultMessagePrefetchCount = 1000;
@@ -27,10 +30,29 @@ namespace DotPulsar
             Topic = topic;
         }
 
+        /// <summary>
+        /// Set the reader name. This is optional.
+        /// </summary>
         public string? ReaderName { get; set; }
+
+        /// <summary>
+        /// Number of messages that will be prefetched. The default is 1000.
+        /// </summary>
         public uint MessagePrefetchCount { get; set; }
+
+        /// <summary>
+        /// Whether to read from the compacted topic. The default is 'false'.
+        /// </summary>
         public bool ReadCompacted { get; set; }
+
+        /// <summary>
+        /// The initial reader position is set to the specified message id. This is required.
+        /// </summary>
         public MessageId StartMessageId { get; set; }
+
+        /// <summary>
+        /// Set the topic for this reader. This is required.
+        /// </summary>
         public string Topic { get; set; }
     }
 }

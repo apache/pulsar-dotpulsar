@@ -19,12 +19,21 @@ namespace DotPulsar.Extensions
 
     public static class PulsarClientExtensions
     {
+        /// <summary>
+        /// Get a builder that can be used to configure and build a Producer instance.
+        /// </summary>
         public static IProducerBuilder NewProducer(this IPulsarClient pulsarClient)
             => new ProducerBuilder(pulsarClient);
 
+        /// <summary>
+        /// Get a builder that can be used to configure and build a Consumer instance.
+        /// </summary>
         public static IConsumerBuilder NewConsumer(this IPulsarClient pulsarClient)
             => new ConsumerBuilder(pulsarClient);
 
+        /// <summary>
+        /// Get a builder that can be used to configure and build a Reader instance.
+        /// </summary>
         public static IReaderBuilder NewReader(this IPulsarClient pulsarClient)
             => new ReaderBuilder(pulsarClient);
     }

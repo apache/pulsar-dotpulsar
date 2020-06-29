@@ -22,6 +22,9 @@ namespace DotPulsar
     using System.Threading;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Pulsar client for creating producers, consumers and readers.
+    /// </summary>
     public sealed class PulsarClient : IPulsarClient
     {
         private readonly IConnectionPool _connectionPool;
@@ -38,9 +41,15 @@ namespace DotPulsar
             DotPulsarEventSource.Log.ClientCreated();
         }
 
+        /// <summary>
+        /// Get a builder that can be used to configure and build a PulsarClient instance.
+        /// </summary>
         public static IPulsarClientBuilder Builder()
             => new PulsarClientBuilder();
 
+        /// <summary>
+        /// Create a producer.
+        /// </summary>
         public IProducer CreateProducer(ProducerOptions options)
         {
             ThrowIfDisposed();
@@ -55,6 +64,9 @@ namespace DotPulsar
             return producer;
         }
 
+        /// <summary>
+        /// Create a consumer.
+        /// </summary>
         public IConsumer CreateConsumer(ConsumerOptions options)
         {
             ThrowIfDisposed();
@@ -70,6 +82,9 @@ namespace DotPulsar
             return consumer;
         }
 
+        /// <summary>
+        /// Create a reader.
+        /// </summary>
         public IReader CreateReader(ReaderOptions options)
         {
             ThrowIfDisposed();
@@ -84,6 +99,9 @@ namespace DotPulsar
             return reader;
         }
 
+        /// <summary>
+        /// Dispose the client and all its producers, consumers and readers.
+        /// </summary>
         public async ValueTask DisposeAsync()
         {
             if (Interlocked.Exchange(ref _isDisposed, 1) != 0)

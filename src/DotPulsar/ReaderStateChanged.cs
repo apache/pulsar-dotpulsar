@@ -16,6 +16,9 @@ namespace DotPulsar
 {
     using Abstractions;
 
+    /// <summary>
+    /// Representation of a reader state change.
+    /// </summary>
     public sealed class ReaderStateChanged
     {
         internal ReaderStateChanged(IReader reader, ReaderState readerState)
@@ -24,7 +27,14 @@ namespace DotPulsar
             ReaderState = readerState;
         }
 
+        /// <summary>
+        /// The reader that changed state.
+        /// </summary>
         public IReader Reader { get; }
+
+        /// <summary>
+        /// The state that it changed to.
+        /// </summary>
         public ReaderState ReaderState { get; }
     }
 }

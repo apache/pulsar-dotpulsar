@@ -16,6 +16,9 @@ namespace DotPulsar
 {
     using Abstractions;
 
+    /// <summary>
+    /// Representation of a consumer state change.
+    /// </summary>
     public sealed class ConsumerStateChanged
     {
         internal ConsumerStateChanged(IConsumer consumer, ConsumerState consumerState)
@@ -24,7 +27,14 @@ namespace DotPulsar
             ConsumerState = consumerState;
         }
 
+        /// <summary>
+        /// The consumer that changed state.
+        /// </summary>
         public IConsumer Consumer { get; }
+
+        /// <summary>
+        /// The state that it changed to.
+        /// </summary>
         public ConsumerState ConsumerState { get; }
     }
 }

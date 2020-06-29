@@ -14,6 +14,9 @@
 
 namespace DotPulsar
 {
+    /// <summary>
+    /// The producer building options.
+    /// </summary>
     public sealed class ProducerOptions
     {
         internal const ulong DefaultInitialSequenceId = 0;
@@ -24,8 +27,19 @@ namespace DotPulsar
             Topic = topic;
         }
 
+        /// <summary>
+        /// Set the producer name. This is optional.
+        /// </summary>
         public string? ProducerName { get; set; }
+
+        /// <summary>
+        /// Set the initial sequence id. The default is 0.
+        /// </summary>
         public ulong InitialSequenceId { get; set; }
+
+        /// <summary>
+        /// Set the topic for this producer. This is required.
+        /// </summary>
         public string Topic { get; set; }
     }
 }

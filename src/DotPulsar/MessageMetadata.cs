@@ -18,6 +18,9 @@ namespace DotPulsar
     using Internal.PulsarApi;
     using System;
 
+    /// <summary>
+    /// The message metadata builder.
+    /// </summary>
     public sealed class MessageMetadata
     {
         public MessageMetadata()
@@ -25,48 +28,72 @@ namespace DotPulsar
 
         internal readonly Internal.PulsarApi.MessageMetadata Metadata;
 
+        /// <summary>
+        /// The delivery time of the message (unix time in milliseconds).
+        /// </summary>
         public long DeliverAtTime
         {
             get => Metadata.DeliverAtTime;
             set => Metadata.DeliverAtTime = value;
         }
 
+        /// <summary>
+        /// The delivery time of the message.
+        /// </summary>
         public DateTimeOffset DeliverAtTimeAsDateTimeOffset
         {
             get => Metadata.GetDeliverAtTimeAsDateTimeOffset();
             set => Metadata.SetDeliverAtTime(value);
         }
 
+        /// <summary>
+        /// The event time of the message (unix time in milliseconds).
+        /// </summary>
         public ulong EventTime
         {
             get => Metadata.EventTime;
             set => Metadata.EventTime = value;
         }
 
+        /// <summary>
+        /// The event time of the message.
+        /// </summary>
         public DateTimeOffset EventTimeAsDateTimeOffset
         {
             get => Metadata.GetEventTimeAsDateTimeOffset();
             set => Metadata.SetEventTime(value);
         }
 
+        /// <summary>
+        /// The key of the message as a string.
+        /// </summary>
         public string? Key
         {
             get => Metadata.PartitionKey;
             set => Metadata.SetKey(value);
         }
 
+        /// <summary>
+        /// The key of the message as bytes.
+        /// </summary>
         public byte[]? KeyBytes
         {
             get => Metadata.GetKeyAsBytes();
             set => Metadata.SetKey(value);
         }
 
+        /// <summary>
+        /// The ordering key of the message.
+        /// </summary>
         public byte[]? OrderingKey
         {
             get => Metadata.OrderingKey;
             set => Metadata.OrderingKey = value;
         }
 
+        /// <summary>
+        /// The properties of the message.
+        /// </summary>
         public string? this[string key]
         {
             get
@@ -99,6 +126,9 @@ namespace DotPulsar
             }
         }
 
+        /// <summary>
+        /// The sequence id of the message.
+        /// </summary>
         public ulong SequenceId
         {
             get => Metadata.SequenceId;

@@ -16,6 +16,9 @@ namespace DotPulsar
 {
     using Abstractions;
 
+    /// <summary>
+    /// Representation of a producer state change.
+    /// </summary>
     public sealed class ProducerStateChanged
     {
         internal ProducerStateChanged(IProducer producer, ProducerState producerState)
@@ -24,7 +27,14 @@ namespace DotPulsar
             ProducerState = producerState;
         }
 
+        /// <summary>
+        /// The producer that changed state.
+        /// </summary>
         public IProducer Producer { get; }
+
+        /// <summary>
+        /// The state that it changed to.
+        /// </summary>
         public ProducerState ProducerState { get; }
     }
 }

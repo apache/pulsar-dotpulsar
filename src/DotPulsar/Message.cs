@@ -20,6 +20,9 @@ namespace DotPulsar
     using System.Collections.Generic;
     using System.Linq;
 
+    /// <summary>
+    /// The message received by consumers and readers.
+    /// </summary>
     public sealed class Message
     {
         private readonly List<KeyValue> _keyValues;
@@ -58,27 +61,89 @@ namespace DotPulsar
             }
         }
 
+        /// <summary>
+        /// The id of the message.
+        /// </summary>
         public MessageId MessageId { get; }
+
+        /// <summary>
+        /// The raw payload of the message.
+        /// </summary>
         public ReadOnlySequence<byte> Data { get; }
+
+        /// <summary>
+        /// The name of the producer who produced the message.
+        /// </summary>
         public string ProducerName { get; }
+
+        /// <summary>
+        /// The sequence id of the message.
+        /// </summary>
         public ulong SequenceId { get; }
+
+        /// <summary>
+        /// The redelivery count (maintained by the broker) of the message.
+        /// </summary>
         public uint RedeliveryCount { get; }
 
+        /// <summary>
+        /// Check whether the message has an event time.
+        /// </summary>
         public bool HasEventTime => EventTime != 0;
+
+        /// <summary>
+        /// The event time of the message (unix time in milliseconds).
+        /// </summary>
         public ulong EventTime { get; }
+
+        /// <summary>
+        /// The event time of the message.
+        /// </summary>
         public DateTimeOffset EventTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) EventTime);
 
+        /// <summary>
+        /// Check whether the key been base64 encoded.
+        /// </summary>
         public bool HasBase64EncodedKey { get; }
+
+        /// <summary>
+        /// Check whether the message has a key.
+        /// </summary>
         public bool HasKey => Key != null;
+
+        /// <summary>
+        /// The key as a string.
+        /// </summary>
         public string? Key { get; }
+
+        /// <summary>
+        /// The key as bytes.
+        /// </summary>
         public byte[]? KeyBytes => HasBase64EncodedKey ? Convert.FromBase64String(Key) : null;
 
+        /// <summary>
+        /// Check whether the message has an ordering key.
+        /// </summary>
         public bool HasOrderingKey => OrderingKey != null;
+
+        /// <summary>
+        /// The ordering key of the message.
+        /// </summary>
         public byte[]? OrderingKey { get; }
 
+        /// <summary>
+        /// The publish time of the message (unix time in milliseconds).
+        /// </summary>
         public ulong PublishTime { get; }
+
+        /// <summary>
+        /// The publish time of the message.
+        /// </summary>
         public DateTimeOffset PublishTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) PublishTime);
 
+        /// <summary>
+        /// The properties of the message.
+        /// </summary>
         public IReadOnlyDictionary<string, string> Properties => _properties ??= _keyValues.ToDictionary(p => p.Key, p => p.Value);
     }
 }

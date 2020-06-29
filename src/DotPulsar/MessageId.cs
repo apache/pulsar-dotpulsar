@@ -17,6 +17,9 @@ namespace DotPulsar
     using Internal.PulsarApi;
     using System;
 
+    /// <summary>
+    /// Unique identifier of a single message.
+    /// </summary>
     public sealed class MessageId : IEquatable<MessageId>
     {
         static MessageId()
@@ -25,7 +28,14 @@ namespace DotPulsar
             Latest = new MessageId(long.MaxValue, long.MaxValue, -1, -1);
         }
 
+        /// <summary>
+        /// The oldest message available in the topic.
+        /// </summary>
         public static MessageId Earliest { get; }
+
+        /// <summary>
+        /// The next message published in the topic.
+        /// </summary>
         public static MessageId Latest { get; }
 
         internal MessageId(MessageIdData messageIdData)
@@ -42,9 +52,24 @@ namespace DotPulsar
 
         internal MessageIdData Data { get; }
 
+        /// <summary>
+        /// The id of the ledger.
+        /// </summary>
         public ulong LedgerId => Data.LedgerId;
+
+        /// <summary>
+        /// The id of the entry.
+        /// </summary>
         public ulong EntryId => Data.EntryId;
+
+        /// <summary>
+        /// The partition.
+        /// </summary>
         public int Partition => Data.Partition;
+
+        /// <summary>
+        /// The batch index.
+        /// </summary>
         public int BatchIndex => Data.BatchIndex;
 
         public override bool Equals(object o)

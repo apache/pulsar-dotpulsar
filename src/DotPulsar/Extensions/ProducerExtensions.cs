@@ -19,6 +19,9 @@ namespace DotPulsar.Extensions
 
     public static class ProducerExtensions
     {
+        /// <summary>
+        /// Get a builder that can be used to configure and build a Message.
+        /// </summary>
         public static IMessageBuilder NewMessage(this IProducer producer)
             => new MessageBuilder(producer);
     }
