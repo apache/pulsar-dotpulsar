@@ -22,12 +22,14 @@ namespace DotPulsar.Internal
 
     public sealed class BatchHandler
     {
+        private readonly object _lock;
         private readonly bool _trackBatches;
         private readonly Queue<Message> _messages;
         private readonly LinkedList<Batch> _batches;
 
         public BatchHandler(bool trackBatches)
         {
+            _lock = new object();
             _trackBatches = trackBatches;
             _messages = new Queue<Message>();
             _batches = new LinkedList<Batch>();
@@ -35,56 +37,68 @@ namespace DotPulsar.Internal
 
         public Message Add(MessageIdData messageId, uint redeliveryCount, MessageMetadata metadata, ReadOnlySequence<byte> data)
         {
-            if (_trackBatches)
-                _batches.AddLast(new Batch(messageId, metadata.NumMessagesInBatch));
-
-            long index = 0;
-
-            for (var i = 0; i < metadata.NumMessagesInBatch; ++i)
+            lock (_lock)
             {
-                var singleMetadataSize = data.ReadUInt32(index, true);
-                index += 4;
-                var singleMetadata = Serializer.Deserialize<SingleMessageMetadata>(data.Slice(index, singleMetadataSize));
-                index += singleMetadataSize;
-                var singleMessageId = new MessageId(messageId.LedgerId, messageId.EntryId, messageId.Partition, i);
-                var message = new Message(singleMessageId, redeliveryCount, metadata, singleMetadata, data.Slice(index, singleMetadata.PayloadSize));
-                _messages.Enqueue(message);
-                index += (uint) singleMetadata.PayloadSize;
-            }
+                if (_trackBatches)
+                    _batches.AddLast(new Batch(messageId, metadata.NumMessagesInBatch));
 
-            return _messages.Dequeue();
+                long index = 0;
+
+                for (var i = 0; i < metadata.NumMessagesInBatch; ++i)
+                {
+                    var singleMetadataSize = data.ReadUInt32(index, true);
+                    index += 4;
+                    var singleMetadata = Serializer.Deserialize<SingleMessageMetadata>(data.Slice(index, singleMetadataSize));
+                    index += singleMetadataSize;
+                    var singleMessageId = new MessageId(messageId.LedgerId, messageId.EntryId, messageId.Partition, i);
+                    var message = new Message(singleMessageId, redeliveryCount, metadata, singleMetadata, data.Slice(index, singleMetadata.PayloadSize));
+                    _messages.Enqueue(message);
+                    index += (uint) singleMetadata.PayloadSize;
+                }
+
+                return _messages.Dequeue();
+            }
         }
 
         public Message? GetNext()
-            => _messages.Count == 0 ? null : _messages.Dequeue();
+        {
+            lock (_lock)
+                return _messages.Count == 0 ? null : _messages.Dequeue();
+        }
 
         public void Clear()
         {
-            _messages.Clear();
-            _batches.Clear();
+            lock (_lock)
+            {
+                _messages.Clear();
+                _batches.Clear();
+            }
         }
 
         public MessageIdData? Acknowledge(MessageIdData messageId)
         {
-            foreach (var batch in _batches)
+            lock (_lock)
             {
-                if (messageId.LedgerId != batch.MessageId.LedgerId ||
-                    messageId.EntryId != batch.MessageId.EntryId ||
-                    messageId.Partition != batch.MessageId.Partition)
-                    continue;
-
-                batch.Acknowledge(messageId.BatchIndex);
-
-                if (batch.IsAcknowledged())
+                foreach (var batch in _batches)
                 {
-                    _batches.Remove(batch);
-                    return batch.MessageId;
+                    if (messageId.LedgerId != batch.MessageId.LedgerId ||
+                        messageId.EntryId != batch.MessageId.EntryId ||
+                        messageId.Partition != batch.MessageId.Partition)
+                        continue;
+
+                    batch.Acknowledge(messageId.BatchIndex);
+
+                    if (batch.IsAcknowledged())
+                    {
+                        _batches.Remove(batch);
+                        return batch.MessageId;
+                    }
+
+                    break;
                 }
 
-                break;
+                return null;
             }
-
-            return null;
         }
 
         private sealed class Batch

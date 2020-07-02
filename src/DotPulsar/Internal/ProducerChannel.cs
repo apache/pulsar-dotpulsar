@@ -16,6 +16,7 @@ namespace DotPulsar.Internal
 {
     using Abstractions;
     using Extensions;
+    using Microsoft.Extensions.ObjectPool;
     using PulsarApi;
     using System;
     using System.Buffers;
@@ -25,20 +26,18 @@ namespace DotPulsar.Internal
     public sealed class ProducerChannel : IProducerChannel
     {
         private readonly MessageMetadata _cachedMetadata;
-        private readonly SendPackage _cachedSendPackage;
+        private readonly ObjectPool<SendPackage> _sendPackagePool;
         private readonly ulong _id;
+        private readonly string _name;
         private readonly SequenceId _sequenceId;
         private readonly IConnection _connection;
 
         public ProducerChannel(ulong id, string name, SequenceId sequenceId, IConnection connection)
         {
             _cachedMetadata = new MessageMetadata { ProducerName = name };
-
-            var commandSend = new CommandSend { ProducerId = id, NumMessages = 1 };
-
-            _cachedSendPackage = new SendPackage(commandSend, _cachedMetadata);
-
+            _sendPackagePool = new DefaultObjectPool<SendPackage>(new DefaultPooledObjectPolicy<SendPackage>());
             _id = id;
+            _name = name;
             _sequenceId = sequenceId;
             _connection = connection;
         }
@@ -47,7 +46,8 @@ namespace DotPulsar.Internal
         {
             try
             {
-                await _connection.Send(new CommandCloseProducer { ProducerId = _id }, CancellationToken.None).ConfigureAwait(false);
+                var closeProducer = new CommandCloseProducer { ProducerId = _id };
+                await _connection.Send(closeProducer, CancellationToken.None).ConfigureAwait(false);
             }
             catch
             {
@@ -56,37 +56,47 @@ namespace DotPulsar.Internal
         }
 
         public Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
-        {
-            _cachedSendPackage.Metadata = _cachedMetadata;
-            _cachedSendPackage.Payload = payload;
-
-            return SendPackage(true, cancellationToken);
-        }
+            => SendPackage(_cachedMetadata, payload, true, cancellationToken);
 
         public Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
         {
-            metadata.ProducerName = _cachedMetadata.ProducerName;
-            _cachedSendPackage.Metadata = metadata;
-            _cachedSendPackage.Payload = payload;
-
-            return SendPackage(metadata.SequenceId == 0, cancellationToken);
+            metadata.ProducerName = _name;
+            return SendPackage(metadata, payload, metadata.SequenceId == 0, cancellationToken);
         }
 
-        private async Task<CommandSendReceipt> SendPackage(bool autoAssignSequenceId, CancellationToken cancellationToken)
+        private async Task<CommandSendReceipt> SendPackage(
+            MessageMetadata metadata,
+            ReadOnlySequence<byte> payload,
+            bool autoAssignSequenceId,
+            CancellationToken cancellationToken)
         {
+            var sendPackage = _sendPackagePool.Get();
+
+            if (sendPackage.Command is null)
+            {
+                sendPackage.Command = new CommandSend
+                {
+                    ProducerId = _id,
+                    NumMessages = 1
+                };
+            }
+
+            sendPackage.Metadata = metadata;
+            sendPackage.Payload = payload;
+
             try
             {
-                _cachedSendPackage.Metadata.PublishTime = (ulong) DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                metadata.PublishTime = (ulong) DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
                 if (autoAssignSequenceId)
                 {
-                    _cachedSendPackage.Command.SequenceId = _sequenceId.Current;
-                    _cachedSendPackage.Metadata.SequenceId = _sequenceId.Current;
+                    sendPackage.Command.SequenceId = _sequenceId.Current;
+                    sendPackage.Metadata.SequenceId = _sequenceId.Current;
                 }
                 else
-                    _cachedSendPackage.Command.SequenceId = _cachedSendPackage.Metadata.SequenceId;
+                    sendPackage.Command.SequenceId = sendPackage.Metadata.SequenceId;
 
-                var response = await _connection.Send(_cachedSendPackage, cancellationToken).ConfigureAwait(false);
+                var response = await _connection.Send(sendPackage, cancellationToken).ConfigureAwait(false);
                 response.Expect(BaseCommand.Type.SendReceipt);
 
                 if (autoAssignSequenceId)
@@ -98,7 +108,9 @@ namespace DotPulsar.Internal
             {
                 // Reset in case the user reuse the MessageMetadata, but is not explicitly setting the sequenceId
                 if (autoAssignSequenceId)
-                    _cachedSendPackage.Metadata.SequenceId = 0;
+                    sendPackage.Metadata.SequenceId = 0;
+
+                _sendPackagePool.Return(sendPackage);
             }
         }
     }
