@@ -79,6 +79,9 @@ namespace DotPulsar.Internal
                 case BaseCommand.Type.GetLastMessageId:
                     cmd.GetLastMessageId.RequestId = _requestId++;
                     return;
+                case BaseCommand.Type.PartitionedMetadata:
+                    cmd.GetLastMessageId.RequestId = _requestId++;
+                    return;
             }
         }
 
@@ -94,6 +97,7 @@ namespace DotPulsar.Internal
                 BaseCommand.Type.Producer => cmd.Producer.RequestId.ToString(),
                 BaseCommand.Type.ProducerSuccess => cmd.ProducerSuccess.RequestId.ToString(),
                 BaseCommand.Type.CloseProducer => cmd.CloseProducer.RequestId.ToString(),
+                BaseCommand.Type.PartitionedMetadataResponse => cmd.PartitionMetadataResponse.RequestId.ToString(),
                 BaseCommand.Type.Lookup => cmd.LookupTopic.RequestId.ToString(),
                 BaseCommand.Type.LookupResponse => cmd.LookupTopicResponse.RequestId.ToString(),
                 BaseCommand.Type.Unsubscribe => cmd.Unsubscribe.RequestId.ToString(),

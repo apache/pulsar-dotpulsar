@@ -15,6 +15,8 @@
 namespace DotPulsar
 {
     using Abstractions;
+    using DotPulsar.Internal.PulsarApi;
+    using DotPulsar.Internal.Extensions;
     using Exceptions;
     using Internal;
     using Internal.Abstractions;
@@ -62,6 +64,23 @@ namespace DotPulsar
             _processManager.Add(process);
             process.Start();
             return producer;
+        }
+
+        private async Task<PartitionedTopicMetadata> GetPartitionTopicMetadata(string topic,CancellationToken cancellationToken)
+        {
+            var connection = await _connectionPool.FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
+            var commandPartitionedMetadata = new CommandPartitionedTopicMetadata()
+            {
+                Topic = topic
+            };
+            var response = await connection.Send(commandPartitionedMetadata, cancellationToken).ConfigureAwait(false);
+
+            response.Expect(BaseCommand.Type.PartitionedMetadataResponse);
+
+            if (response.PartitionMetadataResponse.Response == CommandPartitionedTopicMetadataResponse.LookupType.Failed)
+                response.PartitionMetadataResponse.Throw();
+
+            return new PartitionedTopicMetadata(response.PartitionMetadataResponse.Partitions);
         }
 
         /// <summary>

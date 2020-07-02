@@ -34,6 +34,7 @@ namespace DotPulsar.Internal.Abstractions
 
         Task<BaseCommand> Send(CommandUnsubscribe command, CancellationToken cancellationToken);
         Task<BaseCommand> Send(CommandConnect command, CancellationToken cancellationToken);
+        Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken);
         Task<BaseCommand> Send(CommandLookupTopic command, CancellationToken cancellationToken);
         Task<BaseCommand> Send(CommandSeek command, CancellationToken cancellationToken);
         Task<BaseCommand> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);

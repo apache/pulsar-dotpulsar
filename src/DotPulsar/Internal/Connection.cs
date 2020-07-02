@@ -122,6 +122,9 @@ namespace DotPulsar.Internal
         public Task<BaseCommand> Send(CommandConnect command, CancellationToken cancellationToken)
             => SendRequestResponse(command.AsBaseCommand(), cancellationToken);
 
+        public Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken)
+            => SendRequestResponse(command.AsBaseCommand(), cancellationToken);
+
         public Task<BaseCommand> Send(CommandLookupTopic command, CancellationToken cancellationToken)
             => SendRequestResponse(command.AsBaseCommand(), cancellationToken);
 

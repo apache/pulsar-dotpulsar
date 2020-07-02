@@ -40,6 +40,9 @@ namespace DotPulsar.Internal.Extensions
         public static void Throw(this CommandLookupTopicResponse command)
             => Throw(command.Error, command.Message);
 
+        public static void Throw(this CommandPartitionedTopicMetadataResponse command)
+            => Throw(command.Error, command.Message);
+
         public static void Throw(this CommandError error)
             => Throw(error.Error, error.Message);
 
@@ -123,6 +126,13 @@ namespace DotPulsar.Internal.Extensions
             {
                 CommandType = BaseCommand.Type.Subscribe,
                 Subscribe = command
+            };
+
+        public static BaseCommand AsBaseCommand(this CommandPartitionedTopicMetadata command)
+            => new BaseCommand
+            {
+                CommandType = BaseCommand.Type.PartitionedMetadata,
+                PartitionMetadata = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandLookupTopic command)
