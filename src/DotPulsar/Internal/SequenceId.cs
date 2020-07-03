@@ -37,7 +37,6 @@ namespace DotPulsar.Internal
 
         public ulong FetchNext()
         {
-            
             return unchecked((ulong)Interlocked.Increment(ref _current));
         }
     }
