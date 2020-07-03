@@ -90,17 +90,15 @@ namespace DotPulsar.Internal
 
                 if (autoAssignSequenceId)
                 {
-                    sendPackage.Command.SequenceId = _sequenceId.Current;
-                    sendPackage.Metadata.SequenceId = _sequenceId.Current;
+                    var newSequenceId = _sequenceId.FetchNext();
+                    sendPackage.Command.SequenceId = newSequenceId;
+                    sendPackage.Metadata.SequenceId = newSequenceId;
                 }
                 else
                     sendPackage.Command.SequenceId = sendPackage.Metadata.SequenceId;
 
                 var response = await _connection.Send(sendPackage, cancellationToken).ConfigureAwait(false);
                 response.Expect(BaseCommand.Type.SendReceipt);
-
-            var response = await _connection.Send(sendPackage, cancellationToken);
-            response.Expect(BaseCommand.Type.SendReceipt);
 
                 return response.SendReceipt;
             }
