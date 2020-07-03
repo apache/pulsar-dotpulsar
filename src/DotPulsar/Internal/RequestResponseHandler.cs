@@ -24,7 +24,6 @@ namespace DotPulsar.Internal
 
         private readonly Awaiter<string, BaseCommand> _responses;
         private SequenceId _requestId;
-        private bool _pastInitialRequestId = false;
 
         public RequestResponseHandler()
         {
@@ -55,39 +54,30 @@ namespace DotPulsar.Internal
             {
                 case BaseCommand.Type.Seek:
                     cmd.Seek.RequestId = _requestId.FetchNext();
-                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.Lookup:
                     cmd.LookupTopic.RequestId = _requestId.FetchNext();
-                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.Error:
                     cmd.Error.RequestId = _requestId.FetchNext();
-                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.Producer:
                     cmd.Producer.RequestId = _requestId.FetchNext();
-                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.CloseProducer:
                     cmd.CloseProducer.RequestId = _requestId.FetchNext();
-                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.Subscribe:
                     cmd.Subscribe.RequestId = _requestId.FetchNext();
-                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.Unsubscribe:
                     cmd.Unsubscribe.RequestId = _requestId.FetchNext();
-                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.CloseConsumer:
                     cmd.CloseConsumer.RequestId = _requestId.FetchNext();
-                    _pastInitialRequestId = true;
                     return;
                 case BaseCommand.Type.GetLastMessageId:
                     cmd.GetLastMessageId.RequestId = _requestId.FetchNext();
-                    _pastInitialRequestId = true;
                     return;
             }
         }
@@ -100,7 +90,7 @@ namespace DotPulsar.Internal
                 BaseCommand.Type.Send => $"{cmd.Send.ProducerId}-{cmd.Send.SequenceId}",
                 BaseCommand.Type.SendError => $"{cmd.SendError.ProducerId}-{cmd.SendError.SequenceId}",
                 BaseCommand.Type.SendReceipt => $"{cmd.SendReceipt.ProducerId}-{cmd.SendReceipt.SequenceId}",
-                BaseCommand.Type.Error => !_pastInitialRequestId ? ConnectResponseIdentifier : cmd.Error.RequestId.ToString(),
+                BaseCommand.Type.Error => !_requestId.IsPastInitialId() ? ConnectResponseIdentifier : cmd.Error.RequestId.ToString(),
                 BaseCommand.Type.Producer => cmd.Producer.RequestId.ToString(),
                 BaseCommand.Type.ProducerSuccess => cmd.ProducerSuccess.RequestId.ToString(),
                 BaseCommand.Type.CloseProducer => cmd.CloseProducer.RequestId.ToString(),
