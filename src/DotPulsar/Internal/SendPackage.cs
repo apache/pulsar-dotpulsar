@@ -19,14 +19,8 @@ namespace DotPulsar.Internal
 
     public sealed class SendPackage
     {
-        public SendPackage(CommandSend command, MessageMetadata metadata)
-        {
-            Command = command;
-            Metadata = metadata;
-        }
-
-        public CommandSend Command { get; }
-        public MessageMetadata Metadata { get; set; }
+        public CommandSend? Command { get; set; }
+        public MessageMetadata? Metadata { get; set; }
         public ReadOnlySequence<byte> Payload { get; set; }
     }
 }

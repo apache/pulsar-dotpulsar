@@ -18,9 +18,11 @@ namespace DotPulsar.Internal
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
     using Events;
+    using Microsoft.Extensions.ObjectPool;
     using PulsarApi;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
@@ -30,7 +32,7 @@ namespace DotPulsar.Internal
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
         private IConsumerChannel _channel;
-        private readonly CommandAck _cachedCommandAck;
+        private readonly ObjectPool<CommandAck> _commandAckPool;
         private readonly IExecute _executor;
         private readonly IStateChanged<ConsumerState> _state;
         private int _isDisposed;
@@ -51,7 +53,7 @@ namespace DotPulsar.Internal
             _channel = initialChannel;
             _executor = executor;
             _state = state;
-            _cachedCommandAck = new CommandAck();
+            _commandAckPool = new DefaultObjectPool<CommandAck>(new DefaultPooledObjectPolicy<CommandAck>());
             _isDisposed = 0;
 
             _eventRegister.Register(new ConsumerCreated(_correlationId, this));
@@ -104,11 +106,18 @@ namespace DotPulsar.Internal
         public async ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken)
             => await Acknowledge(messageId.Data, CommandAck.AckType.Cumulative, cancellationToken).ConfigureAwait(false);
 
+        public async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken)
+            => await RedeliverUnacknowledgedMessages(messageIds.Select(m => m.Data).ToList(), cancellationToken).ConfigureAwait(false);
+
+        public async ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken)
+            => await RedeliverUnacknowledgedMessages(Enumerable.Empty<MessageId>(), cancellationToken).ConfigureAwait(false);
+
         public async ValueTask Unsubscribe(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            _ = await _executor.Execute(() => _channel.Send(new CommandUnsubscribe(), cancellationToken), cancellationToken).ConfigureAwait(false);
+            var unsubscribe = new CommandUnsubscribe();
+            _ = await _executor.Execute(() => _channel.Send(unsubscribe, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
@@ -127,7 +136,8 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            var response = await _executor.Execute(() => _channel.Send(new CommandGetLastMessageId(), cancellationToken), cancellationToken).ConfigureAwait(false);
+            var getLastMessageId = new CommandGetLastMessageId();
+            var response = await _executor.Execute(() => _channel.Send(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
 
             return new MessageId(response.LastMessageId);
         }
@@ -136,19 +146,50 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
+            var commandAck = _commandAckPool.Get();
+            commandAck.Type = ackType;
+            commandAck.MessageIds.Clear();
+            commandAck.MessageIds.Add(messageIdData);
+
+            try
+            {
+                await _executor.Execute(() =>
+                {
+                    return _channel.Send(commandAck, cancellationToken);
+                }, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _commandAckPool.Return(commandAck);
+            }
+        }
+
+        private async ValueTask RedeliverUnacknowledgedMessages(List<MessageIdData> messageIds, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            var redeliverUnacknowledgedMessages = new CommandRedeliverUnacknowledgedMessages();
+            redeliverUnacknowledgedMessages.MessageIds.AddRange(messageIds);
+
             await _executor.Execute(() =>
             {
-                _cachedCommandAck.Type = ackType;
-                _cachedCommandAck.MessageIds.Clear();
-                _cachedCommandAck.MessageIds.Add(messageIdData);
-                return _channel.Send(_cachedCommandAck, cancellationToken);
+                return _channel.Send(redeliverUnacknowledgedMessages, cancellationToken);
             }, cancellationToken).ConfigureAwait(false);
         }
 
-        internal void SetChannel(IConsumerChannel channel)
+        internal async ValueTask SetChannel(IConsumerChannel channel)
         {
-            ThrowIfDisposed();
+            if (_isDisposed != 0)
+            {
+                await channel.DisposeAsync().ConfigureAwait(false);
+                return;
+            }
+
+            var oldChannel = _channel;
             _channel = channel;
+
+            if (oldChannel != null)
+                await oldChannel.DisposeAsync().ConfigureAwait(false);
         }
 
         private void ThrowIfDisposed()

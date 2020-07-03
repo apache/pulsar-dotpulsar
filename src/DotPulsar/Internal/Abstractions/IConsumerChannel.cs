@@ -22,6 +22,7 @@ namespace DotPulsar.Internal.Abstractions
     public interface IConsumerChannel : IAsyncDisposable
     {
         Task Send(CommandAck command, CancellationToken cancellationToken);
+        Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken);
         Task<CommandSuccess> Send(CommandUnsubscribe command, CancellationToken cancellationToken);
         Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken);
         Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);

@@ -22,6 +22,9 @@ namespace DotPulsar
     using System.Threading;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Pulsar client for creating producers, consumers and readers.
+    /// </summary>
     public sealed class PulsarClient : IPulsarClient
     {
         private readonly IConnectionPool _connectionPool;
@@ -38,9 +41,15 @@ namespace DotPulsar
             DotPulsarEventSource.Log.ClientCreated();
         }
 
+        /// <summary>
+        /// Get a builder that can be used to configure and build a PulsarClient instance.
+        /// </summary>
         public static IPulsarClientBuilder Builder()
             => new PulsarClientBuilder();
 
+        /// <summary>
+        /// Create a producer.
+        /// </summary>
         public IProducer CreateProducer(ProducerOptions options)
         {
             ThrowIfDisposed();
@@ -55,6 +64,9 @@ namespace DotPulsar
             return producer;
         }
 
+        /// <summary>
+        /// Create a consumer.
+        /// </summary>
         public IConsumer CreateConsumer(ConsumerOptions options)
         {
             ThrowIfDisposed();
@@ -63,13 +75,16 @@ namespace DotPulsar
             var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
 
             var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
-            var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
+            var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
             _processManager.Add(process);
             process.Start();
             return consumer;
         }
 
+        /// <summary>
+        /// Create a reader.
+        /// </summary>
         public IReader CreateReader(ReaderOptions options)
         {
             ThrowIfDisposed();
@@ -77,13 +92,16 @@ namespace DotPulsar
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var factory = new ReaderChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
             var stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
-            var reader = new Reader(correlationId, options.Topic, _processManager, new NotReadyChannel(), new AsyncLockExecutor(executor), stateManager);
+            var reader = new Reader(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             var process = new ReaderProcess(correlationId, stateManager, factory, reader);
             _processManager.Add(process);
             process.Start();
             return reader;
         }
 
+        /// <summary>
+        /// Dispose the client and all its producers, consumers and readers.
+        /// </summary>
         public async ValueTask DisposeAsync()
         {
             if (Interlocked.Exchange(ref _isDisposed, 1) != 0)

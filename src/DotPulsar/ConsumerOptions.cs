@@ -14,6 +14,9 @@
 
 namespace DotPulsar
 {
+    /// <summary>
+    /// The consumer building options.
+    /// </summary>
     public sealed class ConsumerOptions
     {
         internal const SubscriptionInitialPosition DefaultInitialPosition = SubscriptionInitialPosition.Latest;
@@ -33,13 +36,44 @@ namespace DotPulsar
             Topic = topic;
         }
 
+        /// <summary>
+        /// Set the consumer name. This is optional.
+        /// </summary>
         public string? ConsumerName { get; set; }
+
+        /// <summary>
+        /// Set initial position for the subscription. The default is 'Latest'.
+        /// </summary>
         public SubscriptionInitialPosition InitialPosition { get; set; }
+
+        /// <summary>
+        /// Set the priority level for the shared subscription consumer. The default is 0.
+        /// </summary>
         public int PriorityLevel { get; set; }
+
+        /// <summary>
+        /// Number of messages that will be prefetched. The default is 1000.
+        /// </summary>
         public uint MessagePrefetchCount { get; set; }
+
+        /// <summary>
+        /// Whether to read from the compacted topic. The default is 'false'.
+        /// </summary>
         public bool ReadCompacted { get; set; }
+
+        /// <summary>
+        /// Set the subscription name for this consumer. This is required.
+        /// </summary>
         public string SubscriptionName { get; set; }
+
+        /// <summary>
+        /// Set the subscription type for this consumer. The default is 'Exclusive'.
+        /// </summary>
         public SubscriptionType SubscriptionType { get; set; }
+
+        /// <summary>
+        /// Set the topic for this consumer. This is required.
+        /// </summary>
         public string Topic { get; set; }
     }
 }

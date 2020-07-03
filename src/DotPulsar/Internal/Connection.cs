@@ -18,6 +18,7 @@ namespace DotPulsar.Internal
     using Exceptions;
     using Extensions;
     using PulsarApi;
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -97,6 +98,9 @@ namespace DotPulsar.Internal
         public Task Send(CommandFlow command, CancellationToken cancellationToken)
             => Send(command.AsBaseCommand(), cancellationToken);
 
+        public Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken)
+            => Send(command.AsBaseCommand(), cancellationToken);
+
         public async Task<BaseCommand> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -166,6 +170,12 @@ namespace DotPulsar.Internal
         public async Task<BaseCommand> Send(SendPackage command, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
+
+            if (command.Command is null)
+                throw new ArgumentNullException(nameof(command.Command));
+
+            if (command.Metadata is null)
+                throw new ArgumentNullException(nameof(command.Metadata));
 
             Task<BaseCommand>? response;
 

@@ -71,18 +71,8 @@ namespace DotPulsar.Internal
 
         private async void SetupChannel()
         {
-            IReaderChannel? channel = null;
-
-            try
-            {
-                channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
-                _reader.SetChannel(channel);
-            }
-            catch
-            {
-                if (channel != null)
-                    await channel.DisposeAsync().ConfigureAwait(false);
-            }
+            var channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
+            await _reader.SetChannel(channel).ConfigureAwait(false);
         }
     }
 }

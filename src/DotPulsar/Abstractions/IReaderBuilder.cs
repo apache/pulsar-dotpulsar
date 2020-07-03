@@ -15,7 +15,7 @@
 namespace DotPulsar.Abstractions
 {
     /// <summary>
-    /// A reader building abstraction
+    /// A reader building abstraction.
     /// </summary>
     public interface IReaderBuilder
     {

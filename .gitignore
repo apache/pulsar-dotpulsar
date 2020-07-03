@@ -287,3 +287,7 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# VSCode
+.devcontainer
+.vscode
