@@ -55,18 +55,34 @@ namespace DotPulsar
         public IProducer CreateProducer(ProducerOptions options)
         {
             ThrowIfDisposed();
-            var correlationId = Guid.NewGuid();
-            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
-            var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var producer = new Producer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
-            var process = new ProducerProcess(correlationId, stateManager, factory, producer);
-            _processManager.Add(process);
-            process.Start();
-            return producer;
+            var partitionedTopicMetadata = GetPartitionTopicMetadata(options.Topic).Result;
+            if (partitionedTopicMetadata.Partitions > 0)
+            {
+                var correlationId = Guid.NewGuid();
+                var executor = new Executor(correlationId, _processManager, _exceptionHandler);
+                var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
+                var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+                var producer = new Producer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
+                var process = new ProducerProcess(correlationId, stateManager, factory, producer);
+                _processManager.Add(process);
+                process.Start();
+                return producer;
+            }
+            else
+            {
+                var correlationId = Guid.NewGuid();
+                var executor = new Executor(correlationId, _processManager, _exceptionHandler);
+                var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
+                var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+                var producer = new Producer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
+                var process = new ProducerProcess(correlationId, stateManager, factory, producer);
+                _processManager.Add(process);
+                process.Start();
+                return producer;
+            }
         }
 
-        private async Task<PartitionedTopicMetadata> GetPartitionTopicMetadata(string topic,CancellationToken cancellationToken)
+        private async Task<PartitionedTopicMetadata> GetPartitionTopicMetadata(string topic, CancellationToken cancellationToken = default)
         {
             var connection = await _connectionPool.FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
             var commandPartitionedMetadata = new CommandPartitionedTopicMetadata()
