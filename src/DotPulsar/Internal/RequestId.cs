@@ -12,17 +12,19 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Internal
 {
-    using PulsarApi;
-    using System;
-    using System.Buffers;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    public interface IProducerChannel : IAsyncDisposable
+    public sealed class RequestId
     {
-        Task<CommandSendReceipt> Send(ulong sequenceId, ReadOnlySequence<byte> payload, CancellationToken cancellationToken);
-        Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken);
+        private ulong _current;
+
+        public RequestId()
+            => _current = 0;
+
+        public bool IsPastInitialId()
+            => _current != 0;
+
+        public ulong FetchNext()
+            => _current++;
     }
 }

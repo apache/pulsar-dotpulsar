@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,20 +25,20 @@ namespace DotPulsar.Internal
 
     public sealed class ProducerChannel : IProducerChannel
     {
-        private readonly MessageMetadata _cachedMetadata;
+        private readonly ObjectPool<MessageMetadata> _messageMetadataPool;
         private readonly ObjectPool<SendPackage> _sendPackagePool;
         private readonly ulong _id;
         private readonly string _name;
-        private readonly SequenceId _sequenceId;
         private readonly IConnection _connection;
 
-        public ProducerChannel(ulong id, string name, SequenceId sequenceId, IConnection connection)
+        public ProducerChannel(ulong id, string name, IConnection connection)
         {
-            _cachedMetadata = new MessageMetadata { ProducerName = name };
-            _sendPackagePool = new DefaultObjectPool<SendPackage>(new DefaultPooledObjectPolicy<SendPackage>());
+            var messageMetadataPolicy = new DefaultPooledObjectPolicy<MessageMetadata>();
+            _messageMetadataPool = new DefaultObjectPool<MessageMetadata>(messageMetadataPolicy);
+            var sendPackagePolicy = new DefaultPooledObjectPolicy<SendPackage>();
+            _sendPackagePool = new DefaultObjectPool<SendPackage>(sendPackagePolicy);
             _id = id;
             _name = name;
-            _sequenceId = sequenceId;
             _connection = connection;
         }
 
@@ -55,19 +55,30 @@ namespace DotPulsar.Internal
             }
         }
 
-        public Task<CommandSendReceipt> Send(ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
-            => SendPackage(_cachedMetadata, payload, true, cancellationToken);
+        public Task<CommandSendReceipt> Send(ulong sequenceId, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
+        {
+            var metadata = _messageMetadataPool.Get();
+            metadata.ProducerName = _name;
+            metadata.SequenceId = sequenceId;
+            try
+            {
+                return SendPackage(metadata, payload, cancellationToken);
+            }
+            finally
+            {
+                _messageMetadataPool.Return(metadata);
+            }
+        }
 
         public Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
         {
             metadata.ProducerName = _name;
-            return SendPackage(metadata, payload, metadata.SequenceId == 0, cancellationToken);
+            return SendPackage(metadata, payload, cancellationToken);
         }
 
         private async Task<CommandSendReceipt> SendPackage(
             MessageMetadata metadata,
             ReadOnlySequence<byte> payload,
-            bool autoAssignSequenceId,
             CancellationToken cancellationToken)
         {
             var sendPackage = _sendPackagePool.Get();
@@ -81,36 +92,21 @@ namespace DotPulsar.Internal
                 };
             }
 
+            sendPackage.Command.SequenceId = metadata.SequenceId;
             sendPackage.Metadata = metadata;
             sendPackage.Payload = payload;
+            metadata.PublishTime = (ulong) DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(); // TODO Benchmark against StopWatch
 
             try
             {
-                metadata.PublishTime = (ulong) DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-                if (autoAssignSequenceId)
-                {
-                    var newSequenceId = _sequenceId.FetchNext();
-                    sendPackage.Command.SequenceId = newSequenceId;
-                    sendPackage.Metadata.SequenceId = newSequenceId;
-                }
-                else
-                    sendPackage.Command.SequenceId = sendPackage.Metadata.SequenceId;
-
                 var response = await _connection.Send(sendPackage, cancellationToken).ConfigureAwait(false);
                 response.Expect(BaseCommand.Type.SendReceipt);
-
                 return response.SendReceipt;
             }
             finally
             {
-                // Reset in case the user reuse the MessageMetadata, but is not explicitly setting the sequenceId
-                if (autoAssignSequenceId)
-                    sendPackage.Metadata.SequenceId = 0;
-
                 _sendPackagePool.Return(sendPackage);
             }
         }
     }
 }
-

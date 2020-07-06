@@ -26,7 +26,6 @@ namespace DotPulsar.Internal
         private readonly IRegisterEvent _eventRegister;
         private readonly IConnectionPool _connectionPool;
         private readonly IExecute _executor;
-        private readonly SequenceId _sequenceId;
         private readonly CommandProducer _commandProducer;
 
         public ProducerChannelFactory(
@@ -40,7 +39,6 @@ namespace DotPulsar.Internal
             _eventRegister = eventRegister;
             _connectionPool = connectionPool;
             _executor = executor;
-            _sequenceId = new SequenceId(options.InitialSequenceId);
 
             _commandProducer = new CommandProducer
             {
@@ -57,8 +55,7 @@ namespace DotPulsar.Internal
             var connection = await _connectionPool.FindConnectionForTopic(_commandProducer.Topic, cancellationToken).ConfigureAwait(false);
             var channel = new Channel(_correlationId, _eventRegister, new AsyncQueue<MessagePackage>());
             var response = await connection.Send(_commandProducer, channel, cancellationToken).ConfigureAwait(false);
-
-            return new ProducerChannel(response.ProducerId, response.ProducerName, _sequenceId, connection);
+            return new ProducerChannel(response.ProducerId, response.ProducerName, connection);
         }
     }
 }

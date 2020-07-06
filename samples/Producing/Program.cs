@@ -61,8 +61,10 @@ namespace Producing
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var data = Encoding.UTF8.GetBytes("Sent " + DateTime.UtcNow);
-                    _ = await producer.Send(data, cancellationToken).ConfigureAwait(false);
+                    var data = DateTime.UtcNow.ToLongTimeString();
+                    var bytes = Encoding.UTF8.GetBytes(data);
+                    _ = await producer.Send(bytes, cancellationToken).ConfigureAwait(false);
+                    Console.WriteLine("Sent: " + data);
                     await Task.Delay(delay).ConfigureAwait(false);
                 }
             }
