@@ -23,6 +23,9 @@ namespace DotPulsar
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
+    using System.Collections.Concurrent;
 
     /// <summary>
     /// Pulsar client for creating producers, consumers and readers.
@@ -60,12 +63,25 @@ namespace DotPulsar
             {
                 var correlationId = Guid.NewGuid();
                 var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-                var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
                 var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-                var producer = new Producer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
-                var process = new ProducerProcess(correlationId, stateManager, factory, producer);
-                _processManager.Add(process);
-                process.Start();
+                var producers = new ConcurrentDictionary<int, IProducer>();
+                var subproducerTasks = new List<Task>((int)partitionedTopicMetadata.Partitions);
+                for(int i = 0;i < partitionedTopicMetadata.Partitions; ++i)
+                {
+                    subproducerTasks.Add(Task.Run(() => {
+                        var correlationId = Guid.NewGuid();
+                        var executor = new Executor(correlationId, _processManager, _exceptionHandler);
+                        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
+                        var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+                        var producer = new Producer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
+                        var process = new ProducerProcess(correlationId, stateManager, factory, producer);
+                        _processManager.Add(process);
+                        process.Start();
+                        producers[i] = producer;
+                    }));
+                }
+                Task.WaitAll(subproducerTasks.ToArray());
+                var producer = new PartitionedProducer(correlationId, options.Topic, _processManager, executor, stateManager, partitionedTopicMetadata, producers);
                 return producer;
             }
             else

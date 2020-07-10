@@ -20,6 +20,7 @@ namespace DotPulsar.Internal
     using System;
     using System.Buffers;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -30,7 +31,6 @@ namespace DotPulsar.Internal
         private readonly IRegisterEvent _eventRegister;
         private readonly IExecute _executor;
         private readonly IStateChanged<ProducerState> _state;
-        private readonly IPulsarClient _pulsarClient;
         private readonly PartitionedTopicMetadata _partitionedTopicMetadata;
         private int _isDisposed;
 
@@ -40,31 +40,23 @@ namespace DotPulsar.Internal
             Guid correlationId,
             string topic,
             IRegisterEvent registerEvent,
-            IProducerChannel initialChannel,
             IExecute executor,
             IStateChanged<ProducerState> state,
-            IPulsarClient pulsarClient,
-            PartitionedTopicMetadata partitionedTopicMetadata)
+            PartitionedTopicMetadata partitionedTopicMetadata,
+            ConcurrentDictionary<int, IProducer> producers)
         {
             _correlationId = correlationId;
             Topic = topic;
             _eventRegister = registerEvent;
             _executor = executor;
             _state = state;
-            _pulsarClient = pulsarClient;
             _partitionedTopicMetadata = partitionedTopicMetadata;
+            _producers = producers;
             _isDisposed = 0;
 
             _eventRegister.Register(new PartitionedProducerCreated(_correlationId, this));
 
             _producers = new ConcurrentDictionary<int, IProducer>();
-
-            Start();
-        }
-
-        private void Start()
-        {
-            for(int )
         }
 
         private IProducer GetProducer()
@@ -78,7 +70,7 @@ namespace DotPulsar.Internal
             if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                 return;
 
-            _eventRegister.Register(new PartitionedProducerDisposed(_correlationId, this))
+            _eventRegister.Register(new PartitionedProducerDisposed(_correlationId, this));
         }
 
         public bool IsFinalState()
