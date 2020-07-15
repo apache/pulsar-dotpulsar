@@ -27,6 +27,13 @@ namespace DotPulsar
             Topic = topic;
         }
 
+        public ProducerOptions(ProducerOptions previousOptions)
+        {
+            ProducerName = previousOptions.ProducerName;
+            InitialSequenceId = previousOptions.InitialSequenceId;
+            Topic = previousOptions.Topic;
+        }
+
         /// <summary>
         /// Set the producer name. This is optional.
         /// </summary>

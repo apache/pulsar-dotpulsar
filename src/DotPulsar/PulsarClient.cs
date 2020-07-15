@@ -65,19 +65,24 @@ namespace DotPulsar
                 var executor = new Executor(correlationId, _processManager, _exceptionHandler);
                 var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
                 var producers = new ConcurrentDictionary<int, IProducer>();
+                var producersState = new ConcurrentBag<IStateManager<ProducerState>>();
+
                 var subproducerTasks = new List<Task>((int)partitionedTopicMetadata.Partitions);
                 for(int i = 0;i < partitionedTopicMetadata.Partitions; ++i)
                 {
+                    var subproducerOption = new ProducerOptions(options);
+                    subproducerOption.Topic = $"{options.Topic}-partition-{i}";
                     subproducerTasks.Add(Task.Run(() => {
                         var correlationId = Guid.NewGuid();
                         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-                        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
+                        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, subproducerOption);
                         var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-                        var producer = new Producer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
+                        var producer = new Producer(correlationId, subproducerOption.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
                         var process = new ProducerProcess(correlationId, stateManager, factory, producer);
                         _processManager.Add(process);
                         process.Start();
                         producers[i] = producer;
+                        producersState.Add(stateManager);
                     }));
                 }
                 Task.WaitAll(subproducerTasks.ToArray());

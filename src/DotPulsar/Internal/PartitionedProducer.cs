@@ -54,7 +54,7 @@ namespace DotPulsar.Internal
             _producers = producers;
             _isDisposed = 0;
 
-            _eventRegister.Register(new PartitionedProducerCreated(_correlationId, this));
+            //_eventRegister.Register(new PartitionedProducerCreated(_correlationId, this));
 
             _producers = new ConcurrentDictionary<int, IProducer>();
         }
@@ -70,7 +70,7 @@ namespace DotPulsar.Internal
             if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                 return;
 
-            _eventRegister.Register(new PartitionedProducerDisposed(_correlationId, this));
+            //_eventRegister.Register(new PartitionedProducerDisposed(_correlationId, this));
         }
 
         public bool IsFinalState()
