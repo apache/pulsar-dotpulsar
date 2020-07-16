@@ -30,9 +30,12 @@ namespace DotPulsar.Internal
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
         private readonly IExecute _executor;
-        private readonly IStateChanged<ProducerState> _state;
+        private readonly StateManager<ProducerState> _state;
         private readonly PartitionedTopicMetadata _partitionedTopicMetadata;
         private int _isDisposed;
+        private ConcurrentBag<Task> _monitorStateTask;
+        private CancellationTokenSource _cancellationTokenSource;
+        private int _connectedProducerCount = 0;
 
         public string Topic { get; }
 
@@ -41,7 +44,7 @@ namespace DotPulsar.Internal
             string topic,
             IRegisterEvent registerEvent,
             IExecute executor,
-            IStateChanged<ProducerState> state,
+            StateManager<ProducerState> state,
             PartitionedTopicMetadata partitionedTopicMetadata,
             ConcurrentDictionary<int, IProducer> producers)
         {
@@ -54,9 +57,59 @@ namespace DotPulsar.Internal
             _producers = producers;
             _isDisposed = 0;
 
-            //_eventRegister.Register(new PartitionedProducerCreated(_correlationId, this));
+            _cancellationTokenSource = new CancellationTokenSource();
 
-            _producers = new ConcurrentDictionary<int, IProducer>();
+            //_eventRegister.Register(new PartitionedProducerCreated(_correlationId, this));
+            foreach (var producer in _producers.Values)
+            {
+                _monitorStateTask.Add(MonitorState(producer, _cancellationTokenSource.Token));
+            }
+        }
+
+        private async Task MonitorState(IProducer producer, CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+
+            var state = ProducerState.Disconnected;
+
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    var stateChanged = await producer.StateChangedFrom(state).ConfigureAwait(false);
+                    state = stateChanged.ProducerState;
+
+                    switch (state)
+                    {
+                        case ProducerState.Disconnected:
+                            Interlocked.Decrement(ref _connectedProducerCount);
+                            _state.SetState(ProducerState.Disconnected);
+                            break;
+                        case ProducerState.Faulted:
+                            Interlocked.Decrement(ref _connectedProducerCount);
+                            _state.SetState(ProducerState.Faulted);
+                            break;
+                        case ProducerState.Closed:
+                            Interlocked.Decrement(ref _connectedProducerCount);
+                            _state.SetState(ProducerState.Closed);
+                            break;
+                        case ProducerState.Connected:
+                            Interlocked.Increment(ref _connectedProducerCount);
+                            break;
+                    }
+
+                    if (_connectedProducerCount == _partitionedTopicMetadata.Partitions)
+                        _state.SetState(ProducerState.Connected);
+
+                    if (IsFinalState(state))
+                        _cancellationTokenSource.Cancel(); // cancel other monitor tasks
+
+                    if (producer.IsFinalState(state))
+                        return;
+                }
+            }
+            catch (OperationCanceledException)
+            { }
         }
 
         private IProducer GetProducer()
@@ -70,6 +123,8 @@ namespace DotPulsar.Internal
             if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                 return;
 
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
             //_eventRegister.Register(new PartitionedProducerDisposed(_correlationId, this));
         }
 
