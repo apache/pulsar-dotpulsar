@@ -58,6 +58,7 @@ namespace DotPulsar.Internal
             _isDisposed = 0;
 
             _cancellationTokenSource = new CancellationTokenSource();
+            _monitorStateTask = new ConcurrentBag<Task>();
 
             //_eventRegister.Register(new PartitionedProducerCreated(_correlationId, this));
             foreach (var producer in _producers.Values)
