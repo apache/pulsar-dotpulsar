@@ -67,12 +67,16 @@ namespace DotPulsar
                 var producers = new ConcurrentDictionary<int, IProducer>();
                 var producersState = new ConcurrentBag<IStateManager<ProducerState>>();
 
-                var subproducerTasks = new List<Task>((int)partitionedTopicMetadata.Partitions);
-                for(int i = 0;i < partitionedTopicMetadata.Partitions; ++i)
+                var subproducerTasks = new List<Task>(partitionedTopicMetadata.Partitions);
+                for (int i = 0; i < partitionedTopicMetadata.Partitions; i++)
                 {
-                    var subproducerOption = new ProducerOptions(options);
-                    subproducerOption.Topic = $"{options.Topic}-partition-{i}";
-                    subproducerTasks.Add(Task.Run(() => {
+                    int partID = i;
+                    subproducerTasks.Add(Task.Run(() =>
+                    {
+                        var subproducerOption = new ProducerOptions(options)
+                        {
+                            Topic = $"{options.Topic}-partition-{partID}"
+                        };
                         var correlationId = Guid.NewGuid();
                         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
                         var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, subproducerOption);
@@ -81,12 +85,13 @@ namespace DotPulsar
                         var process = new ProducerProcess(correlationId, stateManager, factory, producer);
                         _processManager.Add(process);
                         process.Start();
-                        producers[i] = producer;
+                        producers[partID] = producer;
                         producersState.Add(stateManager);
+                        Console.WriteLine($"{subproducerOption.Topic} connected.");
                     }));
                 }
                 Task.WaitAll(subproducerTasks.ToArray());
-                var producer = new PartitionedProducer(correlationId, options.Topic, _processManager, executor, stateManager, partitionedTopicMetadata, producers);
+                var producer = new PartitionedProducer(correlationId, options.Topic, _processManager, executor, stateManager, partitionedTopicMetadata, producers, options.MessageRouter);
                 return producer;
             }
             else
@@ -117,7 +122,7 @@ namespace DotPulsar
             if (response.PartitionMetadataResponse.Response == CommandPartitionedTopicMetadataResponse.LookupType.Failed)
                 response.PartitionMetadataResponse.Throw();
 
-            return new PartitionedTopicMetadata(response.PartitionMetadataResponse.Partitions);
+            return new PartitionedTopicMetadata((int) response.PartitionMetadataResponse.Partitions);
         }
 
         /// <summary>

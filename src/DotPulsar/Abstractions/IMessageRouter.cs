@@ -12,15 +12,11 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Abstractions
 {
-    public sealed class PartitionedTopicMetadata
+    using DotPulsar.Internal;
+    public interface IMessageRouter
     {
-        public PartitionedTopicMetadata(int partitions)
-        {
-            Partitions = partitions;
-        }
-
-        public int Partitions { get; }
+        int ChoosePartition(MessageMetadata message, PartitionedTopicMetadata partitionedTopic);
     }
 }

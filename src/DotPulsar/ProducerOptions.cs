@@ -14,6 +14,7 @@
 
 namespace DotPulsar
 {
+    using DotPulsar.Abstractions;
     /// <summary>
     /// The producer building options.
     /// </summary>
@@ -48,5 +49,10 @@ namespace DotPulsar
         /// Set the topic for this producer. This is required.
         /// </summary>
         public string Topic { get; set; }
+
+        /// <summary>
+        /// Set the message router. The default router is Round Robind routing mode.
+        /// </summary>
+        public IMessageRouter MessageRouter { get; set; } = new RoundRobinPartitionRouter();
     }
 }

@@ -12,15 +12,18 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar
 {
-    public sealed class PartitionedTopicMetadata
-    {
-        public PartitionedTopicMetadata(int partitions)
-        {
-            Partitions = partitions;
-        }
+    using DotPulsar.Abstractions;
+    using DotPulsar.Internal;
+    using System.Threading;
 
-        public int Partitions { get; }
+    public class RoundRobinPartitionRouter : IMessageRouter
+    {
+        private long _partitionIndex = -1;
+        public int ChoosePartition(MessageMetadata message, PartitionedTopicMetadata partitionedTopic)
+        {
+            return MathUtils.SignSafeMod(Interlocked.Increment(ref _partitionIndex), partitionedTopic.Partitions);
+        }
     }
 }

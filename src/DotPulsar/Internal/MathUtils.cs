@@ -14,13 +14,24 @@
 
 namespace DotPulsar.Internal
 {
-    public sealed class PartitionedTopicMetadata
+    public static class MathUtils
     {
-        public PartitionedTopicMetadata(int partitions)
+        /// <summary>
+        /// Compute sign safe mod
+        /// </summary>
+        /// <param name="dividend"></param>
+        /// <param name="divisor"></param>
+        /// <returns></returns>
+        public static int SignSafeMod(long dividend, int divisor)
         {
-            Partitions = partitions;
-        }
+            var mod = (int) dividend % divisor;
 
-        public int Partitions { get; }
+            if (mod < 0)
+            {
+                mod += divisor;
+            }
+
+            return mod;
+        }
     }
 }

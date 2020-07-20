@@ -36,6 +36,7 @@ namespace DotPulsar.Internal
         private ConcurrentBag<Task> _monitorStateTask;
         private CancellationTokenSource _cancellationTokenSource;
         private int _connectedProducerCount = 0;
+        private IMessageRouter _messageRouter;
 
         public string Topic { get; }
 
@@ -46,7 +47,8 @@ namespace DotPulsar.Internal
             IExecute executor,
             StateManager<ProducerState> state,
             PartitionedTopicMetadata partitionedTopicMetadata,
-            ConcurrentDictionary<int, IProducer> producers)
+            ConcurrentDictionary<int, IProducer> producers,
+            IMessageRouter messageRouter)
         {
             _correlationId = correlationId;
             Topic = topic;
@@ -56,6 +58,7 @@ namespace DotPulsar.Internal
             _partitionedTopicMetadata = partitionedTopicMetadata;
             _producers = producers;
             _isDisposed = 0;
+            _messageRouter = messageRouter;
 
             _cancellationTokenSource = new CancellationTokenSource();
             _monitorStateTask = new ConcurrentBag<Task>();
@@ -113,10 +116,15 @@ namespace DotPulsar.Internal
             { }
         }
 
-        private IProducer GetProducer()
+        private IProducer GetProducer(MessageMetadata message = null)
         {
-            if (_producers.Count > 0) return _producers[0];
-            return null;
+            int partitionIndex = _messageRouter.ChoosePartition(message, _partitionedTopicMetadata);
+            if (partitionIndex < 0 || partitionIndex >= _partitionedTopicMetadata.Partitions)
+            {
+                throw new ArgumentException($"Illegal partition index chosen by the message routing policy: ${partitionIndex}");
+            }
+
+            return _producers[partitionIndex];
         }
 
         public async ValueTask DisposeAsync()

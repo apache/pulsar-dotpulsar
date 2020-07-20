@@ -23,6 +23,7 @@ namespace DotPulsar.Internal
         private string? _producerName;
         private ulong _initialSequenceId;
         private string? _topic;
+        private IMessageRouter _messageRouter;
 
         public ProducerBuilder(IPulsarClient pulsarClient)
         {
@@ -48,6 +49,12 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IProducerBuilder MessageRouter(IMessageRouter messageRouter)
+        {
+            _messageRouter = messageRouter;
+            return this;
+        }
+
         public IProducer Create()
         {
             if (string.IsNullOrEmpty(_topic))
@@ -58,6 +65,8 @@ namespace DotPulsar.Internal
                 InitialSequenceId = _initialSequenceId,
                 ProducerName = _producerName
             };
+
+            if (_messageRouter != null) options.MessageRouter = _messageRouter;
 
             return _pulsarClient.CreateProducer(options);
         }
