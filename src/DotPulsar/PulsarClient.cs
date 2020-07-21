@@ -12,6 +12,9 @@
  * limitations under the License.
  */
 
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("DotPulsar.Tests")]
 namespace DotPulsar
 {
     using Abstractions;
