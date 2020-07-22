@@ -15,12 +15,14 @@
 namespace DotPulsar.Internal
 {
     using System.IO;
+    using System.Text;
+
     /// <summary>
     /// Implementation of the MurmurHash3 non-cryptographic hash function.
     /// </summary>
     public class Murmur3_32Hash
     {
-        private static Murmur3_32Hash Instance { get; } = new Murmur3_32Hash();
+        public static Murmur3_32Hash Instance { get; } = new Murmur3_32Hash();
 
         private static readonly uint CHUNK_SIZE = 4;
         private static readonly uint C1 = 0xcc9e2d51;
@@ -32,14 +34,14 @@ namespace DotPulsar.Internal
             _seed = seed;
         }
 
-        public static int Hash(byte[] b)
-        {
-            return Instance.MakeHash(b);
-        }
-
         public int MakeHash(byte[] b)
         {
             return MakeHash0(b) & int.MaxValue;
+        }
+
+        public int MakeHash(string s)
+        {
+            return MakeHash(Encoding.UTF8.GetBytes(s));
         }
 
         private int MakeHash0(byte[] bytes)

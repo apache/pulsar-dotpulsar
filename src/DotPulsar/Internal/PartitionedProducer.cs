@@ -134,6 +134,11 @@ namespace DotPulsar.Internal
 
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
+
+            foreach (var producer in _producers.Values)
+            {
+                await producer.DisposeAsync();
+            }
             //_eventRegister.Register(new PartitionedProducerDisposed(_correlationId, this));
         }
 
