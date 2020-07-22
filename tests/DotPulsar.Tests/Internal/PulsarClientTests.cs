@@ -28,8 +28,7 @@ namespace DotPulsar.Tests.Internal
         {
             var topicName = "persistent://public/default/test-topic";
 
-            var connectionMock = new Mock<IConnection>();
-            var connection = connectionMock.Object;
+            var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
             _ = connectionMock.Setup(c => c.Send(It.IsAny<CommandPartitionedTopicMetadata>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new BaseCommand()
                 {
@@ -42,7 +41,8 @@ namespace DotPulsar.Tests.Internal
                 });
             _ = connectionMock.Setup(c => c.Send(It.IsAny<CommandProducer>(), It.IsAny<Channel>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ProducerResponse(0, ""));
-            var connectionPoolMock = new Mock<IConnectionPool>();
+            var connection = connectionMock.Object;
+            var connectionPoolMock = new Mock<IConnectionPool>(MockBehavior.Strict);
             _ = connectionPoolMock.Setup(c => c.FindConnectionForTopic(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(connection);
             var connectionPool = connectionPoolMock.Object;
