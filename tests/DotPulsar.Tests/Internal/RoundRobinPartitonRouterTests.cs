@@ -35,5 +35,23 @@ namespace DotPulsar.Tests.Internal
             //Assert
             Assert.Equal(MathUtils.SignSafeMod(Murmur3_32Hash.Instance.MakeHash(message.Key), 3), result);
         }
+
+        [Fact]
+        public void ChoosePartition_GivenMessageWithoutKey_ShouldRoundRobinRoute()
+        {
+            //Arrange
+            var message = new MessageMetadata();
+            var partitionTopicMetadata = new PartitionedTopicMetadata(3);
+
+            var router = new RoundRobinPartitionRouter();
+            for(int i = 0; i < 10; i++)
+            {
+                //Act
+                var result = router.ChoosePartition(message, partitionTopicMetadata);
+
+                //Assert
+                Assert.Equal(i % 3, result);
+            }
+        }
     }
 }

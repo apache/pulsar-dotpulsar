@@ -23,7 +23,7 @@ namespace DotPulsar
         private long _partitionIndex = -1;
         public int ChoosePartition(MessageMetadata message, PartitionedTopicMetadata partitionedTopic)
         {
-            if (message.Key != null)
+            if (message!=null && !string.IsNullOrEmpty(message.Key))
             {
                 return MathUtils.SignSafeMod(Murmur3_32Hash.Instance.MakeHash(message.Key), partitionedTopic.Partitions);
             }
