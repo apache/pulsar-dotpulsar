@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Tests.Internal
+namespace DotPulsar.Tests
 {
     using DotPulsar.Internal;
     using Xunit;
-    public class RoundRobinPartitonRouterTests
+    public class SinglePartitionRouterTests
     {
         [Fact]
         public void ChoosePartition_GivenMessageWithKey_ShouldChoosePartitionBasedOnKeyHash()
@@ -29,7 +29,7 @@ namespace DotPulsar.Tests.Internal
             var partitionTopicMetadata = new PartitionedTopicMetadata(3);
 
             //Act
-            var router = new RoundRobinPartitionRouter();
+            var router = new SinglePartitionRouter();
             var result = router.ChoosePartition(message, partitionTopicMetadata);
 
             //Assert
@@ -37,21 +37,18 @@ namespace DotPulsar.Tests.Internal
         }
 
         [Fact]
-        public void ChoosePartition_GivenMessageWithoutKey_ShouldRoundRobinRoute()
+        public void ChoosePartition_GivenMessageWithoutKey_ShouldSinglePartitionRoute()
         {
             //Arrange
             var message = new MessageMetadata();
             var partitionTopicMetadata = new PartitionedTopicMetadata(3);
 
-            var router = new RoundRobinPartitionRouter();
-            for(int i = 0; i < 10; i++)
-            {
-                //Act
-                var result = router.ChoosePartition(message, partitionTopicMetadata);
+            //Act
+            var router = new SinglePartitionRouter(1);
+            var result = router.ChoosePartition(message, partitionTopicMetadata);
 
-                //Assert
-                Assert.Equal(i % 3, result);
-            }
+            //Assert
+            Assert.Equal(1, result);
         }
     }
 }
