@@ -25,7 +25,7 @@ namespace DotPulsar
         {
             _partitionIndex = partitionIndex;
         }
-        public int ChoosePartition(MessageMetadata message, PartitionedTopicMetadata partitionedTopic)
+        public int ChoosePartition(MessageMetadata? message, PartitionedTopicMetadata partitionedTopic)
         {
             if (message != null && !string.IsNullOrEmpty(message.Key))
             {

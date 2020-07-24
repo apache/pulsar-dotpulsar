@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Internal.Abstractions
 {
-    using DotPulsar.Internal;
-    public interface IMessageRouter
+    using System;
+    public interface ITimer
     {
-        int ChoosePartition(MessageMetadata? message, PartitionedTopicMetadata partitionedTopic);
+        void SetCallback(Action callback, int timeout);
     }
 }

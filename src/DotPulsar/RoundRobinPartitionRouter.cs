@@ -21,7 +21,7 @@ namespace DotPulsar
     public class RoundRobinPartitionRouter : IMessageRouter
     {
         private long _partitionIndex = -1;
-        public int ChoosePartition(MessageMetadata message, PartitionedTopicMetadata partitionedTopic)
+        public int ChoosePartition(MessageMetadata? message, PartitionedTopicMetadata partitionedTopic)
         {
             if (message!=null && !string.IsNullOrEmpty(message.Key))
             {

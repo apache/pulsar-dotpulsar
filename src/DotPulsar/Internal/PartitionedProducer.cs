@@ -16,7 +16,6 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Internal.Abstractions;
-    using DotPulsar.Internal.Events;
     using System;
     using System.Buffers;
     using System.Collections.Concurrent;
@@ -31,12 +30,15 @@ namespace DotPulsar.Internal
         private readonly IRegisterEvent _eventRegister;
         private readonly IExecute _executor;
         private readonly StateManager<ProducerState> _state;
-        private readonly PartitionedTopicMetadata _partitionedTopicMetadata;
+        private PartitionedTopicMetadata _partitionedTopicMetadata;
         private int _isDisposed;
         private ConcurrentBag<Task> _monitorStateTask;
         private CancellationTokenSource _cancellationTokenSource;
         private int _connectedProducerCount = 0;
         private IMessageRouter _messageRouter;
+        private ITimer _timer;
+        private PulsarClient _client;
+        private ProducerOptions _options;
 
         public string Topic { get; }
 
@@ -46,9 +48,12 @@ namespace DotPulsar.Internal
             IRegisterEvent registerEvent,
             IExecute executor,
             StateManager<ProducerState> state,
+            ProducerOptions options,
             PartitionedTopicMetadata partitionedTopicMetadata,
             ConcurrentDictionary<int, IProducer> producers,
-            IMessageRouter messageRouter)
+            IMessageRouter messageRouter,
+            PulsarClient client,
+            ITimer timer)
         {
             _correlationId = correlationId;
             Topic = topic;
@@ -59,6 +64,8 @@ namespace DotPulsar.Internal
             _producers = producers;
             _isDisposed = 0;
             _messageRouter = messageRouter;
+            _client = client;
+            _options = options;
 
             _cancellationTokenSource = new CancellationTokenSource();
             _monitorStateTask = new ConcurrentBag<Task>();
@@ -66,21 +73,24 @@ namespace DotPulsar.Internal
             //_eventRegister.Register(new PartitionedProducerCreated(_correlationId, this));
             foreach (var producer in _producers.Values)
             {
-                _monitorStateTask.Add(MonitorState(producer, _cancellationTokenSource.Token));
+                _monitorStateTask.Add(MonitorState(producer, null, _cancellationTokenSource.Token));
             }
+
+            _timer = timer;
+            _timer.SetCallback(UpdatePartitionMetadata, 60000);
         }
 
-        private async Task MonitorState(IProducer producer, CancellationToken cancellationToken = default)
+        private async Task MonitorState(IProducer producer, ProducerState? initialState, CancellationToken cancellationToken = default)
         {
             await Task.Yield();
 
-            var state = ProducerState.Disconnected;
+            var state = initialState ?? ProducerState.Disconnected;
 
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var stateChanged = await producer.StateChangedFrom(state).ConfigureAwait(false);
+                    var stateChanged = await producer.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
                     state = stateChanged.ProducerState;
 
                     switch (state)
@@ -116,7 +126,46 @@ namespace DotPulsar.Internal
             { }
         }
 
-        private IProducer GetProducer(MessageMetadata message = null)
+        private async void UpdatePartitionMetadata()
+        {
+            var newMetadata = await _client.GetPartitionTopicMetadata(Topic, _cancellationTokenSource.Token).ConfigureAwait(false);
+            // Not support shrink topic partitions
+            if (newMetadata.Partitions > _partitionedTopicMetadata.Partitions)
+            {
+                int newProducersCount = _partitionedTopicMetadata.Partitions - newMetadata.Partitions;
+                var producers = new ConcurrentDictionary<int, IProducer>();
+                var newSubproducerTasks = new List<Task>(newProducersCount);
+                for (int i = _partitionedTopicMetadata.Partitions; i < newMetadata.Partitions; i++)
+                {
+                    int partID = i;
+                    newSubproducerTasks.Add(Task.Run(async () =>
+                    {
+                        var subproducerOption = new ProducerOptions(_options)
+                        {
+                            Topic = $"{_options.Topic}-partition-{partID}"
+                        };
+                        var producer = _client.CreateProducerWithoutCheckingPartition(subproducerOption);
+                        _ = await producer.StateChangedTo(ProducerState.Connected).ConfigureAwait(false);
+                        producers[partID] = producer;
+                    }));
+                }
+                Task.WaitAll(newSubproducerTasks.ToArray());
+                if (producers.Count == newProducersCount)
+                {
+                    foreach (var p in producers)
+                    {
+                        _producers[p.Key] = p.Value;
+                        _monitorStateTask.Add(MonitorState(p.Value, ProducerState.Connected, _cancellationTokenSource.Token));
+                    }
+
+                    //TODO: race condition.
+                    _partitionedTopicMetadata = newMetadata;
+                    Interlocked.Add(ref _connectedProducerCount, newProducersCount);
+                }
+            }
+        }
+
+        private IProducer GetProducer(MessageMetadata? message = null)
         {
             int partitionIndex = _messageRouter.ChoosePartition(message, _partitionedTopicMetadata);
             if (partitionIndex < 0 || partitionIndex >= _partitionedTopicMetadata.Partitions)
@@ -149,22 +198,22 @@ namespace DotPulsar.Internal
             => _state.IsFinalState(state);
 
         public ValueTask<MessageId> Send(byte[] data, CancellationToken cancellationToken)
-            => GetProducer().Send(new ReadOnlySequence<byte>(data), cancellationToken);
+            => GetProducer(null).Send(new ReadOnlySequence<byte>(data), cancellationToken);
 
         public ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => GetProducer().Send(new ReadOnlySequence<byte>(data), cancellationToken);
+            => GetProducer(null).Send(new ReadOnlySequence<byte>(data), cancellationToken);
 
         public ValueTask<MessageId> Send(ReadOnlySequence<byte> data, CancellationToken cancellationToken)
-            => GetProducer().Send(data, cancellationToken);
+            => GetProducer(null).Send(data, cancellationToken);
 
         public ValueTask<MessageId> Send(MessageMetadata metadata, byte[] data, CancellationToken cancellationToken)
-            => GetProducer().Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
+            => GetProducer(metadata).Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
 
         public ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => GetProducer().Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
+            => GetProducer(metadata).Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
 
         public ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
-            => GetProducer().Send(metadata, data, cancellationToken);
+            => GetProducer(metadata).Send(metadata, data, cancellationToken);
 
         public async ValueTask<ProducerStateChanged> StateChangedFrom(ProducerState state, CancellationToken cancellationToken = default)
         {

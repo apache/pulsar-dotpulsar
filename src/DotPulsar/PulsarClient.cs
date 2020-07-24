@@ -68,8 +68,6 @@ namespace DotPulsar
                 var executor = new Executor(correlationId, _processManager, _exceptionHandler);
                 var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
                 var producers = new ConcurrentDictionary<int, IProducer>();
-                var producersState = new ConcurrentBag<IStateManager<ProducerState>>();
-
                 var subproducerTasks = new List<Task>(partitionedTopicMetadata.Partitions);
                 for (int i = 0; i < partitionedTopicMetadata.Partitions; i++)
                 {
@@ -80,38 +78,33 @@ namespace DotPulsar
                         {
                             Topic = $"{options.Topic}-partition-{partID}"
                         };
-                        var correlationId = Guid.NewGuid();
-                        var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-                        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, subproducerOption);
-                        var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-                        var producer = new Producer(correlationId, subproducerOption.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
-                        var process = new ProducerProcess(correlationId, stateManager, factory, producer);
-                        _processManager.Add(process);
-                        process.Start();
-                        producers[partID] = producer;
-                        producersState.Add(stateManager);
-                        Console.WriteLine($"{subproducerOption.Topic} connected.");
+                        producers[partID] = CreateProducerWithoutCheckingPartition(subproducerOption);
                     }));
                 }
                 Task.WaitAll(subproducerTasks.ToArray());
-                var producer = new PartitionedProducer(correlationId, options.Topic, _processManager, executor, stateManager, partitionedTopicMetadata, producers, options.MessageRouter);
+                var producer = new PartitionedProducer(correlationId, options.Topic, _processManager, executor, stateManager, options, partitionedTopicMetadata, producers, options.MessageRouter, this, new Internal.Timer());
                 return producer;
             }
             else
             {
-                var correlationId = Guid.NewGuid();
-                var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-                var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
-                var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-                var producer = new Producer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
-                var process = new ProducerProcess(correlationId, stateManager, factory, producer);
-                _processManager.Add(process);
-                process.Start();
-                return producer;
+                return CreateProducerWithoutCheckingPartition(options);
             }
         }
 
-        private async Task<PartitionedTopicMetadata> GetPartitionTopicMetadata(string topic, CancellationToken cancellationToken = default)
+        public IProducer CreateProducerWithoutCheckingPartition(ProducerOptions options)
+        {
+            var correlationId = Guid.NewGuid();
+            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
+            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
+            var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+            var producer = new Producer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
+            var process = new ProducerProcess(correlationId, stateManager, factory, producer);
+            _processManager.Add(process);
+            process.Start();
+            return producer;
+        }
+
+        public async Task<PartitionedTopicMetadata> GetPartitionTopicMetadata(string topic, CancellationToken cancellationToken = default)
         {
             var connection = await _connectionPool.FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
             var commandPartitionedMetadata = new CommandPartitionedTopicMetadata()

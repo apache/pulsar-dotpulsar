@@ -14,7 +14,10 @@
 
 namespace DotPulsar.Abstractions
 {
+    using DotPulsar.Internal;
     using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// A pulsar client abstraction.
@@ -35,5 +38,13 @@ namespace DotPulsar.Abstractions
         /// Create a reader.
         /// </summary>
         IReader CreateReader(ReaderOptions options);
+
+        /// <summary>
+        /// Get the partition topic metadata for a given topic.
+        /// </summary>
+        /// <param name="topic">Topic name</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
+        public Task<PartitionedTopicMetadata> GetPartitionTopicMetadata(string topic, CancellationToken cancellationToken = default);
     }
 }
