@@ -26,6 +26,7 @@ namespace DotPulsar.Tests.Internal
         [Fact]
         public async void StateChangedFrom_SetupPartitionedProducer_ShouldConnectAllPartitionTopic()
         {
+            //Arrange
             var producers = new ConcurrentDictionary<int, IProducer>();
             var producerMock = new Mock<IProducer>();
             IProducer producer = producerMock.Object;
@@ -36,10 +37,14 @@ namespace DotPulsar.Tests.Internal
                 producers[i] = producerMock.Object;
             }
 
+            //Act
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var partitionedProducer = new PartitionedProducer(Guid.NewGuid(), "", null, null, stateManager, new PartitionedTopicMetadata(3), producers, new RoundRobinPartitionRouter());
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+            var partitionedProducer = new PartitionedProducer(Guid.NewGuid(), "", null, null, stateManager, null, new PartitionedTopicMetadata(3), producers, new RoundRobinPartitionRouter(), null, new DotPulsar.Internal.Timer());
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
             var stateChanged = await partitionedProducer.StateChangedFrom(ProducerState.Disconnected).ConfigureAwait(false);
 
+            //Assert
             Assert.True(stateChanged.ProducerState == ProducerState.Connected);
         }
     }

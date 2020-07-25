@@ -35,6 +35,11 @@ namespace DotPulsar.Abstractions
         IProducerBuilder Topic(string topic);
 
         /// <summary>
+        /// Set the message router for this producer. This is optional.
+        /// </summary>
+        IProducerBuilder MessageRouter(IMessageRouter router);
+
+        /// <summary>
         /// Create the producer.
         /// </summary>
         IProducer Create();
