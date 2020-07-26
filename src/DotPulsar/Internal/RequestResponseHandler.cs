@@ -80,7 +80,7 @@ namespace DotPulsar.Internal
                     cmd.GetLastMessageId.RequestId = _requestId.FetchNext();
                     return;
                 case BaseCommand.Type.PartitionedMetadata:
-                    cmd.PartitionMetadata.RequestId = _requestId++;
+                    cmd.PartitionMetadata.RequestId = _requestId.FetchNext();
                     return;
             }
         }
