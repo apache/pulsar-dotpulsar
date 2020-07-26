@@ -197,10 +197,12 @@ namespace DotPulsar.Internal
 
             foreach (var producer in _producers.Values)
             {
-                await producer.DisposeAsync();
+                await producer.DisposeAsync().ConfigureAwait(false);
             }
 
             _metadataLock.Dispose();
+
+            _state.SetState(ProducerState.Closed);
         }
 
         public bool IsFinalState()
