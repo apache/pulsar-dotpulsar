@@ -30,6 +30,7 @@ namespace DotPulsar.Internal
         private IProducerChannel _channel;
         private readonly IExecute _executor;
         private readonly IStateChanged<ProducerState> _state;
+        private readonly SequenceId _sequenceId;
         private int _isDisposed;
 
         public string Topic { get; }
@@ -37,6 +38,7 @@ namespace DotPulsar.Internal
         public Producer(
             Guid correlationId,
             string topic,
+            ulong initialSequenceId,
             IRegisterEvent registerEvent,
             IProducerChannel initialChannel,
             IExecute executor,
@@ -44,6 +46,7 @@ namespace DotPulsar.Internal
         {
             _correlationId = correlationId;
             Topic = topic;
+            _sequenceId = new SequenceId(initialSequenceId);
             _eventRegister = registerEvent;
             _channel = initialChannel;
             _executor = executor;
@@ -90,7 +93,8 @@ namespace DotPulsar.Internal
         public async ValueTask<MessageId> Send(ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            var response = await _executor.Execute(() => _channel.Send(data, cancellationToken), cancellationToken).ConfigureAwait(false);
+            var sequenceId = _sequenceId.FetchNext();
+            var response = await _executor.Execute(() => _channel.Send(sequenceId, data, cancellationToken), cancellationToken).ConfigureAwait(false);
             return new MessageId(response.MessageId);
         }
 
@@ -103,8 +107,21 @@ namespace DotPulsar.Internal
         public async ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            var response = await _executor.Execute(() => _channel.Send(metadata.Metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
-            return new MessageId(response.MessageId);
+
+            var autoAssignSequenceId = metadata.SequenceId == 0;
+            if (autoAssignSequenceId)
+                metadata.SequenceId = _sequenceId.FetchNext();
+
+            try
+            {
+                var response = await _executor.Execute(() => _channel.Send(metadata.Metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
+                return new MessageId(response.MessageId);
+            }
+            finally
+            {
+                if (autoAssignSequenceId)
+                    metadata.SequenceId = 0;
+            }
         }
 
         internal async ValueTask SetChannel(IProducerChannel channel)

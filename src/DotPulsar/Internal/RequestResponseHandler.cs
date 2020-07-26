@@ -23,12 +23,12 @@ namespace DotPulsar.Internal
         private const string ConnectResponseIdentifier = "Connected";
 
         private readonly Awaiter<string, BaseCommand> _responses;
-        private ulong _requestId;
+        private RequestId _requestId;
 
         public RequestResponseHandler()
         {
             _responses = new Awaiter<string, BaseCommand>();
-            _requestId = 1;
+            _requestId = new RequestId();
         }
 
         public void Dispose()
@@ -53,31 +53,31 @@ namespace DotPulsar.Internal
             switch (cmd.CommandType)
             {
                 case BaseCommand.Type.Seek:
-                    cmd.Seek.RequestId = _requestId++;
+                    cmd.Seek.RequestId = _requestId.FetchNext();
                     return;
                 case BaseCommand.Type.Lookup:
-                    cmd.LookupTopic.RequestId = _requestId++;
+                    cmd.LookupTopic.RequestId = _requestId.FetchNext();
                     return;
                 case BaseCommand.Type.Error:
-                    cmd.Error.RequestId = _requestId++;
+                    cmd.Error.RequestId = _requestId.FetchNext();
                     return;
                 case BaseCommand.Type.Producer:
-                    cmd.Producer.RequestId = _requestId++;
+                    cmd.Producer.RequestId = _requestId.FetchNext();
                     return;
                 case BaseCommand.Type.CloseProducer:
-                    cmd.CloseProducer.RequestId = _requestId++;
+                    cmd.CloseProducer.RequestId = _requestId.FetchNext();
                     return;
                 case BaseCommand.Type.Subscribe:
-                    cmd.Subscribe.RequestId = _requestId++;
+                    cmd.Subscribe.RequestId = _requestId.FetchNext();
                     return;
                 case BaseCommand.Type.Unsubscribe:
-                    cmd.Unsubscribe.RequestId = _requestId++;
+                    cmd.Unsubscribe.RequestId = _requestId.FetchNext();
                     return;
                 case BaseCommand.Type.CloseConsumer:
-                    cmd.CloseConsumer.RequestId = _requestId++;
+                    cmd.CloseConsumer.RequestId = _requestId.FetchNext();
                     return;
                 case BaseCommand.Type.GetLastMessageId:
-                    cmd.GetLastMessageId.RequestId = _requestId++;
+                    cmd.GetLastMessageId.RequestId = _requestId.FetchNext();
                     return;
                 case BaseCommand.Type.PartitionedMetadata:
                     cmd.PartitionMetadata.RequestId = _requestId++;
@@ -93,7 +93,7 @@ namespace DotPulsar.Internal
                 BaseCommand.Type.Send => $"{cmd.Send.ProducerId}-{cmd.Send.SequenceId}",
                 BaseCommand.Type.SendError => $"{cmd.SendError.ProducerId}-{cmd.SendError.SequenceId}",
                 BaseCommand.Type.SendReceipt => $"{cmd.SendReceipt.ProducerId}-{cmd.SendReceipt.SequenceId}",
-                BaseCommand.Type.Error => _requestId == 1 ? ConnectResponseIdentifier : cmd.Error.RequestId.ToString(),
+                BaseCommand.Type.Error => !_requestId.IsPastInitialId() ? ConnectResponseIdentifier : cmd.Error.RequestId.ToString(),
                 BaseCommand.Type.Producer => cmd.Producer.RequestId.ToString(),
                 BaseCommand.Type.ProducerSuccess => cmd.ProducerSuccess.RequestId.ToString(),
                 BaseCommand.Type.CloseProducer => cmd.CloseProducer.RequestId.ToString(),
