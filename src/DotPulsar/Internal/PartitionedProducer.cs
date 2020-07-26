@@ -35,6 +35,7 @@ namespace DotPulsar.Internal
         private ConcurrentBag<Task> _monitorStateTask;
         private CancellationTokenSource _cancellationTokenSource;
         private int _connectedProducerCount = 0;
+        private ReaderWriterLockSlim _metadataLock = new ReaderWriterLockSlim();
         private IMessageRouter _messageRouter;
         private ITimer _timer;
         private PulsarClient _client;
@@ -117,8 +118,10 @@ namespace DotPulsar.Internal
                             break;
                     }
 
+                    _metadataLock.EnterReadLock();
                     if (_connectedProducerCount == _partitionedTopicMetadata.Partitions)
                         _state.SetState(ProducerState.Connected);
+                    _metadataLock.ExitReadLock();
 
                     if (IsFinalState(state))
                         _cancellationTokenSource.Cancel(); // cancel other monitor tasks
@@ -163,9 +166,10 @@ namespace DotPulsar.Internal
                         _monitorStateTask.Add(MonitorState(p.Value, ProducerState.Connected, _cancellationTokenSource.Token));
                     }
 
-                    //TODO: race condition.
+                    _metadataLock.EnterWriteLock();
                     _partitionedTopicMetadata = newMetadata;
                     Interlocked.Add(ref _connectedProducerCount, newProducersCount);
+                    _metadataLock.ExitWriteLock();
                 }
             }
         }
