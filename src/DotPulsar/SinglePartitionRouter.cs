@@ -29,7 +29,7 @@ namespace DotPulsar
         {
             if (message != null && !string.IsNullOrEmpty(message.Key))
             {
-                return MathUtils.SignSafeMod(Murmur3_32Hash.Instance.MakeHash(message.Key), partitionedTopic.Partitions);
+                return MathUtils.SignSafeMod(Murmur3_32Hash.Instance.MakeHash(message.Key!), partitionedTopic.Partitions);
             }
             if (_partitionIndex == null)
             {

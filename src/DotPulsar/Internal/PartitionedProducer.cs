@@ -26,9 +26,6 @@ namespace DotPulsar.Internal
     public sealed class PartitionedProducer : IProducer
     {
         private readonly ConcurrentDictionary<int, IProducer> _producers;
-        private readonly Guid _correlationId;
-        private readonly IRegisterEvent _eventRegister;
-        private readonly IExecute _executor;
         private readonly StateManager<ProducerState> _state;
         private PartitionedTopicMetadata _partitionedTopicMetadata;
         private int _isDisposed;
@@ -49,10 +46,7 @@ namespace DotPulsar.Internal
         public string Topic { get; }
 
         public PartitionedProducer(
-            Guid correlationId,
             string topic,
-            IRegisterEvent registerEvent,
-            IExecute executor,
             StateManager<ProducerState> state,
             ProducerOptions options,
             PartitionedTopicMetadata partitionedTopicMetadata,
@@ -61,10 +55,7 @@ namespace DotPulsar.Internal
             PulsarClient client,
             ITimer timer)
         {
-            _correlationId = correlationId;
             Topic = topic;
-            _eventRegister = registerEvent;
-            _executor = executor;
             _state = state;
             _partitionedTopicMetadata = partitionedTopicMetadata;
             _producers = producers;
@@ -76,7 +67,6 @@ namespace DotPulsar.Internal
             _cancellationTokenSource = new CancellationTokenSource();
             _monitorStateTask = new ConcurrentBag<Task>();
 
-            //_eventRegister.Register(new PartitionedProducerCreated(_correlationId, this));
             foreach (var producer in _producers.Values)
             {
                 _monitorStateTask.Add(MonitorState(producer, null, _cancellationTokenSource.Token));
@@ -136,42 +126,52 @@ namespace DotPulsar.Internal
 
         private async void UpdatePartitionMetadata()
         {
-            var newMetadata = await _client.GetPartitionTopicMetadata(Topic, _cancellationTokenSource.Token).ConfigureAwait(false);
-            // Not support shrink topic partitions
-            if (newMetadata.Partitions > _partitionedTopicMetadata.Partitions)
-            {
-                int newProducersCount = newMetadata.Partitions - _partitionedTopicMetadata.Partitions;
-                var producers = new ConcurrentDictionary<int, IProducer>();
-                var newSubproducerTasks = new List<Task>(newProducersCount);
-                for (int i = _partitionedTopicMetadata.Partitions; i < newMetadata.Partitions; i++)
-                {
-                    int partID = i;
-                    newSubproducerTasks.Add(Task.Run(async () =>
-                    {
-                        var subproducerOption = new ProducerOptions(_options)
-                        {
-                            Topic = $"{_options.Topic}-partition-{partID}"
-                        };
-                        var producer = _client.CreateProducerWithoutCheckingPartition(subproducerOption);
-                        _ = await producer.StateChangedTo(ProducerState.Connected).ConfigureAwait(false);
-                        producers[partID] = producer;
-                    }));
-                }
-                Task.WaitAll(newSubproducerTasks.ToArray());
-                if (producers.Count == newProducersCount)
-                {
-                    foreach (var p in producers)
-                    {
-                        _producers[p.Key] = p.Value;
-                        _monitorStateTask.Add(MonitorState(p.Value, ProducerState.Connected, _cancellationTokenSource.Token));
-                    }
+            var cancellationToken = _cancellationTokenSource.Token;
 
-                    _metadataLock.EnterWriteLock();
-                    _partitionedTopicMetadata = newMetadata;
-                    Interlocked.Add(ref _connectedProducerCount, newProducersCount);
-                    _metadataLock.ExitWriteLock();
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    var newMetadata = await _client.GetPartitionTopicMetadata(Topic, cancellationToken).ConfigureAwait(false);
+                    // Not support shrink topic partitions
+                    if (newMetadata.Partitions > _partitionedTopicMetadata.Partitions)
+                    {
+                        int newProducersCount = newMetadata.Partitions - _partitionedTopicMetadata.Partitions;
+                        var producers = new ConcurrentDictionary<int, IProducer>();
+                        var newSubproducerTasks = new List<Task>(newProducersCount);
+                        for (int i = _partitionedTopicMetadata.Partitions; i < newMetadata.Partitions; i++)
+                        {
+                            int partID = i;
+                            newSubproducerTasks.Add(Task.Run(async () =>
+                            {
+                                var subproducerOption = new ProducerOptions(_options)
+                                {
+                                    Topic = $"{_options.Topic}-partition-{partID}"
+                                };
+                                var producer = _client.CreateProducerWithoutCheckingPartition(subproducerOption);
+                                _ = await producer.StateChangedTo(ProducerState.Connected).ConfigureAwait(false);
+                                producers[partID] = producer;
+                            }));
+                        }
+                        Task.WaitAll(newSubproducerTasks.ToArray());
+                        if (producers.Count == newProducersCount)
+                        {
+                            foreach (var p in producers)
+                            {
+                                _producers[p.Key] = p.Value;
+                                _monitorStateTask.Add(MonitorState(p.Value, ProducerState.Connected, cancellationToken));
+                            }
+
+                            _metadataLock.EnterWriteLock();
+                            _partitionedTopicMetadata = newMetadata;
+                            Interlocked.Add(ref _connectedProducerCount, newProducersCount);
+                            _metadataLock.ExitWriteLock();
+                        }
+                    }
                 }
             }
+            catch (OperationCanceledException)
+            { }
         }
 
         private IProducer GetProducer(MessageMetadata? message = null)
@@ -193,11 +193,14 @@ namespace DotPulsar.Internal
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
 
+            _timer.Dispose();
+
             foreach (var producer in _producers.Values)
             {
                 await producer.DisposeAsync();
             }
-            //_eventRegister.Register(new PartitionedProducerDisposed(_correlationId, this));
+
+            _metadataLock.Dispose();
         }
 
         public bool IsFinalState()

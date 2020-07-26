@@ -20,9 +20,15 @@ namespace DotPulsar.Internal
     public class Timer : ITimer
     {
         private System.Threading.Timer? _timer = null;
+
         public void SetCallback(Action callback, int timeout)
         {
             _timer = new System.Threading.Timer((_) => { callback(); }, null, timeout, timeout);
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
         }
     }
 }

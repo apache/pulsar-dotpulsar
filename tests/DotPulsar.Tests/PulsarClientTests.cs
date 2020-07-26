@@ -26,6 +26,7 @@ namespace DotPulsar.Tests
         [Fact]
         public void CreateProducer_GivenPartitionedProducerConfig_SholudReturnPartitionedProducer()
         {
+            //Arrange
             var topicName = "persistent://public/default/test-topic";
 
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
@@ -50,8 +51,10 @@ namespace DotPulsar.Tests
             var client = new PulsarClient(connectionPoolMock.Object, new ProcessManager(connectionPool), new Mock<IHandleException>().Object);
             var options = new ProducerOptions(topicName);
 
+            //Act
             var producer = client.CreateProducer(options);
 
+            //Assert
             Assert.IsType<PartitionedProducer>(producer);
         }
     }

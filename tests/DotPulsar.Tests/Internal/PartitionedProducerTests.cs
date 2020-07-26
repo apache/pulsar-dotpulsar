@@ -40,7 +40,7 @@ namespace DotPulsar.Tests.Internal
             //Act
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-            var partitionedProducer = new PartitionedProducer(Guid.NewGuid(), "", null, null, stateManager, null, new PartitionedTopicMetadata(3), producers, new RoundRobinPartitionRouter(), null, new DotPulsar.Internal.Timer());
+            var partitionedProducer = new PartitionedProducer("", stateManager, null, new PartitionedTopicMetadata(3), producers, new RoundRobinPartitionRouter(), null, new DotPulsar.Internal.Timer());
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
             var stateChanged = await partitionedProducer.StateChangedFrom(ProducerState.Disconnected).ConfigureAwait(false);
 

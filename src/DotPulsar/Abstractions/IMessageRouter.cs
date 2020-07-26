@@ -17,6 +17,9 @@ namespace DotPulsar.Abstractions
     using DotPulsar.Internal;
     public interface IMessageRouter
     {
+        /// <summary>
+        /// Choose a partition.
+        /// </summary>
         int ChoosePartition(MessageMetadata? message, PartitionedTopicMetadata partitionedTopic);
     }
 }

@@ -42,9 +42,6 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Get the partition topic metadata for a given topic.
         /// </summary>
-        /// <param name="topic">Topic name</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns></returns>
         public Task<PartitionedTopicMetadata> GetPartitionTopicMetadata(string topic, CancellationToken cancellationToken = default);
     }
 }

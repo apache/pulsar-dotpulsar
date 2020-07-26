@@ -23,9 +23,9 @@ namespace DotPulsar
         private long _partitionIndex = -1;
         public int ChoosePartition(MessageMetadata? message, PartitionedTopicMetadata partitionedTopic)
         {
-            if (message!=null && !string.IsNullOrEmpty(message.Key))
+            if (message != null && !string.IsNullOrEmpty(message.Key))
             {
-                return MathUtils.SignSafeMod(Murmur3_32Hash.Instance.MakeHash(message.Key), partitionedTopic.Partitions);
+                return MathUtils.SignSafeMod(Murmur3_32Hash.Instance.MakeHash(message.Key!), partitionedTopic.Partitions);
             }
             return MathUtils.SignSafeMod(Interlocked.Increment(ref _partitionIndex), partitionedTopic.Partitions);
         }

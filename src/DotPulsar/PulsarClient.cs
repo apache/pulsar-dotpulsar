@@ -27,7 +27,6 @@ namespace DotPulsar
     using System.Threading;
     using System.Threading.Tasks;
     using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
     using System.Collections.Concurrent;
 
     /// <summary>
@@ -82,7 +81,7 @@ namespace DotPulsar
                     }));
                 }
                 Task.WaitAll(subproducerTasks.ToArray());
-                var producer = new PartitionedProducer(correlationId, options.Topic, _processManager, executor, stateManager, options, partitionedTopicMetadata, producers, options.MessageRouter, this, new Internal.Timer());
+                var producer = new PartitionedProducer(options.Topic, stateManager, options, partitionedTopicMetadata, producers, options.MessageRouter, this, new Internal.Timer());
                 return producer;
             }
             else

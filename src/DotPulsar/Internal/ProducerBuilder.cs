@@ -23,7 +23,7 @@ namespace DotPulsar.Internal
         private string? _producerName;
         private ulong _initialSequenceId;
         private string? _topic;
-        private IMessageRouter _messageRouter;
+        private IMessageRouter? _messageRouter;
 
         public ProducerBuilder(IPulsarClient pulsarClient)
         {
