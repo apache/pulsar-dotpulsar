@@ -20,6 +20,7 @@ namespace DotPulsar.Internal
     using System.Buffers;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -192,6 +193,11 @@ namespace DotPulsar.Internal
 
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
+
+            foreach (var task in _monitorStateTask.Take(_monitorStateTask.Count))
+            {
+                task.Dispose();
+            }
 
             _timer.Dispose();
 
