@@ -30,7 +30,6 @@ namespace DotPulsar.Internal
         private readonly StateManager<ProducerState> _state;
         private PartitionedTopicMetadata _partitionedTopicMetadata;
         private int _isDisposed;
-        private ConcurrentBag<Task> _monitorStateTask;
         private CancellationTokenSource _cancellationTokenSource;
         private int _connectedProducerCount = 0;
         private ReaderWriterLockSlim _metadataLock = new ReaderWriterLockSlim();
@@ -66,11 +65,10 @@ namespace DotPulsar.Internal
             _options = options;
 
             _cancellationTokenSource = new CancellationTokenSource();
-            _monitorStateTask = new ConcurrentBag<Task>();
 
             foreach (var producer in _producers.Values)
             {
-                _monitorStateTask.Add(MonitorState(producer, null, _cancellationTokenSource.Token));
+                _ = MonitorState(producer, null, _cancellationTokenSource.Token);
             }
 
             _timer = timer;
@@ -160,7 +158,7 @@ namespace DotPulsar.Internal
                             foreach (var p in producers)
                             {
                                 _producers[p.Key] = p.Value;
-                                _monitorStateTask.Add(MonitorState(p.Value, ProducerState.Connected, cancellationToken));
+                                _ = MonitorState(p.Value, ProducerState.Connected, cancellationToken);
                             }
 
                             _metadataLock.EnterWriteLock();
@@ -193,11 +191,6 @@ namespace DotPulsar.Internal
 
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
-
-            foreach (var task in _monitorStateTask.Take(_monitorStateTask.Count))
-            {
-                task.Dispose();
-            }
 
             _timer.Dispose();
 
