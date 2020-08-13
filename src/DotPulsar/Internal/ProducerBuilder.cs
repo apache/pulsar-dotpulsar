@@ -24,11 +24,13 @@ namespace DotPulsar.Internal
         private ulong _initialSequenceId;
         private string? _topic;
         private IMessageRouter? _messageRouter;
+        private int _metadataUpdatingInterval;
 
         public ProducerBuilder(IPulsarClient pulsarClient)
         {
             _pulsarClient = pulsarClient;
             _initialSequenceId = ProducerOptions.DefaultInitialSequenceId;
+            _metadataUpdatingInterval = ProducerOptions.DefaultMetadataUpdatingInterval;
         }
 
         public IProducerBuilder ProducerName(string name)
@@ -55,6 +57,16 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        /// <summary>
+        /// Set the interval of updating partition metadat. This is in second.
+        /// Only for partitioned producer implementation. 
+        /// </summary>
+        public IProducerBuilder MetadataUpdatingInterval(int interval)
+        {
+            _metadataUpdatingInterval = interval;
+            return this;
+        }
+
         public IProducer Create()
         {
             if (string.IsNullOrEmpty(_topic))
@@ -63,7 +75,8 @@ namespace DotPulsar.Internal
             var options = new ProducerOptions(_topic!)
             {
                 InitialSequenceId = _initialSequenceId,
-                ProducerName = _producerName
+                ProducerName = _producerName,
+                MetadataUpdatingInterval = _metadataUpdatingInterval
             };
 
             if (_messageRouter != null) options.MessageRouter = _messageRouter;

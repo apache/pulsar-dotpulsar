@@ -21,6 +21,7 @@ namespace DotPulsar
     public sealed class ProducerOptions
     {
         internal const ulong DefaultInitialSequenceId = 0;
+        internal const int DefaultMetadataUpdatingInterval = 60;
 
         public ProducerOptions(string topic)
         {
@@ -54,5 +55,11 @@ namespace DotPulsar
         /// Set the message router. The default router is Round Robind routing mode.
         /// </summary>
         public IMessageRouter MessageRouter { get; set; } = new RoundRobinPartitionRouter();
+
+        /// <summary>
+        /// Set the interval of updating partition metadat. This is in second.
+        /// Only for partitioned producer implementation. 
+        /// </summary>
+        public int MetadataUpdatingInterval { get; set; }
     }
 }

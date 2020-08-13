@@ -38,11 +38,6 @@ namespace DotPulsar.Internal
         private PulsarClient _client;
         private ProducerOptions _options;
 
-        /// <summary>
-        /// How often the metadata is updated in second.
-        /// </summary>
-        private const int MetadataUpdatingInterval = 60;
-
         public string Topic { get; }
 
         public PartitionedProducer(
@@ -72,7 +67,7 @@ namespace DotPulsar.Internal
             }
 
             _timer = timer;
-            _timer.SetCallback(UpdatePartitionMetadata, MetadataUpdatingInterval * 1000);
+            _timer.SetCallback(UpdatePartitionMetadata, options.MetadataUpdatingInterval * 1000);
         }
 
         private async Task MonitorState(IProducer producer, ProducerState? initialState, CancellationToken cancellationToken = default)
@@ -136,7 +131,7 @@ namespace DotPulsar.Internal
                     if (newMetadata.Partitions > _partitionedTopicMetadata.Partitions)
                     {
                         int newProducersCount = newMetadata.Partitions - _partitionedTopicMetadata.Partitions;
-                        var producers = new ConcurrentDictionary<int, IProducer>();
+                        var producers = new ConcurrentDictionary<int, IProducer>(Environment.ProcessorCount, newProducersCount);
                         var newSubproducerTasks = new List<Task>(newProducersCount);
                         for (int i = _partitionedTopicMetadata.Partitions; i < newMetadata.Partitions; i++)
                         {
