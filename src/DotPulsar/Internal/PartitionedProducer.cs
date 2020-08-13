@@ -152,9 +152,9 @@ namespace DotPulsar.Internal
                                 producers[partID] = producer;
                             }));
                         }
-                        Task.WaitAll(newSubproducerTasks.ToArray());
-                        if (producers.Count == newProducersCount)
+                        try
                         {
+                            Task.WaitAll(newSubproducerTasks.ToArray());
                             foreach (var p in producers)
                             {
                                 _producers[p.Key] = p.Value;
@@ -165,6 +165,11 @@ namespace DotPulsar.Internal
                             _partitionedTopicMetadata = newMetadata;
                             Interlocked.Add(ref _connectedProducerCount, newProducersCount);
                             _metadataLock.ExitWriteLock();
+                        }
+                        catch (AggregateException)
+                        {
+                            foreach (var producer in producers.Values)
+                                await producer.DisposeAsync().ConfigureAwait(false);
                         }
                     }
                 }
