@@ -80,7 +80,7 @@ namespace DotPulsar
                         producers[partID] = CreateProducerWithoutCheckingPartition(subproducerOption);
                     }));
                 }
-                Task.WaitAll(subproducerTasks.ToArray());
+                Task.WhenAll(subproducerTasks.ToArray()).ConfigureAwait(false).GetAwaiter().GetResult();
                 var producer = new PartitionedProducer(options.Topic, stateManager, options, partitionedTopicMetadata, producers, options.MessageRouter, this, new Internal.Timer());
                 return producer;
             }

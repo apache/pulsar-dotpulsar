@@ -143,13 +143,13 @@ namespace DotPulsar.Internal
                                     Topic = $"{_options.Topic}-partition-{partID}"
                                 };
                                 var producer = _client.CreateProducerWithoutCheckingPartition(subproducerOption);
-                                _ = await producer.StateChangedTo(ProducerState.Connected).ConfigureAwait(false);
                                 producers[partID] = producer;
+                                _ = await producer.StateChangedTo(ProducerState.Connected).ConfigureAwait(false);
                             }));
                         }
                         try
                         {
-                            Task.WaitAll(newSubproducerTasks.ToArray());
+                            await Task.WhenAll(newSubproducerTasks.ToArray()).ConfigureAwait(false);
                             foreach (var p in producers)
                             {
                                 _producers[p.Key] = p.Value;
@@ -161,7 +161,7 @@ namespace DotPulsar.Internal
                             Interlocked.Add(ref _connectedProducerCount, newProducersCount);
                             _metadataLock.ExitWriteLock();
                         }
-                        catch (AggregateException)
+                        catch
                         {
                             foreach (var producer in producers.Values)
                                 await producer.DisposeAsync().ConfigureAwait(false);
