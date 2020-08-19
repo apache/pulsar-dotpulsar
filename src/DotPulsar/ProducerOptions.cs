@@ -21,7 +21,7 @@ namespace DotPulsar
     public sealed class ProducerOptions
     {
         internal const ulong DefaultInitialSequenceId = 0;
-        internal const int DefaultMetadataUpdatingInterval = 60;
+        internal const int DefaultAutoUpdatePartitionsInterval = 60;
 
         public ProducerOptions(string topic)
         {
@@ -56,10 +56,15 @@ namespace DotPulsar
         /// </summary>
         public IMessageRouter MessageRouter { get; set; } = new RoundRobinPartitionRouter();
 
+
         /// <summary>
-        /// Set the interval of updating partition metadat. This is in second.
-        /// Only for partitioned producer implementation. 
+        /// Whether to auto discover the partition configuration changes
         /// </summary>
-        public int MetadataUpdatingInterval { get; set; }
+        public bool AutoUpdatePartitions { get; set; }
+
+        /// <summary>
+        /// The interval of updating partitions
+        /// </summary>
+        public int AutoUpdatePartitionsInterval { get; set; }
     }
 }

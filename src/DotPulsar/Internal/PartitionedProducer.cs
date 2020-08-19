@@ -67,7 +67,10 @@ namespace DotPulsar.Internal
             }
 
             _timer = timer;
-            _timer.SetCallback(UpdatePartitionMetadata, options.MetadataUpdatingInterval * 1000);
+            if (options.AutoUpdatePartitions)
+            {
+                _timer.SetCallback(UpdatePartitionMetadata, options.AutoUpdatePartitionsInterval * 1000);
+            }
         }
 
         private async Task MonitorState(IProducer producer, ProducerState? initialState, CancellationToken cancellationToken = default)

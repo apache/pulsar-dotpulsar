@@ -36,7 +36,7 @@ namespace DotPulsar.Tests.Internal
             {
                 producers[i] = producerMock.Object;
             }
-            var options = new ProducerOptions("") { MetadataUpdatingInterval = 60 };
+            var options = new ProducerOptions("") { AutoUpdatePartitionsInterval = 60 };
 
             //Act
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
