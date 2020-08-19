@@ -63,24 +63,16 @@ namespace DotPulsar
             var partitionedTopicMetadata = GetPartitionTopicMetadata(options.Topic).Result;
             if (partitionedTopicMetadata.Partitions > 0)
             {
-                var correlationId = Guid.NewGuid();
-                var executor = new Executor(correlationId, _processManager, _exceptionHandler);
                 var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
                 var producers = new ConcurrentDictionary<int, IProducer>();
-                var subproducerTasks = new List<Task>(partitionedTopicMetadata.Partitions);
                 for (int i = 0; i < partitionedTopicMetadata.Partitions; i++)
                 {
-                    int partID = i;
-                    subproducerTasks.Add(Task.Run(() =>
+                    var subproducerOption = new ProducerOptions(options)
                     {
-                        var subproducerOption = new ProducerOptions(options)
-                        {
-                            Topic = $"{options.Topic}-partition-{partID}"
-                        };
-                        producers[partID] = CreateProducerWithoutCheckingPartition(subproducerOption);
-                    }));
+                        Topic = $"{options.Topic}-partition-{i}"
+                    };
+                    producers[i] = CreateProducerWithoutCheckingPartition(subproducerOption);
                 }
-                Task.WhenAll(subproducerTasks.ToArray()).ConfigureAwait(false).GetAwaiter().GetResult();
                 var producer = new PartitionedProducer(options.Topic, stateManager, options, partitionedTopicMetadata, producers, options.MessageRouter, this, new Internal.Timer());
                 return producer;
             }
