@@ -45,7 +45,7 @@ namespace DotPulsar.Internal
             StateManager<ProducerState> state,
             ProducerOptions options,
             PartitionedTopicMetadata partitionedTopicMetadata,
-            ConcurrentDictionary<int, IProducer> producers,
+            Dictionary<int, IProducer> producers,
             IMessageRouter messageRouter,
             PulsarClient client,
             ITimer timer)
@@ -53,7 +53,7 @@ namespace DotPulsar.Internal
             Topic = topic;
             _state = state;
             _partitionedTopicMetadata = partitionedTopicMetadata;
-            _producers = producers;
+            _producers = new ConcurrentDictionary<int, IProducer>(producers);
             _isDisposed = 0;
             _messageRouter = messageRouter;
             _client = client;

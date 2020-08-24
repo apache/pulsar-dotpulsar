@@ -64,7 +64,7 @@ namespace DotPulsar
             if (partitionedTopicMetadata.Partitions > 0)
             {
                 var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-                var producers = new ConcurrentDictionary<int, IProducer>();
+                var producers = new Dictionary<int, IProducer>();
                 for (int i = 0; i < partitionedTopicMetadata.Partitions; i++)
                 {
                     var subproducerOption = new ProducerOptions(options)

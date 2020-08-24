@@ -19,6 +19,7 @@ namespace DotPulsar.Tests.Internal
     using Moq;
     using System;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Threading;
     using Xunit;
     public class PartitionedProducerTests
@@ -27,7 +28,7 @@ namespace DotPulsar.Tests.Internal
         public async void StateChangedFrom_SetupPartitionedProducer_ShouldConnectAllPartitionTopic()
         {
             //Arrange
-            var producers = new ConcurrentDictionary<int, IProducer>();
+            var producers = new Dictionary<int, IProducer>();
             var producerMock = new Mock<IProducer>();
             IProducer producer = producerMock.Object;
             _ = producerMock.Setup(m => m.StateChangedFrom(ProducerState.Disconnected, It.IsAny<CancellationToken>()))
