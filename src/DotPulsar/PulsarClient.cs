@@ -21,6 +21,7 @@ namespace DotPulsar
     using Internal;
     using Internal.Abstractions;
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Collections.Generic;
@@ -112,12 +113,58 @@ namespace DotPulsar
         public IConsumer CreateConsumer(ConsumerOptions options)
         {
             ThrowIfDisposed();
+
+            PartitionedTopicMetadata partitionedTopicMetadata = GetPartitionTopicMetadata(options.Topic).Result;
+
+            if (partitionedTopicMetadata.Partitions > 0)
+            {
+                var consumers = new Dictionary<int, Consumer>();
+
+                try
+                {
+                    var batchHandler = new BatchHandler(true);
+                    uint prefetchCount = Math.Max(1U, (uint) (options.MessagePrefetchCount / partitionedTopicMetadata.Partitions));
+
+                    for (int partitionIndex = 0; partitionIndex < partitionedTopicMetadata.Partitions; partitionIndex++)
+                    {
+                        var partitionTopicConsumerOptions = new ConsumerOptions(options, $"{options.Topic}-partition-{partitionIndex}", prefetchCount);
+                        consumers.Add(partitionIndex, CreateConsumerWithoutCheckingPartition(batchHandler, partitionTopicConsumerOptions));
+                    }
+
+                    var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
+                    return new PartitionedConsumer(options.Topic,
+                                                   stateManager,
+                                                   options,
+                                                   partitionedTopicMetadata,
+                                                   consumers,
+                                                   batchHandler,
+                                                   this,
+                                                   new Internal.Timer());
+                }
+                catch
+                {
+                    foreach (IConsumer consumer in consumers.Values)
+                    {
+                        // dispose should be pretty fast (thus usage of ValueTask instead of Task)
+                        consumer.DisposeAsync().GetAwaiter().GetResult();
+                    }
+
+                    throw;
+                }
+            }
+            else
+            {
+                return CreateConsumerWithoutCheckingPartition(new BatchHandler(true), options);
+            }
+        }
+
+        internal Consumer CreateConsumerWithoutCheckingPartition(BatchHandler batchHandler, ConsumerOptions options)
+        {
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
-
+            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, batchHandler, options);
             var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
-            var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
+            var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager, factory);
             var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
             _processManager.Add(process);
             process.Start();

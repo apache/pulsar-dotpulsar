@@ -27,7 +27,8 @@ namespace DotPulsar.Internal
         private readonly AsyncQueue<MessagePackage> _queue;
         private readonly IConnection _connection;
         private readonly BatchHandler _batchHandler;
-        private readonly CommandFlow _cachedCommandFlow;
+        private readonly CommandFlow _cachedCommandFirstFlow;
+        private readonly CommandFlow _cachedCommandOtherFlow;
         private readonly AsyncLock _lock;
         private uint _sendWhenZero;
         private bool _firstFlow;
@@ -46,11 +47,8 @@ namespace DotPulsar.Internal
 
             _lock = new AsyncLock();
 
-            _cachedCommandFlow = new CommandFlow
-            {
-                ConsumerId = id,
-                MessagePermits = messagePrefetchCount
-            };
+            _cachedCommandFirstFlow = new CommandFlow { ConsumerId = id, MessagePermits = messagePrefetchCount };
+            _cachedCommandOtherFlow = new CommandFlow { ConsumerId = id, MessagePermits = (uint) Math.Ceiling(messagePrefetchCount * 0.5) };
 
             _sendWhenZero = 0;
             _firstFlow = true;
@@ -65,12 +63,22 @@ namespace DotPulsar.Internal
                     if (_sendWhenZero == 0)
                         await SendFlow(cancellationToken).ConfigureAwait(false);
 
-                    _sendWhenZero--;
-
                     var message = _batchHandler.GetNext();
 
                     if (message != null)
+                    {
+                        if (message.MessageId.BatchIndex + 1 == message.NumMessagesInBatch)
+                        {
+                            // only decrease flow counter after all sub-messages in a batch were dequeued
+
+                            _sendWhenZero--;
+                        }
                         return message;
+                    }
+
+                    // here we are dequeing normal message so we need to decrease flow counter
+
+                    _sendWhenZero--;
 
                     var messagePackage = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);
 
@@ -157,18 +165,30 @@ namespace DotPulsar.Internal
             }
         }
 
+        public async Task UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken)
+        {
+            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+            {
+                _cachedCommandFirstFlow.MessagePermits = messagePrefetchCount;
+                _cachedCommandOtherFlow.MessagePermits = (uint) Math.Ceiling(messagePrefetchCount * 0.5);
+            }
+        }
+
         private async ValueTask SendFlow(CancellationToken cancellationToken)
         {
             //TODO Should sending the flow command be handled on another thread and thereby not slow down the consumer?
-            await _connection.Send(_cachedCommandFlow, cancellationToken).ConfigureAwait(false);
 
             if (_firstFlow)
             {
-                _cachedCommandFlow.MessagePermits = (uint) Math.Ceiling(_cachedCommandFlow.MessagePermits * 0.5);
+                await _connection.Send(_cachedCommandFirstFlow, cancellationToken).ConfigureAwait(false);
                 _firstFlow = false;
             }
+            else
+            {
+                await _connection.Send(_cachedCommandOtherFlow, cancellationToken).ConfigureAwait(false);
+            }
 
-            _sendWhenZero = _cachedCommandFlow.MessagePermits;
+            _sendWhenZero = _cachedCommandOtherFlow.MessagePermits;
         }
 
         private async Task RejectPackage(MessagePackage messagePackage, CancellationToken cancellationToken)

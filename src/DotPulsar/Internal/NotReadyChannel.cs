@@ -30,6 +30,9 @@ namespace DotPulsar.Internal
         public ValueTask<Message> Receive(CancellationToken cancellationToken = default)
             => throw GetException();
 
+        public ValueTask<Message> Receive(bool blockIfEmpty, CancellationToken cancellationToken)
+            => throw GetException();
+
         public Task<CommandSendReceipt> Send(ulong sequenceId, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
             => throw GetException();
 
@@ -50,6 +53,12 @@ namespace DotPulsar.Internal
 
         public Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
             => throw GetException();
+
+        public Task UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken)
+        {
+            // no-op
+            return Task.CompletedTask;
+        }
 
         private static Exception GetException()
             => new ChannelNotReadyException();

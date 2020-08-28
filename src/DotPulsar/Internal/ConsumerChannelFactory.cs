@@ -22,12 +22,13 @@ namespace DotPulsar.Internal
 
     public sealed class ConsumerChannelFactory : IConsumerChannelFactory
     {
+        private uint _messagePrefetchCount;
+
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
         private readonly IConnectionPool _connectionPool;
         private readonly IExecute _executor;
         private readonly CommandSubscribe _subscribe;
-        private readonly uint _messagePrefetchCount;
         private readonly BatchHandler _batchHandler;
 
         public ConsumerChannelFactory(
@@ -35,12 +36,14 @@ namespace DotPulsar.Internal
             IRegisterEvent eventRegister,
             IConnectionPool connectionPool,
             IExecute executor,
+            BatchHandler batchHandler,
             ConsumerOptions options)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;
             _connectionPool = connectionPool;
             _executor = executor;
+            _batchHandler = batchHandler;
             _messagePrefetchCount = options.MessagePrefetchCount;
 
             _subscribe = new CommandSubscribe
@@ -53,8 +56,11 @@ namespace DotPulsar.Internal
                 Topic = options.Topic,
                 Type = (CommandSubscribe.SubType) options.SubscriptionType
             };
+        }
 
-            _batchHandler = new BatchHandler(true);
+        public void UpdateMessagePrefetchCount(uint messagePrefetchCount)
+        {
+            _messagePrefetchCount = messagePrefetchCount;
         }
 
         public async Task<IConsumerChannel> Create(CancellationToken cancellationToken)

@@ -28,6 +28,8 @@ namespace DotPulsar.Internal
         private string? _subscriptionName;
         private SubscriptionType _subscriptionType;
         private string? _topic;
+        private bool _autoUpdatePartitions;
+        private int _autoUpdatePartitionsInterval;
 
         public ConsumerBuilder(IPulsarClient pulsarClient)
         {
@@ -37,6 +39,8 @@ namespace DotPulsar.Internal
             _messagePrefetchCount = ConsumerOptions.DefaultMessagePrefetchCount;
             _readCompacted = ConsumerOptions.DefaultReadCompacted;
             _subscriptionType = ConsumerOptions.DefaultSubscriptionType;
+            _autoUpdatePartitions = ConsumerOptions.DefaultAutoUpdatePartitions;
+            _autoUpdatePartitionsInterval = ConsumerOptions.DefaultAutoUpdatePartitionsInterval;
         }
 
         public IConsumerBuilder ConsumerName(string name)
@@ -87,6 +91,18 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IConsumerBuilder AutoUpdatePartitions(bool autoUpdatePartitions)
+        {
+            _autoUpdatePartitions = autoUpdatePartitions;
+            return this;
+        }
+
+        public IConsumerBuilder AutoUpdatePartitionsInterval(int autoUpdatePartitionsInterval)
+        {
+            _autoUpdatePartitionsInterval = autoUpdatePartitionsInterval;
+            return this;
+        }
+
         public IConsumer Create()
         {
             if (string.IsNullOrEmpty(_subscriptionName))
@@ -102,7 +118,9 @@ namespace DotPulsar.Internal
                 MessagePrefetchCount = _messagePrefetchCount,
                 PriorityLevel = _priorityLevel,
                 ReadCompacted = _readCompacted,
-                SubscriptionType = _subscriptionType
+                SubscriptionType = _subscriptionType,
+                AutoUpdatePartitions = _autoUpdatePartitions,
+                AutoUpdatePartitionsInterval = _autoUpdatePartitionsInterval
             };
 
             return _pulsarClient.CreateConsumer(options);

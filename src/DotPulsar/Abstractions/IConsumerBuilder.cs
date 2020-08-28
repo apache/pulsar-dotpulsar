@@ -60,6 +60,16 @@ namespace DotPulsar.Abstractions
         IConsumerBuilder Topic(string topic);
 
         /// <summary>
+        /// Set if partitions should be auto updated. Only applies to partitioned topics. The default is true.
+        /// </summary>
+        IConsumerBuilder AutoUpdatePartitions(bool autoUpdatePartitions);
+
+        /// <summary>
+        /// Set partitions auto update interval. Only applies to partitioned topics. The default is 60 seconds.
+        /// </summary>
+        IConsumerBuilder AutoUpdatePartitionsInterval(int autoUpdatePartitionsInterval);
+
+        /// <summary>
         /// Create the consumer.
         /// </summary>
         IConsumer Create();

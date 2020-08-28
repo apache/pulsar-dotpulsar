@@ -58,6 +58,7 @@ namespace DotPulsar
                 OrderingKey = singleMetadata.OrderingKey;
                 SequenceId = singleMetadata.SequenceId;
                 _keyValues = singleMetadata.Properties;
+                NumMessagesInBatch = metadata.NumMessagesInBatch;
             }
         }
 
@@ -85,6 +86,11 @@ namespace DotPulsar
         /// The redelivery count (maintained by the broker) of the message.
         /// </summary>
         public uint RedeliveryCount { get; }
+
+        /// <summary>
+        /// Number of messages in a batch this message belongs to. 0 if message does't belong to a batch.
+        /// </summary>
+        public int NumMessagesInBatch { get; }
 
         /// <summary>
         /// Check whether the message has an event time.

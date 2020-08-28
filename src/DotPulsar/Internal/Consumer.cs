@@ -35,6 +35,7 @@ namespace DotPulsar.Internal
         private readonly ObjectPool<CommandAck> _commandAckPool;
         private readonly IExecute _executor;
         private readonly IStateChanged<ConsumerState> _state;
+        private readonly ConsumerChannelFactory _factory;
         private int _isDisposed;
 
         public string Topic { get; }
@@ -45,7 +46,8 @@ namespace DotPulsar.Internal
             IRegisterEvent eventRegister,
             IConsumerChannel initialChannel,
             IExecute executor,
-            IStateChanged<ConsumerState> state)
+            IStateChanged<ConsumerState> state,
+            ConsumerChannelFactory factory)
         {
             _correlationId = correlationId;
             Topic = topic;
@@ -55,6 +57,7 @@ namespace DotPulsar.Internal
             _state = state;
             _commandAckPool = new DefaultObjectPool<CommandAck>(new DefaultPooledObjectPolicy<CommandAck>());
             _isDisposed = 0;
+            _factory = factory;
 
             _eventRegister.Register(new ConsumerCreated(_correlationId, this));
         }
@@ -92,6 +95,12 @@ namespace DotPulsar.Internal
 
             while (!cancellationToken.IsCancellationRequested)
                 yield return await _executor.Execute(() => _channel.Receive(cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async ValueTask<Message> Receive(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return await _executor.Execute(() => _channel.Receive(cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask Acknowledge(Message message, CancellationToken cancellationToken)
@@ -190,6 +199,13 @@ namespace DotPulsar.Internal
 
             if (oldChannel != null)
                 await oldChannel.DisposeAsync().ConfigureAwait(false);
+        }
+
+        internal async Task UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken)
+        {
+            _factory.UpdateMessagePrefetchCount(messagePrefetchCount);
+            await _channel.UpdateMessagePrefetchCount(messagePrefetchCount, cancellationToken)
+                          .ConfigureAwait(false);
         }
 
         private void ThrowIfDisposed()
