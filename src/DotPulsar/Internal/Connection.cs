@@ -190,6 +190,29 @@ namespace DotPulsar.Internal
             return await response.ConfigureAwait(false);
         }
 
+        public async Task<BaseCommand> Send(BatchPackage command, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            if (command.Command is null)
+                throw new ArgumentNullException(nameof(command.Command));
+
+            if (command.Metadata is null)
+                throw new ArgumentNullException(nameof(command.Metadata));
+
+            Task<BaseCommand>? response;
+
+            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+            {
+                var baseCommand = command.Command.AsBaseCommand();
+                response = _requestResponseHandler.Outgoing(baseCommand);
+                var sequence = Serializer.Serialize(baseCommand, command.Metadata, command.Messages);
+                await _stream.Send(sequence).ConfigureAwait(false);
+            }
+
+            return await response.ConfigureAwait(false);
+        }
+
         private async Task<BaseCommand> SendRequestResponse(BaseCommand command, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();

@@ -12,19 +12,16 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Internal
 {
     using PulsarApi;
-    using System;
     using System.Buffers;
     using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
 
-    public interface IProducerChannel : IAsyncDisposable
+    public sealed class BatchPackage
     {
-        Task<CommandSendReceipt> Send(ulong sequenceId, ReadOnlySequence<byte> payload, CancellationToken cancellationToken);
-        Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken);
-        Task<CommandSendReceipt> SendBatchPackage(MessageMetadata metadata, Queue<(SingleMessageMetadata, ReadOnlySequence<byte>)> messages, CancellationToken cancellationToken);
+        public CommandSend? Command { get; set; }
+        public MessageMetadata? Metadata { get; set; }
+        public Queue<(SingleMessageMetadata, ReadOnlySequence<byte>)> Messages { get; set; } = new Queue<(SingleMessageMetadata, ReadOnlySequence<byte>)>();
     }
 }
