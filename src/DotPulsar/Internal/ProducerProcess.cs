@@ -68,8 +68,15 @@ namespace DotPulsar.Internal
 
         private async void SetupChannel()
         {
-            var channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
-            await _producer.SetChannel(channel).ConfigureAwait(false);
+            try
+            {
+                var channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
+                await _producer.SetChannel(channel).ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignored
+            }
         }
     }
 }
