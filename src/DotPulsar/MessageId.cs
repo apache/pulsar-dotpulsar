@@ -76,13 +76,13 @@ namespace DotPulsar
             => o is MessageId id && Equals(id);
 
         public bool Equals(MessageId other)
-            => LedgerId == other.LedgerId && EntryId == other.EntryId && Partition == other.Partition && BatchIndex == other.BatchIndex;
+            => !(other is null) && LedgerId == other.LedgerId && EntryId == other.EntryId && Partition == other.Partition && BatchIndex == other.BatchIndex;
 
         public static bool operator ==(MessageId x, MessageId y)
-            => x.Equals(y);
+            => object.ReferenceEquals(x, y) || (!object.ReferenceEquals(x, null) && x.Equals(y));
 
         public static bool operator !=(MessageId x, MessageId y)
-            => !x.Equals(y);
+            => !(x == y);
 
         public override int GetHashCode()
             => HashCode.Combine(LedgerId, EntryId, Partition, BatchIndex);
