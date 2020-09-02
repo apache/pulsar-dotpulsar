@@ -73,9 +73,9 @@ namespace DotPulsar.Internal
                 var channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
                 await _producer.SetChannel(channel).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Setup Channel failed for Producer \n {ex.ToString()}");
+                // ignored
             }
         }
     }
