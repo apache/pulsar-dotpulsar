@@ -157,8 +157,12 @@ namespace DotPulsar.Internal
 
                         if (consumerUsageData.PendingTask.Value.IsCompleted)
                         {
-                            Message message = consumerUsageData.PendingTask.Value.Result;
-                            yield return message;
+                            if (!consumerUsageData.PendingTask.Value.IsFaulted &&
+                                !consumerUsageData.PendingTask.Value.IsCanceled)
+                            {
+                                Message message = consumerUsageData.PendingTask.Value.Result;
+                                yield return message;
+                            }
 
                             // we want to return one message per partition in each iteration
                             // so we consume messages as evenly as possible
@@ -190,8 +194,12 @@ namespace DotPulsar.Internal
 
                         if (consumerUsageData.PendingTask.Value.IsCompleted)
                         {
-                            Message message = consumerUsageData.PendingTask.Value.Result;
-                            yield return message;
+                            if (!consumerUsageData.PendingTask.Value.IsFaulted &&
+                                !consumerUsageData.PendingTask.Value.IsCanceled)
+                            {
+                                Message message = consumerUsageData.PendingTask.Value.Result;
+                                yield return message;
+                            }
 
                             // we want to return one message per partition in each iteration
                             // so we consume messages as evenly as possible
@@ -221,7 +229,7 @@ namespace DotPulsar.Internal
                               .ConfigureAwait(false);
                 }
 
-                pendingConsumers.RemoveAll(x => x.IsCompleted || x.IsCanceled);
+                pendingConsumers.RemoveAll(x => x.IsCompleted);
             }
         }
 
