@@ -46,6 +46,7 @@ namespace DotPulsar.Internal
                     var tcs = _pendingDequeues.First;
                     _pendingDequeues.RemoveFirst();
                     tcs.Value.SetResult(item);
+                    tcs.Value.Dispose();
                 }
                 else
                     _queue.Enqueue(item);
