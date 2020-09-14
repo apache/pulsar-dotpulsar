@@ -114,7 +114,7 @@ namespace DotPulsar
         {
             ThrowIfDisposed();
 
-            PartitionedTopicMetadata partitionedTopicMetadata = GetPartitionTopicMetadata(options.Topic).Result;
+            PartitionedTopicMetadata partitionedTopicMetadata = GetPartitionTopicMetadata(options.Topic).GetAwaiter().GetResult();
 
             if (partitionedTopicMetadata.Partitions > 0)
             {
