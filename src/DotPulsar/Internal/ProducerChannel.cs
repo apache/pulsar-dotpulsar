@@ -80,6 +80,8 @@ namespace DotPulsar.Internal
 
         public async Task<CommandSendReceipt> SendBatchPackage(MessageMetadata metadata, Queue<(SingleMessageMetadata, ReadOnlySequence<byte>)> messages, CancellationToken cancellationToken)
         {
+            metadata.ProducerName = _name;
+
             var batchPackage = new BatchPackage();
 
             batchPackage.Command = new CommandSend
@@ -92,6 +94,7 @@ namespace DotPulsar.Internal
 
             batchPackage.Command.SequenceId = metadata.SequenceId;
             metadata.PublishTime = (ulong) DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            metadata.NumMessagesInBatch = batchPackage.Messages.Count;
 
             try
             {

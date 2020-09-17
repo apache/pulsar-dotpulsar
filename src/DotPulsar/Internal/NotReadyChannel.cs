@@ -15,10 +15,12 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Internal.PulsarApi;
     using Exceptions;
     using PulsarApi;
     using System;
     using System.Buffers;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -51,7 +53,11 @@ namespace DotPulsar.Internal
         public Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
             => throw GetException();
 
+        public Task<CommandSendReceipt> SendBatchPackage(MessageMetadata metadata, Queue<(SingleMessageMetadata, ReadOnlySequence<byte>)> messages, CancellationToken cancellationToken)
+            => throw GetException();
+
         private static Exception GetException()
             => new ChannelNotReadyException();
+
     }
 }
