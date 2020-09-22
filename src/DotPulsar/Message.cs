@@ -28,6 +28,34 @@ namespace DotPulsar
         private readonly List<KeyValue> _keyValues;
         private IReadOnlyDictionary<string, string>? _properties;
 
+        internal Message(Internal.PulsarApi.MessageMetadata metadata,
+            SingleMessageMetadata? singleMetadata,
+            ReadOnlySequence<byte> data)
+        {
+            ProducerName = metadata.ProducerName;
+            PublishTime = metadata.PublishTime;
+            Data = data;
+
+            if (singleMetadata is null)
+            {
+                EventTime = metadata.EventTime;
+                HasBase64EncodedKey = metadata.PartitionKeyB64Encoded;
+                Key = metadata.PartitionKey;
+                SequenceId = metadata.SequenceId;
+                OrderingKey = metadata.OrderingKey;
+                _keyValues = metadata.Properties;
+            }
+            else
+            {
+                EventTime = singleMetadata.EventTime;
+                HasBase64EncodedKey = singleMetadata.PartitionKeyB64Encoded;
+                Key = singleMetadata.PartitionKey;
+                OrderingKey = singleMetadata.OrderingKey;
+                SequenceId = singleMetadata.SequenceId;
+                _keyValues = singleMetadata.Properties;
+            }
+        }
+
         internal Message(
             MessageId messageId,
             uint redeliveryCount,
@@ -61,10 +89,26 @@ namespace DotPulsar
             }
         }
 
+        public SingleMessageMetadata GetSingleMessageMetadata()
+        {
+            var singleMessageMetadata = new SingleMessageMetadata();
+            singleMessageMetadata.EventTime = EventTime;
+            singleMessageMetadata.PartitionKeyB64Encoded = HasBase64EncodedKey;
+            singleMessageMetadata.PartitionKey = Key;
+            singleMessageMetadata.OrderingKey = OrderingKey;
+            singleMessageMetadata.SequenceId = SequenceId;
+            singleMessageMetadata.PayloadSize = (int)Data.Length;
+            foreach(var kv in _keyValues)
+            {
+                singleMessageMetadata.Properties.Add(kv);
+            }
+            return singleMessageMetadata;
+        }
+
         /// <summary>
         /// The id of the message.
         /// </summary>
-        public MessageId MessageId { get; }
+        public MessageId? MessageId { get; }
 
         /// <summary>
         /// The raw payload of the message.

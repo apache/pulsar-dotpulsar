@@ -120,7 +120,7 @@ namespace DotPulsar.Internal
                 sendPackage.Command = new CommandSend
                 {
                     ProducerId = _id,
-                    NumMessages = 1
+                    NumMessages = metadata.NumMessagesInBatch
                 };
             }
 

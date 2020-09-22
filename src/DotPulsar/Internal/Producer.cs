@@ -20,6 +20,7 @@ namespace DotPulsar.Internal
     using Events;
     using System;
     using System.Buffers;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -32,6 +33,10 @@ namespace DotPulsar.Internal
         private readonly IStateChanged<ProducerState> _state;
         private readonly SequenceId _sequenceId;
         private int _isDisposed;
+        private IBatchMessageContainer batchMessageContainer = new BatchMessageContainer(10, 1024);// TODO: Just for test.
+        private Awaiter<Message, MessageId> batchMessageAwaiter = new Awaiter<Message, MessageId>();
+        private Timer batchTimer = new Timer();
+        private CancellationTokenSource _cancellationTokenSource;
 
         public string Topic { get; }
 
@@ -53,7 +58,34 @@ namespace DotPulsar.Internal
             _state = state;
             _isDisposed = 0;
 
+            _cancellationTokenSource = new CancellationTokenSource();
+
             _eventRegister.Register(new ProducerCreated(_correlationId, this));
+
+            batchTimer.SetCallback(SendBatchedMessages, 1000);
+        }
+
+        public async void SendBatchedMessages()
+        {
+            if (!batchMessageContainer.IsEmpty())
+            {
+                MessageMetadata metadata;
+                Queue<Message> messages;
+                lock (batchMessageContainer)
+                {
+                    messages = batchMessageContainer.Messages;
+                    metadata = batchMessageContainer.MessageMetadata;
+                }
+                batchMessageContainer.Clear();
+                var payload = Serializer.Serialize(messages);
+                var response = await _executor.Execute(() => _channel.Send(metadata.Metadata, payload, _cancellationTokenSource.Token), _cancellationTokenSource.Token).ConfigureAwait(false);
+                var batchIndex = 0;
+                foreach(var message in messages)
+                {
+                    var messageId = new MessageId(response.MessageId.LedgerId, response.MessageId.EntryId, response.MessageId.Partition, batchIndex++);
+                    batchMessageAwaiter.SetResult(message, messageId);
+                }
+            }
         }
 
         public async ValueTask<ProducerStateChanged> StateChangedTo(ProducerState state, CancellationToken cancellationToken)
@@ -80,6 +112,9 @@ namespace DotPulsar.Internal
                 return;
 
             _eventRegister.Register(new ProducerDisposed(_correlationId, this));
+
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
 
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
@@ -122,6 +157,29 @@ namespace DotPulsar.Internal
                 if (autoAssignSequenceId)
                     metadata.SequenceId = 0;
             }
+        }
+
+        public async ValueTask<MessageId> TestSend(MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            var autoAssignSequenceId = metadata.SequenceId == 0;
+            if (autoAssignSequenceId)
+                metadata.SequenceId = _sequenceId.FetchNext();
+
+            var message = new Message(metadata.Metadata, null, data);
+            Console.WriteLine($"Added:{message.GetHashCode()}");
+            lock (batchMessageContainer)
+            {
+                batchMessageContainer.Add(message);
+            }
+            return await batchMessageAwaiter.CreateTask(message).ConfigureAwait(false);
+        }
+
+        public async Task TestSend(MessageMetadata metadata, System.Collections.Generic.Queue<(PulsarApi.SingleMessageMetadata, ReadOnlySequence<byte>)> messages, CancellationToken cancellationToken)
+        {
+            metadata.SequenceId = _sequenceId.FetchNext();
+            await _channel.SendBatchPackage(metadata.Metadata, messages, cancellationToken).ConfigureAwait(false);
         }
 
         internal async ValueTask SetChannel(IProducerChannel channel)

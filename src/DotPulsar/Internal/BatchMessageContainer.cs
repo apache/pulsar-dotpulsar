@@ -27,7 +27,12 @@ namespace DotPulsar.Internal
         private int numMessagesInBatch = 0;
         private long maxBatchBytesSize = 0;
         private long currentBatchSize = 0;
-        private ulong highestSequenceId = 0;
+
+        public BatchMessageContainer(int maxMessagesInBatch, long maxBatchBytesSize)
+        {
+            this.maxMessagesInBatch = maxMessagesInBatch;
+            this.maxBatchBytesSize = maxBatchBytesSize;
+        }
         
         public bool Add(Message message)
         {
@@ -39,7 +44,8 @@ namespace DotPulsar.Internal
             currentBatchSize += message.Data.Length;
             Messages.Enqueue(message);
 
-            highestSequenceId = message.SequenceId;
+            MessageMetadata.HighestSequenceId = message.SequenceId;
+            MessageMetadata.NumMessagesInBatch = numMessagesInBatch;
 
             return IsBatchFull();
         }
@@ -53,7 +59,7 @@ namespace DotPulsar.Internal
         public void Clear()
         {
             MessageMetadata = new MessageMetadata();
-            Messages.Clear();
+            Messages = new Queue<Message>();
             payload = new SequenceBuilder<byte>();
             numMessagesInBatch = 0;
             currentBatchSize = 0;
