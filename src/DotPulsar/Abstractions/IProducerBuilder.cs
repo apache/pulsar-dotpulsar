@@ -47,14 +47,14 @@ namespace DotPulsar.Abstractions
         IProducerBuilder BatchingMaxPublishDelay(TimeSpan maxPublishDelay);
 
         /// <summary>
-        /// Control whether automatic batching of messages is enabled for the producer. The default is 'false'.
-        /// </summary>
-        IProducerBuilder BatchingEnabled(bool batchingEnabled);
-
-        /// <summary>
         /// Set the maximum number of bytes permitted in a batch. The default is 128KB.
         /// </summary>
         IProducerBuilder BatchingMaxBytes(int batchingMaxBytes);
+
+        /// <summary>
+        /// Control whether automatic batching of messages is enabled for the producer. The default is 'false'.
+        /// </summary>
+        IProducerBuilder BatchingEnabled(bool batchingEnabled);
 
         /// <summary>
         /// Create the producer.

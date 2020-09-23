@@ -78,36 +78,6 @@ namespace DotPulsar.Internal
             return SendPackage(metadata, payload, cancellationToken);
         }
 
-        public async Task<CommandSendReceipt> SendBatchPackage(MessageMetadata metadata, Queue<(SingleMessageMetadata, ReadOnlySequence<byte>)> messages, CancellationToken cancellationToken)
-        {
-            metadata.ProducerName = _name;
-
-            var batchPackage = new BatchPackage();
-
-            batchPackage.Command = new CommandSend
-            {
-                ProducerId = _id,
-                NumMessages = messages.Count
-            };
-            batchPackage.Metadata = metadata;
-            batchPackage.Messages = messages;
-
-            batchPackage.Command.SequenceId = metadata.SequenceId;
-            metadata.PublishTime = (ulong) DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            metadata.NumMessagesInBatch = batchPackage.Messages.Count;
-
-            try
-            {
-                var response = await _connection.Send(batchPackage, cancellationToken).ConfigureAwait(false);
-                response.Expect(BaseCommand.Type.SendReceipt);
-                return response.SendReceipt;
-            }
-            finally
-            {
-
-            }
-        }
-
         private async Task<CommandSendReceipt> SendPackage(
             MessageMetadata metadata,
             ReadOnlySequence<byte> payload,

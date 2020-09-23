@@ -33,11 +33,11 @@ namespace DotPulsar.Internal
         private readonly IStateChanged<ProducerState> _state;
         private readonly SequenceId _sequenceId;
         private int _isDisposed;
-        private ProducerOptions _options;
-        private IBatchMessageContainer? batchMessageContainer;
-        private Awaiter<Message, MessageId> batchMessageAwaiter = new Awaiter<Message, MessageId>();
-        private Timer batchTimer = new Timer();
-        private CancellationTokenSource _cancellationTokenSource;
+        private readonly ProducerOptions _options;
+        private readonly IBatchMessageContainer? _batchMessageContainer;
+        private readonly Awaiter<Message, MessageId> _batchMessageAwaiter = new Awaiter<Message, MessageId>();
+        private readonly Timer _batchTimer = new Timer();
+        private readonly CancellationTokenSource _cancellationTokenSource;
 
         public string Topic { get; }
 
@@ -67,23 +67,23 @@ namespace DotPulsar.Internal
 
             if (_options.BatchingEnabled)
             {
-                batchMessageContainer = new BatchMessageContainer(_options.BatchingMaxMessagesPerBatch, options.BatchingMaxBytes);
-                batchTimer.SetCallback(BatchMessageAndSend, _options.BatchingMaxPublishDelay);
+                _batchMessageContainer = new BatchMessageContainer(_options.BatchingMaxMessagesPerBatch, options.BatchingMaxBytes);
+                _batchTimer.SetCallback(BatchMessageAndSend, _options.BatchingMaxPublishDelay);
             }
         }
 
-        private (Queue<Message>?,MessageMetadata?) GetBatchedMessagesAndMetadata()
+        private (Queue<Message>?, MessageMetadata?) GetBatchedMessagesAndMetadata()
         {
-            if (!_options.BatchingEnabled || batchMessageContainer!.IsEmpty()) return (null, null);
+            if (!_options.BatchingEnabled || _batchMessageContainer!.IsEmpty()) return (null, null);
             MessageMetadata metadata;
             Queue<Message> messages;
-            messages = batchMessageContainer.Messages;
-            metadata = batchMessageContainer.MessageMetadata;
-            batchMessageContainer.Clear();
-            return (messages,metadata);
+            messages = _batchMessageContainer.Messages;
+            metadata = _batchMessageContainer.MessageMetadata;
+            _batchMessageContainer.Clear();
+            return (messages, metadata);
         }
 
-        async void BatchMessageAndSend()
+        private async void BatchMessageAndSend()
         {
             var (messages, metadata) = GetBatchedMessagesAndMetadata();
             if (messages == null || metadata == null) return;
@@ -98,16 +98,16 @@ namespace DotPulsar.Internal
             foreach (var message in messages)
             {
                 var messageId = new MessageId(response.MessageId.LedgerId, response.MessageId.EntryId, response.MessageId.Partition, batchIndex++);
-                batchMessageAwaiter.SetResult(message, messageId);
+                _batchMessageAwaiter.SetResult(message, messageId);
             }
         }
 
         private void DoBatchSendAndAdd(Message message)
         {
             var (messages, metadata) = GetBatchedMessagesAndMetadata();
-            if (messages != null && metadata != null) 
+            if (messages != null && metadata != null)
                 _ = SendBatchedMessages(messages, metadata);
-            batchMessageContainer!.Add(message);
+            _batchMessageContainer!.Add(message);
         }
 
         public async ValueTask<ProducerStateChanged> StateChangedTo(ProducerState state, CancellationToken cancellationToken)
@@ -134,6 +134,9 @@ namespace DotPulsar.Internal
                 return;
 
             _eventRegister.Register(new ProducerDisposed(_correlationId, this));
+
+            _batchTimer.Dispose();
+            _batchMessageAwaiter.Dispose();
 
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
@@ -176,11 +179,11 @@ namespace DotPulsar.Internal
             if (_options.BatchingEnabled)
             {
                 var message = new Message(metadata.Metadata, data);
-                if (batchMessageContainer!.HaveEnoughSpace(message))
+                if (_batchMessageContainer!.HaveEnoughSpace(message))
                 {
                     // handle boundary cases where message being added would exceed
                     // batch size and/or max message size
-                    var isFull = batchMessageContainer.Add(message);
+                    var isFull = _batchMessageContainer.Add(message);
                     if (isFull)
                     {
                         BatchMessageAndSend();
@@ -190,7 +193,7 @@ namespace DotPulsar.Internal
                 {
                     DoBatchSendAndAdd(message);
                 }
-                return await batchMessageAwaiter.CreateTask(message).ConfigureAwait(false);
+                return await _batchMessageAwaiter.CreateTask(message).ConfigureAwait(false);
             }
             else
             {

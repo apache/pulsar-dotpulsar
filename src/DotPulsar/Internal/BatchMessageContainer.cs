@@ -15,17 +15,15 @@
 namespace DotPulsar.Internal
 {
     using DotPulsar.Internal.Abstractions;
-    using System.Buffers;
     using System.Collections.Generic;
 
     public sealed class BatchMessageContainer : IBatchMessageContainer
     {
-        public MessageMetadata MessageMetadata {  get; private set; } = new MessageMetadata();
+        public MessageMetadata MessageMetadata { get; private set; } = new MessageMetadata();
         public Queue<Message> Messages { get; private set; } = new Queue<Message>();
-        private SequenceBuilder<byte> payload = new SequenceBuilder<byte>();
-        private int maxMessagesInBatch = 0;
+        private readonly int maxMessagesInBatch;
         private int numMessagesInBatch = 0;
-        private long maxBatchBytesSize = 0;
+        private readonly long maxBatchBytesSize;
         private long currentBatchSize = 0;
 
         public BatchMessageContainer(int maxMessagesInBatch, long maxBatchBytesSize)
@@ -33,7 +31,7 @@ namespace DotPulsar.Internal
             this.maxMessagesInBatch = maxMessagesInBatch;
             this.maxBatchBytesSize = maxBatchBytesSize;
         }
-        
+
         public bool Add(Message message)
         {
             lock (this)
@@ -65,7 +63,6 @@ namespace DotPulsar.Internal
             {
                 MessageMetadata = new MessageMetadata();
                 Messages = new Queue<Message>();
-                payload = new SequenceBuilder<byte>();
                 numMessagesInBatch = 0;
                 currentBatchSize = 0;
             }

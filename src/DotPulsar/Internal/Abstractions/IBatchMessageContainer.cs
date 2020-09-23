@@ -18,7 +18,7 @@ namespace DotPulsar.Internal.Abstractions
 
     interface IBatchMessageContainer
     {
-        MessageMetadata MessageMetadata { get;}
+        MessageMetadata MessageMetadata { get; }
         Queue<Message> Messages { get; }
         /// <summary>
         /// Add message to the batch message container.

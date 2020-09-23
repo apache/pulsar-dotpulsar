@@ -42,23 +42,10 @@ namespace DotPulsar.Internal
                 .Build();
         }
 
-        public static ReadOnlySequence<byte> Serialize(BaseCommand command, MessageMetadata metadata, Queue<(SingleMessageMetadata, ReadOnlySequence<byte>)> payload)
-        {
-            var sb = new SequenceBuilder<byte>();
-            foreach(var singleMessage in payload) // TODO : use queue option
-            {
-                var metadataBytes = Serialize(singleMessage.Item1);
-                var metadataSizeBytes = ToBigEndianBytes((uint) metadataBytes.Length);
-                sb.Append(metadataSizeBytes).Append(metadataBytes).Append(singleMessage.Item2);
-            }
-
-            return Serialize(command, metadata, sb.Build());
-        }
-
         public static ReadOnlySequence<byte> Serialize(Queue<Message> messages)
         {
             var sb = new SequenceBuilder<byte>();
-            foreach (var singleMessage in messages) // TODO : use queue option
+            foreach (var singleMessage in messages)
             {
                 var metadataBytes = Serialize(singleMessage.GetSingleMessageMetadata());
                 var metadataSizeBytes = ToBigEndianBytes((uint) metadataBytes.Length);
