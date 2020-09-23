@@ -36,18 +36,21 @@ namespace DotPulsar.Internal
         
         public bool Add(Message message)
         {
-            if (++numMessagesInBatch == 1)
+            lock (this)
             {
-                MessageMetadata.SequenceId = message.SequenceId;
+                if (++numMessagesInBatch == 1)
+                {
+                    MessageMetadata.SequenceId = message.SequenceId;
+                }
+
+                currentBatchSize += message.Data.Length;
+                Messages.Enqueue(message);
+
+                MessageMetadata.HighestSequenceId = message.SequenceId;
+                MessageMetadata.NumMessagesInBatch = numMessagesInBatch;
+
+                return IsBatchFull();
             }
-
-            currentBatchSize += message.Data.Length;
-            Messages.Enqueue(message);
-
-            MessageMetadata.HighestSequenceId = message.SequenceId;
-            MessageMetadata.NumMessagesInBatch = numMessagesInBatch;
-
-            return IsBatchFull();
         }
 
         private bool IsBatchFull()
@@ -58,23 +61,24 @@ namespace DotPulsar.Internal
 
         public void Clear()
         {
-            MessageMetadata = new MessageMetadata();
-            Messages = new Queue<Message>();
-            payload = new SequenceBuilder<byte>();
-            numMessagesInBatch = 0;
-            currentBatchSize = 0;
-        }
-
-        public int GetNumMessagesInBatch()
-        {
-            throw new System.NotImplementedException();
+            lock (this)
+            {
+                MessageMetadata = new MessageMetadata();
+                Messages = new Queue<Message>();
+                payload = new SequenceBuilder<byte>();
+                numMessagesInBatch = 0;
+                currentBatchSize = 0;
+            }
         }
 
         public bool HaveEnoughSpace(Message message)
         {
-            var messageSize = message.Data.Length;
-            return (maxBatchBytesSize > 0 && (currentBatchSize + messageSize) >= maxBatchBytesSize)
-                || (maxMessagesInBatch > 0 && (numMessagesInBatch + 1) >= maxMessagesInBatch);
+            lock (this)
+            {
+                var messageSize = message.Data.Length;
+                return (maxBatchBytesSize > 0 && (currentBatchSize + messageSize) <= maxBatchBytesSize)
+                    || (maxMessagesInBatch > 0 && (numMessagesInBatch + 1) <= maxMessagesInBatch);
+            }
         }
 
         public bool IsEmpty()

@@ -23,7 +23,10 @@ namespace DotPulsar.Internal
 
         public void SetCallback(Action callback, TimeSpan timeout)
         {
-            _timer = new System.Threading.Timer((_) => { callback(); }, null, timeout, timeout);
+            if (_timer == null)
+                _timer = new System.Threading.Timer((_) => { callback(); }, null, timeout, timeout);
+            else
+                _timer.Change(timeout, timeout);
         }
 
         public void Dispose()

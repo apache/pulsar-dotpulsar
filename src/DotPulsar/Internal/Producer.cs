@@ -68,21 +68,30 @@ namespace DotPulsar.Internal
             if (_options.BatchingEnabled)
             {
                 batchMessageContainer = new BatchMessageContainer(_options.BatchingMaxMessagesPerBatch, options.BatchingMaxBytes);
-                batchTimer.SetCallback(SendBatchedMessages, _options.BatchingMaxPublishDelay);
+                batchTimer.SetCallback(BatchMessageAndSend, _options.BatchingMaxPublishDelay);
             }
         }
 
-        public async void SendBatchedMessages()
+        private (Queue<Message>?,MessageMetadata?) GetBatchedMessagesAndMetadata()
         {
-            if (!_options.BatchingEnabled || batchMessageContainer!.IsEmpty()) return;
+            if (!_options.BatchingEnabled || batchMessageContainer!.IsEmpty()) return (null, null);
             MessageMetadata metadata;
             Queue<Message> messages;
-            lock (batchMessageContainer)
-            {
-                messages = batchMessageContainer.Messages;
-                metadata = batchMessageContainer.MessageMetadata;
-            }
+            messages = batchMessageContainer.Messages;
+            metadata = batchMessageContainer.MessageMetadata;
             batchMessageContainer.Clear();
+            return (messages,metadata);
+        }
+
+        async void BatchMessageAndSend()
+        {
+            var (messages, metadata) = GetBatchedMessagesAndMetadata();
+            if (messages == null || metadata == null) return;
+            await SendBatchedMessages(messages, metadata).ConfigureAwait(false);
+        }
+
+        async Task SendBatchedMessages(Queue<Message> messages, MessageMetadata metadata)
+        {
             var payload = Serializer.Serialize(messages);
             var response = await _executor.Execute(() => _channel.Send(metadata.Metadata, payload, _cancellationTokenSource.Token), _cancellationTokenSource.Token).ConfigureAwait(false);
             var batchIndex = 0;
@@ -91,6 +100,14 @@ namespace DotPulsar.Internal
                 var messageId = new MessageId(response.MessageId.LedgerId, response.MessageId.EntryId, response.MessageId.Partition, batchIndex++);
                 batchMessageAwaiter.SetResult(message, messageId);
             }
+        }
+
+        private void DoBatchSendAndAdd(Message message)
+        {
+            var (messages, metadata) = GetBatchedMessagesAndMetadata();
+            if (messages != null && metadata != null) 
+                _ = SendBatchedMessages(messages, metadata);
+            batchMessageContainer!.Add(message);
         }
 
         public async ValueTask<ProducerStateChanged> StateChangedTo(ProducerState state, CancellationToken cancellationToken)
@@ -135,12 +152,7 @@ namespace DotPulsar.Internal
             ThrowIfDisposed();
             if (_options.BatchingEnabled)
             {
-                var message = new Message(new PulsarApi.MessageMetadata(), data);
-                lock (batchMessageContainer!)
-                {
-                    batchMessageContainer.Add(message);
-                }
-                return await batchMessageAwaiter.CreateTask(message).ConfigureAwait(false);
+                return await Send(new MessageMetadata(), data, cancellationToken);
             }
             var sequenceId = _sequenceId.FetchNext();
             var response = await _executor.Execute(() => _channel.Send(sequenceId, data, cancellationToken), cancellationToken).ConfigureAwait(false);
@@ -164,9 +176,19 @@ namespace DotPulsar.Internal
             if (_options.BatchingEnabled)
             {
                 var message = new Message(metadata.Metadata, data);
-                lock (batchMessageContainer!)
+                if (batchMessageContainer!.HaveEnoughSpace(message))
                 {
-                    batchMessageContainer.Add(message);
+                    // handle boundary cases where message being added would exceed
+                    // batch size and/or max message size
+                    var isFull = batchMessageContainer.Add(message);
+                    if (isFull)
+                    {
+                        BatchMessageAndSend();
+                    }
+                }
+                else
+                {
+                    DoBatchSendAndAdd(message);
                 }
                 return await batchMessageAwaiter.CreateTask(message).ConfigureAwait(false);
             }

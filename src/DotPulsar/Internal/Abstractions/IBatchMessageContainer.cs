@@ -35,12 +35,6 @@ namespace DotPulsar.Internal.Abstractions
         bool HaveEnoughSpace(Message message);
 
         /// <summary>
-        /// Get count of messages in the message batch container.
-        /// </summary>
-        /// <returns>message count</returns>
-        //int GetNumMessagesInBatch();
-
-        /// <summary>
         /// Check the message batch container is empty.
         /// </summary>
         /// <returns>return true if empty, otherwise return false.</returns>
