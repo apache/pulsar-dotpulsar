@@ -16,6 +16,7 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
+    using System;
 
     public sealed class ProducerBuilder : IProducerBuilder
     {
@@ -23,6 +24,10 @@ namespace DotPulsar.Internal
         private string? _producerName;
         private ulong _initialSequenceId;
         private string? _topic;
+        private int _maxMessagesPerBatch = ProducerOptions.DefaultMaxMessagesPerBatch;
+        private int _batchingMaxBytes = ProducerOptions.DefaultMaxBathingBytes;
+        private TimeSpan _maxPublishDelay = ProducerOptions.DefaultMaxPublishDelay;
+        private bool _batchingEnabled = true; // enbale by default
 
         public ProducerBuilder(IPulsarClient pulsarClient)
         {
@@ -48,6 +53,30 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IProducerBuilder BatchingMaxMessagesPerBatch(int maxMessagesPerBatch)
+        {
+            _maxMessagesPerBatch = maxMessagesPerBatch;
+            return this;
+        }
+
+        public IProducerBuilder BatchingMaxPublishDelay(TimeSpan maxPublishDelay)
+        {
+            _maxPublishDelay = maxPublishDelay;
+            return this;
+        }
+
+        public IProducerBuilder BatchingMaxBytes(int batchingMaxBytes)
+        {
+            _batchingMaxBytes = batchingMaxBytes;
+            return this;
+        }
+
+        public IProducerBuilder BatchingEnabled(bool batchingEnabled)
+        {
+            _batchingEnabled = batchingEnabled;
+            return this;
+        }
+
         public IProducer Create()
         {
             if (string.IsNullOrEmpty(_topic))
@@ -56,7 +85,11 @@ namespace DotPulsar.Internal
             var options = new ProducerOptions(_topic!)
             {
                 InitialSequenceId = _initialSequenceId,
-                ProducerName = _producerName
+                ProducerName = _producerName,
+                BatchingMaxMessagesPerBatch = _maxMessagesPerBatch,
+                BatchingMaxPublishDelay = _maxPublishDelay,
+                BatchingMaxBytes = _batchingMaxBytes,
+                BatchingEnabled = _batchingEnabled
             };
 
             return _pulsarClient.CreateProducer(options);

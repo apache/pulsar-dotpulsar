@@ -21,6 +21,6 @@ namespace DotPulsar.Internal.Abstractions
         /// <summary>
         /// Set the callback to the timer. Timeout is in millisecond.
         /// </summary>
-        void SetCallback(Action callback, int timeout);
+        void SetCallback(Action callback, TimeSpan timeout);
     }
 }

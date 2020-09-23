@@ -14,6 +14,8 @@
 
 namespace DotPulsar.Abstractions
 {
+    using System;
+
     /// <summary>
     /// A producer building abstraction.
     /// </summary>
@@ -33,6 +35,26 @@ namespace DotPulsar.Abstractions
         /// Set the topic for this producer. This is required.
         /// </summary>
         IProducerBuilder Topic(string topic);
+
+        /// <summary>
+        /// Set the maximum number of messages permitted in a batch. The default is 1000.
+        /// </summary>
+        IProducerBuilder BatchingMaxMessagesPerBatch(int maxMessagesPerBatch);
+
+        /// <summary>
+        /// Set the time period within which the messages sent will be batched. The default is 1 ms.
+        /// </summary>
+        IProducerBuilder BatchingMaxPublishDelay(TimeSpan maxPublishDelay);
+
+        /// <summary>
+        /// Control whether automatic batching of messages is enabled for the producer. The default is 'false'.
+        /// </summary>
+        IProducerBuilder BatchingEnabled(bool batchingEnabled);
+
+        /// <summary>
+        /// Set the maximum number of bytes permitted in a batch. The default is 128KB.
+        /// </summary>
+        IProducerBuilder BatchingMaxBytes(int batchingMaxBytes);
 
         /// <summary>
         /// Create the producer.

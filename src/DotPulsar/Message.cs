@@ -21,39 +21,29 @@ namespace DotPulsar
     using System.Linq;
 
     /// <summary>
-    /// The message received by consumers and readers.
+    /// The message abstraction used in client.
     /// </summary>
     public sealed class Message
     {
         private readonly List<KeyValue> _keyValues;
         private IReadOnlyDictionary<string, string>? _properties;
 
+        /// <summary>
+        /// Constructor for producer.
+        /// </summary>
         internal Message(Internal.PulsarApi.MessageMetadata metadata,
-            SingleMessageMetadata? singleMetadata,
             ReadOnlySequence<byte> data)
         {
             ProducerName = metadata.ProducerName;
             PublishTime = metadata.PublishTime;
             Data = data;
 
-            if (singleMetadata is null)
-            {
-                EventTime = metadata.EventTime;
-                HasBase64EncodedKey = metadata.PartitionKeyB64Encoded;
-                Key = metadata.PartitionKey;
-                SequenceId = metadata.SequenceId;
-                OrderingKey = metadata.OrderingKey;
-                _keyValues = metadata.Properties;
-            }
-            else
-            {
-                EventTime = singleMetadata.EventTime;
-                HasBase64EncodedKey = singleMetadata.PartitionKeyB64Encoded;
-                Key = singleMetadata.PartitionKey;
-                OrderingKey = singleMetadata.OrderingKey;
-                SequenceId = singleMetadata.SequenceId;
-                _keyValues = singleMetadata.Properties;
-            }
+            EventTime = metadata.EventTime;
+            HasBase64EncodedKey = metadata.PartitionKeyB64Encoded;
+            Key = metadata.PartitionKey;
+            SequenceId = metadata.SequenceId;
+            OrderingKey = metadata.OrderingKey;
+            _keyValues = metadata.Properties;
         }
 
         internal Message(
@@ -91,14 +81,16 @@ namespace DotPulsar
 
         public SingleMessageMetadata GetSingleMessageMetadata()
         {
-            var singleMessageMetadata = new SingleMessageMetadata();
-            singleMessageMetadata.EventTime = EventTime;
-            singleMessageMetadata.PartitionKeyB64Encoded = HasBase64EncodedKey;
-            singleMessageMetadata.PartitionKey = Key;
-            singleMessageMetadata.OrderingKey = OrderingKey;
-            singleMessageMetadata.SequenceId = SequenceId;
-            singleMessageMetadata.PayloadSize = (int)Data.Length;
-            foreach(var kv in _keyValues)
+            var singleMessageMetadata = new SingleMessageMetadata
+            {
+                EventTime = EventTime,
+                PartitionKeyB64Encoded = HasBase64EncodedKey,
+                PartitionKey = Key,
+                OrderingKey = OrderingKey,
+                SequenceId = SequenceId,
+                PayloadSize = (int) Data.Length
+            };
+            foreach (var kv in _keyValues)
             {
                 singleMessageMetadata.Properties.Add(kv);
             }
