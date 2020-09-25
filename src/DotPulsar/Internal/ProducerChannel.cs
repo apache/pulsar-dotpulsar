@@ -110,6 +110,5 @@ namespace DotPulsar.Internal
                 _sendPackagePool.Return(sendPackage);
             }
         }
-
     }
 }

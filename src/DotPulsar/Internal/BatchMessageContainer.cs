@@ -82,5 +82,19 @@ namespace DotPulsar.Internal
         {
             return currentBatchSize == 0;
         }
+
+        public (Queue<Message>?, MessageMetadata?) GetBatchedMessagesAndMetadata()
+        {
+            if (IsEmpty()) return (null, null);
+            MessageMetadata metadata;
+            Queue<Message> messages;
+            lock (this)
+            {
+                messages = Messages;
+                metadata = MessageMetadata;
+                Clear();
+            }
+            return (messages, metadata);
+        }
     }
 }

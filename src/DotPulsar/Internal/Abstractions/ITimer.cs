@@ -19,7 +19,7 @@ namespace DotPulsar.Internal.Abstractions
     public interface ITimer : IDisposable
     {
         /// <summary>
-        /// Set the callback to the timer. Timeout is in millisecond.
+        /// Set the callback to the timer.
         /// </summary>
         void SetCallback(Action callback, TimeSpan timeout);
     }

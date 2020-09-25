@@ -72,20 +72,9 @@ namespace DotPulsar.Internal
             }
         }
 
-        private (Queue<Message>?, MessageMetadata?) GetBatchedMessagesAndMetadata()
-        {
-            if (!_options.BatchingEnabled || _batchMessageContainer!.IsEmpty()) return (null, null);
-            MessageMetadata metadata;
-            Queue<Message> messages;
-            messages = _batchMessageContainer.Messages;
-            metadata = _batchMessageContainer.MessageMetadata;
-            _batchMessageContainer.Clear();
-            return (messages, metadata);
-        }
-
         private async void BatchMessageAndSend()
         {
-            var (messages, metadata) = GetBatchedMessagesAndMetadata();
+            var (messages, metadata) = _batchMessageContainer!.GetBatchedMessagesAndMetadata();
             if (messages == null || metadata == null) return;
             await SendBatchedMessages(messages, metadata).ConfigureAwait(false);
         }
@@ -104,7 +93,7 @@ namespace DotPulsar.Internal
 
         private void DoBatchSendAndAdd(Message message)
         {
-            var (messages, metadata) = GetBatchedMessagesAndMetadata();
+            var (messages, metadata) = _batchMessageContainer!.GetBatchedMessagesAndMetadata();
             if (messages != null && metadata != null)
                 _ = SendBatchedMessages(messages, metadata);
             _batchMessageContainer!.Add(message);

@@ -35,6 +35,13 @@ namespace DotPulsar.Internal.Abstractions
         bool HaveEnoughSpace(Message message);
 
         /// <summary>
+        /// Get batched messages and metadata in this container.
+        /// It will automatically clear the container.
+        /// If the container is empty, return (null,null).
+        /// </summary>
+        (Queue<Message>?, MessageMetadata?) GetBatchedMessagesAndMetadata();
+
+        /// <summary>
         /// Check the message batch container is empty.
         /// </summary>
         /// <returns>return true if empty, otherwise return false.</returns>
