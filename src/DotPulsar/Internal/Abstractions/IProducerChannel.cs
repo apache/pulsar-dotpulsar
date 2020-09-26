@@ -17,7 +17,6 @@ namespace DotPulsar.Internal.Abstractions
     using PulsarApi;
     using System;
     using System.Buffers;
-    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 

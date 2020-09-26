@@ -165,7 +165,8 @@ namespace DotPulsar.Internal
             if (autoAssignSequenceId)
                 metadata.SequenceId = _sequenceId.FetchNext();
 
-            if (_options.BatchingEnabled)
+            // If a message has a delayed delivery time, we'll always send it individually
+            if (_options.BatchingEnabled && metadata.DeliverAtTime == 0)
             {
                 var message = new Message(metadata.Metadata, data);
                 if (_batchMessageContainer!.HaveEnoughSpace(message))
