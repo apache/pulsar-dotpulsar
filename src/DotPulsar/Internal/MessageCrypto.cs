@@ -231,8 +231,7 @@ namespace DotPulsar.Internal
 
             if (encKeyInfo == null || _symmetricKey == null)
             {
-                // Fail to decrypt symmetric key.
-                return null;
+                throw new CryptoException($"Failed to symmetric key.");
             }
 
             decryptedData = GetKeyFromCacheAndTryDecryptData(payload, messageMetadata);
