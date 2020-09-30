@@ -21,6 +21,7 @@ namespace DotPulsar.Internal
     using Microsoft.Extensions.ObjectPool;
     using PulsarApi;
     using System;
+    using System.Buffers;
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.CompilerServices;
@@ -36,6 +37,8 @@ namespace DotPulsar.Internal
         private readonly IExecute _executor;
         private readonly IStateChanged<ConsumerState> _state;
         private int _isDisposed;
+        private ConsumerOptions _options;
+        private IMessageCrypto? _messageCrypto = null;
 
         public string Topic { get; }
 
@@ -45,7 +48,8 @@ namespace DotPulsar.Internal
             IRegisterEvent eventRegister,
             IConsumerChannel initialChannel,
             IExecute executor,
-            IStateChanged<ConsumerState> state)
+            IStateChanged<ConsumerState> state,
+            ConsumerOptions options)
         {
             _correlationId = correlationId;
             Topic = topic;
@@ -55,6 +59,12 @@ namespace DotPulsar.Internal
             _state = state;
             _commandAckPool = new DefaultObjectPool<CommandAck>(new DefaultPooledObjectPolicy<CommandAck>());
             _isDisposed = 0;
+            _options = options;
+
+            if (_options.CryptoKeyReader != null)
+            {
+                _messageCrypto = new MessageCrypto(_options.CryptoKeyReader!);
+            }
 
             _eventRegister.Register(new ConsumerCreated(_correlationId, this));
         }
@@ -86,12 +96,29 @@ namespace DotPulsar.Internal
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
+        private ReadOnlySequence<byte> DecryptMessageIfNeeded(MessageMetadata messageMetadata, ReadOnlySequence<byte> payload)
+        {
+            if (messageMetadata.EncryptionKeys.Count == 0) return payload;
+            if (_messageCrypto == null)
+            {
+                throw new CryptoException($"Failed to decrypt message.CryptoKeyReader is not configured.");
+            }
+            return new ReadOnlySequence<byte>(_messageCrypto.Decrypt(payload.ToArray(), messageMetadata));
+        }
+
+        private async ValueTask<Message> RecieveMessage(CancellationToken cancellationToken)
+        {
+            var message = await _channel.Receive(cancellationToken);
+            message.Data = DecryptMessageIfNeeded(message._metadata, message.Data);
+            return message;
+        }
+
         public async IAsyncEnumerable<Message> Messages([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
             while (!cancellationToken.IsCancellationRequested)
-                yield return await _executor.Execute(() => _channel.Receive(cancellationToken), cancellationToken).ConfigureAwait(false);
+                yield return await _executor.Execute(() => RecieveMessage(cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask Acknowledge(Message message, CancellationToken cancellationToken)

@@ -28,6 +28,7 @@ namespace DotPulsar.Internal
         private string? _subscriptionName;
         private SubscriptionType _subscriptionType;
         private string? _topic;
+        private ICryptoKeyReader? _cryptoKeyReader;
 
         public ConsumerBuilder(IPulsarClient pulsarClient)
         {
@@ -87,6 +88,12 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IConsumerBuilder CryptoKeyReader(ICryptoKeyReader cryptoKeyReader)
+        {
+            _cryptoKeyReader = cryptoKeyReader;
+            return this;
+        }
+
         public IConsumer Create()
         {
             if (string.IsNullOrEmpty(_subscriptionName))
@@ -102,7 +109,8 @@ namespace DotPulsar.Internal
                 MessagePrefetchCount = _messagePrefetchCount,
                 PriorityLevel = _priorityLevel,
                 ReadCompacted = _readCompacted,
-                SubscriptionType = _subscriptionType
+                SubscriptionType = _subscriptionType,
+                CryptoKeyReader = _cryptoKeyReader
             };
 
             return _pulsarClient.CreateConsumer(options);

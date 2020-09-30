@@ -14,6 +14,8 @@
 
 namespace DotPulsar
 {
+    using DotPulsar.Abstractions;
+
     /// <summary>
     /// The consumer building options.
     /// </summary>
@@ -75,5 +77,10 @@ namespace DotPulsar
         /// Set the topic for this consumer. This is required.
         /// </summary>
         public string Topic { get; set; }
+
+        /// <summary>
+        /// Configure the key reader to be used to encrypt the message payloads.
+        /// </summary>
+        public ICryptoKeyReader? CryptoKeyReader { get; set; }
     }
 }

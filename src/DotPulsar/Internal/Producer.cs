@@ -32,6 +32,9 @@ namespace DotPulsar.Internal
         private readonly IStateChanged<ProducerState> _state;
         private readonly SequenceId _sequenceId;
         private int _isDisposed;
+        private ProducerOptions _options;
+        private ITimer? _keyGeneratorTimer = null;
+        private IMessageCrypto? _messageCrypto = null;
 
         public string Topic { get; }
 
@@ -42,7 +45,8 @@ namespace DotPulsar.Internal
             IRegisterEvent registerEvent,
             IProducerChannel initialChannel,
             IExecute executor,
-            IStateChanged<ProducerState> state)
+            IStateChanged<ProducerState> state,
+            ProducerOptions options)
         {
             _correlationId = correlationId;
             Topic = topic;
@@ -52,6 +56,18 @@ namespace DotPulsar.Internal
             _executor = executor;
             _state = state;
             _isDisposed = 0;
+            _options = options;
+
+            if (_options.IsEncryptionEnabled())
+            {
+                _messageCrypto = new MessageCrypto(_options.CryptoKeyReader!);
+                _keyGeneratorTimer = new Timer();
+                _messageCrypto.UpdatePublicKeyCipher(_options.EncryptionKeys);
+                _keyGeneratorTimer.SetCallback(() =>
+                {
+                    _messageCrypto.UpdatePublicKeyCipher(_options.EncryptionKeys);
+                }, TimeSpan.FromHours(4));
+            }
 
             _eventRegister.Register(new ProducerCreated(_correlationId, this));
         }
@@ -84,6 +100,12 @@ namespace DotPulsar.Internal
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
+        private ReadOnlySequence<byte> EncryptMessageIfNeeded(MessageMetadata messageMetadata, ReadOnlySequence<byte> payload)
+        {
+            if (!_options.IsEncryptionEnabled()) return payload;
+            return new ReadOnlySequence<byte>(_messageCrypto!.Encrypt(payload.ToArray(), messageMetadata.Metadata));
+        }
+
         public ValueTask<MessageId> Send(byte[] data, CancellationToken cancellationToken)
             => Send(new ReadOnlySequence<byte>(data), cancellationToken);
 
@@ -114,7 +136,11 @@ namespace DotPulsar.Internal
 
             try
             {
-                var response = await _executor.Execute(() => _channel.Send(metadata.Metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
+                var response = await _executor.Execute(() =>
+                {
+                    var encryptedPayload = EncryptMessageIfNeeded(metadata, data);
+                    return _channel.Send(metadata.Metadata, encryptedPayload, cancellationToken);
+                }, cancellationToken).ConfigureAwait(false);
                 return new MessageId(response.MessageId);
             }
             finally

@@ -16,6 +16,7 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
+    using System.Collections.Generic;
 
     public sealed class ProducerBuilder : IProducerBuilder
     {
@@ -23,6 +24,8 @@ namespace DotPulsar.Internal
         private string? _producerName;
         private ulong _initialSequenceId;
         private string? _topic;
+        private ICryptoKeyReader? _cryptoKeyReader;
+        private List<string> _encryptionKeys = new List<string>();
 
         public ProducerBuilder(IPulsarClient pulsarClient)
         {
@@ -47,6 +50,17 @@ namespace DotPulsar.Internal
             _topic = topic;
             return this;
         }
+        public IProducerBuilder CryptoKeyReader(ICryptoKeyReader cryptoKeyReader)
+        {
+            _cryptoKeyReader = cryptoKeyReader;
+            return this;
+        }
+
+        public IProducerBuilder AddEncryptionKey(string key)
+        {
+            _encryptionKeys.Add(key);
+            return this;
+        }
 
         public IProducer Create()
         {
@@ -56,7 +70,9 @@ namespace DotPulsar.Internal
             var options = new ProducerOptions(_topic!)
             {
                 InitialSequenceId = _initialSequenceId,
-                ProducerName = _producerName
+                ProducerName = _producerName,
+                CryptoKeyReader = _cryptoKeyReader,
+                EncryptionKeys = _encryptionKeys
             };
 
             return _pulsarClient.CreateProducer(options);

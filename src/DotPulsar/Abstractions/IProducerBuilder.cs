@@ -35,6 +35,16 @@ namespace DotPulsar.Abstractions
         IProducerBuilder Topic(string topic);
 
         /// <summary>
+        /// Configure the key reader to be used to encrypt the message payloads.
+        /// </summary>
+        IProducerBuilder CryptoKeyReader(ICryptoKeyReader cryptoKeyReader);
+
+        /// <summary>
+        /// Add public encryption key, used by producer to encrypt the data key.
+        /// </summary>
+        IProducerBuilder AddEncryptionKey(string key);
+
+        /// <summary>
         /// Create the producer.
         /// </summary>
         IProducer Create();

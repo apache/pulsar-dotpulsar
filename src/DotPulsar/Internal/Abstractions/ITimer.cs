@@ -14,13 +14,13 @@
 
 namespace DotPulsar.Internal.Abstractions
 {
-    using System.Collections.Generic;
+    using System;
 
-    public interface IMessageCrypto
+    public interface ITimer : IDisposable
     {
-        void UpdatePublicKeyCipher(List<string> names);
-        byte[] Encrypt(byte[] payload, PulsarApi.MessageMetadata messageMetadata);
-        byte[] Decrypt(byte[] payload, PulsarApi.MessageMetadata messageMetadata);
-
+        /// <summary>
+        /// Set the callback to the timer.
+        /// </summary>
+        void SetCallback(Action callback, TimeSpan timeout);
     }
 }

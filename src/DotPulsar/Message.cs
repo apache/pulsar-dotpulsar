@@ -27,6 +27,7 @@ namespace DotPulsar
     {
         private readonly List<KeyValue> _keyValues;
         private IReadOnlyDictionary<string, string>? _properties;
+        internal Internal.PulsarApi.MessageMetadata _metadata;
 
         internal Message(
             MessageId messageId,
@@ -40,6 +41,7 @@ namespace DotPulsar
             ProducerName = metadata.ProducerName;
             PublishTime = metadata.PublishTime;
             Data = data;
+            _metadata = metadata;
 
             if (singleMetadata is null)
             {
@@ -69,7 +71,7 @@ namespace DotPulsar
         /// <summary>
         /// The raw payload of the message.
         /// </summary>
-        public ReadOnlySequence<byte> Data { get; }
+        public ReadOnlySequence<byte> Data { get; set; }
 
         /// <summary>
         /// The name of the producer who produced the message.

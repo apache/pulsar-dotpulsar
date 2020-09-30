@@ -128,6 +128,7 @@ namespace DotPulsar.Internal
                 var symmetricAlgo = AeadAlgorithm.Aes256Gcm;
                 var encryptedPayload = symmetricAlgo.Encrypt(_symmetricKey!, _nonce, ReadOnlySpan<byte>.Empty, payload);
                 messageMetadata.EncryptionParam = _nonce.ToArray();
+                messageMetadata.EncryptionAlgo = "aes-256-gcm";
                 return encryptedPayload;
             }
             catch (Exception e)
@@ -205,11 +206,12 @@ namespace DotPulsar.Internal
             }
         }
 
-        public byte[]? Decrypt(byte[] payload, MessageMetadata messageMetadata)
+        public byte[] Decrypt(byte[] payload, MessageMetadata messageMetadata)
         {
+            byte[]? decryptedData;
             if (_symmetricKey != null)
             {
-                var decryptedData = GetKeyFromCacheAndTryDecryptData(payload, messageMetadata);
+                decryptedData = GetKeyFromCacheAndTryDecryptData(payload, messageMetadata);
                 if (decryptedData != null) return decryptedData;
             }
 
@@ -233,7 +235,12 @@ namespace DotPulsar.Internal
                 return null;
             }
 
-            return GetKeyFromCacheAndTryDecryptData(payload, messageMetadata);
+            decryptedData = GetKeyFromCacheAndTryDecryptData(payload, messageMetadata);
+            if (decryptedData == null)
+            {
+                throw new CryptoException($"Failed to decrypt message.");
+            }
+            return decryptedData;
         }
     }
 }

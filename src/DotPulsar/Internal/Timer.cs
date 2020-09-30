@@ -12,15 +12,26 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Internal
 {
-    using System.Collections.Generic;
+    using DotPulsar.Internal.Abstractions;
+    using System;
 
-    public interface IMessageCrypto
+    public class Timer : ITimer
     {
-        void UpdatePublicKeyCipher(List<string> names);
-        byte[] Encrypt(byte[] payload, PulsarApi.MessageMetadata messageMetadata);
-        byte[] Decrypt(byte[] payload, PulsarApi.MessageMetadata messageMetadata);
+        private System.Threading.Timer? _timer = null;
 
+        public void SetCallback(Action callback, TimeSpan timeout)
+        {
+            if (_timer == null)
+                _timer = new System.Threading.Timer((_) => { callback(); }, null, timeout, timeout);
+            else
+                _timer.Change(timeout, timeout);
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
+        }
     }
 }

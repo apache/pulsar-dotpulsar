@@ -14,6 +14,9 @@
 
 namespace DotPulsar
 {
+    using DotPulsar.Abstractions;
+    using System.Collections.Generic;
+
     /// <summary>
     /// The producer building options.
     /// </summary>
@@ -41,5 +44,17 @@ namespace DotPulsar
         /// Set the topic for this producer. This is required.
         /// </summary>
         public string Topic { get; set; }
+
+        /// <summary>
+        /// Configure the key reader to be used to encrypt the message payloads.
+        /// </summary>
+        public ICryptoKeyReader? CryptoKeyReader { get; set; }
+
+        public List<string> EncryptionKeys { get; set; }
+
+        public bool IsEncryptionEnabled()
+        {
+            return (EncryptionKeys != null) && EncryptionKeys.Count != 0 && CryptoKeyReader != null;
+        }
     }
 }

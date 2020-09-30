@@ -60,6 +60,11 @@ namespace DotPulsar.Abstractions
         IConsumerBuilder Topic(string topic);
 
         /// <summary>
+        /// Configure the key reader to be used to encrypt the message payloads.
+        /// </summary>
+        IConsumerBuilder CryptoKeyReader(ICryptoKeyReader cryptoKeyReader);
+
+        /// <summary>
         /// Create the consumer.
         /// </summary>
         IConsumer Create();
