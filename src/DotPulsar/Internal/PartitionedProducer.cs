@@ -20,7 +20,6 @@ namespace DotPulsar.Internal
     using System.Buffers;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -34,7 +33,6 @@ namespace DotPulsar.Internal
         private int _connectedProducerCount = 0;
         private ReaderWriterLockSlim _metadataLock = new ReaderWriterLockSlim();
         private IMessageRouter _messageRouter;
-        private ITimer _timer;
         private PulsarClient _client;
         private ProducerOptions _options;
 
@@ -47,8 +45,7 @@ namespace DotPulsar.Internal
             PartitionedTopicMetadata partitionedTopicMetadata,
             Dictionary<int, IProducer> producers,
             IMessageRouter messageRouter,
-            PulsarClient client,
-            ITimer timer)
+            PulsarClient client)
         {
             Topic = topic;
             _state = state;
@@ -66,11 +63,7 @@ namespace DotPulsar.Internal
                 _ = MonitorState(producer, null, _cancellationTokenSource.Token);
             }
 
-            _timer = timer;
-            if (options.AutoUpdatePartitions)
-            {
-                _timer.SetCallback(UpdatePartitionMetadata, options.AutoUpdatePartitionsInterval * 1000);
-            }
+            _ = UpdatePartitionMetadata();
         }
 
         private async Task MonitorState(IProducer producer, ProducerState? initialState, CancellationToken cancellationToken = default)
@@ -121,7 +114,7 @@ namespace DotPulsar.Internal
             { }
         }
 
-        private async void UpdatePartitionMetadata()
+        private async Task UpdatePartitionMetadata()
         {
             var cancellationToken = _cancellationTokenSource.Token;
 
@@ -129,6 +122,7 @@ namespace DotPulsar.Internal
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
+                    await Task.Delay(_options.AutoUpdatePartitionsInterval);
                     var newMetadata = await _client.GetPartitionTopicMetadata(Topic, cancellationToken).ConfigureAwait(false);
                     // Not support shrink topic partitions
                     if (newMetadata.Partitions > _partitionedTopicMetadata.Partitions)
@@ -141,10 +135,8 @@ namespace DotPulsar.Internal
                             int partID = i;
                             newSubproducerTasks.Add(Task.Run(async () =>
                             {
-                                var subproducerOption = new ProducerOptions(_options)
-                                {
-                                    Topic = $"{_options.Topic}-partition-{partID}"
-                                };
+                                var subproducerOption = _options.Clone() as ProducerOptions;
+                                subproducerOption!.Topic = $"{_options.Topic}-partition-{partID}";
                                 var producer = _client.CreateProducerWithoutCheckingPartition(subproducerOption);
                                 producers[partID] = producer;
                                 _ = await producer.StateChangedTo(ProducerState.Connected).ConfigureAwait(false);
@@ -194,8 +186,6 @@ namespace DotPulsar.Internal
 
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
-
-            _timer.Dispose();
 
             foreach (var producer in _producers.Values)
             {

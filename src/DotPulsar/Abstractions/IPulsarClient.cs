@@ -14,7 +14,6 @@
 
 namespace DotPulsar.Abstractions
 {
-    using DotPulsar.Internal;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
@@ -42,6 +41,6 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Get the partition topic metadata for a given topic.
         /// </summary>
-        public Task<PartitionedTopicMetadata> GetPartitionTopicMetadata(string topic, CancellationToken cancellationToken = default);
+        ValueTask<PartitionedTopicMetadata> GetPartitionTopicMetadata(string topic, CancellationToken cancellationToken = default);
     }
 }

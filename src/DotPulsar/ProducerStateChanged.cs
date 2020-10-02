@@ -21,7 +21,7 @@ namespace DotPulsar
     /// </summary>
     public sealed class ProducerStateChanged
     {
-        internal ProducerStateChanged(IProducer producer, ProducerState producerState)
+        public ProducerStateChanged(IProducer producer, ProducerState producerState)
         {
             Producer = producer;
             ProducerState = producerState;

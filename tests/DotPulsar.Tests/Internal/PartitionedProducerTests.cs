@@ -18,10 +18,10 @@ namespace DotPulsar.Tests.Internal
     using DotPulsar.Internal;
     using Moq;
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Threading;
     using Xunit;
+
     public class PartitionedProducerTests
     {
         [Fact]
@@ -37,12 +37,12 @@ namespace DotPulsar.Tests.Internal
             {
                 producers[i] = producerMock.Object;
             }
-            var options = new ProducerOptions("") { AutoUpdatePartitionsInterval = 60 };
+            var options = new ProducerOptions("") { AutoUpdatePartitionsInterval = TimeSpan.FromSeconds(60) };
 
             //Act
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-            var partitionedProducer = new PartitionedProducer("", stateManager, options, new PartitionedTopicMetadata(3), producers, new RoundRobinPartitionRouter(), null, new DotPulsar.Internal.Timer());
+            var partitionedProducer = new PartitionedProducer("", stateManager, options, new PartitionedTopicMetadata(3), producers, new RoundRobinPartitionRouter(), null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
             var stateChanged = await partitionedProducer.StateChangedFrom(ProducerState.Disconnected).ConfigureAwait(false);
 

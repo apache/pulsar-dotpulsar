@@ -14,22 +14,23 @@
 
 namespace DotPulsar
 {
-    using DotPulsar.Abstractions;
     using DotPulsar.Internal;
     using System;
 
-    public class SinglePartitionRouter : IMessageRouter
+    public sealed class SinglePartitionRouter : MessageRouter
     {
         private int? _partitionIndex;
+
         public SinglePartitionRouter(int? partitionIndex = null)
         {
             _partitionIndex = partitionIndex;
         }
-        public int ChoosePartition(MessageMetadata? message, PartitionedTopicMetadata partitionedTopic)
+
+        public override int ChoosePartition(MessageMetadata? messageMetadata, PartitionedTopicMetadata partitionedTopic)
         {
-            if (message != null && !string.IsNullOrEmpty(message.Key))
+            if (messageMetadata != null && !string.IsNullOrEmpty(messageMetadata.Key))
             {
-                return MathUtils.SignSafeMod(Murmur3_32Hash.Instance.MakeHash(message.Key!), partitionedTopic.Partitions);
+                return SignSafeMod(Murmur3_32Hash.Instance.MakeHash(messageMetadata.Key!), partitionedTopic.Partitions);
             }
             if (_partitionIndex == null)
             {

@@ -14,12 +14,13 @@
 
 namespace DotPulsar.Internal
 {
-    public static class MathUtils
+    using DotPulsar.Abstractions;
+
+    public abstract class MessageRouter : IMessageRouter
     {
-        /// <summary>
-        /// Compute sign safe mod
-        /// </summary>
-        public static int SignSafeMod(long dividend, int divisor)
+        public abstract int ChoosePartition(MessageMetadata? messageMetadata, PartitionedTopicMetadata partitionedTopic);
+
+        protected int SignSafeMod(long dividend, int divisor)
         {
             var mod = (int) dividend % divisor;
             if (mod < 0)

@@ -16,6 +16,7 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
+    using System;
 
     public sealed class ProducerBuilder : IProducerBuilder
     {
@@ -25,13 +26,13 @@ namespace DotPulsar.Internal
         private string? _topic;
         private IMessageRouter? _messageRouter;
         private bool _autoUpdatePartitions = true;
-        private int _autoUpdatePartitionsInterval;
+        private TimeSpan _autoUpdatePartitionsInterval;
 
         public ProducerBuilder(IPulsarClient pulsarClient)
         {
             _pulsarClient = pulsarClient;
             _initialSequenceId = ProducerOptions.DefaultInitialSequenceId;
-            _autoUpdatePartitionsInterval = ProducerOptions.DefaultAutoUpdatePartitionsInterval;
+            _autoUpdatePartitionsInterval = TimeSpan.FromSeconds(ProducerOptions.DefaultAutoUpdatePartitionsIntervalInSecond);
         }
 
         public IProducerBuilder ProducerName(string name)
@@ -64,7 +65,7 @@ namespace DotPulsar.Internal
             return this;
         }
 
-        public IProducerBuilder AutoUpdatePartitionsInterval(int interval)
+        public IProducerBuilder AutoUpdatePartitionsInterval(TimeSpan interval)
         {
             _autoUpdatePartitionsInterval = interval;
             return this;

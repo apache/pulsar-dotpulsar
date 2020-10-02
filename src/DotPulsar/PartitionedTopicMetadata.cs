@@ -12,14 +12,21 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar
 {
-    using System;
-    public interface ITimer : IDisposable
+    /// <summary>
+    /// Metadata of a topic that can be used for message routing.
+    /// </summary>
+    public sealed class PartitionedTopicMetadata
     {
         /// <summary>
-        /// Set the callback to the timer. Timeout is in millisecond.
+        /// the number of partitions per topic.
         /// </summary>
-        void SetCallback(Action callback, int timeout);
+        public int Partitions { get; }
+
+        public PartitionedTopicMetadata(int partitions)
+        {
+            Partitions = partitions;
+        }
     }
 }

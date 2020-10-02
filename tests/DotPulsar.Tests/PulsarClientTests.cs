@@ -19,8 +19,10 @@ namespace DotPulsar.Tests
     using DotPulsar.Internal.Abstractions;
     using DotPulsar.Internal.PulsarApi;
     using Moq;
+    using System;
     using System.Threading;
     using Xunit;
+
     public class PulsarClientTests
     {
         [Fact]
@@ -49,7 +51,7 @@ namespace DotPulsar.Tests
             var connectionPool = connectionPoolMock.Object;
 
             var client = new PulsarClient(connectionPoolMock.Object, new ProcessManager(connectionPool), new Mock<IHandleException>().Object);
-            var options = new ProducerOptions(topicName);
+            var options = new ProducerOptions(topicName) { AutoUpdatePartitionsInterval = TimeSpan.FromSeconds(60) };
 
             //Act
             var producer = client.CreateProducer(options);

@@ -14,20 +14,20 @@
 
 namespace DotPulsar
 {
-    using DotPulsar.Abstractions;
     using DotPulsar.Internal;
     using System.Threading;
 
-    public class RoundRobinPartitionRouter : IMessageRouter
+    public sealed class RoundRobinPartitionRouter : MessageRouter
     {
         private long _partitionIndex = -1;
-        public int ChoosePartition(MessageMetadata? message, PartitionedTopicMetadata partitionedTopic)
+
+        public override int ChoosePartition(MessageMetadata? messageMetadata, PartitionedTopicMetadata partitionedTopic)
         {
-            if (message != null && !string.IsNullOrEmpty(message.Key))
+            if (messageMetadata != null && !string.IsNullOrEmpty(messageMetadata.Key))
             {
-                return MathUtils.SignSafeMod(Murmur3_32Hash.Instance.MakeHash(message.Key!), partitionedTopic.Partitions);
+                return SignSafeMod(Murmur3_32Hash.Instance.MakeHash(messageMetadata.Key!), partitionedTopic.Partitions);
             }
-            return MathUtils.SignSafeMod(Interlocked.Increment(ref _partitionIndex), partitionedTopic.Partitions);
+            return SignSafeMod(Interlocked.Increment(ref _partitionIndex), partitionedTopic.Partitions);
         }
     }
 }

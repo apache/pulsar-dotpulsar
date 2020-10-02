@@ -14,12 +14,14 @@
 
 namespace DotPulsar.Abstractions
 {
-    using DotPulsar.Internal;
+    /// <summary>
+    /// A message routing abstraction
+    /// </summary>
     public interface IMessageRouter
     {
         /// <summary>
         /// Choose a partition.
         /// </summary>
-        int ChoosePartition(MessageMetadata? message, PartitionedTopicMetadata partitionedTopic);
+        int ChoosePartition(MessageMetadata? messageMetadata, PartitionedTopicMetadata partitionedTopic);
     }
 }

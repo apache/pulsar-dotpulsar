@@ -12,9 +12,6 @@
  * limitations under the License.
  */
 
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("DotPulsar.Tests")]
 namespace DotPulsar
 {
     using Abstractions;
@@ -27,7 +24,6 @@ namespace DotPulsar
     using System.Threading;
     using System.Threading.Tasks;
     using System.Collections.Generic;
-    using System.Collections.Concurrent;
 
     /// <summary>
     /// Pulsar client for creating producers, consumers and readers.
@@ -39,7 +35,7 @@ namespace DotPulsar
         private readonly IHandleException _exceptionHandler;
         private int _isDisposed;
 
-        internal PulsarClient(IConnectionPool connectionPool, ProcessManager processManager, IHandleException exceptionHandler)
+        public PulsarClient(IConnectionPool connectionPool, ProcessManager processManager, IHandleException exceptionHandler)
         {
             _connectionPool = connectionPool;
             _processManager = processManager;
@@ -67,13 +63,11 @@ namespace DotPulsar
                 var producers = new Dictionary<int, IProducer>();
                 for (int i = 0; i < partitionedTopicMetadata.Partitions; i++)
                 {
-                    var subproducerOption = new ProducerOptions(options)
-                    {
-                        Topic = $"{options.Topic}-partition-{i}"
-                    };
+                    var subproducerOption = options.Clone() as ProducerOptions;
+                    subproducerOption!.Topic = $"{options.Topic}-partition-{i}";
                     producers[i] = CreateProducerWithoutCheckingPartition(subproducerOption);
                 }
-                var producer = new PartitionedProducer(options.Topic, stateManager, options, partitionedTopicMetadata, producers, options.MessageRouter, this, new Internal.Timer());
+                var producer = new PartitionedProducer(options.Topic, stateManager, options, partitionedTopicMetadata, producers, options.MessageRouter, this);
                 return producer;
             }
             else
@@ -82,7 +76,7 @@ namespace DotPulsar
             }
         }
 
-        public IProducer CreateProducerWithoutCheckingPartition(ProducerOptions options)
+        internal IProducer CreateProducerWithoutCheckingPartition(ProducerOptions options)
         {
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
@@ -95,7 +89,7 @@ namespace DotPulsar
             return producer;
         }
 
-        public async Task<PartitionedTopicMetadata> GetPartitionTopicMetadata(string topic, CancellationToken cancellationToken = default)
+        public async ValueTask<PartitionedTopicMetadata> GetPartitionTopicMetadata(string topic, CancellationToken cancellationToken = default)
         {
             var connection = await _connectionPool.FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
             var commandPartitionedMetadata = new CommandPartitionedTopicMetadata()

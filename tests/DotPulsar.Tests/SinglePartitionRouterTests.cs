@@ -16,6 +16,7 @@ namespace DotPulsar.Tests
 {
     using DotPulsar.Internal;
     using Xunit;
+
     public class SinglePartitionRouterTests
     {
         [Fact]
@@ -33,7 +34,7 @@ namespace DotPulsar.Tests
             var result = router.ChoosePartition(message, partitionTopicMetadata);
 
             //Assert
-            Assert.Equal(MathUtils.SignSafeMod(Murmur3_32Hash.Instance.MakeHash(message.Key), 3), result);
+            Assert.Equal(Murmur3_32Hash.Instance.MakeHash(message.Key) % 3, result);
         }
 
         [Fact]

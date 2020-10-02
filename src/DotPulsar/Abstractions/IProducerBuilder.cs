@@ -14,6 +14,8 @@
 
 namespace DotPulsar.Abstractions
 {
+    using System;
+
     /// <summary>
     /// A producer building abstraction.
     /// </summary>
@@ -49,12 +51,12 @@ namespace DotPulsar.Abstractions
         IProducerBuilder AutoUpdatePartitions(bool autoUpdate);
 
         /// <summary>
-        /// Set the interval of updating partitions. This is in second.
+        /// Set the interval of updating partitions.
         /// Only for the partitioned producer implementation. 
         /// </summary>
         /// <param name="interval">The interval of updating partitions</param>
         /// <returns>The producer builder instance</returns>
-        IProducerBuilder AutoUpdatePartitionsInterval(int interval);
+        IProducerBuilder AutoUpdatePartitionsInterval(TimeSpan interval);
 
         /// <summary>
         /// Create the producer.
