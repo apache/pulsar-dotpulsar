@@ -27,7 +27,7 @@ namespace DotPulsar.Internal
         private int _maxMessagesPerBatch = ProducerOptions.DefaultMaxMessagesPerBatch;
         private int _batchingMaxBytes = ProducerOptions.DefaultMaxBathingBytes;
         private TimeSpan _maxPublishDelay = ProducerOptions.DefaultMaxPublishDelay;
-        private bool _batchingEnabled = true; // enbale by default
+        private bool _batchingEnabled = true; // enable by default
 
         public ProducerBuilder(IPulsarClient pulsarClient)
         {

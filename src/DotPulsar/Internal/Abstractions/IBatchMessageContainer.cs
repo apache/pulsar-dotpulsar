@@ -20,6 +20,7 @@ namespace DotPulsar.Internal.Abstractions
     {
         MessageMetadata MessageMetadata { get; }
         Queue<Message> Messages { get; }
+
         /// <summary>
         /// Add message to the batch message container.
         /// </summary>

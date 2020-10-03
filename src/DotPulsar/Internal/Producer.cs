@@ -36,7 +36,6 @@ namespace DotPulsar.Internal
         private readonly ProducerOptions _options;
         private readonly IBatchMessageContainer? _batchMessageContainer;
         private readonly Awaiter<Message, MessageId> _batchMessageAwaiter = new Awaiter<Message, MessageId>();
-        private readonly Timer _batchTimer = new Timer();
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         public string Topic { get; }
@@ -68,15 +67,26 @@ namespace DotPulsar.Internal
             if (_options.BatchingEnabled)
             {
                 _batchMessageContainer = new BatchMessageContainer(_options.BatchingMaxMessagesPerBatch, options.BatchingMaxBytes);
-                _batchTimer.SetCallback(BatchMessageAndSend, _options.BatchingMaxPublishDelay);
+                _ = BatchMessageAndSend(_cancellationTokenSource.Token);
             }
         }
 
-        private async void BatchMessageAndSend()
+        private async Task BatchMessageAndSend(CancellationToken cancellationToken = default)
         {
-            var (messages, metadata) = _batchMessageContainer!.GetBatchedMessagesAndMetadata();
-            if (messages == null || metadata == null) return;
-            await SendBatchedMessages(messages, metadata).ConfigureAwait(false);
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    await Task.Delay(_options.BatchingMaxPublishDelay);
+                    var (messages, metadata) = _batchMessageContainer!.GetBatchedMessagesAndMetadata();
+                    if (messages == null || metadata == null) return;
+                    await SendBatchedMessages(messages, metadata).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+
+            }
         }
 
         async Task SendBatchedMessages(Queue<Message> messages, MessageMetadata metadata)
