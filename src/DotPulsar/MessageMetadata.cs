@@ -137,8 +137,8 @@ namespace DotPulsar
 
         public ulong HighestSequenceId
         {
-            get => Metadata.SequenceId;
-            set => Metadata.SequenceId = value;
+            get => Metadata.HighestSequenceId;
+            set => Metadata.HighestSequenceId = value;
         }
 
         public int NumMessagesInBatch

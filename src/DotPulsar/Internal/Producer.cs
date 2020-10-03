@@ -134,7 +134,6 @@ namespace DotPulsar.Internal
 
             _eventRegister.Register(new ProducerDisposed(_correlationId, this));
 
-            _batchTimer.Dispose();
             _batchMessageAwaiter.Dispose();
 
             _cancellationTokenSource.Cancel();
