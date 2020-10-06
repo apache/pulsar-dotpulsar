@@ -25,7 +25,6 @@ namespace DotPulsar.Internal
 
     public sealed class ProducerChannel : IProducerChannel
     {
-        private readonly ObjectPool<MessageMetadata> _messageMetadataPool;
         private readonly ObjectPool<SendPackage> _sendPackagePool;
         private readonly ulong _id;
         private readonly string _name;
@@ -33,8 +32,6 @@ namespace DotPulsar.Internal
 
         public ProducerChannel(ulong id, string name, IConnection connection)
         {
-            var messageMetadataPolicy = new DefaultPooledObjectPolicy<MessageMetadata>();
-            _messageMetadataPool = new DefaultObjectPool<MessageMetadata>(messageMetadataPolicy);
             var sendPackagePolicy = new DefaultPooledObjectPolicy<SendPackage>();
             _sendPackagePool = new DefaultObjectPool<SendPackage>(sendPackagePolicy);
             _id = id;
@@ -55,50 +52,28 @@ namespace DotPulsar.Internal
             }
         }
 
-        public Task<CommandSendReceipt> Send(ulong sequenceId, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
-        {
-            var metadata = _messageMetadataPool.Get();
-            metadata.ProducerName = _name;
-            metadata.SequenceId = sequenceId;
-            try
-            {
-                return SendPackage(metadata, payload, cancellationToken);
-            }
-            finally
-            {
-                _messageMetadataPool.Return(metadata);
-            }
-        }
-
-        public Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
-        {
-            metadata.ProducerName = _name;
-            return SendPackage(metadata, payload, cancellationToken);
-        }
-
-        private async Task<CommandSendReceipt> SendPackage(
-            MessageMetadata metadata,
-            ReadOnlySequence<byte> payload,
-            CancellationToken cancellationToken)
+        public async Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
         {
             var sendPackage = _sendPackagePool.Get();
 
-            if (sendPackage.Command is null)
-            {
-                sendPackage.Command = new CommandSend
-                {
-                    ProducerId = _id,
-                    NumMessages = 1
-                };
-            }
-
-            sendPackage.Command.SequenceId = metadata.SequenceId;
-            sendPackage.Metadata = metadata;
-            sendPackage.Payload = payload;
-            metadata.PublishTime = (ulong) DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(); // TODO Benchmark against StopWatch
-
             try
             {
+                metadata.PublishTime = (ulong) DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                metadata.ProducerName = _name;
+
+                if (sendPackage.Command is null)
+                {
+                    sendPackage.Command = new CommandSend
+                    {
+                        ProducerId = _id,
+                        NumMessages = 1
+                    };
+                }
+
+                sendPackage.Command.SequenceId = metadata.SequenceId;
+                sendPackage.Metadata = metadata;
+                sendPackage.Payload = payload;
+
                 var response = await _connection.Send(sendPackage, cancellationToken).ConfigureAwait(false);
                 response.Expect(BaseCommand.Type.SendReceipt);
                 return response.SendReceipt;

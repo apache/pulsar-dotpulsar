@@ -18,6 +18,7 @@ namespace DotPulsar.Internal
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
     using Events;
+    using Microsoft.Extensions.ObjectPool;
     using System;
     using System.Buffers;
     using System.Threading;
@@ -25,6 +26,7 @@ namespace DotPulsar.Internal
 
     public sealed class Producer : IProducer
     {
+        private readonly ObjectPool<PulsarApi.MessageMetadata> _messageMetadataPool;
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
         private IProducerChannel _channel;
@@ -44,6 +46,8 @@ namespace DotPulsar.Internal
             IExecute executor,
             IStateChanged<ProducerState> state)
         {
+            var messageMetadataPolicy = new DefaultPooledObjectPolicy<PulsarApi.MessageMetadata>();
+            _messageMetadataPool = new DefaultObjectPool<PulsarApi.MessageMetadata>(messageMetadataPolicy);
             _correlationId = correlationId;
             Topic = topic;
             _sequenceId = new SequenceId(initialSequenceId);
@@ -93,9 +97,17 @@ namespace DotPulsar.Internal
         public async ValueTask<MessageId> Send(ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            var sequenceId = _sequenceId.FetchNext();
-            var response = await _executor.Execute(() => _channel.Send(sequenceId, data, cancellationToken), cancellationToken).ConfigureAwait(false);
-            return new MessageId(response.MessageId);
+            var metadata = _messageMetadataPool.Get();
+            try
+            {
+                metadata.SequenceId = _sequenceId.FetchNext();
+                var response = await _executor.Execute(() => _channel.Send(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
+                return new MessageId(response.MessageId);
+            }
+            finally
+            {
+                _messageMetadataPool.Return(metadata);
+            }
         }
 
         public ValueTask<MessageId> Send(MessageMetadata metadata, byte[] data, CancellationToken cancellationToken)
