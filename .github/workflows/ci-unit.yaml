@@ -32,7 +32,7 @@ jobs:
 
     strategy:
       matrix:
-        dotnet: ['2.2.x', '3.1.x']
+        dotnet: ['2.2.103', '3.1.x']
 
     steps:
       - name: checkout
