@@ -37,28 +37,15 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: set up dotnet 3
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '3.1.x'
-
-      - name: set up dotnet 2
+      - name: Setup dotnet 2
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '2.2.x'
 
-      - name: set up dotnet SxS
-        shell: pwsh
-        run: |
-          $version = Split-Path (Split-Path $ENV:DOTNET_ROOT -Parent) -Leaf;
-          $root = Split-Path (Split-Path $ENV:DOTNET_ROOT -Parent) -Parent;
-          $directories = Get-ChildItem $root | Where-Object { $_.Name -ne $version };
-          foreach ($dir in $directories) {
-            $from = $dir.FullName;
-            $to = "$root/$version";
-            Write-Host Copying from $from to $to;
-            Copy-Item "$from\*" $to -Recurse -Force;
-          }
+      - name: Setup dotnet 3
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
 
       - name: run unit tests
         run: dotnet test ./tests/DotPulsar.Tests/DotPulsar.Tests.csproj --logger "trx;verbosity=detailed"
