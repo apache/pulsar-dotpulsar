@@ -54,52 +54,52 @@ namespace DotPulsar.Internal
 
         public DotPulsarEventSource() : base("DotPulsar")
         {
-            _totalClientsCounter = new PollingCounter("total-clients", this, () => Volatile.Read(ref _totalClients))
+            _totalClientsCounter = new PollingCounter("total-clients", this, () => Interlocked.Read(ref _totalClients))
             {
                 DisplayName = "Total number of clients"
             };
 
-            _currentClientsCounter = new PollingCounter("current-clients", this, () => Volatile.Read(ref _currentClients))
+            _currentClientsCounter = new PollingCounter("current-clients", this, () => Interlocked.Read(ref _currentClients))
             {
                 DisplayName = "Current number of clients"
             };
 
-            _totalConnectionsCounter = new PollingCounter("total-connections", this, () => Volatile.Read(ref _totalConnections))
+            _totalConnectionsCounter = new PollingCounter("total-connections", this, () => Interlocked.Read(ref _totalConnections))
             {
                 DisplayName = "Total number of connections"
             };
 
-            _currentConnectionsCounter = new PollingCounter("current-connections", this, () => Volatile.Read(ref _currentConnections))
+            _currentConnectionsCounter = new PollingCounter("current-connections", this, () => Interlocked.Read(ref _currentConnections))
             {
                 DisplayName = "Current number of connections"
             };
 
-            _totalConsumersCounter = new PollingCounter("total-consumers", this, () => Volatile.Read(ref _totalConsumers))
+            _totalConsumersCounter = new PollingCounter("total-consumers", this, () => Interlocked.Read(ref _totalConsumers))
             {
                 DisplayName = "Total number of consumers"
             };
 
-            _currentConsumersCounter = new PollingCounter("current-consumers", this, () => Volatile.Read(ref _currentConsumers))
+            _currentConsumersCounter = new PollingCounter("current-consumers", this, () => Interlocked.Read(ref _currentConsumers))
             {
                 DisplayName = "Current number of consumers"
             };
 
-            _totalProducersCounter = new PollingCounter("total-producers", this, () => Volatile.Read(ref _totalProducers))
+            _totalProducersCounter = new PollingCounter("total-producers", this, () => Interlocked.Read(ref _totalProducers))
             {
                 DisplayName = "Total number of producers"
             };
 
-            _currentProducersCounter = new PollingCounter("current-producers", this, () => Volatile.Read(ref _currentProducers))
+            _currentProducersCounter = new PollingCounter("current-producers", this, () => Interlocked.Read(ref _currentProducers))
             {
                 DisplayName = "Current number of producers"
             };
 
-            _totalReadersCounter = new PollingCounter("total-readers", this, () => Volatile.Read(ref _totalReaders))
+            _totalReadersCounter = new PollingCounter("total-readers", this, () => Interlocked.Read(ref _totalReaders))
             {
                 DisplayName = "Total number of readers"
             };
 
-            _currentReadersCounter = new PollingCounter("current-readers", this, () => Volatile.Read(ref _currentReaders))
+            _currentReadersCounter = new PollingCounter("current-readers", this, () => Interlocked.Read(ref _currentReaders))
             {
                 DisplayName = "Current number of readers"
             };
