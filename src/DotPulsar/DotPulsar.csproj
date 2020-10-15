@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-    <Version>0.9.5</Version>
+    <Version>0.9.6</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Authors>DanskeCommodities;dblank</Authors>
@@ -11,7 +11,7 @@
     <Title>DotPulsar</Title>
     <PackageTags>Apache;Pulsar</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageReleaseNotes>Beta release - Fixed memory leak, catch unhandled exceptions and null checking in MessageId comparison</PackageReleaseNotes>
+    <PackageReleaseNotes>Please refer to CHANGELOG.md for details</PackageReleaseNotes>
     <Description>.NET/C# client library for Apache Pulsar</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -21,10 +21,10 @@
   </PropertyGroup>
 
   <ItemGroup>    
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="3.1.7" />    
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="3.1.9" />    
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="protobuf-net" Version="2.4.6" />
-    <PackageReference Include="System.IO.Pipelines" Version="4.7.2" />
+    <PackageReference Include="System.IO.Pipelines" Version="4.7.3" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
