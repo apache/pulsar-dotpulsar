@@ -28,9 +28,19 @@ namespace Producing
         {
             const string myTopic = "persistent://public/default/mytopic";
 
+            var taskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            Console.CancelKeyPress += (sender, args) =>
+            {
+                taskCompletionSource.SetResult(null);
+                args.Cancel = true;
+            };
+
             await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
-            var producer = client.NewProducer().Topic(myTopic).Create();
+            var producer = client.NewProducer()
+                .Topic(myTopic)
+                .Create();
 
             var monitoring = Monitor(producer);
 
@@ -38,17 +48,17 @@ namespace Producing
 
             var producing = ProduceMessages(producer, cts.Token);
 
-            Console.WriteLine("Press a key to exit");
+            Console.WriteLine("Press Ctrl+C to exit");
 
-            _ = Console.ReadKey();
+            await taskCompletionSource.Task;
 
             cts.Cancel();
 
-            await producing.ConfigureAwait(false);
+            await producing;
 
-            await producer.DisposeAsync().ConfigureAwait(false);
+            await producer.DisposeAsync();
 
-            await monitoring.ConfigureAwait(false);
+            await monitoring;
         }
 
         private static async Task ProduceMessages(IProducer producer, CancellationToken cancellationToken)
@@ -63,9 +73,9 @@ namespace Producing
                 {
                     var data = DateTime.UtcNow.ToLongTimeString();
                     var bytes = Encoding.UTF8.GetBytes(data);
-                    _ = await producer.Send(bytes, cancellationToken).ConfigureAwait(false);
+                    _ = await producer.Send(bytes, cancellationToken);
                     Console.WriteLine("Sent: " + data);
-                    await Task.Delay(delay).ConfigureAwait(false);
+                    await Task.Delay(delay, cancellationToken);
                 }
             }
             catch (OperationCanceledException) // If not using the cancellationToken, then just dispose the producer and catch ObjectDisposedException instead
