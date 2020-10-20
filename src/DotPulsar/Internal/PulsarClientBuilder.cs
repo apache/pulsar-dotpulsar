@@ -79,6 +79,12 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IPulsarClientBuilder ExceptionHandler(Action<ExceptionContext> exceptionHandler)
+        {
+            _exceptionHandlers.Add(new ActionExceptionHandler(exceptionHandler));
+            return this;
+        }
+
         public IPulsarClientBuilder ExceptionHandler(Func<ExceptionContext, ValueTask> exceptionHandler)
         {
             _exceptionHandlers.Add(new FuncExceptionHandler(exceptionHandler));
