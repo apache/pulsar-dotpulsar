@@ -18,6 +18,7 @@ namespace DotPulsar.Internal
     using DotPulsar.Exceptions;
     using Exceptions;
     using System;
+    using System.IO;
     using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
@@ -42,6 +43,8 @@ namespace DotPulsar.Internal
         private FaultAction DetermineFaultAction(Exception exception, CancellationToken cancellationToken)
             => exception switch
             {
+                PersistenceException _ => FaultAction.Retry,
+                IOException _ => FaultAction.Retry,
                 TooManyRequestsException _ => FaultAction.Retry,
                 ChannelNotReadyException _ => FaultAction.Retry,
                 ServiceNotReadyException _ => FaultAction.Retry,
