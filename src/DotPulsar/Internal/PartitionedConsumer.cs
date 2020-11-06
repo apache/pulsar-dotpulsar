@@ -32,7 +32,6 @@ namespace DotPulsar.Internal
 
         private readonly object _statusLock = new object();
 
-        private readonly Timer _timer;
         private readonly ConsumerOptions _options;
         private readonly BatchHandler _batchHandler;
         private readonly PulsarClient _pulsarClient;
@@ -46,13 +45,11 @@ namespace DotPulsar.Internal
                                    PartitionedTopicMetadata partitionedTopicMetadata,
                                    Dictionary<int, Consumer> consumers,
                                    BatchHandler batchHandler,
-                                   PulsarClient pulsarClient,
-                                   Timer timer)
+                                   PulsarClient pulsarClient)
         {
             Topic = topic;
 
             _state = state;
-            _timer = timer;
             _options = options;
             _batchHandler = batchHandler;
             _pulsarClient = pulsarClient;
@@ -62,15 +59,12 @@ namespace DotPulsar.Internal
 
             _cancellationTokenSource = new CancellationTokenSource();
 
-            if (options.AutoUpdatePartitions)
-            {
-                _timer.SetCallback(UpdatePartitionMetadata, options.AutoUpdatePartitionsInterval * 1000);
-            }
-
             foreach (KeyValuePair<int, ConsumerUsageData> consumerUsageDataWithPartitionKey in _consumers)
             {
                 _ = MonitorState(consumerUsageDataWithPartitionKey.Value.Consumer, consumerUsageDataWithPartitionKey.Key, _cancellationTokenSource.Token);
             }
+
+            _ = UpdatePartitionMetadata();
         }
 
         #region IConsumer
@@ -291,7 +285,6 @@ namespace DotPulsar.Internal
                 return;
             }
 
-            _timer.Dispose();
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
 
@@ -342,50 +335,60 @@ namespace DotPulsar.Internal
             }
         }
 
-        private async void UpdatePartitionMetadata()
+        private async Task UpdatePartitionMetadata()
         {
-            try
+            var cancellationToken = _cancellationTokenSource.Token;
+
+            for (;;)
             {
-                var cancellationToken = _cancellationTokenSource.Token;
-                var newPartitionedTopicMetadata = await _pulsarClient.GetPartitionTopicMetadata(Topic, cancellationToken)
-                                                                     .ConfigureAwait(false);
-
-                // Pulsar doesn't support removing parttions at the moment
-
-                if (newPartitionedTopicMetadata.Partitions > _partitionedTopicMetadata.Partitions)
+                try
                 {
-                    uint prefetchCount = Math.Max(1U, (uint) (_options.MessagePrefetchCount / newPartitionedTopicMetadata.Partitions));
+                    await Task.Delay(_options.AutoUpdatePartitionsInterval, cancellationToken);
 
-                    // need to update existing consumers prefetch count to avoid using too much memory
-                    // update will happen on next flow command execution though
+                    var newPartitionedTopicMetadata = await _pulsarClient.GetPartitionTopicMetadata(Topic, cancellationToken)
+                                                                         .ConfigureAwait(false);
 
-                    foreach (ConsumerUsageData consumerUsageData in _consumers.Values)
+                    // Pulsar doesn't support removing parttions at the moment
+
+                    if (newPartitionedTopicMetadata.Partitions > _partitionedTopicMetadata.Partitions)
                     {
-                        await consumerUsageData.Consumer.UpdateMessagePrefetchCount(prefetchCount, cancellationToken)
-                                                        .ConfigureAwait(false);
-                    }
+                        uint prefetchCount = Math.Max(1U, (uint) (_options.MessagePrefetchCount / newPartitionedTopicMetadata.Partitions));
 
-                    // construct new consumers
+                        // need to update existing consumers prefetch count to avoid using too much memory
+                        // update will happen on next flow command execution though
 
-                    for (int partitionIndex = _consumers.Count; partitionIndex < newPartitionedTopicMetadata.Partitions; partitionIndex++)
-                    {
-                        var partitionTopicConsumerOptions = new ConsumerOptions(_options, $"{_options.Topic}-partition-{partitionIndex}", prefetchCount);
-                        Consumer partitionTopicConsumer = _pulsarClient.CreateConsumerWithoutCheckingPartition(_batchHandler, partitionTopicConsumerOptions);
-
-                        // it is safe to have partial failure as we only add new partition consumers and we add them
-                        // in order (increasing partitionIndex)
-                        // if exception is thrown then next time we will try add more partition consumers
-
-                        if (_consumers.TryAdd(partitionIndex, new ConsumerUsageData(partitionTopicConsumer)))
+                        foreach (ConsumerUsageData consumerUsageData in _consumers.Values)
                         {
-                            _ = MonitorState(partitionTopicConsumer, partitionIndex, _cancellationTokenSource.Token);
+                            await consumerUsageData.Consumer.UpdateMessagePrefetchCount(prefetchCount, cancellationToken)
+                                                            .ConfigureAwait(false);
+                        }
+
+                        // construct new consumers
+
+                        for (int partitionIndex = _consumers.Count; partitionIndex < newPartitionedTopicMetadata.Partitions; partitionIndex++)
+                        {
+                            var partitionTopicConsumerOptions = new ConsumerOptions(_options, $"{_options.Topic}-partition-{partitionIndex}", prefetchCount);
+                            Consumer partitionTopicConsumer = _pulsarClient.CreateConsumerWithoutCheckingPartition(_batchHandler, partitionTopicConsumerOptions);
+
+                            // it is safe to have partial failure as we only add new partition consumers and we add them
+                            // in order (increasing partitionIndex)
+                            // if exception is thrown then next time we will try add more partition consumers
+
+                            if (_consumers.TryAdd(partitionIndex, new ConsumerUsageData(partitionTopicConsumer)))
+                            {
+                                _ = MonitorState(partitionTopicConsumer, partitionIndex, _cancellationTokenSource.Token);
+                            }
                         }
                     }
                 }
-            }
-            catch
-            {
-                // as this is a monitor task which is being excuted on timer we ignore all exceptions
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch
+                {
+                    // as this is a monitor task which is being excuted on timer we ignore all exceptions
+                }
             }
         }
 

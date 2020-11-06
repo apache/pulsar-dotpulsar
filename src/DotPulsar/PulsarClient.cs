@@ -24,7 +24,6 @@ namespace DotPulsar
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
-    using System.Collections.Generic;
 
     /// <summary>
     /// Pulsar client for creating producers, consumers and readers.
@@ -138,8 +137,7 @@ namespace DotPulsar
                                                    partitionedTopicMetadata,
                                                    consumers,
                                                    batchHandler,
-                                                   this,
-                                                   new Internal.Timer());
+                                                   this);
                 }
                 catch
                 {

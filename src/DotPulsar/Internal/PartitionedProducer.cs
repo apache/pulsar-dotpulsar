@@ -118,51 +118,59 @@ namespace DotPulsar.Internal
         {
             var cancellationToken = _cancellationTokenSource.Token;
 
-            try
+            for (;;)
             {
-                await Task.Delay(_options.AutoUpdatePartitionsInterval);
-                var newMetadata = await _client.GetPartitionTopicMetadata(Topic, cancellationToken).ConfigureAwait(false);
-                // Not support shrink topic partitions
-                if (newMetadata.Partitions > _partitionedTopicMetadata.Partitions)
+                try
                 {
-                    int newProducersCount = newMetadata.Partitions - _partitionedTopicMetadata.Partitions;
-                    var producers = new ConcurrentDictionary<int, IProducer>(Environment.ProcessorCount, newProducersCount);
-                    var newSubproducerTasks = new List<Task>(newProducersCount);
-                    for (int i = _partitionedTopicMetadata.Partitions; i < newMetadata.Partitions; i++)
+                    await Task.Delay(_options.AutoUpdatePartitionsInterval);
+                    var newMetadata = await _client.GetPartitionTopicMetadata(Topic, cancellationToken).ConfigureAwait(false);
+                    // Not support shrink topic partitions
+                    if (newMetadata.Partitions > _partitionedTopicMetadata.Partitions)
                     {
-                        int partID = i;
-                        newSubproducerTasks.Add(Task.Run(async () =>
+                        int newProducersCount = newMetadata.Partitions - _partitionedTopicMetadata.Partitions;
+                        var producers = new ConcurrentDictionary<int, IProducer>(Environment.ProcessorCount, newProducersCount);
+                        var newSubproducerTasks = new List<Task>(newProducersCount);
+                        for (int i = _partitionedTopicMetadata.Partitions; i < newMetadata.Partitions; i++)
                         {
-                            var subproducerOption = _options.Clone() as ProducerOptions;
-                            subproducerOption!.Topic = $"{_options.Topic}-partition-{partID}";
-                            var producer = _client.CreateProducerWithoutCheckingPartition(subproducerOption);
-                            producers[partID] = producer;
-                            _ = await producer.StateChangedTo(ProducerState.Connected).ConfigureAwait(false);
-                        }));
-                    }
-                    try
-                    {
-                        await Task.WhenAll(newSubproducerTasks.ToArray()).ConfigureAwait(false);
-                        foreach (var p in producers)
-                        {
-                            _producers[p.Key] = p.Value;
-                            _ = MonitorState(p.Value, ProducerState.Connected, cancellationToken);
+                            int partID = i;
+                            newSubproducerTasks.Add(Task.Run(async () =>
+                            {
+                                var subproducerOption = _options.Clone() as ProducerOptions;
+                                subproducerOption!.Topic = $"{_options.Topic}-partition-{partID}";
+                                var producer = _client.CreateProducerWithoutCheckingPartition(subproducerOption);
+                                producers[partID] = producer;
+                                _ = await producer.StateChangedTo(ProducerState.Connected).ConfigureAwait(false);
+                            }));
                         }
+                        try
+                        {
+                            await Task.WhenAll(newSubproducerTasks.ToArray()).ConfigureAwait(false);
+                            foreach (var p in producers)
+                            {
+                                _producers[p.Key] = p.Value;
+                                _ = MonitorState(p.Value, ProducerState.Connected, cancellationToken);
+                            }
 
-                        _metadataLock.EnterWriteLock();
-                        _partitionedTopicMetadata = newMetadata;
-                        Interlocked.Add(ref _connectedProducerCount, newProducersCount);
-                        _metadataLock.ExitWriteLock();
-                    }
-                    catch
-                    {
-                        foreach (var producer in producers.Values)
-                            await producer.DisposeAsync().ConfigureAwait(false);
+                            _metadataLock.EnterWriteLock();
+                            _partitionedTopicMetadata = newMetadata;
+                            Interlocked.Add(ref _connectedProducerCount, newProducersCount);
+                            _metadataLock.ExitWriteLock();
+                        }
+                        catch
+                        {
+                            foreach (var producer in producers.Values)
+                                await producer.DisposeAsync().ConfigureAwait(false);
+                        }
                     }
                 }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch
+                {
+                }
             }
-            catch (OperationCanceledException)
-            { }
         }
 
         private IProducer GetProducer(MessageMetadata? message = null)
