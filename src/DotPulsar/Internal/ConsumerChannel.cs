@@ -69,7 +69,7 @@ namespace DotPulsar.Internal
 
                     var message = _batchHandler.GetNext();
 
-                    if (message != null)
+                    if (message is not null)
                         return message;
 
                     var messagePackage = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);

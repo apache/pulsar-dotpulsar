@@ -15,6 +15,7 @@
 namespace DotPulsar.Tests.Internal
 {
     using DotPulsar.Internal;
+    using FluentAssertions;
     using Xunit;
 
     public class SerializerTests
@@ -30,8 +31,7 @@ namespace DotPulsar.Tests.Internal
 
             //Assert
             var expected = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-
-            Assert.Equal(expected, actual);
+            actual.Should().Equal(expected);
         }
     }
 }

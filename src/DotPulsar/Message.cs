@@ -109,7 +109,7 @@ namespace DotPulsar
         /// <summary>
         /// Check whether the message has a key.
         /// </summary>
-        public bool HasKey => Key != null;
+        public bool HasKey => Key is not null;
 
         /// <summary>
         /// The key as a string.
@@ -119,12 +119,12 @@ namespace DotPulsar
         /// <summary>
         /// The key as bytes.
         /// </summary>
-        public byte[]? KeyBytes => HasBase64EncodedKey ? Convert.FromBase64String(Key) : null;
+        public byte[]? KeyBytes => Key is not null ? Convert.FromBase64String(Key) : null;
 
         /// <summary>
         /// Check whether the message has an ordering key.
         /// </summary>
-        public bool HasOrderingKey => OrderingKey != null;
+        public bool HasOrderingKey => OrderingKey is not null;
 
         /// <summary>
         /// The ordering key of the message.

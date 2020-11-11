@@ -18,6 +18,7 @@
 namespace DotPulsar.Tests
 {
     using DotPulsar;
+    using FluentAssertions;
     using Xunit;
 
     public class MessageIdTests
@@ -28,9 +29,9 @@ namespace DotPulsar.Tests
             var m1 = new MessageId(1234, 5678, 9876, 5432);
             var m2 = m1;
 
-            Assert.True(m1.Equals(m2));
-            Assert.True(m1 == m2);
-            Assert.False(m1 != m2);
+            m1.Equals(m2).Should().BeTrue();
+            (m1 == m2).Should().BeTrue();
+            (m1 != m2).Should().BeFalse();
         }
 
         [Fact]
@@ -39,9 +40,9 @@ namespace DotPulsar.Tests
             var m1 = new MessageId(1234, 5678, 9876, 5432);
             var m2 = new MessageId(1234, 5678, 9876, 5432);
 
-            Assert.True(m1.Equals(m2));
-            Assert.True(m1 == m2);
-            Assert.False(m1 != m2);
+            m1.Equals(m2).Should().BeTrue();
+            (m1 == m2).Should().BeTrue();
+            (m1 != m2).Should().BeFalse();
         }
 
         [Fact]
@@ -50,9 +51,9 @@ namespace DotPulsar.Tests
             var m1 = new MessageId(1234, 5678, 9876, 5432);
             var m2 = new MessageId(9876, 6432, 1234, 6678);
 
-            Assert.False(m1.Equals(m2));
-            Assert.False(m1 == m2);
-            Assert.True(m1 != m2);
+            m1.Equals(m2).Should().BeFalse();
+            (m1 == m2).Should().BeFalse();
+            (m1 != m2).Should().BeTrue();
         }
 
         [Fact]
@@ -61,9 +62,9 @@ namespace DotPulsar.Tests
             MessageId m1 = null;
             MessageId m2 = null;
 
-            Assert.True(m1 == m2);
-            Assert.True(m1 == null);
-            Assert.False(m1 != m2);
+            (m1 == m2).Should().BeTrue();
+            (m1 == null).Should().BeTrue();
+            (m1 != m2).Should().BeFalse();
         }
 
         [Fact]
@@ -72,10 +73,10 @@ namespace DotPulsar.Tests
             var m1 = new MessageId(1234, 5678, 9876, 5432);
             MessageId m2 = null;
 
-            Assert.False(m1 == null);
-            Assert.False(m1 == m2);
-            Assert.False(m1.Equals(m2));
-            Assert.True(m1 != m2);
+            (m1 == null).Should().BeFalse();
+            (m1 == m2).Should().BeFalse();
+            m1.Equals(m2).Should().BeFalse();
+            (m1 != m2).Should().BeTrue();
         }
     }
 }

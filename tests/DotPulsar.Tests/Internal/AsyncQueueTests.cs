@@ -15,6 +15,7 @@
 namespace DotPulsar.Tests.Internal
 {
     using DotPulsar.Internal;
+    using FluentAssertions;
     using System.Threading;
     using System.Threading.Tasks;
     using Xunit;
@@ -25,16 +26,16 @@ namespace DotPulsar.Tests.Internal
         public async Task Enqueue_GivenDequeueTaskWasWaiting_ShouldCompleteDequeueTask()
         {
             //Arrange
-            const int value = 1;
+            const int expected = 1;
             var queue = new AsyncQueue<int>();
             var dequeueTask = queue.Dequeue();
-            queue.Enqueue(value);
+            queue.Enqueue(expected);
 
             //Act
             var actual = await dequeueTask.ConfigureAwait(false);
 
             //Assert
-            Assert.Equal(value, actual);
+            actual.Should().Be(expected);
 
             //Annihilate
             queue.Dispose();
@@ -44,15 +45,15 @@ namespace DotPulsar.Tests.Internal
         public async Task DequeueAsync_GivenQueueWasNotEmpty_ShouldCompleteDequeueTask()
         {
             //Arrange
-            const int value = 1;
+            const int expected = 1;
             var queue = new AsyncQueue<int>();
-            queue.Enqueue(value);
+            queue.Enqueue(expected);
 
             //Act
             var actual = await queue.Dequeue().ConfigureAwait(false);
 
             //Assert
-            Assert.Equal(value, actual);
+            actual.Should().Be(expected);
 
             //Annihilate
             queue.Dispose();
@@ -62,20 +63,20 @@ namespace DotPulsar.Tests.Internal
         public async Task DequeueAsync_GivenMultipleDequeues_ShouldCompleteInOrderedSequence()
         {
             //Arrange
-            const int value1 = 1, value2 = 2;
+            const int expected1 = 1, expected2 = 2;
             var queue = new AsyncQueue<int>();
             var dequeue1 = queue.Dequeue();
             var dequeue2 = queue.Dequeue();
-            queue.Enqueue(value1);
-            queue.Enqueue(value2);
+            queue.Enqueue(expected1);
+            queue.Enqueue(expected2);
 
             //Act
             var actual1 = await dequeue1.ConfigureAwait(false);
             var actual2 = await dequeue2.ConfigureAwait(false);
 
             //Assert
-            Assert.Equal(value1, actual1);
-            Assert.Equal(value2, actual2);
+            actual1.Should().Be(expected1);
+            actual2.Should().Be(expected2);
 
             //Annihilate
             queue.Dispose();
@@ -85,18 +86,18 @@ namespace DotPulsar.Tests.Internal
         public async Task DequeueAsync_GivenSequenceOfInput_ShouldReturnSameSequenceOfOutput()
         {
             //Arrange
-            const int value1 = 1, value2 = 2;
+            const int expected1 = 1, expected2 = 2;
             var queue = new AsyncQueue<int>();
-            queue.Enqueue(value1);
-            queue.Enqueue(value2);
+            queue.Enqueue(expected1);
+            queue.Enqueue(expected2);
 
             //Act
             var actual1 = await queue.Dequeue().ConfigureAwait(false);
             var actual2 = await queue.Dequeue().ConfigureAwait(false);
 
             //Assert
-            Assert.Equal(value1, actual1);
-            Assert.Equal(value2, actual2);
+            actual1.Should().Be(expected1);
+            actual2.Should().Be(expected2);
 
             //Annihilate
             queue.Dispose();
@@ -119,8 +120,8 @@ namespace DotPulsar.Tests.Internal
             await task2.ConfigureAwait(false);
 
             //Assert
-            Assert.IsType<TaskCanceledException>(exception);
-            Assert.Equal(excepted, task2.Result);
+            exception.Should().BeOfType<TaskCanceledException>();
+            task2.Result.Should().Be(excepted);
 
             //Annihilate
             source1.Dispose();

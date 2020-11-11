@@ -141,7 +141,7 @@ namespace DotPulsar.Internal
         {
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
-                if (_connections.TryGetValue(url, out Connection connection))
+                if (_connections.TryGetValue(url, out Connection? connection) && connection is not null)
                     return connection;
 
                 return await EstablishNewConnection(url, cancellationToken).ConfigureAwait(false);
@@ -167,7 +167,7 @@ namespace DotPulsar.Internal
 
         private async ValueTask DisposeConnection(PulsarUrl serviceUrl)
         {
-            if (_connections.TryRemove(serviceUrl, out Connection connection))
+            if (_connections.TryRemove(serviceUrl, out Connection? connection) && connection is not null)
             {
                 await connection.DisposeAsync().ConfigureAwait(false);
                 DotPulsarEventSource.Log.ConnectionDisposed();

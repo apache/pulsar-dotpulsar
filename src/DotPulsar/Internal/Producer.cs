@@ -147,7 +147,7 @@ namespace DotPulsar.Internal
             var oldChannel = _channel;
             _channel = channel;
 
-            if (oldChannel != null)
+            if (oldChannel is not null)
                 await oldChannel.DisposeAsync().ConfigureAwait(false);
         }
 

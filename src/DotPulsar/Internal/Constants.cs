@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Internal
 {
+    using System;
     using System.Reflection;
 
     public static class Constants
@@ -21,7 +22,11 @@ namespace DotPulsar.Internal
         static Constants()
         {
             var assemblyName = Assembly.GetCallingAssembly().GetName();
-            ClientVersion = $"{assemblyName.Name} {assemblyName.Version.ToString(3)}";
+            var assemblyVersion = assemblyName.Version;
+            if (assemblyVersion is null)
+                throw new Exception("Assembly version of CallingAssembly is null");
+
+            ClientVersion = $"{assemblyName.Name} {assemblyVersion.ToString(3)}";
             ProtocolVersion = 14;
             PulsarScheme = "pulsar";
             PulsarSslScheme = "pulsar+ssl";

@@ -23,7 +23,7 @@ namespace DotPulsar.Internal
         private const string ConnectResponseIdentifier = "Connected";
 
         private readonly Awaiter<string, BaseCommand> _responses;
-        private RequestId _requestId;
+        private readonly RequestId _requestId;
 
         public RequestResponseHandler()
         {
@@ -44,7 +44,7 @@ namespace DotPulsar.Internal
         {
             var identifier = GetResponseIdentifier(command);
 
-            if (identifier != null)
+            if (identifier is not null)
                 _responses.SetResult(identifier, command);
         }
 

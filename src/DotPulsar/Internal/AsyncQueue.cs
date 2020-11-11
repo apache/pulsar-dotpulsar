@@ -41,12 +41,12 @@ namespace DotPulsar.Internal
             {
                 ThrowIfDisposed();
 
-                if (_pendingDequeues.Count > 0)
+                var node = _pendingDequeues.First;
+                if (node is not null)
                 {
-                    var tcs = _pendingDequeues.First;
+                    node.Value.SetResult(item);
+                    node.Value.Dispose();
                     _pendingDequeues.RemoveFirst();
-                    tcs.Value.SetResult(item);
-                    tcs.Value.Dispose();
                 }
                 else
                     _queue.Enqueue(item);

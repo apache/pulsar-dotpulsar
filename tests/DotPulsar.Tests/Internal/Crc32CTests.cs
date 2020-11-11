@@ -15,6 +15,7 @@
 namespace DotPulsar.Tests.Internal
 {
     using DotPulsar.Internal;
+    using FluentAssertions;
     using Xunit;
 
     public class Crc32CTests
@@ -32,7 +33,7 @@ namespace DotPulsar.Tests.Internal
 
             //Assert
             const uint expected = 2355953212;
-            Assert.Equal(expected, actual);
+            actual.Should().Be(expected);
         }
 
         [Fact]
@@ -55,8 +56,7 @@ namespace DotPulsar.Tests.Internal
 
             //Assert
             const uint expected = 1079987866;
-
-            Assert.Equal(expected, actual);
+            actual.Should().Be(expected);
         }
     }
 }

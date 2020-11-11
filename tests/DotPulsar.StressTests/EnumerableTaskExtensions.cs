@@ -25,62 +25,60 @@ namespace DotPulsar.StressTests
     public static class EnumerableValueTaskExtensions
     {
         [DebuggerStepThrough]
-        public static async ValueTask<TResult[]> WhenAll<TResult>(this IEnumerable<ValueTask<TResult>> source)
+        public static async ValueTask<TResult[]> WhenAll<TResult>(this IEnumerable<ValueTask<TResult>> source) where TResult : notnull
         {
             // the volatile property IsCompleted must be accessed only once
             var tasks = source.Select(GetInfo).ToArray();
 
             // run incomplete tasks
-            await tasks
-                .Where(x => x.IsTask).Select(t => t.Task)
-                .WhenAll()
-                .ConfigureAwait(false);
+            foreach (var task in tasks)
+            {
+                if (task.Task is not null && !task.Task.IsCompleted)
+                    await task.Task.ConfigureAwait(false);
+            }
 
             // return ordered mixed tasks \m/
             return tasks
-                .Select(x => x.IsTask ? x.Task.Result : x.Result)
+                .Select(x => x.Task is not null ? x.Task.Result : x.Result)
                 .ToArray();
         }
 
         [DebuggerStepThrough]
-        public static async Task<TResult[]> WhenAllAsTask<TResult>(this IEnumerable<ValueTask<TResult>> source)
+        public static async Task<TResult[]> WhenAllAsTask<TResult>(this IEnumerable<ValueTask<TResult>> source) where TResult : notnull
             => await source.WhenAll().ConfigureAwait(false);
 
         [DebuggerStepThrough]
-        public static async IAsyncEnumerable<TResult> Enumerate<TResult>(this IEnumerable<ValueTask<TResult>> source)
+        public static async IAsyncEnumerable<TResult> Enumerate<TResult>(this IEnumerable<ValueTask<TResult>> source) where TResult : notnull
         {
             foreach (var operation in source.Select(GetInfo))
             {
-                yield return operation.IsTask
+                yield return operation.Task is not null
                     ? await operation.Task.ConfigureAwait(false)
                     : operation.Result;
             }
         }
 
-        private static ValueTaskInfo<TResult> GetInfo<TResult>(this ValueTask<TResult> source)
+        private static ValueTaskInfo<TResult> GetInfo<TResult>(this ValueTask<TResult> source) where TResult : notnull
             => source.IsCompleted
                 ? new ValueTaskInfo<TResult>(source.Result)
                 : new ValueTaskInfo<TResult>(source.AsTask());
 
-        private readonly struct ValueTaskInfo<TResult>
+        private readonly struct ValueTaskInfo<TResult> where TResult : notnull
         {
             public ValueTaskInfo(Task<TResult> task)
             {
-                IsTask = true;
                 Result = default;
                 Task = task;
             }
 
             public ValueTaskInfo(TResult result)
             {
-                IsTask = false;
                 Result = result;
                 Task = default;
             }
 
-            public bool IsTask { get; }
             public TResult Result { get; }
-            public Task<TResult> Task { get; }
+            public Task<TResult>? Task { get; }
         }
     }
 

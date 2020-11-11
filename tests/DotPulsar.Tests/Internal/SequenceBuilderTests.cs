@@ -15,7 +15,9 @@
 namespace DotPulsar.Tests.Internal
 {
     using DotPulsar.Internal;
+    using FluentAssertions;
     using System.Buffers;
+    using System.Linq;
     using Xunit;
 
     public class SequenceBuilderTests
@@ -31,13 +33,11 @@ namespace DotPulsar.Tests.Internal
             var builder = new SequenceBuilder<byte>().Append(a).Append(b).Append(c);
 
             //Act
-            var sequence = builder.Build();
+            var actual = builder.Build().ToArray();
 
             //Assert
-            var array = sequence.ToArray();
-
-            for (byte i = 0; i < array.Length; ++i)
-                Assert.Equal(i, array[i]);
+            var expected = Enumerable.Range(0, 10).ToArray();
+            actual.Should().Equal(expected);
         }
 
         [Fact]
@@ -54,13 +54,11 @@ namespace DotPulsar.Tests.Internal
             var builder = new SequenceBuilder<byte>().Append(a).Append(seq).Append(e);
 
             //Act
-            var sequence = builder.Build();
+            var actual = builder.Build().ToArray();
 
             //Assert
-            var array = sequence.ToArray();
-
-            for (byte i = 0; i < array.Length; ++i)
-                Assert.Equal(i, array[i]);
+            var expected = Enumerable.Range(0, 10).ToArray();
+            actual.Should().Equal(expected);
         }
 
         [Fact]
@@ -74,13 +72,11 @@ namespace DotPulsar.Tests.Internal
             var builder = new SequenceBuilder<byte>().Prepend(c).Prepend(b).Prepend(a);
 
             //Act
-            var sequence = builder.Build();
+            var actual = builder.Build().ToArray();
 
             //Assert
-            var array = sequence.ToArray();
-
-            for (byte i = 0; i < array.Length; ++i)
-                Assert.Equal(i, array[i]);
+            var expected = Enumerable.Range(0, 10).ToArray();
+            actual.Should().Equal(expected);
         }
 
         [Fact]
@@ -97,13 +93,30 @@ namespace DotPulsar.Tests.Internal
             var builder = new SequenceBuilder<byte>().Prepend(e).Prepend(seq).Prepend(a);
 
             //Act
-            var sequence = builder.Build();
+            var actual = builder.Build().ToArray();
 
             //Assert
-            var array = sequence.ToArray();
+            var expected = Enumerable.Range(0, 10).ToArray();
+            actual.Should().Equal(expected);
+        }
 
-            for (byte i = 0; i < array.Length; ++i)
-                Assert.Equal(i, array[i]);
+        [Fact]
+        public void Build_GivenMultipleInvocations_ShouldCreateIdenticalSequences()
+        {
+            //Arrange
+            var a = new byte[] { 0x00, 0x01 };
+            var b = new byte[] { 0x02, 0x03 };
+
+            var builder = new SequenceBuilder<byte>().Append(a).Append(b);
+
+            //Act
+            var actual1 = builder.Build().ToArray();
+            var actual2 = builder.Build().ToArray();
+
+            //Assert
+            var expected = Enumerable.Range(0, 4).ToArray();
+            actual1.Should().Equal(expected);
+            actual2.Should().Equal(expected);
         }
     }
 }

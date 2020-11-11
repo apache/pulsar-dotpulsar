@@ -49,7 +49,7 @@ namespace DotPulsar.Internal
             {
                 var awaiter = _awaiters.First;
 
-                while (awaiter != null)
+                while (awaiter is not null)
                 {
                     var next = awaiter.Next;
 
