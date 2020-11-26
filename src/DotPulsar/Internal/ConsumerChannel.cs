@@ -173,7 +173,7 @@ namespace DotPulsar.Internal
 
         private async Task RejectPackage(MessagePackage messagePackage, CancellationToken cancellationToken)
         {
-            var ack = new CommandAck { Type = CommandAck.AckType.Individual, validation_error = CommandAck.ValidationError.ChecksumMismatch };
+            var ack = new CommandAck { Type = CommandAck.AckType.Individual, ValidationError = CommandAck.ValidationErrorType.ChecksumMismatch };
 
             ack.MessageIds.Add(messagePackage.MessageId);
 
