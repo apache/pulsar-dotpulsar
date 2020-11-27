@@ -88,7 +88,7 @@ namespace DotPulsar.Internal
 
                     return metadata.ShouldSerializeNumMessagesInBatch()
                         ? _batchHandler.Add(messageId, redeliveryCount, metadata, data)
-                        : new Message(new MessageId(messageId), redeliveryCount, metadata, null, data);
+                        : MessageFactory.Create(new MessageId(messageId), redeliveryCount, metadata, data);
                 }
             }
         }

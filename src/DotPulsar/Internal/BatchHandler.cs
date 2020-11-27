@@ -51,7 +51,7 @@ namespace DotPulsar.Internal
                     var singleMetadata = Serializer.Deserialize<SingleMessageMetadata>(data.Slice(index, singleMetadataSize));
                     index += singleMetadataSize;
                     var singleMessageId = new MessageId(messageId.LedgerId, messageId.EntryId, messageId.Partition, i);
-                    var message = new Message(singleMessageId, redeliveryCount, metadata, singleMetadata, data.Slice(index, singleMetadata.PayloadSize));
+                    var message = MessageFactory.Create(singleMessageId, redeliveryCount, metadata, singleMetadata, data.Slice(index, singleMetadata.PayloadSize));
                     _messages.Enqueue(message);
                     index += (uint) singleMetadata.PayloadSize;
                 }
