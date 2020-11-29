@@ -28,8 +28,8 @@ namespace DotPulsar.Internal
 
     public sealed class PulsarStream : IPulsarStream
     {
-        private const long PauseAtMoreThan10Mb = 10485760;
-        private const long ResumeAt5MbOrLess = 5242881;
+        private const long _pauseAtMoreThan10Mb = 10485760;
+        private const long _resumeAt5MbOrLess = 5242881;
 
         private readonly Stream _stream;
         private readonly PipeReader _reader;
@@ -39,7 +39,7 @@ namespace DotPulsar.Internal
         public PulsarStream(Stream stream)
         {
             _stream = stream;
-            var options = new PipeOptions(pauseWriterThreshold: PauseAtMoreThan10Mb, resumeWriterThreshold: ResumeAt5MbOrLess);
+            var options = new PipeOptions(pauseWriterThreshold: _pauseAtMoreThan10Mb, resumeWriterThreshold: _resumeAt5MbOrLess);
             var pipe = new Pipe(options);
             _reader = pipe.Reader;
             _writer = pipe.Writer;
@@ -112,7 +112,7 @@ namespace DotPulsar.Internal
             }
             finally
             {
-                await _writer.CompleteAsync();
+                await _writer.CompleteAsync().ConfigureAwait(false);
             }
         }
 
@@ -153,7 +153,7 @@ namespace DotPulsar.Internal
             }
             finally
             {
-                await _reader.CompleteAsync();
+                await _reader.CompleteAsync().ConfigureAwait(false);
             }
         }
 

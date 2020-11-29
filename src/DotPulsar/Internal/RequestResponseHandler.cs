@@ -20,7 +20,7 @@ namespace DotPulsar.Internal
 
     public sealed class RequestResponseHandler : IDisposable
     {
-        private const string ConnectResponseIdentifier = "Connected";
+        private const string _connectResponseIdentifier = "Connected";
 
         private readonly Awaiter<string, BaseCommand> _responses;
         private readonly RequestId _requestId;
@@ -85,12 +85,12 @@ namespace DotPulsar.Internal
         private string GetResponseIdentifier(BaseCommand cmd)
             => cmd.CommandType switch
             {
-                BaseCommand.Type.Connect => ConnectResponseIdentifier,
-                BaseCommand.Type.Connected => ConnectResponseIdentifier,
+                BaseCommand.Type.Connect => _connectResponseIdentifier,
+                BaseCommand.Type.Connected => _connectResponseIdentifier,
                 BaseCommand.Type.Send => $"{cmd.Send.ProducerId}-{cmd.Send.SequenceId}",
                 BaseCommand.Type.SendError => $"{cmd.SendError.ProducerId}-{cmd.SendError.SequenceId}",
                 BaseCommand.Type.SendReceipt => $"{cmd.SendReceipt.ProducerId}-{cmd.SendReceipt.SequenceId}",
-                BaseCommand.Type.Error => !_requestId.IsPastInitialId() ? ConnectResponseIdentifier : cmd.Error.RequestId.ToString(),
+                BaseCommand.Type.Error => !_requestId.IsPastInitialId() ? _connectResponseIdentifier : cmd.Error.RequestId.ToString(),
                 BaseCommand.Type.Producer => cmd.Producer.RequestId.ToString(),
                 BaseCommand.Type.ProducerSuccess => cmd.ProducerSuccess.RequestId.ToString(),
                 BaseCommand.Type.CloseProducer => cmd.CloseProducer.RequestId.ToString(),

@@ -19,11 +19,30 @@ namespace DotPulsar
     /// </summary>
     public sealed class ConsumerOptions
     {
-        internal const SubscriptionInitialPosition DefaultInitialPosition = SubscriptionInitialPosition.Latest;
-        internal const uint DefaultMessagePrefetchCount = 1000;
-        internal const int DefaultPriorityLevel = 0;
-        internal const bool DefaultReadCompacted = false;
-        internal const SubscriptionType DefaultSubscriptionType = SubscriptionType.Exclusive;
+        /// <summary>
+        /// The default initial position.
+        /// </summary>
+        public static readonly SubscriptionInitialPosition DefaultInitialPosition = SubscriptionInitialPosition.Latest;
+
+        /// <summary>
+        /// The default message prefetch count.
+        /// </summary>
+        public static readonly uint DefaultMessagePrefetchCount = 1000;
+
+        /// <summary>
+        /// The default priority level.
+        /// </summary>
+        public static readonly int DefaultPriorityLevel = 0;
+
+        /// <summary>
+        /// The default of whether to read compacted.
+        /// </summary>
+        public static readonly bool DefaultReadCompacted = false;
+
+        /// <summary>
+        /// The default subscription type.
+        /// </summary>
+        public static readonly SubscriptionType DefaultSubscriptionType = SubscriptionType.Exclusive;
 
         public ConsumerOptions(string subscriptionName, string topic)
         {

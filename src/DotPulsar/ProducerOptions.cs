@@ -19,7 +19,10 @@ namespace DotPulsar
     /// </summary>
     public sealed class ProducerOptions
     {
-        internal const ulong DefaultInitialSequenceId = 0;
+        /// <summary>
+        /// The default initial sequence id.
+        /// </summary>
+        public static readonly ulong DefaultInitialSequenceId = 0;
 
         public ProducerOptions(string topic)
         {
