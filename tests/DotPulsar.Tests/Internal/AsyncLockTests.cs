@@ -16,6 +16,7 @@ namespace DotPulsar.Tests.Internal
 {
     using DotPulsar.Internal;
     using DotPulsar.Internal.Exceptions;
+    using FluentAssertions;
     using System.Threading;
     using System.Threading.Tasks;
     using Xunit;
@@ -32,7 +33,7 @@ namespace DotPulsar.Tests.Internal
             var actual = sut.Lock(CancellationToken.None);
 
             //Assert
-            Assert.True(actual.IsCompleted);
+            actual.IsCompleted.Should().BeTrue();
 
             //Annihilate 
             actual.Result.Dispose();
@@ -50,7 +51,7 @@ namespace DotPulsar.Tests.Internal
             var actual = sut.Lock(CancellationToken.None);
 
             //Assert
-            Assert.False(actual.IsCompleted);
+            actual.IsCompleted.Should().BeFalse();
 
             //Annihilate
             alreadyTaken.Dispose();
@@ -69,7 +70,7 @@ namespace DotPulsar.Tests.Internal
             var exception = await Record.ExceptionAsync(() => sut.Lock(CancellationToken.None)).ConfigureAwait(false);
 
             //Assert
-            Assert.IsType<AsyncLockDisposedException>(exception);
+            exception.Should().BeOfType<AsyncLockDisposedException>();
         }
 
         [Fact]
@@ -85,7 +86,7 @@ namespace DotPulsar.Tests.Internal
             var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
 
             //Assert
-            Assert.IsType<TaskCanceledException>(exception);
+            exception.Should().BeOfType<TaskCanceledException>();
 
             //Annihilate
             await sut.DisposeAsync().ConfigureAwait(false);
@@ -106,7 +107,7 @@ namespace DotPulsar.Tests.Internal
             var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
 
             //Assert
-            Assert.IsType<TaskCanceledException>(exception);
+            exception.Should().BeOfType<TaskCanceledException>();
 
             //Annihilate
             cts.Dispose();
@@ -128,7 +129,7 @@ namespace DotPulsar.Tests.Internal
             await disposeTask.ConfigureAwait(false);
 
             //Assert
-            Assert.True(disposeTask.IsCompleted);
+            disposeTask.IsCompleted.Should().BeTrue();
 
             //Annihilate
             await sut.DisposeAsync().ConfigureAwait(false);
@@ -145,7 +146,7 @@ namespace DotPulsar.Tests.Internal
             var exception = await Record.ExceptionAsync(() => sut.DisposeAsync().AsTask()).ConfigureAwait(false); // xUnit can't record ValueTask yet
 
             //Assert
-            Assert.Null(exception);
+            exception.Should().BeNull();
         }
     }
 }

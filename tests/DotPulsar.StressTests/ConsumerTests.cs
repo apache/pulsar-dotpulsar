@@ -14,12 +14,12 @@
 
 namespace DotPulsar.StressTests
 {
+    using DotPulsar.Abstractions;
     using Extensions;
     using Fixtures;
     using FluentAssertions;
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -46,10 +46,11 @@ namespace DotPulsar.StressTests
             await using var client = PulsarClient.Builder()
                 .ExceptionHandler(new XunitExceptionHandler(_output))
                 .ServiceUrl(new Uri("pulsar://localhost:54545"))
-                .Build(); //Connecting to pulsar://localhost:6650
+                .Build();
 
             await using var consumer = client.NewConsumer()
                 .ConsumerName($"consumer-{testRunId}")
+                .InitialPosition(SubscriptionInitialPosition.Earliest)
                 .SubscriptionName($"subscription-{testRunId}")
                 .Topic(topic)
                 .Create();
@@ -62,38 +63,43 @@ namespace DotPulsar.StressTests
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
             //Act
-            var consume = ConsumeMessages(cts.Token);
-            var produce = ProduceMessages(cts.Token);
-
-            var consumed = await consume.ConfigureAwait(false);
-            var produced = await produce.ConfigureAwait(false);
+            var produced = await ProduceMessages(producer, numberOfMessages, cts.Token);
+            var consumed = await ConsumeMessages(consumer, numberOfMessages, cts.Token);
 
             //Assert
             consumed.Should().BeEquivalentTo(produced);
+        }
 
-            Task<MessageId[]> ProduceMessages(CancellationToken ct)
-                => Enumerable.Range(1, numberOfMessages)
-                    .Select(async n => await producer.Send(Encoding.UTF8.GetBytes($"Sent #{n} at {DateTimeOffset.UtcNow:s}"), ct).ConfigureAwait(false))
-                    .WhenAll();
+        private async Task<IEnumerable<MessageId>> ProduceMessages(IProducer producer, int numberOfMessages, CancellationToken ct)
+        {
+            var messageIds = new MessageId[numberOfMessages];
 
-            async Task<List<MessageId>> ConsumeMessages(CancellationToken ct)
+            for (var i = 0; i < numberOfMessages; ++i)
             {
-                var ids = new List<MessageId>(numberOfMessages);
-
-                await foreach (var message in consumer.Messages(ct))
-                {
-                    ids.Add(message.MessageId);
-
-                    if (ids.Count != numberOfMessages)
-                        continue;
-
-                    await consumer.AcknowledgeCumulative(message, ct).ConfigureAwait(false);
-
-                    break;
-                }
-
-                return ids;
+                var data = Encoding.UTF8.GetBytes($"Sent #{i} at {DateTimeOffset.UtcNow:s}");
+                messageIds[i] = await producer.Send(data, ct);
             }
+
+            return messageIds;
+        }
+
+        private async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer consumer, int numberOfMessages, CancellationToken ct)
+        {
+            var messageIds = new List<MessageId>(numberOfMessages);
+
+            await foreach (var message in consumer.Messages(ct))
+            {
+                messageIds.Add(message.MessageId);
+
+                if (messageIds.Count != numberOfMessages)
+                    continue;
+
+                await consumer.AcknowledgeCumulative(message, ct);
+
+                break;
+            }
+
+            return messageIds;
         }
     }
 }

@@ -29,6 +29,14 @@ namespace Reading
         {
             const string myTopic = "persistent://public/default/mytopic";
 
+            var taskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            Console.CancelKeyPress += (sender, args) =>
+            {
+                taskCompletionSource.SetResult(null);
+                args.Cancel = true;
+            };
+
             await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
             var reader = client.NewReader()
@@ -42,17 +50,17 @@ namespace Reading
 
             var reading = ReadMessages(reader, cts.Token);
 
-            Console.WriteLine("Press a key to exit");
+            Console.WriteLine("Press Ctrl+C to exit");
 
-            _ = Console.ReadKey();
+            await taskCompletionSource.Task;
 
             cts.Cancel();
 
-            await reading.ConfigureAwait(false);
+            await reading;
 
-            await reader.DisposeAsync().ConfigureAwait(false);
+            await reader.DisposeAsync();
 
-            await monitoring.ConfigureAwait(false);
+            await monitoring;
         }
 
         private static async Task ReadMessages(IReader reader, CancellationToken cancellationToken)
@@ -78,7 +86,7 @@ namespace Reading
 
             while (true)
             {
-                var stateChanged = await reader.StateChangedFrom(state).ConfigureAwait(false);
+                var stateChanged = await reader.StateChangedFrom(state);
                 state = stateChanged.ReaderState;
 
                 var stateMessage = state switch

@@ -29,7 +29,7 @@ namespace DotPulsar.Internal
             {
                 for (var i = 0; i < _items.Length; ++i)
                 {
-                    if (_items[i] != null)
+                    if (_items[i] is not null)
                         return false;
                 }
 
@@ -43,7 +43,7 @@ namespace DotPulsar.Internal
             {
                 for (var i = 0; i < _items.Length; ++i)
                 {
-                    if (_items[i] != null)
+                    if (_items[i] is not null)
                         continue;
 
                     _items[i] = item;
@@ -79,7 +79,7 @@ namespace DotPulsar.Internal
                 {
                     var item = _items[i];
 
-                    if (item != null)
+                    if (item is not null)
                     {
                         items.Add(item);
                         _items[i] = null;

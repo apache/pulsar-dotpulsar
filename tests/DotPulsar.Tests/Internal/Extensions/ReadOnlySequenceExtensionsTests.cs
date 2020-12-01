@@ -16,6 +16,7 @@ namespace DotPulsar.Tests.Internal.Extensions
 {
     using DotPulsar.Internal;
     using DotPulsar.Internal.Extensions;
+    using FluentAssertions;
     using Xunit;
 
     public class ReadOnlySequenceExtensionsTests
@@ -30,7 +31,7 @@ namespace DotPulsar.Tests.Internal.Extensions
             var actual = sequence.StartsWith(new byte[] { 0x00, 0x01 });
 
             //Assert
-            Assert.False(actual);
+            actual.Should().BeFalse();
         }
 
         [Fact]
@@ -43,7 +44,7 @@ namespace DotPulsar.Tests.Internal.Extensions
             var actual = sequence.StartsWith(new byte[] { 0x00, 0x01 });
 
             //Assert
-            Assert.False(actual);
+            actual.Should().BeFalse();
         }
 
         [Fact]
@@ -56,7 +57,7 @@ namespace DotPulsar.Tests.Internal.Extensions
             var actual = sequence.StartsWith(new byte[] { 0x00, 0x01 });
 
             //Assert
-            Assert.True(actual);
+            actual.Should().BeTrue();
         }
 
         [Fact]
@@ -69,7 +70,7 @@ namespace DotPulsar.Tests.Internal.Extensions
             var actual = sequence.StartsWith(new byte[] { 0x00, 0x01, 0x02, 0x03 });
 
             //Assert
-            Assert.False(actual);
+            actual.Should().BeFalse();
         }
 
         [Fact]
@@ -82,7 +83,7 @@ namespace DotPulsar.Tests.Internal.Extensions
             var actual = sequence.StartsWith(new byte[] { 0x00, 0x01, 0x02 });
 
             //Assert
-            Assert.False(actual);
+            actual.Should().BeFalse();
         }
 
         [Fact]
@@ -95,7 +96,7 @@ namespace DotPulsar.Tests.Internal.Extensions
             var actual = sequence.StartsWith(new byte[] { 0x00, 0x01, 0x02 });
 
             //Assert
-            Assert.True(actual);
+            actual.Should().BeTrue();
         }
 
         [Fact]
@@ -109,7 +110,7 @@ namespace DotPulsar.Tests.Internal.Extensions
 
             //Assert
             const uint expected = 66051;
-            Assert.Equal(expected, actual);
+            actual.Should().Be(expected);
         }
 
         [Fact]
@@ -123,7 +124,7 @@ namespace DotPulsar.Tests.Internal.Extensions
 
             //Assert
             const uint expected = 66051;
-            Assert.Equal(expected, actual);
+            actual.Should().Be(expected);
         }
 
         [Fact]
@@ -137,7 +138,7 @@ namespace DotPulsar.Tests.Internal.Extensions
 
             //Assert
             const uint expected = 66051;
-            Assert.Equal(expected, actual);
+            actual.Should().Be(expected);
         }
 
         [Fact]
@@ -154,7 +155,7 @@ namespace DotPulsar.Tests.Internal.Extensions
 
             //Assert
             const uint expected = 66051;
-            Assert.Equal(expected, actual);
+            actual.Should().Be(expected);
         }
     }
 }

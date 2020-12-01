@@ -46,6 +46,11 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Register a custom exception handler that will be invoked before the default exception handler.
         /// </summary>
+        IPulsarClientBuilder ExceptionHandler(Action<ExceptionContext> exceptionHandler);
+
+        /// <summary>
+        /// Register a custom exception handler that will be invoked before the default exception handler.
+        /// </summary>
         IPulsarClientBuilder ExceptionHandler(Func<ExceptionContext, ValueTask> exceptionHandler);
 
         /// <summary>

@@ -29,6 +29,14 @@ namespace Consuming
         {
             const string myTopic = "persistent://public/default/mytopic";
 
+            var taskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            Console.CancelKeyPress += (sender, args) =>
+            {
+                taskCompletionSource.SetResult(null);
+                args.Cancel = true;
+            };
+
             await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
             var consumer = client.NewConsumer()
@@ -42,17 +50,17 @@ namespace Consuming
 
             var consuming = ConsumeMessages(consumer, cts.Token);
 
-            Console.WriteLine("Press a key to exit");
+            Console.WriteLine("Press Ctrl+C to exit");
 
-            _ = Console.ReadKey();
+            await taskCompletionSource.Task;
 
             cts.Cancel();
 
-            await consuming.ConfigureAwait(false);
+            await consuming;
 
-            await consumer.DisposeAsync().ConfigureAwait(false);
+            await consumer.DisposeAsync();
 
-            await monitoring.ConfigureAwait(false);
+            await monitoring;
         }
 
         private static async Task ConsumeMessages(IConsumer consumer, CancellationToken cancellationToken)
@@ -65,7 +73,7 @@ namespace Consuming
                 {
                     var data = Encoding.UTF8.GetString(message.Data.ToArray());
                     Console.WriteLine("Received: " + data);
-                    await consumer.Acknowledge(message, cancellationToken).ConfigureAwait(false);
+                    await consumer.Acknowledge(message, cancellationToken);
                 }
             }
             catch (OperationCanceledException) { }
@@ -79,7 +87,7 @@ namespace Consuming
 
             while (true)
             {
-                var stateChanged = await consumer.StateChangedFrom(state).ConfigureAwait(false);
+                var stateChanged = await consumer.StateChangedFrom(state);
                 state = stateChanged.ConsumerState;
 
                 var stateMessage = state switch

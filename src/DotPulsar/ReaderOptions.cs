@@ -19,8 +19,15 @@ namespace DotPulsar
     /// </summary>
     public sealed class ReaderOptions
     {
-        internal const uint DefaultMessagePrefetchCount = 1000;
-        internal const bool DefaultReadCompacted = false;
+        /// <summary>
+        /// The default message prefetch count.
+        /// </summary>
+        public static readonly uint DefaultMessagePrefetchCount = 1000;
+
+        /// <summary>
+        /// The default of whether to read compacted.
+        /// </summary>
+        public static readonly bool DefaultReadCompacted = false;
 
         public ReaderOptions(MessageId startMessageId, string topic)
         {

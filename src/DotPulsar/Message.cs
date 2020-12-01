@@ -14,51 +14,39 @@
 
 namespace DotPulsar
 {
-    using Internal.PulsarApi;
     using System;
     using System.Buffers;
     using System.Collections.Generic;
-    using System.Linq;
 
     /// <summary>
     /// The message received by consumers and readers.
     /// </summary>
     public sealed class Message
     {
-        private readonly List<KeyValue> _keyValues;
-        private IReadOnlyDictionary<string, string>? _properties;
-
         internal Message(
             MessageId messageId,
+            ReadOnlySequence<byte> data,
+            string producerName,
+            ulong sequenceId,
             uint redeliveryCount,
-            Internal.PulsarApi.MessageMetadata metadata,
-            SingleMessageMetadata? singleMetadata,
-            ReadOnlySequence<byte> data)
+            ulong eventTime,
+            ulong publishTime,
+            IReadOnlyDictionary<string, string> properties,
+            bool hasBase64EncodedKey,
+            string? key,
+            byte[]? orderingKey)
         {
             MessageId = messageId;
-            RedeliveryCount = redeliveryCount;
-            ProducerName = metadata.ProducerName;
-            PublishTime = metadata.PublishTime;
             Data = data;
-
-            if (singleMetadata is null)
-            {
-                EventTime = metadata.EventTime;
-                HasBase64EncodedKey = metadata.PartitionKeyB64Encoded;
-                Key = metadata.PartitionKey;
-                SequenceId = metadata.SequenceId;
-                OrderingKey = metadata.OrderingKey;
-                _keyValues = metadata.Properties;
-            }
-            else
-            {
-                EventTime = singleMetadata.EventTime;
-                HasBase64EncodedKey = singleMetadata.PartitionKeyB64Encoded;
-                Key = singleMetadata.PartitionKey;
-                OrderingKey = singleMetadata.OrderingKey;
-                SequenceId = singleMetadata.SequenceId;
-                _keyValues = singleMetadata.Properties;
-            }
+            ProducerName = producerName;
+            SequenceId = sequenceId;
+            RedeliveryCount = redeliveryCount;
+            EventTime = eventTime;
+            PublishTime = publishTime;
+            Properties = properties;
+            HasBase64EncodedKey = hasBase64EncodedKey;
+            Key = key;
+            OrderingKey = orderingKey;
         }
 
         /// <summary>
@@ -109,7 +97,7 @@ namespace DotPulsar
         /// <summary>
         /// Check whether the message has a key.
         /// </summary>
-        public bool HasKey => Key != null;
+        public bool HasKey => Key is not null;
 
         /// <summary>
         /// The key as a string.
@@ -119,12 +107,12 @@ namespace DotPulsar
         /// <summary>
         /// The key as bytes.
         /// </summary>
-        public byte[]? KeyBytes => HasBase64EncodedKey ? Convert.FromBase64String(Key) : null;
+        public byte[]? KeyBytes => Key is not null ? Convert.FromBase64String(Key) : null;
 
         /// <summary>
         /// Check whether the message has an ordering key.
         /// </summary>
-        public bool HasOrderingKey => OrderingKey != null;
+        public bool HasOrderingKey => OrderingKey is not null;
 
         /// <summary>
         /// The ordering key of the message.
@@ -144,6 +132,6 @@ namespace DotPulsar
         /// <summary>
         /// The properties of the message.
         /// </summary>
-        public IReadOnlyDictionary<string, string> Properties => _properties ??= _keyValues.ToDictionary(p => p.Key, p => p.Value);
+        public IReadOnlyDictionary<string, string> Properties { get; }
     }
 }

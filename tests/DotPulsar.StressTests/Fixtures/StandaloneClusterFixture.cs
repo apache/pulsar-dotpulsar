@@ -76,6 +76,8 @@ namespace DotPulsar.StressTests.Fixtures
             processStartInfo.Environment["COMPUTERNAME"] = Environment.MachineName;
 
             var process = Process.Start(processStartInfo);
+            if (process is null)
+                throw new Exception("Process.Start returned null");
 
             process.WaitForExit();
 

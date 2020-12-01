@@ -69,7 +69,7 @@ namespace DotPulsar.Internal
 
                     var message = _batchHandler.GetNext();
 
-                    if (message != null)
+                    if (message is not null)
                         return message;
 
                     var messagePackage = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);
@@ -86,9 +86,9 @@ namespace DotPulsar.Internal
                     var metadata = messagePackage.ExtractMetadata(metadataSize);
                     var messageId = messagePackage.MessageId;
 
-                    return metadata.NumMessagesInBatch == 1
-                        ? new Message(new MessageId(messageId), redeliveryCount, metadata, null, data)
-                        : _batchHandler.Add(messageId, redeliveryCount, metadata, data);
+                    return metadata.ShouldSerializeNumMessagesInBatch()
+                        ? _batchHandler.Add(messageId, redeliveryCount, metadata, data)
+                        : MessageFactory.Create(new MessageId(messageId), redeliveryCount, metadata, data);
                 }
             }
         }
@@ -173,7 +173,7 @@ namespace DotPulsar.Internal
 
         private async Task RejectPackage(MessagePackage messagePackage, CancellationToken cancellationToken)
         {
-            var ack = new CommandAck { Type = CommandAck.AckType.Individual, validation_error = CommandAck.ValidationError.ChecksumMismatch };
+            var ack = new CommandAck { Type = CommandAck.AckType.Individual, ValidationError = CommandAck.ValidationErrorType.ChecksumMismatch };
 
             ack.MessageIds.Add(messagePackage.MessageId);
 
