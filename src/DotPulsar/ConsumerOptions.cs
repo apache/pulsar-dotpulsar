@@ -19,13 +19,40 @@ namespace DotPulsar
     /// </summary>
     public sealed class ConsumerOptions
     {
-        internal const SubscriptionInitialPosition DefaultInitialPosition = SubscriptionInitialPosition.Latest;
-        internal const uint DefaultMessagePrefetchCount = 1000;
-        internal const int DefaultPriorityLevel = 0;
-        internal const bool DefaultReadCompacted = false;
-        internal const SubscriptionType DefaultSubscriptionType = SubscriptionType.Exclusive;
-        internal const bool DefaultAutoUpdatePartitions = true;
-        internal const int DefaultAutoUpdatePartitionsInterval = 60;
+        /// <summary>
+        /// The default initial position.
+        /// </summary>
+        public static readonly SubscriptionInitialPosition DefaultInitialPosition = SubscriptionInitialPosition.Latest;
+
+        /// <summary>
+        /// The default message prefetch count.
+        /// </summary>
+        public static readonly uint DefaultMessagePrefetchCount = 1000;
+
+        /// <summary>
+        /// The default priority level.
+        /// </summary>
+        public static readonly int DefaultPriorityLevel = 0;
+
+        /// <summary>
+        /// The default of whether to read compacted.
+        /// </summary>
+        public static readonly bool DefaultReadCompacted = false;
+
+        /// <summary>
+        /// The default subscription type.
+        /// </summary>
+        public static readonly SubscriptionType DefaultSubscriptionType = SubscriptionType.Exclusive;
+
+        /// <summary>
+        /// Whether to auto subscribe to new partitions.
+        /// </summary>
+        public const bool DefaultAutoUpdatePartitions = true;
+
+        /// <summary>
+        /// The default interval to check for new partitions to subscribe to.
+        /// </summary>
+        public const int DefaultAutoUpdatePartitionsInterval = 60;
 
         public ConsumerOptions(string subscriptionName, string topic)
         {

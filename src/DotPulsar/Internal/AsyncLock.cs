@@ -99,9 +99,9 @@ namespace DotPulsar.Internal
         {
             lock (_pending)
             {
-                if (_pending.Count > 0)
+                var node = _pending.First;
+                if (node is not null)
                 {
-                    var node = _pending.First;
                     node.Value.SetResult(_releaser);
                     node.Value.Dispose();
                     _pending.RemoveFirst();

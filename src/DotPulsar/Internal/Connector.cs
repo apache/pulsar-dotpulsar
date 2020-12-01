@@ -110,7 +110,7 @@ namespace DotPulsar.Internal
             }
         }
 
-        private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        private bool ValidateServerCertificate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
         {
             if (sslPolicyErrors == SslPolicyErrors.None)
                 return true;
@@ -123,7 +123,7 @@ namespace DotPulsar.Internal
 
             if (sslPolicyErrors.HasFlag(SslPolicyErrors.RemoteCertificateChainErrors) && _verifyCertificateAuthority)
             {
-                if (_trustedCertificateAuthority is null)
+                if (_trustedCertificateAuthority is null || chain is null || certificate is null)
                     return false;
 
                 chain.ChainPolicy.ExtraStore.Add(_trustedCertificateAuthority);

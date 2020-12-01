@@ -72,17 +72,17 @@ namespace DotPulsar
         /// </summary>
         public int BatchIndex => Data.BatchIndex;
 
-        public override bool Equals(object o)
+        public override bool Equals(object? o)
             => o is MessageId id && Equals(id);
 
-        public bool Equals(MessageId other)
-            => LedgerId == other.LedgerId && EntryId == other.EntryId && Partition == other.Partition && BatchIndex == other.BatchIndex;
+        public bool Equals(MessageId? other)
+            => other is not null && LedgerId == other.LedgerId && EntryId == other.EntryId && Partition == other.Partition && BatchIndex == other.BatchIndex;
 
         public static bool operator ==(MessageId x, MessageId y)
-            => x.Equals(y);
+            => ReferenceEquals(x, y) || (x is not null && x.Equals(y));
 
         public static bool operator !=(MessageId x, MessageId y)
-            => !x.Equals(y);
+            => !(x == y);
 
         public override int GetHashCode()
             => HashCode.Combine(LedgerId, EntryId, Partition, BatchIndex);

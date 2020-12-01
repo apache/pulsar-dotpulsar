@@ -15,6 +15,7 @@
 namespace DotPulsar.Tests.Internal
 {
     using DotPulsar.Internal;
+    using FluentAssertions;
     using System.Threading;
     using System.Threading.Tasks;
     using Xunit;
@@ -40,7 +41,7 @@ namespace DotPulsar.Tests.Internal
             var actual = sut.SetState(newState);
 
             //Assert
-            Assert.Equal(expected, actual);
+            actual.Should().Be(expected);
         }
 
         [Theory]
@@ -56,7 +57,7 @@ namespace DotPulsar.Tests.Internal
             _ = sut.SetState(newState);
 
             //Assert
-            Assert.Equal(ProducerState.Closed, sut.CurrentState);
+            sut.CurrentState.Should().Be(ProducerState.Closed);
         }
 
         [Theory]
@@ -74,7 +75,7 @@ namespace DotPulsar.Tests.Internal
             _ = sut.SetState(newState);
 
             //Assert
-            Assert.True(task.IsCompleted);
+            task.IsCompleted.Should().BeTrue();
         }
 
         [Theory]
@@ -92,7 +93,7 @@ namespace DotPulsar.Tests.Internal
             _ = sut.SetState(newState);
 
             //Assert
-            Assert.True(task.IsCompleted);
+            task.IsCompleted.Should().BeTrue();
         }
 
         [Theory]
@@ -125,7 +126,7 @@ namespace DotPulsar.Tests.Internal
             var task = sut.StateChangedTo(wantedState, default);
 
             //Assert
-            Assert.False(task.IsCompleted);
+            task.IsCompleted.Should().BeFalse();
         }
 
         [Theory]
@@ -140,7 +141,7 @@ namespace DotPulsar.Tests.Internal
             var task = sut.StateChangedTo(state, default);
 
             //Assert
-            Assert.True(task.IsCompleted);
+            task.IsCompleted.Should().BeTrue();
         }
 
         [Theory]
@@ -155,7 +156,7 @@ namespace DotPulsar.Tests.Internal
             var task = sut.StateChangedFrom(state, default);
 
             //Assert
-            Assert.False(task.IsCompleted);
+            task.IsCompleted.Should().BeFalse();
         }
 
         [Theory]
@@ -172,7 +173,7 @@ namespace DotPulsar.Tests.Internal
             var task = sut.StateChangedFrom(fromState, default);
 
             //Assert
-            Assert.True(task.IsCompleted);
+            task.IsCompleted.Should().BeTrue();
         }
 
         [Theory]
@@ -188,7 +189,7 @@ namespace DotPulsar.Tests.Internal
             var task = sut.StateChangedFrom(state, default);
 
             //Assert
-            Assert.True(task.IsCompleted);
+            task.IsCompleted.Should().BeTrue();
         }
 
         [Theory]
@@ -204,7 +205,7 @@ namespace DotPulsar.Tests.Internal
             _ = sut.SetState(ProducerState.Closed);
 
             //Assert
-            Assert.True(task.IsCompleted);
+            task.IsCompleted.Should().BeTrue();
         }
 
         [Theory]
@@ -220,7 +221,7 @@ namespace DotPulsar.Tests.Internal
             _ = sut.SetState(newState);
 
             //Assert
-            Assert.False(task.IsCompleted);
+            task.IsCompleted.Should().BeFalse();
         }
 
         [Fact]
@@ -236,7 +237,7 @@ namespace DotPulsar.Tests.Internal
             var exception = await Record.ExceptionAsync(() => task.AsTask()).ConfigureAwait(false); // xUnit can't record ValueTask yet
 
             //Assert
-            Assert.IsType<TaskCanceledException>(exception);
+            exception.Should().BeOfType<TaskCanceledException>();
 
             //Annihilate
             cts.Dispose();

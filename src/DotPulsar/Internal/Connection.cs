@@ -19,6 +19,7 @@ namespace DotPulsar.Internal
     using Extensions;
     using PulsarApi;
     using System;
+    using System.Buffers;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -234,7 +235,7 @@ namespace DotPulsar.Internal
                     switch (command.CommandType)
                     {
                         case BaseCommand.Type.Message:
-                            _channelManager.Incoming(command.Message, frame.Slice(commandSize + 4));
+                            _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
                             break;
                         case BaseCommand.Type.CloseConsumer:
                             _channelManager.Incoming(command.CloseConsumer);

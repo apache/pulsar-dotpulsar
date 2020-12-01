@@ -12,26 +12,23 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Tests.Internal
+namespace DotPulsar.Internal
 {
-    using DotPulsar.Internal;
-    using FluentAssertions;
-    using Xunit;
+    using DotPulsar.Abstractions;
+    using System;
+    using System.Threading.Tasks;
 
-    public class SerializerTests
+    public sealed class ActionExceptionHandler : IHandleException
     {
-        [Fact]
-        public void ToBigEndianBytes_GivenUnsignedInteger_ShouldReturnExpectedBytes()
+        private readonly Action<ExceptionContext> _exceptionHandler;
+
+        public ActionExceptionHandler(Action<ExceptionContext> exceptionHandler)
+            => _exceptionHandler = exceptionHandler;
+
+        public ValueTask OnException(ExceptionContext exceptionContext)
         {
-            //Arrange
-            uint value = 66051;
-
-            //Act
-            var actual = Serializer.ToBigEndianBytes(value);
-
-            //Assert
-            var expected = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-            actual.Should().Equal(expected);
+            _exceptionHandler(exceptionContext);
+            return new ValueTask();
         }
     }
 }

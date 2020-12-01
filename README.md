@@ -8,6 +8,10 @@ DotPulsar is written entirely in C# and implements Apache Pulsar's [binary proto
 
 DotPulsar's API is strongly inspired by Apache Pulsar's official [Java client](https://pulsar.apache.org/docs/en/client-libraries-java/), but a 100% match is not a goal.
 
+## What's new?
+
+Have a look at the [changelog](CHANGELOG.md).
+
 ## Getting Started
 
 Let's take a look at a "Hello world" example, where we first produce a message and then consume it.
@@ -93,11 +97,6 @@ Let us know which features you need by creating an issue or by giving existing i
 ## Join Our Community
 
 Apache Pulsar has a [Slack instance](https://pulsar.apache.org/contact/) and there you'll find us in the #dev-dotpulsar channel. Just waiting for you to pop by :-)
-
-## Built With
-
-* [protobuf-net](https://github.com/mgravell/protobuf-net) - Provides simple access to fast and efficient "Protocol Buffers" serialization from .NET applications
-* [System.IO.Pipelines](https://www.nuget.org/packages/System.IO.Pipelines/) - Single producer single consumer byte buffer management
 
 ## Versioning
 

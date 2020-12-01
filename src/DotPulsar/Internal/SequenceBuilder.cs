@@ -64,26 +64,23 @@ namespace DotPulsar.Internal
 
         public ReadOnlySequence<T> Build()
         {
-            if (_elements.Count == 0)
+            var node = _elements.First;
+            if (node is null)
                 return new ReadOnlySequence<T>();
 
-            Segment? start = null;
-            Segment? current = null;
+            var current = new Segment(node.Value);
+            var start = current;
 
-            foreach (var element in _elements)
+            while (true)
             {
-                if (current is null)
-                {
-                    current = new Segment(element);
-                    start = current;
-                }
-                else
-                {
-                    current = current.CreateNext(element);
-                }
+                node = node.Next;
+                if (node is null)
+                    break;
+
+                current = current.CreateNext(node.Value);
             }
 
-            return new ReadOnlySequence<T>(start, 0, current, current!.Memory.Length);
+            return new ReadOnlySequence<T>(start, 0, current, current.Memory.Length);
         }
 
         private sealed class Segment : ReadOnlySequenceSegment<T>

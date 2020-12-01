@@ -22,8 +22,15 @@ namespace DotPulsar
     /// </summary>
     public sealed class ProducerOptions : ICloneable
     {
-        internal const ulong DefaultInitialSequenceId = 0;
-        internal const double DefaultAutoUpdatePartitionsIntervalInSecond = 60;
+        /// <summary>
+        /// The default initial sequence id.
+        /// </summary>
+        public static readonly ulong DefaultInitialSequenceId = 0;
+
+        /// <summary>
+        /// The default new partitions topics update interval.
+        /// </summary>
+        public const double DefaultAutoUpdatePartitionsIntervalInSecond = 60;
 
         public ProducerOptions(string topic)
         {

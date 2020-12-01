@@ -49,7 +49,7 @@ namespace DotPulsar.Internal
             _subscribe = new CommandSubscribe
             {
                 ConsumerName = options.ConsumerName,
-                initialPosition = (CommandSubscribe.InitialPosition) options.InitialPosition,
+                InitialPosition = (CommandSubscribe.InitialPositionType) options.InitialPosition,
                 PriorityLevel = options.PriorityLevel,
                 ReadCompacted = options.ReadCompacted,
                 Subscription = options.SubscriptionName,
