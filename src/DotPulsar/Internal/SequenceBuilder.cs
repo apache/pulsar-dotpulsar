@@ -66,7 +66,7 @@ namespace DotPulsar.Internal
         {
             var node = _elements.First;
             if (node is null)
-                return new ReadOnlySequence<T>();
+                return ReadOnlySequence<T>.Empty;
 
             var current = new Segment(node.Value);
             var start = current;
