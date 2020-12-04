@@ -21,12 +21,7 @@ namespace DotPulsar.Internal
 
     public static class Serializer
     {
-        public static T Deserialize<T>(ReadOnlySequence<byte> sequence)
-        {
-            //TODO Fix this when protobuf-net start supporting sequences or .NET supports creating a stream from a sequence
-            using var ms = new MemoryStream(sequence.ToArray());
-            return ProtoBuf.Serializer.Deserialize<T>(ms);
-        }
+        public static T Deserialize<T>(ReadOnlySequence<byte> sequence) => ProtoBuf.Serializer.Deserialize<T>(sequence);
 
         public static ReadOnlySequence<byte> Serialize(BaseCommand command)
         {
