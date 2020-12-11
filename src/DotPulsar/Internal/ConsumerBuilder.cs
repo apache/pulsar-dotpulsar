@@ -16,6 +16,9 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public sealed class ConsumerBuilder : IConsumerBuilder
     {
@@ -28,6 +31,7 @@ namespace DotPulsar.Internal
         private string? _subscriptionName;
         private SubscriptionType _subscriptionType;
         private string? _topic;
+        private IHandleStateChanged<ConsumerStateChanged>? _stateChangedHandler;
 
         public ConsumerBuilder(IPulsarClient pulsarClient)
         {
@@ -51,21 +55,39 @@ namespace DotPulsar.Internal
             return this;
         }
 
-        public IConsumerBuilder PriorityLevel(int priorityLevel)
-        {
-            _priorityLevel = priorityLevel;
-            return this;
-        }
-
         public IConsumerBuilder MessagePrefetchCount(uint count)
         {
             _messagePrefetchCount = count;
             return this;
         }
 
+        public IConsumerBuilder PriorityLevel(int priorityLevel)
+        {
+            _priorityLevel = priorityLevel;
+            return this;
+        }
+
         public IConsumerBuilder ReadCompacted(bool readCompacted)
         {
             _readCompacted = readCompacted;
+            return this;
+        }
+
+        public IConsumerBuilder StateChangedHandler(IHandleStateChanged<ConsumerStateChanged> handler)
+        {
+            _stateChangedHandler = handler;
+            return this;
+        }
+
+        public IConsumerBuilder StateChangedHandler(Action<ConsumerStateChanged, CancellationToken> handler, CancellationToken cancellationToken)
+        {
+            _stateChangedHandler = new ActionStateChangedHandler<ConsumerStateChanged>(handler, cancellationToken);
+            return this;
+        }
+
+        public IConsumerBuilder StateChangedHandler(Func<ConsumerStateChanged, CancellationToken, ValueTask> handler, CancellationToken cancellationToken)
+        {
+            _stateChangedHandler = new FuncStateChangedHandler<ConsumerStateChanged>(handler, cancellationToken);
             return this;
         }
 
@@ -102,6 +124,7 @@ namespace DotPulsar.Internal
                 MessagePrefetchCount = _messagePrefetchCount,
                 PriorityLevel = _priorityLevel,
                 ReadCompacted = _readCompacted,
+                StateChangedHandler = _stateChangedHandler,
                 SubscriptionType = _subscriptionType
             };
 

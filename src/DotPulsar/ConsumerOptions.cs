@@ -14,6 +14,8 @@
 
 namespace DotPulsar
 {
+    using DotPulsar.Abstractions;
+
     /// <summary>
     /// The consumer building options.
     /// </summary>
@@ -66,19 +68,24 @@ namespace DotPulsar
         public SubscriptionInitialPosition InitialPosition { get; set; }
 
         /// <summary>
-        /// Set the priority level for the shared subscription consumer. The default is 0.
-        /// </summary>
-        public int PriorityLevel { get; set; }
-
-        /// <summary>
         /// Number of messages that will be prefetched. The default is 1000.
         /// </summary>
         public uint MessagePrefetchCount { get; set; }
 
         /// <summary>
+        /// Set the priority level for the shared subscription consumer. The default is 0.
+        /// </summary>
+        public int PriorityLevel { get; set; }
+
+        /// <summary>
         /// Whether to read from the compacted topic. The default is 'false'.
         /// </summary>
         public bool ReadCompacted { get; set; }
+
+        /// <summary>
+        /// Register a state changed handler. This is optional.
+        /// </summary>
+        public IHandleStateChanged<ConsumerStateChanged>? StateChangedHandler { get; set; }
 
         /// <summary>
         /// Set the subscription name for this consumer. This is required.

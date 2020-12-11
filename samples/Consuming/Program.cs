@@ -40,11 +40,10 @@ namespace Consuming
             await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
             var consumer = client.NewConsumer()
+                .StateChangedHandler(Monitor)
                 .SubscriptionName("MySubscription")
                 .Topic(myTopic)
                 .Create();
-
-            var monitoring = Monitor(consumer);
 
             var cts = new CancellationTokenSource();
 
@@ -59,8 +58,6 @@ namespace Consuming
             await consuming;
 
             await consumer.DisposeAsync();
-
-            await monitoring;
         }
 
         private static async Task ConsumeMessages(IConsumer consumer, CancellationToken cancellationToken)
@@ -79,18 +76,9 @@ namespace Consuming
             catch (OperationCanceledException) { }
         }
 
-        private static async Task Monitor(IConsumer consumer)
+        private static void Monitor(ConsumerStateChanged stateChanged, CancellationToken cancellationToken)
         {
-            await Task.Yield();
-
-            var state = ConsumerState.Disconnected;
-
-            while (true)
-            {
-                var stateChanged = await consumer.StateChangedFrom(state);
-                state = stateChanged.ConsumerState;
-
-                var stateMessage = state switch
+                var stateMessage = stateChanged.ConsumerState switch
                 {
                     ConsumerState.Active => "is active",
                     ConsumerState.Inactive => "is inactive",
@@ -98,15 +86,11 @@ namespace Consuming
                     ConsumerState.Closed => "has closed",
                     ConsumerState.ReachedEndOfTopic => "has reached end of topic",
                     ConsumerState.Faulted => "has faulted",
-                    _ => $"has an unknown state '{state}'"
+                    _ => $"has an unknown state '{stateChanged.ConsumerState}'"
                 };
 
                 var topic = stateChanged.Consumer.Topic;
                 Console.WriteLine($"The consumer for topic '{topic}' " + stateMessage);
-
-                if (consumer.IsFinalState(state))
-                    return;
-            }
         }
     }
 }

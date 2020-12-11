@@ -105,7 +105,6 @@ namespace DotPulsar.Internal
                 else
                     await sslStream.DisposeAsync().ConfigureAwait(false);
 #endif
-
                 throw;
             }
         }

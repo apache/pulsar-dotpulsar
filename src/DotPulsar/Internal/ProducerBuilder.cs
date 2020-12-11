@@ -16,6 +16,9 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public sealed class ProducerBuilder : IProducerBuilder
     {
@@ -23,11 +26,18 @@ namespace DotPulsar.Internal
         private string? _producerName;
         private ulong _initialSequenceId;
         private string? _topic;
+        private IHandleStateChanged<ProducerStateChanged>? _stateChangedHandler;
 
         public ProducerBuilder(IPulsarClient pulsarClient)
         {
             _pulsarClient = pulsarClient;
             _initialSequenceId = ProducerOptions.DefaultInitialSequenceId;
+        }
+
+        public IProducerBuilder InitialSequenceId(ulong initialSequenceId)
+        {
+            _initialSequenceId = initialSequenceId;
+            return this;
         }
 
         public IProducerBuilder ProducerName(string name)
@@ -36,9 +46,21 @@ namespace DotPulsar.Internal
             return this;
         }
 
-        public IProducerBuilder InitialSequenceId(ulong initialSequenceId)
+        public IProducerBuilder StateChangedHandler(IHandleStateChanged<ProducerStateChanged> handler)
         {
-            _initialSequenceId = initialSequenceId;
+            _stateChangedHandler = handler;
+            return this;
+        }
+
+        public IProducerBuilder StateChangedHandler(Action<ProducerStateChanged, CancellationToken> handler, CancellationToken cancellationToken)
+        {
+            _stateChangedHandler = new ActionStateChangedHandler<ProducerStateChanged>(handler, cancellationToken);
+            return this;
+        }
+
+        public IProducerBuilder StateChangedHandler(Func<ProducerStateChanged, CancellationToken, ValueTask> handler, CancellationToken cancellationToken)
+        {
+            _stateChangedHandler = new FuncStateChangedHandler<ProducerStateChanged>(handler, cancellationToken);
             return this;
         }
 
@@ -56,7 +78,8 @@ namespace DotPulsar.Internal
             var options = new ProducerOptions(_topic!)
             {
                 InitialSequenceId = _initialSequenceId,
-                ProducerName = _producerName
+                ProducerName = _producerName,
+                StateChangedHandler = _stateChangedHandler
             };
 
             return _pulsarClient.CreateProducer(options);

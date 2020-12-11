@@ -14,6 +14,8 @@
 
 namespace DotPulsar
 {
+    using DotPulsar.Abstractions;
+
     /// <summary>
     /// The reader building options.
     /// </summary>
@@ -38,11 +40,6 @@ namespace DotPulsar
         }
 
         /// <summary>
-        /// Set the reader name. This is optional.
-        /// </summary>
-        public string? ReaderName { get; set; }
-
-        /// <summary>
         /// Number of messages that will be prefetched. The default is 1000.
         /// </summary>
         public uint MessagePrefetchCount { get; set; }
@@ -53,9 +50,19 @@ namespace DotPulsar
         public bool ReadCompacted { get; set; }
 
         /// <summary>
+        /// Set the reader name. This is optional.
+        /// </summary>
+        public string? ReaderName { get; set; }
+
+        /// <summary>
         /// The initial reader position is set to the specified message id. This is required.
         /// </summary>
         public MessageId StartMessageId { get; set; }
+
+        /// <summary>
+        /// Register a state changed handler. This is optional.
+        /// </summary>
+        public IHandleStateChanged<ReaderStateChanged>? StateChangedHandler { get; set; }
 
         /// <summary>
         /// Set the topic for this reader. This is required.

@@ -16,6 +16,9 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public sealed class ReaderBuilder : IReaderBuilder
     {
@@ -25,18 +28,13 @@ namespace DotPulsar.Internal
         private bool _readCompacted;
         private MessageId? _startMessageId;
         private string? _topic;
+        private IHandleStateChanged<ReaderStateChanged>? _stateChangedHandler;
 
         public ReaderBuilder(IPulsarClient pulsarClient)
         {
             _pulsarClient = pulsarClient;
             _messagePrefetchCount = ReaderOptions.DefaultMessagePrefetchCount;
             _readCompacted = ReaderOptions.DefaultReadCompacted;
-        }
-
-        public IReaderBuilder ReaderName(string name)
-        {
-            _readerName = name;
-            return this;
         }
 
         public IReaderBuilder MessagePrefetchCount(uint count)
@@ -51,9 +49,33 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IReaderBuilder ReaderName(string name)
+        {
+            _readerName = name;
+            return this;
+        }
+
         public IReaderBuilder StartMessageId(MessageId messageId)
         {
             _startMessageId = messageId;
+            return this;
+        }
+
+        public IReaderBuilder StateChangedHandler(IHandleStateChanged<ReaderStateChanged> handler)
+        {
+            _stateChangedHandler = handler;
+            return this;
+        }
+
+        public IReaderBuilder StateChangedHandler(Action<ReaderStateChanged, CancellationToken> handler, CancellationToken cancellationToken)
+        {
+            _stateChangedHandler = new ActionStateChangedHandler<ReaderStateChanged>(handler, cancellationToken);
+            return this;
+        }
+
+        public IReaderBuilder StateChangedHandler(Func<ReaderStateChanged, CancellationToken, ValueTask> handler, CancellationToken cancellationToken)
+        {
+            _stateChangedHandler = new FuncStateChangedHandler<ReaderStateChanged>(handler, cancellationToken);
             return this;
         }
 
@@ -75,7 +97,8 @@ namespace DotPulsar.Internal
             {
                 MessagePrefetchCount = _messagePrefetchCount,
                 ReadCompacted = _readCompacted,
-                ReaderName = _readerName
+                ReaderName = _readerName,
+                StateChangedHandler = _stateChangedHandler
             };
 
             return _pulsarClient.CreateReader(options);

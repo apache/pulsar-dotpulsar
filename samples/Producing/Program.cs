@@ -39,10 +39,9 @@ namespace Producing
             await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
             var producer = client.NewProducer()
+                .StateChangedHandler(Monitor)
                 .Topic(myTopic)
                 .Create();
-
-            var monitoring = Monitor(producer);
 
             var cts = new CancellationTokenSource();
 
@@ -57,8 +56,6 @@ namespace Producing
             await producing;
 
             await producer.DisposeAsync();
-
-            await monitoring;
         }
 
         private static async Task ProduceMessages(IProducer producer, CancellationToken cancellationToken)
@@ -82,32 +79,19 @@ namespace Producing
             { }
         }
 
-        private static async Task Monitor(IProducer producer)
+        private static void Monitor(ProducerStateChanged stateChanged, CancellationToken cancellationToken)
         {
-            await Task.Yield();
-
-            var state = ProducerState.Disconnected;
-
-            while (true)
+            var stateMessage = stateChanged.ProducerState switch
             {
-                var stateChanged = await producer.StateChangedFrom(state).ConfigureAwait(false);
-                state = stateChanged.ProducerState;
+                ProducerState.Connected => "is connected",
+                ProducerState.Disconnected => "is disconnected",
+                ProducerState.Closed => "has closed",
+                ProducerState.Faulted => "has faulted",
+                _ => $"has an unknown state '{stateChanged.ProducerState}'"
+            };
 
-                var stateMessage = state switch
-                {
-                    ProducerState.Connected => "is connected",
-                    ProducerState.Disconnected => "is disconnected",
-                    ProducerState.Closed => "has closed",
-                    ProducerState.Faulted => "has faulted",
-                    _ => $"has an unknown state '{state}'"
-                };
-
-                var topic = stateChanged.Producer.Topic;
-                Console.WriteLine($"The producer for topic '{topic}' " + stateMessage);
-
-                if (producer.IsFinalState(state))
-                    return;
-            }
+            var topic = stateChanged.Producer.Topic;
+            Console.WriteLine($"The producer for topic '{topic}' " + stateMessage);
         }
     }
 }

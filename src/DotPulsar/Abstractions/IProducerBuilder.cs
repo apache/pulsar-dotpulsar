@@ -14,20 +14,39 @@
 
 namespace DotPulsar.Abstractions
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// A producer building abstraction.
     /// </summary>
     public interface IProducerBuilder
     {
         /// <summary>
+        /// Set the initial sequence id. The default is 0.
+        /// </summary>
+        IProducerBuilder InitialSequenceId(ulong initialSequenceId);
+
+        /// <summary>
         /// Set the producer name. This is optional.
         /// </summary>
         IProducerBuilder ProducerName(string name);
 
         /// <summary>
-        /// Set the initial sequence id. The default is 0.
+        /// Register a state changed handler.
         /// </summary>
-        IProducerBuilder InitialSequenceId(ulong initialSequenceId);
+        IProducerBuilder StateChangedHandler(IHandleStateChanged<ProducerStateChanged> handler);
+
+        /// <summary>
+        /// Register a state changed handler.
+        /// </summary>
+        IProducerBuilder StateChangedHandler(Action<ProducerStateChanged, CancellationToken> handler, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Register a state changed handler.
+        /// </summary>
+        IProducerBuilder StateChangedHandler(Func<ProducerStateChanged, CancellationToken, ValueTask> handler, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Set the topic for this producer. This is required.

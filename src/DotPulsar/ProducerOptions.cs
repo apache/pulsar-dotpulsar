@@ -14,6 +14,8 @@
 
 namespace DotPulsar
 {
+    using DotPulsar.Abstractions;
+
     /// <summary>
     /// The producer building options.
     /// </summary>
@@ -31,14 +33,19 @@ namespace DotPulsar
         }
 
         /// <summary>
+        /// Set the initial sequence id. The default is 0.
+        /// </summary>
+        public ulong InitialSequenceId { get; set; }
+
+        /// <summary>
         /// Set the producer name. This is optional.
         /// </summary>
         public string? ProducerName { get; set; }
 
         /// <summary>
-        /// Set the initial sequence id. The default is 0.
+        /// Register a state changed handler. This is optional.
         /// </summary>
-        public ulong InitialSequenceId { get; set; }
+        public IHandleStateChanged<ProducerStateChanged>? StateChangedHandler { get; set; }
 
         /// <summary>
         /// Set the topic for this producer. This is required.

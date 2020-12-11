@@ -54,7 +54,9 @@ namespace DotPulsar.Internal.Extensions
                 ServerError.ConsumerNotFound => new ConsumerNotFoundException(message),
                 ServerError.IncompatibleSchema => new IncompatibleSchemaException(message),
                 ServerError.InvalidTopicName => new InvalidTopicNameException(message),
+                ServerError.InvalidTxnStatus => new InvalidTransactionStatusException(message),
                 ServerError.MetadataError => new MetadataException(message),
+                ServerError.NotAllowedError => new NotAllowedErrorException(message),
                 ServerError.PersistenceError => new PersistenceException(message),
                 ServerError.ProducerBlockedQuotaExceededError => new ProducerBlockedQuotaExceededException($"{message}. Error code: {error}"),
                 ServerError.ProducerBlockedQuotaExceededException => new ProducerBlockedQuotaExceededException($"{message}. Error code: {error}"),
@@ -64,8 +66,10 @@ namespace DotPulsar.Internal.Extensions
                 ServerError.TooManyRequests => new TooManyRequestsException(message),
                 ServerError.TopicNotFound => new TopicNotFoundException(message),
                 ServerError.TopicTerminatedError => new TopicTerminatedException(message),
-                ServerError.UnsupportedVersionError => new UnsupportedVersionException(message),
+                ServerError.TransactionConflict => new TransactionConflictException(message),
+                ServerError.TransactionCoordinatorNotFound => new TransactionCoordinatorNotFoundException(message),
                 ServerError.UnknownError => new UnknownException($"{message}. Error code: {error}"),
+                ServerError.UnsupportedVersionError => new UnsupportedVersionException(message),
                 _ => new UnknownException($"{message}. Error code: {error}")
             });
 

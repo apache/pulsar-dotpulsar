@@ -41,10 +41,9 @@ namespace Reading
 
             var reader = client.NewReader()
                 .StartMessageId(MessageId.Earliest)
+                .StateChangedHandler(Monitor)
                 .Topic(myTopic)
                 .Create();
-
-            var monitoring = Monitor(reader);
 
             var cts = new CancellationTokenSource();
 
@@ -59,8 +58,6 @@ namespace Reading
             await reading;
 
             await reader.DisposeAsync();
-
-            await monitoring;
         }
 
         private static async Task ReadMessages(IReader reader, CancellationToken cancellationToken)
@@ -78,33 +75,20 @@ namespace Reading
             catch (OperationCanceledException) { }
         }
 
-        private static async Task Monitor(IReader reader)
+        private static void Monitor(ReaderStateChanged stateChanged, CancellationToken cancellationToken)
         {
-            await Task.Yield();
-
-            var state = ReaderState.Disconnected;
-
-            while (true)
+            var stateMessage = stateChanged.ReaderState switch
             {
-                var stateChanged = await reader.StateChangedFrom(state);
-                state = stateChanged.ReaderState;
+                ReaderState.Connected => "is connected",
+                ReaderState.Disconnected => "is disconnected",
+                ReaderState.Closed => "has closed",
+                ReaderState.ReachedEndOfTopic => "has reached end of topic",
+                ReaderState.Faulted => "has faulted",
+                _ => $"has an unknown state '{stateChanged.ReaderState}'"
+            };
 
-                var stateMessage = state switch
-                {
-                    ReaderState.Connected => "is connected",
-                    ReaderState.Disconnected => "is disconnected",
-                    ReaderState.Closed => "has closed",
-                    ReaderState.ReachedEndOfTopic => "has reached end of topic",
-                    ReaderState.Faulted => "has faulted",
-                    _ => $"has an unknown state '{state}'"
-                };
-
-                var topic = stateChanged.Reader.Topic;
-                Console.WriteLine($"The reader for topic '{topic}' " + stateMessage);
-
-                if (reader.IsFinalState(state))
-                    return;
-            }
+            var topic = stateChanged.Reader.Topic;
+            Console.WriteLine($"The reader for topic '{topic}' " + stateMessage);
         }
     }
 }

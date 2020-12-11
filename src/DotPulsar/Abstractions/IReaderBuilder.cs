@@ -14,16 +14,15 @@
 
 namespace DotPulsar.Abstractions
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// A reader building abstraction.
     /// </summary>
     public interface IReaderBuilder
     {
-        /// <summary>
-        /// Set the reader name. This is optional.
-        /// </summary>
-        IReaderBuilder ReaderName(string name);
-
         /// <summary>
         /// Number of messages that will be prefetched. The default is 1000.
         /// </summary>
@@ -35,9 +34,29 @@ namespace DotPulsar.Abstractions
         IReaderBuilder ReadCompacted(bool readCompacted);
 
         /// <summary>
+        /// Set the reader name. This is optional.
+        /// </summary>
+        IReaderBuilder ReaderName(string name);
+
+        /// <summary>
         /// The initial reader position is set to the specified message id. This is required.
         /// </summary>
         IReaderBuilder StartMessageId(MessageId messageId);
+
+        /// <summary>
+        /// Register a state changed handler.
+        /// </summary>
+        IReaderBuilder StateChangedHandler(IHandleStateChanged<ReaderStateChanged> handler);
+
+        /// <summary>
+        /// Register a state changed handler.
+        /// </summary>
+        IReaderBuilder StateChangedHandler(Action<ReaderStateChanged, CancellationToken> handler, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Register a state changed handler.
+        /// </summary>
+        IReaderBuilder StateChangedHandler(Func<ReaderStateChanged, CancellationToken, ValueTask> handler, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Set the topic for this reader. This is required.
