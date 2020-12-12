@@ -29,7 +29,7 @@ namespace DotPulsar
         internal readonly Internal.PulsarApi.MessageMetadata Metadata;
 
         /// <summary>
-        /// The delivery time of the message (unix time in milliseconds).
+        /// The delivery time of the message as unix time in milliseconds.
         /// </summary>
         public long DeliverAtTime
         {
@@ -38,7 +38,16 @@ namespace DotPulsar
         }
 
         /// <summary>
-        /// The delivery time of the message.
+        /// The delivery time of the message as an UTC DateTime.
+        /// </summary>
+        public DateTime DeliverAtTimeAsDateTime
+        {
+            get => Metadata.GetDeliverAtTimeAsDateTime();
+            set => Metadata.SetDeliverAtTime(value);
+        }
+
+        /// <summary>
+        /// The delivery time of the message as a DateTimeOffset.
         /// </summary>
         public DateTimeOffset DeliverAtTimeAsDateTimeOffset
         {
@@ -47,7 +56,7 @@ namespace DotPulsar
         }
 
         /// <summary>
-        /// The event time of the message (unix time in milliseconds).
+        /// The event time of the message as unix time in milliseconds.
         /// </summary>
         public ulong EventTime
         {
@@ -56,7 +65,16 @@ namespace DotPulsar
         }
 
         /// <summary>
-        /// The event time of the message.
+        /// The event time of the message as an UTC DateTime.
+        /// </summary>
+        public DateTime EventTimeAsDateTime
+        {
+            get => Metadata.GetEventTimeAsDateTime();
+            set => Metadata.SetEventTime(value);
+        }
+
+        /// <summary>
+        /// The event time of the message as a DateTimeOffset.
         /// </summary>
         public DateTimeOffset EventTimeAsDateTimeOffset
         {

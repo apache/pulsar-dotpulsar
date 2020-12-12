@@ -80,12 +80,17 @@ namespace DotPulsar
         public bool HasEventTime => EventTime != 0;
 
         /// <summary>
-        /// The event time of the message (unix time in milliseconds).
+        /// The event time of the message as unix time in milliseconds.
         /// </summary>
         public ulong EventTime { get; }
 
         /// <summary>
-        /// The event time of the message.
+        /// The event time of the message as an UTC DateTime.
+        /// </summary>
+        public DateTime EventTimeAsDateTime => EventTimeAsDateTimeOffset.UtcDateTime;
+
+        /// <summary>
+        /// The event time of the message as a DateTimeOffset with an offset of 0.
         /// </summary>
         public DateTimeOffset EventTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) EventTime);
 
@@ -120,12 +125,17 @@ namespace DotPulsar
         public byte[]? OrderingKey { get; }
 
         /// <summary>
-        /// The publish time of the message (unix time in milliseconds).
+        /// The publish time of the message as unix time in milliseconds.
         /// </summary>
         public ulong PublishTime { get; }
 
         /// <summary>
-        /// The publish time of the message.
+        /// The publish time of the message as an UTC DateTime.
+        /// </summary>
+        public DateTime PublishTimeAsDateTime => PublishTimeAsDateTimeOffset.UtcDateTime;
+
+        /// <summary>
+        /// The publish time of the message as a DateTimeOffset with an offset of 0.
         /// </summary>
         public DateTimeOffset PublishTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) PublishTime);
 

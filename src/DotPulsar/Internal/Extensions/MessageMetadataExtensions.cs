@@ -19,11 +19,25 @@ namespace DotPulsar.Internal.Extensions
 
     public static class MessageMetadataExtensions
     {
+        // Deliver at
+        public static DateTime GetDeliverAtTimeAsDateTime(this Metadata metadata)
+            => metadata.GetDeliverAtTimeAsDateTimeOffset().UtcDateTime;
+
+        public static void SetDeliverAtTime(this Metadata metadata, DateTime timestamp)
+            => metadata.SetDeliverAtTime(new DateTimeOffset(timestamp));
+
         public static DateTimeOffset GetDeliverAtTimeAsDateTimeOffset(this Metadata metadata)
             => DateTimeOffset.FromUnixTimeMilliseconds(metadata.DeliverAtTime);
 
         public static void SetDeliverAtTime(this Metadata metadata, DateTimeOffset timestamp)
             => metadata.DeliverAtTime = timestamp.ToUnixTimeMilliseconds();
+
+        // Event time
+        public static DateTime GetEventTimeAsDateTime(this Metadata metadata)
+            => metadata.GetEventTimeAsDateTimeOffset().UtcDateTime;
+
+        public static void SetEventTime(this Metadata metadata, DateTime timestamp)
+            => metadata.SetEventTime(new DateTimeOffset(timestamp));
 
         public static DateTimeOffset GetEventTimeAsDateTimeOffset(this Metadata metadata)
             => DateTimeOffset.FromUnixTimeMilliseconds((long) metadata.EventTime);
@@ -31,6 +45,7 @@ namespace DotPulsar.Internal.Extensions
         public static void SetEventTime(this Metadata metadata, DateTimeOffset timestamp)
             => metadata.EventTime = (ulong) timestamp.ToUnixTimeMilliseconds();
 
+        // Key
         public static byte[]? GetKeyAsBytes(this Metadata metadata)
             => metadata.PartitionKeyB64Encoded ? Convert.FromBase64String(metadata.PartitionKey) : null;
 

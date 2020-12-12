@@ -24,22 +24,32 @@ namespace DotPulsar.Abstractions
     public interface IMessageBuilder
     {
         /// <summary>
-        /// Timestamp indicating when the message should be delivered to consumers.
+        /// Timestamp as unix time in milliseconds indicating when the message should be delivered to consumers.
         /// </summary>
         IMessageBuilder DeliverAt(long timestamp);
 
         /// <summary>
-        /// Timestamp indicating when the message should be delivered to consumers.
+        /// Timestamp as UTC DateTime indicating when the message should be delivered to consumers.
+        /// </summary>
+        IMessageBuilder DeliverAt(DateTime timestamp);
+
+        /// <summary>
+        /// Timestamp as DateTimeOffset indicating when the message should be delivered to consumers.
         /// </summary>
         IMessageBuilder DeliverAt(DateTimeOffset timestamp);
 
         /// <summary>
-        /// Set the event time of the message.
+        /// The event time of the message as unix time in milliseconds.
         /// </summary>
         IMessageBuilder EventTime(ulong eventTime);
 
         /// <summary>
-        /// Set the event time of the message.
+        /// The event time of the message as an UTC DateTime.
+        /// </summary>
+        IMessageBuilder EventTime(DateTime eventTime);
+
+        /// <summary>
+        /// The event time of the message as a DateTimeOffset.
         /// </summary>
         IMessageBuilder EventTime(DateTimeOffset eventTime);
 

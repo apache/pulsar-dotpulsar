@@ -37,15 +37,27 @@ namespace DotPulsar.Internal
             return this;
         }
 
-        public IMessageBuilder DeliverAt(DateTimeOffset deliverAt)
+        public IMessageBuilder DeliverAt(DateTime timestamp)
         {
-            _metadata.Metadata.SetDeliverAtTime(deliverAt);
+            _metadata.Metadata.SetDeliverAtTime(timestamp);
+            return this;
+        }
+
+        public IMessageBuilder DeliverAt(DateTimeOffset timestamp)
+        {
+            _metadata.Metadata.SetDeliverAtTime(timestamp);
             return this;
         }
 
         public IMessageBuilder EventTime(ulong eventTime)
         {
             _metadata.Metadata.EventTime = eventTime;
+            return this;
+        }
+
+        public IMessageBuilder EventTime(DateTime eventTime)
+        {
+            _metadata.Metadata.SetEventTime(eventTime);
             return this;
         }
 

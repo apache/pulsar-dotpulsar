@@ -78,19 +78,19 @@ namespace Consuming
 
         private static void Monitor(ConsumerStateChanged stateChanged, CancellationToken cancellationToken)
         {
-                var stateMessage = stateChanged.ConsumerState switch
-                {
-                    ConsumerState.Active => "is active",
-                    ConsumerState.Inactive => "is inactive",
-                    ConsumerState.Disconnected => "is disconnected",
-                    ConsumerState.Closed => "has closed",
-                    ConsumerState.ReachedEndOfTopic => "has reached end of topic",
-                    ConsumerState.Faulted => "has faulted",
-                    _ => $"has an unknown state '{stateChanged.ConsumerState}'"
-                };
+            var stateMessage = stateChanged.ConsumerState switch
+            {
+                ConsumerState.Active => "is active",
+                ConsumerState.Inactive => "is inactive",
+                ConsumerState.Disconnected => "is disconnected",
+                ConsumerState.Closed => "has closed",
+                ConsumerState.ReachedEndOfTopic => "has reached end of topic",
+                ConsumerState.Faulted => "has faulted",
+                _ => $"has an unknown state '{stateChanged.ConsumerState}'"
+            };
 
-                var topic = stateChanged.Consumer.Topic;
-                Console.WriteLine($"The consumer for topic '{topic}' " + stateMessage);
+            var topic = stateChanged.Consumer.Topic;
+            Console.WriteLine($"The consumer for topic '{topic}' " + stateMessage);
         }
     }
 }
