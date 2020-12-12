@@ -46,6 +46,26 @@ namespace DotPulsar.Abstractions
         IAsyncEnumerable<Message> Messages(CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Reset the subscription associated with this reader to a specific MessageId.
+        /// </summary>
+        ValueTask Seek(MessageId messageId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Reset the subscription associated with this reader to a specific message publish time using unix time in milliseconds.
+        /// </summary>
+        ValueTask Seek(ulong publishTime, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Reset the subscription associated with this reader to a specific message publish time using an UTC DateTime.
+        /// </summary>
+        ValueTask Seek(DateTime publishTime, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Reset the subscription associated with this reader to a specific message publish time using a DateTimeOffset.
+        /// </summary>
+        ValueTask Seek(DateTimeOffset publishTime, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Wait for the state to change to a specific state.
         /// </summary>
         /// <returns>

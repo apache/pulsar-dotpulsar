@@ -124,11 +124,31 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            var seek = new CommandSeek
-            {
-                MessageId = messageId.Data
-            };
+            var seek = new CommandSeek { MessageId = messageId.Data };
+            _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
 
+        public async ValueTask Seek(ulong publishTime, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            var seek = new CommandSeek { MessagePublishTime = publishTime };
+            _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async ValueTask Seek(DateTime publishTime, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            var seek = new CommandSeek { MessagePublishTime = (ulong) new DateTimeOffset(publishTime).ToUnixTimeMilliseconds() };
+            _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async ValueTask Seek(DateTimeOffset publishTime, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            var seek = new CommandSeek { MessagePublishTime = (ulong) publishTime.ToUnixTimeMilliseconds() };
             _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
@@ -170,11 +190,7 @@ namespace DotPulsar.Internal
 
             var redeliverUnacknowledgedMessages = new CommandRedeliverUnacknowledgedMessages();
             redeliverUnacknowledgedMessages.MessageIds.AddRange(messageIds);
-
-            await _executor.Execute(() =>
-            {
-                return _channel.Send(redeliverUnacknowledgedMessages, cancellationToken);
-            }, cancellationToken).ConfigureAwait(false);
+            await _executor.Execute(() => _channel.Send(redeliverUnacknowledgedMessages, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         internal async ValueTask SetChannel(IConsumerChannel channel)

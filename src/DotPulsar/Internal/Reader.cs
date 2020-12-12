@@ -17,6 +17,7 @@ namespace DotPulsar.Internal
     using Abstractions;
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
+    using DotPulsar.Internal.PulsarApi;
     using Events;
     using System;
     using System.Collections.Generic;
@@ -78,6 +79,38 @@ namespace DotPulsar.Internal
 
             while (!cancellationToken.IsCancellationRequested)
                 yield return await _executor.Execute(() => _channel.Receive(cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            var seek = new CommandSeek { MessageId = messageId.Data };
+            _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async ValueTask Seek(ulong publishTime, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            var seek = new CommandSeek { MessagePublishTime = publishTime };
+            _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async ValueTask Seek(DateTime publishTime, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            var seek = new CommandSeek { MessagePublishTime = (ulong) new DateTimeOffset(publishTime).ToUnixTimeMilliseconds() };
+            _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async ValueTask Seek(DateTimeOffset publishTime, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            var seek = new CommandSeek { MessagePublishTime = (ulong) publishTime.ToUnixTimeMilliseconds() };
+            _ = await _executor.Execute(() => _channel.Send(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask DisposeAsync()

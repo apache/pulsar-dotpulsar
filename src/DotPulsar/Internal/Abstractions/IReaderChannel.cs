@@ -14,12 +14,14 @@
 
 namespace DotPulsar.Internal.Abstractions
 {
+    using DotPulsar.Internal.PulsarApi;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
 
     public interface IReaderChannel : IAsyncDisposable
     {
+        Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken);
         ValueTask<Message> Receive(CancellationToken cancellationToken = default);
     }
 }
