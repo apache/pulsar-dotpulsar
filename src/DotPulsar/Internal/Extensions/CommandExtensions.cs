@@ -56,7 +56,7 @@ namespace DotPulsar.Internal.Extensions
                 ServerError.InvalidTopicName => new InvalidTopicNameException(message),
                 ServerError.InvalidTxnStatus => new InvalidTransactionStatusException(message),
                 ServerError.MetadataError => new MetadataException(message),
-                ServerError.NotAllowedError => new NotAllowedErrorException(message),
+                ServerError.NotAllowedError => new NotAllowedException(message),
                 ServerError.PersistenceError => new PersistenceException(message),
                 ServerError.ProducerBlockedQuotaExceededError => new ProducerBlockedQuotaExceededException($"{message}. Error code: {error}"),
                 ServerError.ProducerBlockedQuotaExceededException => new ProducerBlockedQuotaExceededException($"{message}. Error code: {error}"),

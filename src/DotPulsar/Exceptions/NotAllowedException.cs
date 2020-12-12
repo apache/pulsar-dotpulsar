@@ -16,10 +16,10 @@ namespace DotPulsar.Exceptions
 {
     using System;
 
-    public sealed class NotAllowedErrorException : DotPulsarException
+    public sealed class NotAllowedException : DotPulsarException
     {
-        public NotAllowedErrorException(string message) : base(message) { }
+        public NotAllowedException(string message) : base(message) { }
 
-        public NotAllowedErrorException(string message, Exception innerException) : base(message, innerException) { }
+        public NotAllowedException(string message, Exception innerException) : base(message, innerException) { }
     }
 }

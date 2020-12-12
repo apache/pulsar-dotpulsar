@@ -9,6 +9,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - Added performance improvements when receiving data
+- Added the IHandleStateChanged\<TStateChanged\> interface for easier state monitoring
+- Added StateChangedHandler methods on ConsumerBuilder, ReaderBuilder and ProducerBuilder for easier state monitoring
+- Added StateChangedHandler property on ConsumerOptions, ReaderOptions, and ProducerOptions for easier state monitoring
+- Added four new DotPulsarExceptions: InvalidTransactionStatusException, NotAllowedException, TransactionConflictException and TransactionCoordinatorNotFoundException
+- Added properties on Message to read EventTime and PublishTime as DateTime
+- Added methods on the IMessageBuilder to set EventTime and DeliverAt using DateTime
+- Added properties on MessageMetadata to set EventTime and DeliverAtTime using DateTime
 
 ### Changed
 
