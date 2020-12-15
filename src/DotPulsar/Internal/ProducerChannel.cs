@@ -39,18 +39,20 @@ namespace DotPulsar.Internal
             _connection = connection;
         }
 
-        public async ValueTask DisposeAsync()
+        public async ValueTask ClosedByClient(CancellationToken cancellationToken)
         {
             try
             {
                 var closeProducer = new CommandCloseProducer { ProducerId = _id };
-                await _connection.Send(closeProducer, CancellationToken.None).ConfigureAwait(false);
+                await _connection.Send(closeProducer, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
                 // Ignore
             }
         }
+
+        public ValueTask DisposeAsync() => new ValueTask();
 
         public async Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
         {

@@ -22,6 +22,8 @@ namespace DotPulsar.Internal.Abstractions
     public interface IReaderChannel : IAsyncDisposable
     {
         Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken);
+        Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
         ValueTask<Message> Receive(CancellationToken cancellationToken = default);
+        ValueTask ClosedByClient(CancellationToken cancellationToken = default);
     }
 }

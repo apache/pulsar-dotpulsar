@@ -84,7 +84,7 @@ namespace DotPulsar.Internal
                 return;
 
             _eventRegister.Register(new ProducerDisposed(_correlationId, this));
-
+            await _channel.ClosedByClient().ConfigureAwait(false);
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
 

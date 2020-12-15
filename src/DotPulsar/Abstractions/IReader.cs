@@ -41,6 +41,11 @@ namespace DotPulsar.Abstractions
         bool IsFinalState(ReaderState state);
 
         /// <summary>
+        /// Get the MessageId of the last message on the topic.
+        /// </summary>
+        ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Get an IAsyncEnumerable for reading messages
         /// </summary>
         IAsyncEnumerable<Message> Messages(CancellationToken cancellationToken = default);

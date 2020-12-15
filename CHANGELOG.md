@@ -16,10 +16,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added properties on Message to read EventTime and PublishTime as DateTime
 - Added methods on the IMessageBuilder to set EventTime and DeliverAt using DateTime
 - Added properties on MessageMetadata to set EventTime and DeliverAtTime using DateTime
+- Added seeking by MessageId on the Reader
+- Added seeking by message publish time on the Consumer and Reader
+- Added GetLastMessageId on the Reader
 
 ### Changed
 
 - The protobuf-net dependency is upgraded from 2.4.6 to 3.X
+
+### Fixed
+
+- Reconnection issues when seeking
 
 ## [0.9.7] - 2020-12-04
 

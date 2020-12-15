@@ -144,17 +144,8 @@ namespace DotPulsar.Internal
 
         public async ValueTask DisposeAsync()
         {
-            try
-            {
-                _queue.Dispose();
-                await _lock.DisposeAsync();
-                var closeConsumer = new CommandCloseConsumer { ConsumerId = _id };
-                await _connection.Send(closeConsumer, CancellationToken.None).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ignore
-            }
+            _queue.Dispose();
+            await _lock.DisposeAsync().ConfigureAwait(false);
         }
 
         private async ValueTask SendFlow(CancellationToken cancellationToken)
@@ -178,6 +169,19 @@ namespace DotPulsar.Internal
             ack.MessageIds.Add(messagePackage.MessageId);
 
             await Send(ack, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async ValueTask ClosedByClient(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var closeConsumer = new CommandCloseConsumer { ConsumerId = _id };
+                await _connection.Send(closeConsumer, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignore
+            }
         }
     }
 }

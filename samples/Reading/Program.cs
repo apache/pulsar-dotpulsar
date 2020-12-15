@@ -29,11 +29,11 @@ namespace Reading
         {
             const string myTopic = "persistent://public/default/mytopic";
 
-            var taskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var taskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             Console.CancelKeyPress += (sender, args) =>
             {
-                taskCompletionSource.SetResult(null);
+                taskCompletionSource.SetResult();
                 args.Cancel = true;
             };
 
