@@ -83,7 +83,7 @@ namespace DotPulsar.Internal
                 return;
 
             _eventRegister.Register(new ConsumerDisposed(_correlationId, this));
-            await _channel.ClosedByClient().ConfigureAwait(false);
+            await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
@@ -111,7 +111,13 @@ namespace DotPulsar.Internal
             => await Acknowledge(messageId.Data, CommandAck.AckType.Cumulative, cancellationToken).ConfigureAwait(false);
 
         public async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken)
-            => await RedeliverUnacknowledgedMessages(messageIds.Select(m => m.Data).ToList(), cancellationToken).ConfigureAwait(false);
+        {
+            ThrowIfDisposed();
+
+            var command = new CommandRedeliverUnacknowledgedMessages();
+            command.MessageIds.AddRange(messageIds.Select(m => m.Data));
+            await _executor.Execute(() => RedeliverUnacknowledgedMessages(command, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
 
         public async ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken)
             => await RedeliverUnacknowledgedMessages(Enumerable.Empty<MessageId>(), cancellationToken).ConfigureAwait(false);
@@ -121,7 +127,12 @@ namespace DotPulsar.Internal
             ThrowIfDisposed();
 
             var unsubscribe = new CommandUnsubscribe();
-            _ = await _executor.Execute(() => _channel.Send(unsubscribe, cancellationToken), cancellationToken).ConfigureAwait(false);
+            await _executor.Execute(() => Unsubscribe(unsubscribe, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        private async ValueTask Unsubscribe(CommandUnsubscribe command, CancellationToken cancellationToken)
+        {
+            _ = await _channel.Send(command, cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
@@ -161,7 +172,12 @@ namespace DotPulsar.Internal
             ThrowIfDisposed();
 
             var getLastMessageId = new CommandGetLastMessageId();
-            var response = await _executor.Execute(() => _channel.Send(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
+            return await _executor.Execute(() => GetLastMessageId(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        private async ValueTask<MessageId> GetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
+        {
+            var response = await _channel.Send(command, cancellationToken).ConfigureAwait(false);
             return new MessageId(response.LastMessageId);
         }
 
@@ -179,10 +195,7 @@ namespace DotPulsar.Internal
 
             try
             {
-                await _executor.Execute(() =>
-                {
-                    return _channel.Send(commandAck, cancellationToken);
-                }, cancellationToken).ConfigureAwait(false);
+                await _executor.Execute(() => Acknowledge(commandAck, cancellationToken), cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -190,14 +203,11 @@ namespace DotPulsar.Internal
             }
         }
 
-        private async ValueTask RedeliverUnacknowledgedMessages(List<MessageIdData> messageIds, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
+        private async ValueTask Acknowledge(CommandAck command, CancellationToken cancellationToken)
+            => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
-            var redeliverUnacknowledgedMessages = new CommandRedeliverUnacknowledgedMessages();
-            redeliverUnacknowledgedMessages.MessageIds.AddRange(messageIds);
-            await _executor.Execute(() => _channel.Send(redeliverUnacknowledgedMessages, cancellationToken), cancellationToken).ConfigureAwait(false);
-        }
+        private async ValueTask RedeliverUnacknowledgedMessages(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken)
+            => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
         internal async ValueTask SetChannel(IConsumerChannel channel)
         {

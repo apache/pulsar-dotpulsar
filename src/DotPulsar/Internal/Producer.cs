@@ -84,7 +84,7 @@ namespace DotPulsar.Internal
                 return;
 
             _eventRegister.Register(new ProducerDisposed(_correlationId, this));
-            await _channel.ClosedByClient().ConfigureAwait(false);
+            await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
@@ -97,12 +97,12 @@ namespace DotPulsar.Internal
         public async ValueTask<MessageId> Send(ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
+
             var metadata = _messageMetadataPool.Get();
             try
             {
                 metadata.SequenceId = _sequenceId.FetchNext();
-                var response = await _executor.Execute(() => _channel.Send(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
-                return new MessageId(response.MessageId);
+                return await _executor.Execute(() => Send(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -126,14 +126,19 @@ namespace DotPulsar.Internal
 
             try
             {
-                var response = await _executor.Execute(() => _channel.Send(metadata.Metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
-                return new MessageId(response.MessageId);
+                return await _executor.Execute(() => Send(metadata.Metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
             }
             finally
             {
                 if (autoAssignSequenceId)
                     metadata.SequenceId = 0;
             }
+        }
+
+        private async ValueTask<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
+        {
+            var response = await _channel.Send(metadata, data, cancellationToken).ConfigureAwait(false);
+            return new MessageId(response.MessageId);
         }
 
         internal async ValueTask SetChannel(IProducerChannel channel)

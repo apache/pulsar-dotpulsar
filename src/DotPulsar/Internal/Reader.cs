@@ -73,10 +73,17 @@ namespace DotPulsar.Internal
         public bool IsFinalState(ReaderState state)
             => _state.IsFinalState(state);
 
-        public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default)
+        public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken)
         {
+            ThrowIfDisposed();
+
             var getLastMessageId = new CommandGetLastMessageId();
-            var response = await _executor.Execute(() => _channel.Send(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
+            return await _executor.Execute(() => GetLastMessageId(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+
+        private async ValueTask<MessageId> GetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
+        {
+            var response = await _channel.Send(command, cancellationToken).ConfigureAwait(false);
             return new MessageId(response.LastMessageId);
         }
 
@@ -129,7 +136,7 @@ namespace DotPulsar.Internal
                 return;
 
             _eventRegister.Register(new ReaderDisposed(_correlationId, this));
-            await _channel.ClosedByClient().ConfigureAwait(false);
+            await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
 

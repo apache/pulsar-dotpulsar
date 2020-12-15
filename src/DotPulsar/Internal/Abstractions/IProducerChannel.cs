@@ -23,6 +23,6 @@ namespace DotPulsar.Internal.Abstractions
     public interface IProducerChannel : IAsyncDisposable
     {
         Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken);
-        ValueTask ClosedByClient(CancellationToken cancellationToken = default);
+        ValueTask ClosedByClient(CancellationToken cancellationToken);
     }
 }
