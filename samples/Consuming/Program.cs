@@ -29,41 +29,29 @@ namespace Consuming
         {
             const string myTopic = "persistent://public/default/mytopic";
 
-            var taskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var cts = new CancellationTokenSource();
 
             Console.CancelKeyPress += (sender, args) =>
             {
-                taskCompletionSource.SetResult();
+                cts.Cancel();
                 args.Cancel = true;
             };
 
             await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
-            var consumer = client.NewConsumer()
+            await using var consumer = client.NewConsumer()
                 .StateChangedHandler(Monitor)
                 .SubscriptionName("MySubscription")
                 .Topic(myTopic)
                 .Create();
 
-            var cts = new CancellationTokenSource();
-
-            var consuming = ConsumeMessages(consumer, cts.Token);
-
             Console.WriteLine("Press Ctrl+C to exit");
 
-            await taskCompletionSource.Task;
-
-            cts.Cancel();
-
-            await consuming;
-
-            await consumer.DisposeAsync();
+            await ConsumeMessages(consumer, cts.Token);
         }
 
         private static async Task ConsumeMessages(IConsumer consumer, CancellationToken cancellationToken)
         {
-            await Task.Yield();
-
             try
             {
                 await foreach (var message in consumer.Messages(cancellationToken))

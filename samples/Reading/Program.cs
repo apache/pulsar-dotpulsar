@@ -29,41 +29,29 @@ namespace Reading
         {
             const string myTopic = "persistent://public/default/mytopic";
 
-            var taskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var cts = new CancellationTokenSource();
 
             Console.CancelKeyPress += (sender, args) =>
             {
-                taskCompletionSource.SetResult();
+                cts.Cancel();
                 args.Cancel = true;
             };
 
             await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
-            var reader = client.NewReader()
+            await using var reader = client.NewReader()
                 .StartMessageId(MessageId.Earliest)
                 .StateChangedHandler(Monitor)
                 .Topic(myTopic)
                 .Create();
 
-            var cts = new CancellationTokenSource();
-
-            var reading = ReadMessages(reader, cts.Token);
-
             Console.WriteLine("Press Ctrl+C to exit");
 
-            await taskCompletionSource.Task;
-
-            cts.Cancel();
-
-            await reading;
-
-            await reader.DisposeAsync();
+            await ReadMessages(reader, cts.Token);
         }
 
         private static async Task ReadMessages(IReader reader, CancellationToken cancellationToken)
         {
-            await Task.Yield();
-
             try
             {
                 await foreach (var message in reader.Messages(cancellationToken))

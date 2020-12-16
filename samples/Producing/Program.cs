@@ -28,40 +28,28 @@ namespace Producing
         {
             const string myTopic = "persistent://public/default/mytopic";
 
-            var taskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var cts = new CancellationTokenSource();
 
             Console.CancelKeyPress += (sender, args) =>
             {
-                taskCompletionSource.SetResult();
+                cts.Cancel();
                 args.Cancel = true;
             };
 
             await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
-            var producer = client.NewProducer()
+            await using var producer = client.NewProducer()
                 .StateChangedHandler(Monitor)
                 .Topic(myTopic)
                 .Create();
 
-            var cts = new CancellationTokenSource();
-
-            var producing = ProduceMessages(producer, cts.Token);
-
             Console.WriteLine("Press Ctrl+C to exit");
 
-            await taskCompletionSource.Task;
-
-            cts.Cancel();
-
-            await producing;
-
-            await producer.DisposeAsync();
+            await ProduceMessages(producer, cts.Token);
         }
 
         private static async Task ProduceMessages(IProducer producer, CancellationToken cancellationToken)
         {
-            await Task.Yield();
-
             var delay = TimeSpan.FromSeconds(5);
 
             try

@@ -18,7 +18,6 @@ namespace DotPulsar.Internal
     using System.Threading.Tasks;
 
     public static class StateMonitor
-
     {
         public static async Task MonitorProducer(IProducer producer, IHandleStateChanged<ProducerStateChanged> handler)
         {
