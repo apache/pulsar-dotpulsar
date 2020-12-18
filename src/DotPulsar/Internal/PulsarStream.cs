@@ -30,8 +30,10 @@ namespace DotPulsar.Internal
     {
         private const long _pauseAtMoreThan10Mb = 10485760;
         private const long _resumeAt5MbOrLess = 5242881;
+        private const int _chunkSize = 75000;
 
         private readonly Stream _stream;
+        private readonly ChunkingPipeline _pipeline;
         private readonly PipeReader _reader;
         private readonly PipeWriter _writer;
         private int _isDisposed;
@@ -39,6 +41,7 @@ namespace DotPulsar.Internal
         public PulsarStream(Stream stream)
         {
             _stream = stream;
+            _pipeline = new ChunkingPipeline(stream, _chunkSize);
             var options = new PipeOptions(pauseWriterThreshold: _pauseAtMoreThan10Mb, resumeWriterThreshold: _resumeAt5MbOrLess);
             var pipe = new Pipe(options);
             _reader = pipe.Reader;
@@ -48,19 +51,7 @@ namespace DotPulsar.Internal
         public async Task Send(ReadOnlySequence<byte> sequence)
         {
             ThrowIfDisposed();
-
-#if NETSTANDARD2_0
-            foreach (var segment in sequence)
-            {
-                var data = segment.ToArray();
-                await _stream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
-            }
-#else
-            foreach (var segment in sequence)
-            {
-                await _stream.WriteAsync(segment).ConfigureAwait(false);
-            }
-#endif
+            await _pipeline.Send(sequence).ConfigureAwait(false);
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -88,7 +79,7 @@ namespace DotPulsar.Internal
 #endif
                 while (true)
                 {
-                    var memory = _writer.GetMemory(84999); // LOH - 1 byte
+                    var memory = _writer.GetMemory(84999);
 #if NETSTANDARD2_0
                     var bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
                     new Memory<byte>(buffer, 0, bytesRead).CopyTo(memory);
