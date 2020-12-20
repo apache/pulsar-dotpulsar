@@ -101,5 +101,11 @@ namespace DotPulsar
         /// Set the topic for this consumer. This is required.
         /// </summary>
         public string Topic { get; set; }
+
+        /// <summary>
+        /// Delay to wait before redelivering messages that failed to be processed.
+        /// When an application uses IConsumer.NegativeAcknowledge(Message), failed messages are redelivered after a fixed timeout.
+        /// </summary>
+        public ulong NegativeAckRedeliveryDelayMicros { get; set; }
     }
 }
