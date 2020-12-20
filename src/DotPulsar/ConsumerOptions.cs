@@ -107,5 +107,10 @@ namespace DotPulsar
         /// When an application uses IConsumer.NegativeAcknowledge(Message), failed messages are redelivered after a fixed timeout.
         /// </summary>
         public ulong NegativeAckRedeliveryDelayMicros { get; set; }
+
+        /// <summary>
+        /// Timeout of unacked messages
+        /// </summary>
+        public ulong AckTimeoutMillis { get; set; }
     }
 }
