@@ -15,9 +15,9 @@ namespace DotPulsar.Internal
 
     public sealed class MessageQueue : IMessageQueue<MessageId>
     {
-        private readonly AsyncQueue<MessageId> _queue;
+        private readonly AsyncQueue<MessagePackage> _queue;
         private readonly IMessageAcksTracker<MessageId> _tracker;
-        public MessageQueue(AsyncQueue<MessageId> queue, IMessageAcksTracker<MessageId> tracker)
+        public MessageQueue(AsyncQueue<MessagePackage> queue, IMessageAcksTracker<MessageId> tracker)
         {
             _queue = queue;
             _tracker = tracker;
@@ -25,7 +25,7 @@ namespace DotPulsar.Internal
         public async ValueTask<MessageId> Dequeue(CancellationToken cancellationToken = default)
         {
             var message = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);
-            return _tracker.Add(message);
+            return _tracker.Add(new MessageId(message.MessageId));
         }
         public MessageId Acknowledge(MessageId obj) => _tracker.Ack(obj);
         public MessageId NegativeAcknowledge(MessageId obj) => _tracker.Nack(obj);
