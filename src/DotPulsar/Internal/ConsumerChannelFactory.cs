@@ -28,20 +28,25 @@ namespace DotPulsar.Internal
         private readonly IExecute _executor;
         private readonly CommandSubscribe _subscribe;
         private readonly uint _messagePrefetchCount;
+        private readonly int _ackTimeoutMillis;
+        private readonly int _negativeAckRedeliveryDelayMicros;
         private readonly BatchHandler _batchHandler;
+        private readonly IMessageAcksTracker<MessageId> _tracker;
 
         public ConsumerChannelFactory(
             Guid correlationId,
             IRegisterEvent eventRegister,
             IConnectionPool connectionPool,
             IExecute executor,
-            ConsumerOptions options)
+            ConsumerOptions options,
+            IMessageAcksTracker<MessageId> tracker)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;
             _connectionPool = connectionPool;
             _executor = executor;
             _messagePrefetchCount = options.MessagePrefetchCount;
+            _tracker = tracker;
 
             _subscribe = new CommandSubscribe
             {
@@ -64,9 +69,11 @@ namespace DotPulsar.Internal
         {
             var connection = await _connectionPool.FindConnectionForTopic(_subscribe.Topic, cancellationToken).ConfigureAwait(false);
             var messageQueue = new AsyncQueue<MessagePackage>();
+            // TODO perhaps start tracker here?
+            var consumerMessageQueue = new MessageQueue(messageQueue, _tracker);
             var channel = new Channel(_correlationId, _eventRegister, messageQueue);
             var response = await connection.Send(_subscribe, channel, cancellationToken).ConfigureAwait(false);
-            return new ConsumerChannel(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler);
+            return new ConsumerChannel(response.ConsumerId, _messagePrefetchCount, consumerMessageQueue, connection, _batchHandler);
         }
     }
 }

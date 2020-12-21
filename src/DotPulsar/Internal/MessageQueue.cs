@@ -13,7 +13,7 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class MessageQueue : IMessageQueue<MessageId>
+    public sealed class MessageQueue : IMessageQueue, IDequeue<MessagePackage>, IDisposable
     {
         private readonly AsyncQueue<MessagePackage> _queue;
         private readonly IMessageAcksTracker<MessageId> _tracker;
@@ -22,12 +22,19 @@ namespace DotPulsar.Internal
             _queue = queue;
             _tracker = tracker;
         }
-        public async ValueTask<MessageId> Dequeue(CancellationToken cancellationToken = default)
+        public async ValueTask<MessagePackage> Dequeue(CancellationToken cancellationToken = default)
         {
             var message = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);
-            return _tracker.Add(new MessageId(message.MessageId));
+            _tracker.Add(new MessageId(message.MessageId));
+            return message;
         }
         public MessageId Acknowledge(MessageId obj) => _tracker.Ack(obj);
         public MessageId NegativeAcknowledge(MessageId obj) => _tracker.Nack(obj);
+
+        public void Dispose()
+        {
+            _queue.Dispose();
+            // TODO dispose tracker
+        }
     }
 }

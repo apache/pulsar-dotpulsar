@@ -17,9 +17,9 @@ namespace DotPulsar.Internal
     internal class Tracker
     {
         private readonly Stopwatch _timer;
-        private long maxTimeoutMs;
+        private int maxTimeoutMs;
 
-        public Tracker(long timeoutMs)
+        public Tracker(int timeoutMs)
         {
             maxTimeoutMs = timeoutMs;
             _timer = new Stopwatch();
@@ -30,21 +30,25 @@ namespace DotPulsar.Internal
 
         public long msTillTimeout => maxTimeoutMs - _timer.ElapsedMilliseconds;
 
-        public void Reset(long newTimeoutMs)
+        public void Reset(int newTimeoutMs)
         {
             maxTimeoutMs = newTimeoutMs;
             _timer.Restart();
         }
     }
 
+    // TODO add mechnism to stop tracker when disposed
     public sealed class MessageAcksTracker : IMessageAcksTracker<MessageId>
     {
         private readonly Dictionary<MessageId, Tracker> _trackers;
-        private long _unackedTimeoutMs;
-        private long _nackTimeoutMs;
-        private int _trackerDelayMs;
-        public MessageAcksTracker()
+        private readonly int _unackedTimeoutMs;
+        private readonly int _nackTimeoutMs;
+        private readonly int _trackerDelayMs;
+        public MessageAcksTracker(int unackedTimeoutMs, int nackTimeoutMs, int trackerDelayMs)
         {
+            _unackedTimeoutMs = unackedTimeoutMs;
+            _nackTimeoutMs = nackTimeoutMs;
+            _trackerDelayMs = trackerDelayMs;
             _trackers = new Dictionary<MessageId, Tracker>();
         }
 
