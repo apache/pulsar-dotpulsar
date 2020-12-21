@@ -108,6 +108,9 @@ namespace DotPulsar.Internal
             }
 
             command.ConsumerId = _id;
+
+            _queue.Acknowledge(new MessageId(messageId));
+
             await _connection.Send(command, cancellationToken).ConfigureAwait(false);
         }
 
