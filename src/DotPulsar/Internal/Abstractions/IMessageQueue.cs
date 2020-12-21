@@ -1,9 +1,9 @@
 namespace DotPulsar.Internal.Abstractions
 {
     using System.Threading.Tasks;
-    public interface IMessageQueue<T> : IDequeue<T>
+    public interface IMessageQueue
     {
-        T Acknowledge(T obj);
-        T NegativeAcknowledge(T obj);
+        MessageId Acknowledge(MessageId obj);
+        MessageId NegativeAcknowledge(MessageId obj);
     }
 }
