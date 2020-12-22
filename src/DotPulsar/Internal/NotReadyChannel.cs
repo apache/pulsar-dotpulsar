@@ -27,6 +27,9 @@ namespace DotPulsar.Internal
         public ValueTask DisposeAsync()
             => new ValueTask();
 
+        public ValueTask ClosedByClient(CancellationToken cancellationToken)
+            => new ValueTask();
+
         public ValueTask<Message> Receive(CancellationToken cancellationToken = default)
             => throw GetException();
 
@@ -49,9 +52,6 @@ namespace DotPulsar.Internal
             => throw GetException();
 
         public Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
-            => throw GetException();
-
-        public ValueTask ClosedByClient(CancellationToken cancellationToken)
             => throw GetException();
 
         private static Exception GetException()
