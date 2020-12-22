@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- MessageId implements IComparable\<MessageId\>
+
 ### Fixed
 
 - Do not throw exceptions when disposing consumers, readers or producers

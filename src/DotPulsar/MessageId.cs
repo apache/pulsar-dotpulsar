@@ -20,7 +20,7 @@ namespace DotPulsar
     /// <summary>
     /// Unique identifier of a single message.
     /// </summary>
-    public sealed class MessageId : IEquatable<MessageId>
+    public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
     {
         static MessageId()
         {
@@ -71,6 +71,38 @@ namespace DotPulsar
         /// The batch index.
         /// </summary>
         public int BatchIndex => Data.BatchIndex;
+
+        public int CompareTo(MessageId? other)
+        {
+            if (other is null)
+                return 1;
+
+            var result = LedgerId.CompareTo(other.LedgerId);
+            if (result != 0)
+                return result;
+
+            result = EntryId.CompareTo(other.EntryId);
+            if (result != 0)
+                return result;
+
+            result = Partition.CompareTo(other.Partition);
+            if (result != 0)
+                return result;
+
+            return BatchIndex.CompareTo(other.BatchIndex);
+        }
+
+        public static bool operator >(MessageId x, MessageId y)
+            => x is not null && x.CompareTo(y) >= 1;
+
+        public static bool operator <(MessageId x, MessageId y)
+            => x is not null ? x.CompareTo(y) <= -1 : y is not null;
+
+        public static bool operator >=(MessageId x, MessageId y)
+            => x is not null ? x.CompareTo(y) >= 0 : y is null;
+
+        public static bool operator <=(MessageId x, MessageId y)
+            => x is not null ? x.CompareTo(y) <= 0 : true;
 
         public override bool Equals(object? o)
             => o is MessageId id && Equals(id);
