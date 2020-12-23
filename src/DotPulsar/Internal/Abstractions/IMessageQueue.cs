@@ -1,9 +1,10 @@
 namespace DotPulsar.Internal.Abstractions
 {
-    using System.Threading.Tasks;
-    public interface IMessageQueue
+    using System;
+
+    public interface IMessageQueue : IDequeue<MessagePackage>, IDisposable
     {
-        MessageId Acknowledge(MessageId obj);
-        MessageId NegativeAcknowledge(MessageId obj);
+        void Acknowledge(MessageId obj);
+        void NegativeAcknowledge(MessageId obj);
     }
 }

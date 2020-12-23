@@ -16,8 +16,8 @@ namespace DotPulsar.Internal
     public sealed class MessageQueue : IMessageQueue, IDequeue<MessagePackage>, IDisposable
     {
         private readonly AsyncQueue<MessagePackage> _queue;
-        private readonly IMessageAcksTracker<MessageId> _tracker;
-        public MessageQueue(AsyncQueue<MessagePackage> queue, IMessageAcksTracker<MessageId> tracker)
+        private readonly IUnackedMessageTracker _tracker;
+        public MessageQueue(AsyncQueue<MessagePackage> queue, IUnackedMessageTracker tracker)
         {
             _queue = queue;
             _tracker = tracker;
@@ -28,13 +28,18 @@ namespace DotPulsar.Internal
             _tracker.Add(new MessageId(message.MessageId));
             return message;
         }
-        public MessageId Acknowledge(MessageId obj) => _tracker.Ack(obj);
-        public MessageId NegativeAcknowledge(MessageId obj) => _tracker.Nack(obj);
+        public void Acknowledge(MessageId obj) => _tracker.Ack(obj);
+
+        public void NegativeAcknowledge(MessageId obj)
+        {
+            throw new NotImplementedException();
+        }
 
         public void Dispose()
         {
             _queue.Dispose();
-            // TODO dispose tracker
+            _tracker.Dispose();
         }
+        
     }
 }

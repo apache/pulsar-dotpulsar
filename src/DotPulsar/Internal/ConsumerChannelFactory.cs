@@ -31,7 +31,7 @@ namespace DotPulsar.Internal
         private readonly int _ackTimeoutMillis;
         private readonly int _negativeAckRedeliveryDelayMicros;
         private readonly BatchHandler _batchHandler;
-        private readonly IMessageAcksTracker<MessageId> _tracker;
+        private readonly IUnackedMessageTracker _tracker;
 
         public ConsumerChannelFactory(
             Guid correlationId,
@@ -39,7 +39,7 @@ namespace DotPulsar.Internal
             IConnectionPool connectionPool,
             IExecute executor,
             ConsumerOptions options,
-            IMessageAcksTracker<MessageId> tracker)
+            IUnackedMessageTracker tracker)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;
@@ -69,7 +69,6 @@ namespace DotPulsar.Internal
         {
             var connection = await _connectionPool.FindConnectionForTopic(_subscribe.Topic, cancellationToken).ConfigureAwait(false);
             var messageQueue = new AsyncQueue<MessagePackage>();
-            // TODO perhaps start tracker here?
             var consumerMessageQueue = new MessageQueue(messageQueue, _tracker);
             var channel = new Channel(_correlationId, _eventRegister, messageQueue);
             var response = await connection.Send(_subscribe, channel, cancellationToken).ConfigureAwait(false);

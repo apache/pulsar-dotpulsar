@@ -74,19 +74,15 @@ namespace DotPulsar
             ThrowIfDisposed();
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-
             var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
             var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorConsumer(consumer, options.StateChangedHandler);
-            IMessageAcksTracker<MessageId> tracker = new InactiveMessageAcksTracker();
-            if (options.AckTimeoutMillis > 0 || options.NegativeAckRedeliveryDelayMicros > 0)
-                // TODO polling interval from options
-                tracker = new MessageAcksTracker(options.AckTimeoutMillis, options.NegativeAckRedeliveryDelayMicros, 1000);
-            // TODO
-            // handle cancellation
-            _ = tracker.StartTracker(consumer, new CancellationTokenSource().Token);
-            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options, tracker);
+            IUnackedMessageTracker unackedTracker = options.AckTimeoutMillis > 0
+                ? new UnackedMessageTracker(TimeSpan.FromMilliseconds(options.AckTimeoutMillis), TimeSpan.FromSeconds(1))
+                : new InactiveUnackedMessageTracker();
+            unackedTracker.Start(consumer);
+            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options, unackedTracker);
             var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
             _processManager.Add(process);
             process.Start();
