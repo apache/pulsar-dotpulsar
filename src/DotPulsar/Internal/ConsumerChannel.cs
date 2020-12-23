@@ -150,7 +150,6 @@ namespace DotPulsar.Internal
 
         private async ValueTask SendFlow(CancellationToken cancellationToken)
         {
-            //TODO Should sending the flow command be handled on another thread and thereby not slow down the consumer?
             await _connection.Send(_cachedCommandFlow, cancellationToken).ConfigureAwait(false);
 
             if (_firstFlow)
