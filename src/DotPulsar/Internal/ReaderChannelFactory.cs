@@ -63,7 +63,7 @@ namespace DotPulsar.Internal
         {
             var connection = await _connectionPool.FindConnectionForTopic(_subscribe.Topic, cancellationToken).ConfigureAwait(false);
             var messageQueue = new AsyncQueue<MessagePackage>();
-            var tracker = new InactiveMessageAcksTracker(); // No tracker for reader since readers don't ack.
+            var tracker = new InactiveUnackedMessageTracker(); // No tracker for reader since readers don't ack.
             var consumerMessageQueue = new MessageQueue(messageQueue, tracker);
             var channel = new Channel(_correlationId, _eventRegister, messageQueue);
             var response = await connection.Send(_subscribe, channel, cancellationToken).ConfigureAwait(false);

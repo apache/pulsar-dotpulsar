@@ -1,5 +1,6 @@
 ﻿namespace DotPulsar.Internal
 {
+    using System.Threading;
     using System.Threading.Tasks;
     using Abstractions;
     using DotPulsar.Abstractions;
@@ -20,7 +21,7 @@
             return;
         }
 
-        public Task Start(IConsumer consumer) => Task.CompletedTask;
+        public Task Start(IConsumer consumer, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public void Dispose() {
             return;

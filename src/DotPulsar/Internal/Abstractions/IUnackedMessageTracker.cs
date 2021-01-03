@@ -2,6 +2,7 @@
 {
     using DotPulsar.Abstractions;
     using System.Threading.Tasks;
+    using System.Threading;
     using System;
 
     public interface IUnackedMessageTracker : IDisposable
@@ -10,6 +11,6 @@
 
         void Ack(MessageId messageId);
 
-        Task Start(IConsumer consumer);
+        Task Start(IConsumer consumer, CancellationToken cancellationToken = default);
     }
 }

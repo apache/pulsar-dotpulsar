@@ -13,18 +13,15 @@
     public readonly struct AwaitingAck
     {
         public MessageId MessageId { get; }
-        public long Timestamp { get; }
+        public Stopwatch Stopwatch { get; }
 
         public AwaitingAck(MessageId messageId)
         {
             MessageId = messageId;
-            Timestamp = Stopwatch.GetTimestamp();
+            Stopwatch = Stopwatch.StartNew();
         }
 
-        public TimeSpan Elapsed =>
-            TimeSpan.FromTicks(
-                (Stopwatch.GetTimestamp() - Timestamp) /
-                (Stopwatch.Frequency) * 1000);
+        public TimeSpan Elapsed => Stopwatch.Elapsed;
     }
 
     public sealed class UnackedMessageTracker : IUnackedMessageTracker
@@ -57,29 +54,30 @@
             _acked.Add(messageId);
         }
 
-        public Task Start(IConsumer consumer)
+        public Task Start(IConsumer consumer, CancellationToken cancellationToken = default)
         {
-            var cancellationToken = _cancellationTokenSource.Token;
+            CancellationToken token =
+              CancellationTokenSource.CreateLinkedTokenSource(
+                  _cancellationTokenSource.Token, cancellationToken).Token;
 
             return Task.Run(async () => {
-                while (!cancellationToken.IsCancellationRequested)
+                while (!token.IsCancellationRequested)
                 {
                     var messages = CheckUnackedMessages();
 
                     if (messages.Count() > 0)
-                        await consumer.RedeliverUnacknowledgedMessages(messages, cancellationToken);
+                        await consumer.RedeliverUnacknowledgedMessages(messages, token);
 
-                    await Task.Delay(_pollingTimeout, cancellationToken);
+                    await Task.Delay(_pollingTimeout, token);
                 }
-            }, cancellationToken);
+            }, token);
         }
 
         private IEnumerable<MessageId> CheckUnackedMessages()
         {
-            AwaitingAck awaiting;
             var result = new List<MessageId>();
 
-            while (_awaitingAcks.TryPeek(out awaiting)
+            while (_awaitingAcks.TryPeek(out AwaitingAck awaiting)
                 && awaiting.Elapsed > _ackTimeout)
             {
                 // Can I safely use Dequeue now instead of TryDequeue?
