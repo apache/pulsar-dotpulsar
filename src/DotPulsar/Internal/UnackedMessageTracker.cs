@@ -81,10 +81,8 @@
             while (_awaitingAcks.TryPeek(out AwaitingAck awaiting)
                 && awaiting.Elapsed > _ackTimeout)
             {
-                // Can I safely use Dequeue now instead of TryDequeue?
                 if (_awaitingAcks.TryDequeue(out awaiting))
                 {
-                    //If the MessageId is not acknowledged
                     if (!_acked.Contains(awaiting.MessageId))
                         result.Add(awaiting.MessageId);
                     else
