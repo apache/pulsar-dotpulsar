@@ -13,15 +13,16 @@
     public readonly struct AwaitingAck
     {
         public MessageId MessageId { get; }
-        public Stopwatch Stopwatch { get; }
+        public long Timestamp { get; }
 
         public AwaitingAck(MessageId messageId)
         {
             MessageId = messageId;
-            Stopwatch = Stopwatch.StartNew();
+            Timestamp = Stopwatch.GetTimestamp();
         }
 
-        public TimeSpan Elapsed => Stopwatch.Elapsed;
+        public TimeSpan Elapsed => TimeSpan.FromTicks(
+            (long) ((Stopwatch.GetTimestamp() - Timestamp) / (double)Stopwatch.Frequency * TimeSpan.TicksPerSecond));
     }
 
     public sealed class UnackedMessageTracker : IUnackedMessageTracker
