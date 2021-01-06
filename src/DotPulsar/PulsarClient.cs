@@ -78,9 +78,9 @@ namespace DotPulsar
             var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorConsumer(consumer, options.StateChangedHandler);
-            IUnackedMessageTracker unackedTracker = options.AckTimeoutMillis > 0
-                ? new UnackedMessageTracker(TimeSpan.FromMilliseconds(options.AckTimeoutMillis), TimeSpan.FromSeconds(1))
-                : new InactiveUnackedMessageTracker();
+            IUnackedMessageTracker unackedTracker = options.AcknowledgementTimeout == default
+                ? new InactiveUnackedMessageTracker()
+                : new UnackedMessageTracker(options.AcknowledgementTimeout, TimeSpan.FromSeconds(1));
             unackedTracker.Start(consumer);
             var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options, unackedTracker);
             var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);

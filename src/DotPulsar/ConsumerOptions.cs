@@ -15,6 +15,7 @@
 namespace DotPulsar
 {
     using DotPulsar.Abstractions;
+    using System;
 
     /// <summary>
     /// The consumer building options.
@@ -106,11 +107,11 @@ namespace DotPulsar
         /// Delay to wait before redelivering messages that failed to be processed.
         /// When an application uses IConsumer.NegativeAcknowledge(Message), failed messages are redelivered after a fixed timeout.
         /// </summary>
-        public int NegativeAckRedeliveryDelayMicros { get; set; }
+        public TimeSpan NegativeAcknowledgementRedeliveryDelay { get; set; }
 
         /// <summary>
         /// Timeout of unacked messages
         /// </summary>
-        public int AckTimeoutMillis { get; set; }
+        public TimeSpan AcknowledgementTimeout { get; set; }
     }
 }
