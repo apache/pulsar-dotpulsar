@@ -14,16 +14,13 @@
 
 namespace DotPulsar.Internal
 {
-    using System.Threading;
-    using System.Threading.Tasks;
     using Abstractions;
     using DotPulsar.Abstractions;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public class InactiveUnackedMessageTracker : IUnackedMessageTracker
     {
-        public InactiveUnackedMessageTracker()
-        {
-        }
 
         public void Ack(MessageId messageId)
         {
@@ -37,9 +34,9 @@ namespace DotPulsar.Internal
 
         public Task Start(IConsumer consumer, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-        public void Dispose() {
+        public void Dispose()
+        {
             return;
         }
-
     }
 }
