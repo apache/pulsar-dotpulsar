@@ -36,7 +36,7 @@ namespace DotPulsar.Internal
         }
 
         public TimeSpan Elapsed => TimeSpan.FromTicks(
-            (long) ((Stopwatch.GetTimestamp() - Timestamp) / (double)Stopwatch.Frequency * TimeSpan.TicksPerSecond));
+            (long) ((Stopwatch.GetTimestamp() - Timestamp) / (double) Stopwatch.Frequency * TimeSpan.TicksPerSecond));
     }
 
     public sealed class UnackedMessageTracker : IUnackedMessageTracker
@@ -47,7 +47,6 @@ namespace DotPulsar.Internal
         private readonly List<MessageId> _acked;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
-        
         public UnackedMessageTracker(TimeSpan ackTimeout, TimeSpan pollingTimeout)
         {
             _ackTimeout = ackTimeout;
@@ -75,7 +74,8 @@ namespace DotPulsar.Internal
               CancellationTokenSource.CreateLinkedTokenSource(
                   _cancellationTokenSource.Token, cancellationToken).Token;
 
-            return Task.Run(async () => {
+            return Task.Run(async () =>
+            {
                 while (!token.IsCancellationRequested)
                 {
                     var messages = CheckUnackedMessages();
