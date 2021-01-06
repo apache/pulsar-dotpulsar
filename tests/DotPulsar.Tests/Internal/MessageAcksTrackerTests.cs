@@ -14,50 +14,24 @@
 
 namespace DotPulsar.Tests.Internal
 {
-    using DotPulsar.Internal;
-    using DotPulsar.Abstractions;
-    using FluentAssertions;
-    using Xunit;
-    using System;
     using AutoFixture;
-    using System.Threading;
-    using System.Threading.Tasks;
+    using AutoFixture.AutoNSubstitute;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Internal;
+    using NSubstitute;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
-    using AutoFixture.AutoNSubstitute;
-    using NSubstitute;
-    using System.Diagnostics;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Xunit;
 
     public class UnackedMessageTrackerTests
     {
-        [Fact]
-        public void Test_Instance()
-        {
-            var tracker = new UnackedMessageTracker(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(1));
-            tracker.Should().BeOfType<UnackedMessageTracker>();
-        }
-
 
         [Fact]
-        public async void Test_AwaitingAck_Elapsed()
-        {
-            //Arrange
-            var messageId = MessageId.Latest;
-            var sw = new Stopwatch();
-            sw.Start();
-
-            //Act
-            var awaiting = new AwaitingAck(messageId);
-            await Task.Delay(TimeSpan.FromMilliseconds(123));
-            sw.Stop();
-
-            //Assert
-            awaiting.Elapsed.Should().BeCloseTo(sw.Elapsed, 1);
-        }
-
-        [Fact]
-        public async void Test_Start_Message()
+        public async void Start_GivenAMessageIdIsNotAcked_ShouldRedeliver()
         {
             //Arrange
             var fixture = new Fixture();
@@ -86,7 +60,7 @@ namespace DotPulsar.Tests.Internal
         }
 
         [Fact]
-        public async void Test_Start_Message_Ack_In_Time()
+        public async void Start_GivenAMessageIdIsAckedWithinTimeout_ShouldNotRedeliver()
         {
             //Arrange
             var fixture = new Fixture();
@@ -116,7 +90,7 @@ namespace DotPulsar.Tests.Internal
         }
 
         [Fact]
-        public async void Test_Start_Message_Ack_Too_Late()
+        public async void Start_GivenAMessageIdIsNotAckedWithinTimeout_ShouldRedeliver()
         {
             //Arrange
             var fixture = new Fixture();
@@ -147,7 +121,7 @@ namespace DotPulsar.Tests.Internal
         }
 
         [Fact]
-        public async void Test_Start_Redeliver_Only_Cnce()
+        public async void Start_GivenAMessageIdIsNotAckedWithinTimeout_ShouldRedeliverOnlyOnce()
         {
             //Arrange
             var fixture = new Fixture();
@@ -175,10 +149,8 @@ namespace DotPulsar.Tests.Internal
                     Arg.Any<CancellationToken>());
         }
 
-
         private Expression<Predicate<IEnumerable<T>>> EquivalentTo<T>(IEnumerable<T> enumerable) =>
             x => IsEquivalentIEnumerable(enumerable, x);
-
 
         private bool IsEquivalentIEnumerable<T>(IEnumerable<T> a, IEnumerable<T> b) =>
             a.Count() == b.Count() && a.Zip(b, (a_, b_) => a_.Equals(b_)).All(_ => _);
