@@ -69,24 +69,23 @@ namespace DotPulsar.Internal
             _acked.Add(messageId);
         }
 
-        public Task Start(IConsumer consumer, CancellationToken cancellationToken = default)
+        public async Task Start(IConsumer consumer, CancellationToken cancellationToken = default)
         {
+            await Task.Yield();
+
             CancellationToken token =
               CancellationTokenSource.CreateLinkedTokenSource(
                   _cancellationTokenSource.Token, cancellationToken).Token;
 
-            return Task.Run(async () =>
+            while (!token.IsCancellationRequested)
             {
-                while (!token.IsCancellationRequested)
-                {
-                    var messages = CheckUnackedMessages();
+                var messages = CheckUnackedMessages();
 
-                    if (messages.Count() > 0)
-                        await consumer.RedeliverUnacknowledgedMessages(messages, token);
+                if (messages.Count() > 0)
+                    await consumer.RedeliverUnacknowledgedMessages(messages, token);
 
-                    await Task.Delay(_pollingTimeout, token);
-                }
-            }, token);
+                await Task.Delay(_pollingTimeout, token);
+            }
         }
 
         private IEnumerable<MessageIdData> CheckUnackedMessages()
