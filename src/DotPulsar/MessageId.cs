@@ -72,25 +72,7 @@ namespace DotPulsar
         /// </summary>
         public int BatchIndex => Data.BatchIndex;
 
-        public int CompareTo(MessageId? other)
-        {
-            if (other is null)
-                return 1;
-
-            var result = LedgerId.CompareTo(other.LedgerId);
-            if (result != 0)
-                return result;
-
-            result = EntryId.CompareTo(other.EntryId);
-            if (result != 0)
-                return result;
-
-            result = Partition.CompareTo(other.Partition);
-            if (result != 0)
-                return result;
-
-            return BatchIndex.CompareTo(other.BatchIndex);
-        }
+        public int CompareTo(MessageId? other) => other is null ? 1 : Data.CompareTo(other.Data);
 
         public static bool operator >(MessageId x, MessageId y)
             => x is not null && x.CompareTo(y) >= 1;
@@ -108,7 +90,7 @@ namespace DotPulsar
             => o is MessageId id && Equals(id);
 
         public bool Equals(MessageId? other)
-            => other is not null && LedgerId == other.LedgerId && EntryId == other.EntryId && Partition == other.Partition && BatchIndex == other.BatchIndex;
+            => other is not null && Data.Equals(other.Data);
 
         public static bool operator ==(MessageId x, MessageId y)
             => ReferenceEquals(x, y) || (x is not null && x.Equals(y));
