@@ -31,7 +31,7 @@ namespace DotPulsar.Internal
         private readonly int _ackTimeoutMillis;
         private readonly int _negativeAckRedeliveryDelayMicros;
         private readonly BatchHandler _batchHandler;
-        private readonly IUnackedMessageTracker _tracker;
+        private readonly IUnacknowledgedMessageTracker _tracker;
 
         public ConsumerChannelFactory(
             Guid correlationId,
@@ -39,7 +39,7 @@ namespace DotPulsar.Internal
             IConnectionPool connectionPool,
             IExecute executor,
             ConsumerOptions options,
-            IUnackedMessageTracker tracker)
+            IUnacknowledgedMessageTracker tracker)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;

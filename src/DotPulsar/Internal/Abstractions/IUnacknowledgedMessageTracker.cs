@@ -19,11 +19,11 @@ namespace DotPulsar.Internal.Abstractions
     using System.Threading;
     using System;
 
-    public interface IUnackedMessageTracker : IDisposable
+    public interface IUnacknowledgedMessageTracker : IDisposable
     {
         void Add(MessageId messageId);
 
-        void Ack(MessageId messageId);
+        void Acknowledge(MessageId messageId);
 
         Task Start(IConsumer consumer, CancellationToken cancellationToken = default);
     }

@@ -39,7 +39,7 @@ namespace DotPulsar.Internal
             (long) ((Stopwatch.GetTimestamp() - Timestamp) / (double) Stopwatch.Frequency * TimeSpan.TicksPerSecond));
     }
 
-    public sealed class UnackedMessageTracker : IUnackedMessageTracker
+    public sealed class UnackedMessageTracker : IUnacknowledgedMessageTracker
     {
         private readonly TimeSpan _ackTimeout;
         private readonly TimeSpan _pollingTimeout;
@@ -61,7 +61,7 @@ namespace DotPulsar.Internal
             _awaitingAcks.Enqueue(new AwaitingAck(messageId));
         }
 
-        public void Ack(MessageId messageId)
+        public void Acknowledge(MessageId messageId)
         {
             // We only need to store the highest cumulative ack we see (if there is one)
             // and the MessageIds not included by that cumulative ack.
@@ -109,7 +109,7 @@ namespace DotPulsar.Internal
 
         public void Dispose()
         {
-            this._cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Cancel();
         }
     }
 }

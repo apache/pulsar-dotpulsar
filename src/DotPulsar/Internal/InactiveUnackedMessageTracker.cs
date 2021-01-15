@@ -19,10 +19,10 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public class InactiveUnackedMessageTracker : IUnackedMessageTracker
+    public sealed class InactiveUnackedMessageTracker : IUnacknowledgedMessageTracker
     {
 
-        public void Ack(MessageId messageId)
+        public void Acknowledge(MessageId messageId)
         {
             return;
         }

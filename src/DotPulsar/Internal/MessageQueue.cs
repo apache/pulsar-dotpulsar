@@ -19,12 +19,12 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class MessageQueue : IMessageQueue, IDequeue<MessagePackage>, IDisposable
+    public sealed class MessageQueue : IMessageQueue
     {
         private readonly AsyncQueue<MessagePackage> _queue;
-        private readonly IUnackedMessageTracker _tracker;
+        private readonly IUnacknowledgedMessageTracker _tracker;
 
-        public MessageQueue(AsyncQueue<MessagePackage> queue, IUnackedMessageTracker tracker)
+        public MessageQueue(AsyncQueue<MessagePackage> queue, IUnacknowledgedMessageTracker tracker)
         {
             _queue = queue;
             _tracker = tracker;
@@ -37,7 +37,7 @@ namespace DotPulsar.Internal
             return message;
         }
 
-        public void Acknowledge(MessageId obj) => _tracker.Ack(obj);
+        public void Acknowledge(MessageId obj) => _tracker.Acknowledge(obj);
 
         public void NegativeAcknowledge(MessageId obj)
         {

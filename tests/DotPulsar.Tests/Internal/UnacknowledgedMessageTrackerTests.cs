@@ -27,9 +27,8 @@ namespace DotPulsar.Tests.Internal
     using System.Threading.Tasks;
     using Xunit;
 
-    public class UnackedMessageTrackerTests
+    public class UnacknowledgedMessageTrackerTests
     {
-
         [Fact]
         public async void Start_GivenAMessageIdIsNotAcked_ShouldRedeliver()
         {
@@ -39,8 +38,6 @@ namespace DotPulsar.Tests.Internal
             var consumer = Substitute.For<IConsumer>();
             var messageId = MessageId.Latest;
             var cts = new CancellationTokenSource();
-
-
             var tracker = new UnackedMessageTracker(
                 TimeSpan.FromMilliseconds(10),
                 TimeSpan.FromMilliseconds(1));
@@ -68,8 +65,6 @@ namespace DotPulsar.Tests.Internal
             var consumer = Substitute.For<IConsumer>();
             var messageId = MessageId.Latest;
             var cts = new CancellationTokenSource();
-
-
             var tracker = new UnackedMessageTracker(
                 TimeSpan.FromMilliseconds(10),
                 TimeSpan.FromMilliseconds(1));
@@ -77,7 +72,7 @@ namespace DotPulsar.Tests.Internal
             //Act
             tracker.Add(messageId);
             cts.CancelAfter(20);
-            var _ = Task.Delay(5).ContinueWith(_ => tracker.Ack(messageId));
+            var _ = Task.Delay(5).ContinueWith(_ => tracker.Acknowledge(messageId));
             try { await tracker.Start(consumer, cts.Token); }
             catch (TaskCanceledException) { }
 
@@ -98,8 +93,6 @@ namespace DotPulsar.Tests.Internal
             var consumer = Substitute.For<IConsumer>();
             var messageId = MessageId.Latest;
             var cts = new CancellationTokenSource();
-
-
             var tracker = new UnackedMessageTracker(
                 TimeSpan.FromMilliseconds(10),
                 TimeSpan.FromMilliseconds(1));
@@ -108,7 +101,7 @@ namespace DotPulsar.Tests.Internal
             tracker.Add(messageId);
             cts.CancelAfter(20);
 
-            var _ = Task.Delay(15).ContinueWith(_ => tracker.Ack(messageId));
+            var _ = Task.Delay(15).ContinueWith(_ => tracker.Acknowledge(messageId));
             try { await tracker.Start(consumer, cts.Token); }
             catch (TaskCanceledException) { }
 
@@ -129,8 +122,6 @@ namespace DotPulsar.Tests.Internal
             var consumer = Substitute.For<IConsumer>();
             var messageId = MessageId.Latest;
             var cts = new CancellationTokenSource();
-
-
             var tracker = new UnackedMessageTracker(
                 TimeSpan.FromMilliseconds(10),
                 TimeSpan.FromMilliseconds(5));
