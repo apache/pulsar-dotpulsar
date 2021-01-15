@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using PulsarApi;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
@@ -33,13 +34,13 @@ namespace DotPulsar.Internal
         public async ValueTask<MessagePackage> Dequeue(CancellationToken cancellationToken = default)
         {
             var message = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);
-            _tracker.Add(new MessageId(message.MessageId));
+            _tracker.Add(message.MessageId);
             return message;
         }
 
-        public void Acknowledge(MessageId obj) => _tracker.Acknowledge(obj);
+        public void Acknowledge(MessageIdData obj) => _tracker.Acknowledge(obj);
 
-        public void NegativeAcknowledge(MessageId obj)
+        public void NegativeAcknowledge(MessageIdData obj)
         {
             throw new NotImplementedException();
         }

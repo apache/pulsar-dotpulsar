@@ -16,20 +16,21 @@ namespace DotPulsar.Internal
 {
     using Abstractions;
     using DotPulsar.Abstractions;
+    using PulsarApi;
     using System;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
-    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
     public readonly struct AwaitingAck
     {
-        public MessageId MessageId { get; }
+        public MessageIdData MessageId { get; }
         public long Timestamp { get; }
 
-        public AwaitingAck(MessageId messageId)
+        public AwaitingAck(MessageIdData messageId)
         {
             MessageId = messageId;
             Timestamp = Stopwatch.GetTimestamp();
@@ -44,7 +45,7 @@ namespace DotPulsar.Internal
         private readonly TimeSpan _ackTimeout;
         private readonly TimeSpan _pollingTimeout;
         private readonly ConcurrentQueue<AwaitingAck> _awaitingAcks;
-        private readonly List<MessageId> _acked;
+        private readonly List<MessageIdData> _acked;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         public UnackedMessageTracker(TimeSpan ackTimeout, TimeSpan pollingTimeout)
@@ -52,16 +53,16 @@ namespace DotPulsar.Internal
             _ackTimeout = ackTimeout;
             _pollingTimeout = pollingTimeout;
             _awaitingAcks = new ConcurrentQueue<AwaitingAck>();
-            _acked = new List<MessageId>();
+            _acked = new List<MessageIdData>();
             _cancellationTokenSource = new CancellationTokenSource();
         }
 
-        public void Add(MessageId messageId)
+        public void Add(MessageIdData messageId)
         {
             _awaitingAcks.Enqueue(new AwaitingAck(messageId));
         }
 
-        public void Acknowledge(MessageId messageId)
+        public void Acknowledge(MessageIdData messageId)
         {
             // We only need to store the highest cumulative ack we see (if there is one)
             // and the MessageIds not included by that cumulative ack.
@@ -88,9 +89,9 @@ namespace DotPulsar.Internal
             }, token);
         }
 
-        private IEnumerable<MessageId> CheckUnackedMessages()
+        private IEnumerable<MessageIdData> CheckUnackedMessages()
         {
-            var result = new List<MessageId>();
+            var result = new List<MessageIdData>();
 
             while (_awaitingAcks.TryPeek(out AwaitingAck awaiting)
                 && awaiting.Elapsed > _ackTimeout)

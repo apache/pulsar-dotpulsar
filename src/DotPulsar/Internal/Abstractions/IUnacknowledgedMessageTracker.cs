@@ -15,15 +15,16 @@
 namespace DotPulsar.Internal.Abstractions
 {
     using DotPulsar.Abstractions;
-    using System.Threading.Tasks;
-    using System.Threading;
+    using DotPulsar.Internal.PulsarApi;
     using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public interface IUnacknowledgedMessageTracker : IDisposable
     {
-        void Add(MessageId messageId);
+        void Add(MessageIdData messageId);
 
-        void Acknowledge(MessageId messageId);
+        void Acknowledge(MessageIdData messageId);
 
         Task Start(IConsumer consumer, CancellationToken cancellationToken = default);
     }

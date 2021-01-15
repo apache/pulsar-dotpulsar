@@ -18,6 +18,7 @@ namespace DotPulsar.Tests.Internal
     using AutoFixture.AutoNSubstitute;
     using DotPulsar.Abstractions;
     using DotPulsar.Internal;
+    using DotPulsar.Internal.PulsarApi;
     using NSubstitute;
     using System;
     using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace DotPulsar.Tests.Internal
             var fixture = new Fixture();
             fixture.Customize(new AutoNSubstituteCustomization());
             var consumer = Substitute.For<IConsumer>();
-            var messageId = MessageId.Latest;
+            var messageId = new MessageIdData();
             var cts = new CancellationTokenSource();
             var tracker = new UnackedMessageTracker(
                 TimeSpan.FromMilliseconds(10),
@@ -52,7 +53,7 @@ namespace DotPulsar.Tests.Internal
             await consumer
                 .Received(1)
                 .RedeliverUnacknowledgedMessages(
-                    Arg.Is(EquivalentTo(new List<MessageId>() { messageId })),
+                    Arg.Is(EquivalentTo(new List<MessageIdData>() { messageId })),
                     Arg.Any<CancellationToken>());
         }
 
@@ -63,7 +64,7 @@ namespace DotPulsar.Tests.Internal
             var fixture = new Fixture();
             fixture.Customize(new AutoNSubstituteCustomization());
             var consumer = Substitute.For<IConsumer>();
-            var messageId = MessageId.Latest;
+            var messageId = new MessageIdData();
             var cts = new CancellationTokenSource();
             var tracker = new UnackedMessageTracker(
                 TimeSpan.FromMilliseconds(10),
@@ -80,7 +81,7 @@ namespace DotPulsar.Tests.Internal
             await consumer
                 .DidNotReceive()
                 .RedeliverUnacknowledgedMessages(
-                    Arg.Any<IEnumerable<MessageId>>(),
+                    Arg.Any<IEnumerable<MessageIdData>>(),
                     Arg.Any<CancellationToken>());
         }
 
@@ -91,7 +92,7 @@ namespace DotPulsar.Tests.Internal
             var fixture = new Fixture();
             fixture.Customize(new AutoNSubstituteCustomization());
             var consumer = Substitute.For<IConsumer>();
-            var messageId = MessageId.Latest;
+            var messageId = new MessageIdData();
             var cts = new CancellationTokenSource();
             var tracker = new UnackedMessageTracker(
                 TimeSpan.FromMilliseconds(10),
@@ -109,7 +110,7 @@ namespace DotPulsar.Tests.Internal
             await consumer
                 .Received(1)
                 .RedeliverUnacknowledgedMessages(
-                    Arg.Any<IEnumerable<MessageId>>(),
+                    Arg.Any<IEnumerable<MessageIdData>>(),
                     Arg.Any<CancellationToken>());
         }
 
@@ -120,7 +121,7 @@ namespace DotPulsar.Tests.Internal
             var fixture = new Fixture();
             fixture.Customize(new AutoNSubstituteCustomization());
             var consumer = Substitute.For<IConsumer>();
-            var messageId = MessageId.Latest;
+            var messageId = new MessageIdData();
             var cts = new CancellationTokenSource();
             var tracker = new UnackedMessageTracker(
                 TimeSpan.FromMilliseconds(10),
@@ -136,7 +137,7 @@ namespace DotPulsar.Tests.Internal
             await consumer
                 .Received(1)
                 .RedeliverUnacknowledgedMessages(
-                    Arg.Any<IEnumerable<MessageId>>(),
+                    Arg.Any<IEnumerable<MessageIdData>>(),
                     Arg.Any<CancellationToken>());
         }
 

@@ -15,6 +15,7 @@
 namespace DotPulsar.Tests.Internal
 {
     using DotPulsar.Internal;
+    using DotPulsar.Internal.PulsarApi;
     using FluentAssertions;
     using System;
     using System.Diagnostics;
@@ -27,7 +28,7 @@ namespace DotPulsar.Tests.Internal
         public async void Elapsed_GivenTimeElapsed_ShoulEqualCorrectElapsedTicks()
         {
             //Arrange
-            var messageId = MessageId.Latest;
+            var messageId = new MessageIdData();
             var sw = Stopwatch.StartNew();
 
             //Act

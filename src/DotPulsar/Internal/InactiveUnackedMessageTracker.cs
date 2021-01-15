@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using PulsarApi;
     using DotPulsar.Abstractions;
     using System.Threading;
     using System.Threading.Tasks;
@@ -22,12 +23,12 @@ namespace DotPulsar.Internal
     public sealed class InactiveUnackedMessageTracker : IUnacknowledgedMessageTracker
     {
 
-        public void Acknowledge(MessageId messageId)
+        public void Acknowledge(MessageIdData messageId)
         {
             return;
         }
 
-        public void Add(MessageId messageId)
+        public void Add(MessageIdData messageId)
         {
             return;
         }

@@ -14,12 +14,13 @@
 
 namespace DotPulsar.Internal.Abstractions
 {
+    using DotPulsar.Internal.PulsarApi;
     using System;
 
     public interface IMessageQueue : IDequeue<MessagePackage>, IDisposable
     {
-        void Acknowledge(MessageId messageId);
+        void Acknowledge(MessageIdData messageId);
 
-        void NegativeAcknowledge(MessageId messageId);
+        void NegativeAcknowledge(MessageIdData messageId);
     }
 }
