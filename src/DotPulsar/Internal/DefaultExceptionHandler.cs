@@ -39,7 +39,7 @@ namespace DotPulsar.Internal
             exceptionContext.ExceptionHandled = true;
         }
 
-        private FaultAction DetermineFaultAction(Exception exception, CancellationToken cancellationToken)
+        private static FaultAction DetermineFaultAction(Exception exception, CancellationToken cancellationToken)
             => exception switch
             {
                 TooManyRequestsException _ => FaultAction.Retry,

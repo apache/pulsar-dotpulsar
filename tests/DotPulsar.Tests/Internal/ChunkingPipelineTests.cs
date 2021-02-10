@@ -91,7 +91,8 @@ namespace DotPulsar.Tests.Internal
         private static int GetNumberOfSegments(ReadOnlySequence<byte> sequence)
         {
             var numberOfSegments = 0;
-            foreach (var segment in sequence)
+            var enumerator = sequence.GetEnumerator();
+            while (enumerator.MoveNext())
                 ++numberOfSegments;
             return numberOfSegments;
         }

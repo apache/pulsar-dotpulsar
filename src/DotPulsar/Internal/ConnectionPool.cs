@@ -154,7 +154,7 @@ namespace DotPulsar.Internal
             var connection = new Connection(new PulsarStream(stream));
             DotPulsarEventSource.Log.ConnectionCreated();
             _connections[url] = connection;
-            _ = connection.ProcessIncommingFrames(cancellationToken).ContinueWith(t => DisposeConnection(url));
+            _ = connection.ProcessIncommingFrames().ContinueWith(t => DisposeConnection(url));
             var commandConnect = _commandConnect;
 
             if (url.ProxyThroughServiceUrl)

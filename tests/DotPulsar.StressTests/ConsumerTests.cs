@@ -70,7 +70,7 @@ namespace DotPulsar.StressTests
             consumed.Should().BeEquivalentTo(produced);
         }
 
-        private async Task<IEnumerable<MessageId>> ProduceMessages(IProducer producer, int numberOfMessages, CancellationToken ct)
+        private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer producer, int numberOfMessages, CancellationToken ct)
         {
             var messageIds = new MessageId[numberOfMessages];
 
@@ -83,7 +83,7 @@ namespace DotPulsar.StressTests
             return messageIds;
         }
 
-        private async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer consumer, int numberOfMessages, CancellationToken ct)
+        private static async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer consumer, int numberOfMessages, CancellationToken ct)
         {
             var messageIds = new List<MessageId>(numberOfMessages);
 

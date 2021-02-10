@@ -86,7 +86,11 @@ namespace DotPulsar.Internal
         {
             if (_bufferCount != 0)
             {
+#if NETSTANDARD2_0
                 await _stream.WriteAsync(_buffer, 0, _bufferCount).ConfigureAwait(false);
+#else
+                await _stream.WriteAsync(_buffer.AsMemory(0, _bufferCount)).ConfigureAwait(false);
+#endif
                 _bufferCount = 0;
             }
         }

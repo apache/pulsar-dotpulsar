@@ -46,6 +46,7 @@ namespace DotPulsar.Internal
 
     public sealed class DotPulsarEventSource : EventSource
     {
+#pragma warning disable IDE0052 // Remove unread private members
         private PollingCounter? _totalClientsCounter;
         private long _totalClients;
 
@@ -75,6 +76,7 @@ namespace DotPulsar.Internal
 
         private PollingCounter? _currentReadersCounter;
         private long _currentReaders;
+#pragma warning restore IDE0052 // Remove unread private members
 
         public static readonly DotPulsarEventSource Log = new DotPulsarEventSource();
 

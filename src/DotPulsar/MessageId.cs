@@ -102,7 +102,7 @@ namespace DotPulsar
             => x is not null ? x.CompareTo(y) >= 0 : y is null;
 
         public static bool operator <=(MessageId x, MessageId y)
-            => x is not null ? x.CompareTo(y) <= 0 : true;
+            => x is null || x.CompareTo(y) <= 0;
 
         public override bool Equals(object? o)
             => o is MessageId id && Equals(id);

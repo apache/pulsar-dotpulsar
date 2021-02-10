@@ -60,7 +60,7 @@ namespace DotPulsar.Internal
             return stream;
         }
 
-        private async Task<Stream> GetStream(string host, int port)
+        private static async Task<Stream> GetStream(string host, int port)
         {
             var tcpClient = new TcpClient();
 
