@@ -14,11 +14,29 @@
 
 namespace DotPulsar
 {
+    /// <summary>
+    /// Encryption policies.
+    /// </summary>
     public enum EncryptionPolicy : byte
     {
+        /// <summary>
+        /// Never encrypt the connection.
+        /// </summary>
         EnforceUnencrypted,
+
+        /// <summary>
+        /// Given the option of encrypting or not, prefer not to.
+        /// </summary>
         PreferUnencrypted,
+
+        /// <summary>
+        /// Given the option of encrypting or not, prefer to do so.
+        /// </summary>
         PreferEncrypted,
+
+        /// <summary>
+        /// Always encrypt the connection.
+        /// </summary>
         EnforceEncrypted
     }
 }

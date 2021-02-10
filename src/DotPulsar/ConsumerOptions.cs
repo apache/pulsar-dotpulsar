@@ -46,6 +46,9 @@ namespace DotPulsar
         /// </summary>
         public static readonly SubscriptionType DefaultSubscriptionType = SubscriptionType.Exclusive;
 
+        /// <summary>
+        /// Initializes a new instance using the specified subscription name and topic.
+        /// </summary>
         public ConsumerOptions(string subscriptionName, string topic)
         {
             InitialPosition = DefaultInitialPosition;

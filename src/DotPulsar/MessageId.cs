@@ -41,6 +41,9 @@ namespace DotPulsar
         internal MessageId(MessageIdData messageIdData)
             => Data = messageIdData;
 
+        /// <summary>
+        /// Initializes a new instance using the specified ledgerId, entryId, partition and batchIndex.
+        /// </summary>
         public MessageId(ulong ledgerId, ulong entryId, int partition, int batchIndex)
             => Data = new MessageIdData
             {

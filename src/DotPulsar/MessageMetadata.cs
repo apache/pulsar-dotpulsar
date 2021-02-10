@@ -23,6 +23,9 @@ namespace DotPulsar
     /// </summary>
     public sealed class MessageMetadata
     {
+        /// <summary>
+        /// Initializes a new instance of the message metadata builder.
+        /// </summary>
         public MessageMetadata()
             => Metadata = new Internal.PulsarApi.MessageMetadata();
 

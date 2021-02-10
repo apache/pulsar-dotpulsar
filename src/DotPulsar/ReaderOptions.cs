@@ -31,6 +31,9 @@ namespace DotPulsar
         /// </summary>
         public static readonly bool DefaultReadCompacted = false;
 
+        /// <summary>
+        /// Initializes a new instance using the specified startMessageId and topic.
+        /// </summary>
         public ReaderOptions(MessageId startMessageId, string topic)
         {
             MessagePrefetchCount = DefaultMessagePrefetchCount;
