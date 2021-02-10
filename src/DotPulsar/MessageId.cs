@@ -120,6 +120,6 @@ namespace DotPulsar
             => HashCode.Combine(LedgerId, EntryId, Partition, BatchIndex);
 
         public override string ToString()
-            => $"LedgerId: {LedgerId}, EntryId: {EntryId}, Partition: {Partition}, BatchIndex: {BatchIndex}";
+            => $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}";
     }
 }
