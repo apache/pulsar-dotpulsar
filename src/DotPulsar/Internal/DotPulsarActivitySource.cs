@@ -12,23 +12,17 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Internal
 {
-    using System;
+    using System.Diagnostics;
 
-    /// <summary>
-    /// A reader abstraction.
-    /// </summary>
-    public interface IReader : IGetLastMessageId, IReceive, ISeek, IState<ReaderState>, IAsyncDisposable
+    public static class DotPulsarActivitySource
     {
-        /// <summary>
-        /// The reader's service url.
-        /// </summary>
-        public Uri ServiceUrl { get; }
+        static DotPulsarActivitySource()
+        {
+            ActivitySource = new ActivitySource(Constants.ClientName, Constants.ClientVersion);
+        }
 
-        /// <summary>
-        /// The reader's topic.
-        /// </summary>
-        string Topic { get; }
+        public static ActivitySource ActivitySource { get; }
     }
 }

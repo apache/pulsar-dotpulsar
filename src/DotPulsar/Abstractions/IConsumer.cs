@@ -35,7 +35,17 @@ namespace DotPulsar.Abstractions
         ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// The topic of the consumer.
+        /// The consumer's service url.
+        /// </summary>
+        public Uri ServiceUrl { get; }
+
+        /// <summary>
+        /// The consumer's subscription name.
+        /// </summary>
+        public string SubscriptionName { get; }
+
+        /// <summary>
+        /// The consumer's topic.
         /// </summary>
         string Topic { get; }
 

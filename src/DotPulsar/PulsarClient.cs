@@ -32,11 +32,18 @@ namespace DotPulsar
         private readonly IHandleException _exceptionHandler;
         private int _isDisposed;
 
-        internal PulsarClient(IConnectionPool connectionPool, ProcessManager processManager, IHandleException exceptionHandler)
+        public Uri ServiceUrl { get; }
+
+        internal PulsarClient(
+            IConnectionPool connectionPool,
+            ProcessManager processManager,
+            IHandleException exceptionHandler,
+            Uri serviceUrl)
         {
             _connectionPool = connectionPool;
             _processManager = processManager;
             _exceptionHandler = exceptionHandler;
+            ServiceUrl = serviceUrl;
             _isDisposed = 0;
             DotPulsarEventSource.Log.ClientCreated();
         }
@@ -57,7 +64,7 @@ namespace DotPulsar
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var producer = new Producer(correlationId, options.Topic, options.InitialSequenceId, _processManager, new NotReadyChannel(), executor, stateManager);
+            var producer = new Producer(correlationId, ServiceUrl, options.Topic, options.InitialSequenceId, _processManager, new NotReadyChannel(), executor, stateManager);
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
             var process = new ProducerProcess(correlationId, stateManager, factory, producer);
@@ -76,7 +83,7 @@ namespace DotPulsar
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
             var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
-            var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
+            var consumer = new Consumer(correlationId, ServiceUrl, options.SubscriptionName, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorConsumer(consumer, options.StateChangedHandler);
             var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
@@ -95,7 +102,7 @@ namespace DotPulsar
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var factory = new ReaderChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
             var stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
-            var reader = new Reader(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
+            var reader = new Reader(correlationId, ServiceUrl, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorReader(reader, options.StateChangedHandler);
             var process = new ReaderProcess(correlationId, stateManager, factory, reader);

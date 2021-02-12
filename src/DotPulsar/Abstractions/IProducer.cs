@@ -22,7 +22,12 @@ namespace DotPulsar.Abstractions
     public interface IProducer : ISend, IState<ProducerState>, IAsyncDisposable
     {
         /// <summary>
-        /// The topic of the producer.
+        /// The producer's service url.
+        /// </summary>
+        public Uri ServiceUrl { get; }
+
+        /// <summary>
+        /// The producer's topic.
         /// </summary>
         string Topic { get; }
     }

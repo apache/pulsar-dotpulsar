@@ -37,10 +37,14 @@ namespace DotPulsar.Internal
         private readonly IStateChanged<ConsumerState> _state;
         private int _isDisposed;
 
+        public Uri ServiceUrl { get; }
+        public string SubscriptionName { get; }
         public string Topic { get; }
 
         public Consumer(
             Guid correlationId,
+            Uri serviceUrl,
+            string subscriptionName,
             string topic,
             IRegisterEvent eventRegister,
             IConsumerChannel initialChannel,
@@ -48,6 +52,8 @@ namespace DotPulsar.Internal
             IStateChanged<ConsumerState> state)
         {
             _correlationId = correlationId;
+            ServiceUrl = serviceUrl;
+            SubscriptionName = subscriptionName;
             Topic = topic;
             _eventRegister = eventRegister;
             _channel = initialChannel;

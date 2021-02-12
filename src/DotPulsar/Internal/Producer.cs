@@ -36,10 +36,12 @@ namespace DotPulsar.Internal
         private readonly SequenceId _sequenceId;
         private int _isDisposed;
 
+        public Uri ServiceUrl { get; }
         public string Topic { get; }
 
         public Producer(
             Guid correlationId,
+            Uri serviceUrl,
             string topic,
             ulong initialSequenceId,
             IRegisterEvent registerEvent,
@@ -50,6 +52,7 @@ namespace DotPulsar.Internal
             var messageMetadataPolicy = new DefaultPooledObjectPolicy<PulsarApi.MessageMetadata>();
             _messageMetadataPool = new DefaultObjectPool<PulsarApi.MessageMetadata>(messageMetadataPolicy);
             _correlationId = correlationId;
+            ServiceUrl = serviceUrl;
             Topic = topic;
             _sequenceId = new SequenceId(initialSequenceId);
             _eventRegister = registerEvent;

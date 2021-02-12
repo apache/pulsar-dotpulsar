@@ -35,5 +35,10 @@ namespace DotPulsar.Abstractions
         /// Create a reader.
         /// </summary>
         IReader CreateReader(ReaderOptions options);
+
+        /// <summary>
+        /// The client's service url.
+        /// </summary>
+        public Uri ServiceUrl { get; }
     }
 }
