@@ -12,18 +12,19 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Abstractions
 {
-    using DotPulsar.Internal.PulsarApi;
-    using System;
     using System.Threading;
     using System.Threading.Tasks;
 
-    public interface IReaderChannel : IAsyncDisposable
+    /// <summary>
+    /// An abstraction for getting the last message id.
+    /// </summary>
+    public interface IGetLastMessageId
     {
-        Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken);
-        Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
-        ValueTask<Message> Receive(CancellationToken cancellationToken);
-        ValueTask ClosedByClient(CancellationToken cancellationToken);
+        /// <summary>
+        /// Get the MessageId of the last message on the topic.
+        /// </summary>
+        ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default);
     }
 }

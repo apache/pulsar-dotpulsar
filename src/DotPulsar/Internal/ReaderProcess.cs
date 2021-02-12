@@ -21,13 +21,13 @@ namespace DotPulsar.Internal
     public sealed class ReaderProcess : Process
     {
         private readonly IStateManager<ReaderState> _stateManager;
-        private readonly IReaderChannelFactory _factory;
+        private readonly IConsumerChannelFactory _factory;
         private readonly Reader _reader;
 
         public ReaderProcess(
             Guid correlationId,
             IStateManager<ReaderState> stateManager,
-            IReaderChannelFactory factory,
+            IConsumerChannelFactory factory,
             Reader reader) : base(correlationId)
         {
             _stateManager = stateManager;

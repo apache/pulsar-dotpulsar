@@ -12,18 +12,25 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Extensions
 {
-    using System;
+    using DotPulsar.Abstractions;
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
 
     /// <summary>
-    /// A producer abstraction.
+    /// Extensions for IReceive.
     /// </summary>
-    public interface IProducer : ISend, IState<ProducerState>, IAsyncDisposable
+    public static class ReceiveExtensions
     {
         /// <summary>
-        /// The topic of the producer.
+        /// Get an IAsyncEnumerable for receiving messages.
         /// </summary>
-        string Topic { get; }
+        public static async IAsyncEnumerable<Message> Messages(this IReceive receiver, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+                yield return await receiver.Receive(cancellationToken).ConfigureAwait(false);
+        }
     }
 }

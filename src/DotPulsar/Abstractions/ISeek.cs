@@ -14,16 +14,22 @@
 
 namespace DotPulsar.Abstractions
 {
-    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
-    /// A producer abstraction.
+    /// An abstraction for seeking.
     /// </summary>
-    public interface IProducer : ISend, IState<ProducerState>, IAsyncDisposable
+    public interface ISeek
     {
         /// <summary>
-        /// The topic of the producer.
+        /// Reset the cursor associated with the consumer or reader to a specific MessageId.
         /// </summary>
-        string Topic { get; }
+        ValueTask Seek(MessageId messageId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Reset the cursor associated with the consumer or reader to a specific message publish time using unix time in milliseconds.
+        /// </summary>
+        ValueTask Seek(ulong publishTime, CancellationToken cancellationToken = default);
     }
 }

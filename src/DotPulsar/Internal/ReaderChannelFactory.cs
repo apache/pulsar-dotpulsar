@@ -20,7 +20,7 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class ReaderChannelFactory : IReaderChannelFactory
+    public sealed class ReaderChannelFactory : IConsumerChannelFactory
     {
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
@@ -48,7 +48,7 @@ namespace DotPulsar.Internal
                 ConsumerName = options.ReaderName,
                 Durable = false,
                 ReadCompacted = options.ReadCompacted,
-                StartMessageId = options.StartMessageId.Data,
+                StartMessageId = options.StartMessageId.ToMessageIdData(),
                 Subscription = $"Reader-{Guid.NewGuid():N}",
                 Topic = options.Topic
             };
@@ -56,10 +56,10 @@ namespace DotPulsar.Internal
             _batchHandler = new BatchHandler(false);
         }
 
-        public async Task<IReaderChannel> Create(CancellationToken cancellationToken)
+        public async Task<IConsumerChannel> Create(CancellationToken cancellationToken)
             => await _executor.Execute(() => GetChannel(cancellationToken), cancellationToken).ConfigureAwait(false);
 
-        private async ValueTask<IReaderChannel> GetChannel(CancellationToken cancellationToken)
+        private async ValueTask<IConsumerChannel> GetChannel(CancellationToken cancellationToken)
         {
             var connection = await _connectionPool.FindConnectionForTopic(_subscribe.Topic, cancellationToken).ConfigureAwait(false);
             var messageQueue = new AsyncQueue<MessagePackage>();

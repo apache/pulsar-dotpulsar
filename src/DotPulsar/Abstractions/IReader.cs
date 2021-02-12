@@ -15,83 +15,12 @@
 namespace DotPulsar.Abstractions
 {
     using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// A reader abstraction.
     /// </summary>
-    public interface IReader : IAsyncDisposable
+    public interface IReader : IGetLastMessageId, IReceive, ISeek, IState<ReaderState>, IAsyncDisposable
     {
-        /// <summary>
-        /// Ask whether the current state is final, meaning that it will never change.
-        /// </summary>
-        /// <returns>
-        /// True if it's final and False if it's not.
-        /// </returns>
-        bool IsFinalState();
-
-        /// <summary>
-        /// Ask whether the provided state is final, meaning that it will never change.
-        /// </summary>
-        /// <returns>
-        /// True if it's final and False if it's not.
-        /// </returns>
-        bool IsFinalState(ReaderState state);
-
-        /// <summary>
-        /// Get the MessageId of the last message on the topic.
-        /// </summary>
-        ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Get an IAsyncEnumerable for reading messages
-        /// </summary>
-        IAsyncEnumerable<Message> Messages(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Reset the subscription associated with this reader to a specific MessageId.
-        /// </summary>
-        ValueTask Seek(MessageId messageId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Reset the subscription associated with this reader to a specific message publish time using unix time in milliseconds.
-        /// </summary>
-        ValueTask Seek(ulong publishTime, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Reset the subscription associated with this reader to a specific message publish time using an UTC DateTime.
-        /// </summary>
-        ValueTask Seek(DateTime publishTime, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Reset the subscription associated with this reader to a specific message publish time using a DateTimeOffset.
-        /// </summary>
-        ValueTask Seek(DateTimeOffset publishTime, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Wait for the state to change to a specific state.
-        /// </summary>
-        /// <returns>
-        /// The current state.
-        /// </returns>
-        /// <remarks>
-        /// If the state change to a final state, then all awaiting tasks will complete.
-        /// </remarks>
-        ValueTask<ReaderStateChanged> StateChangedTo(ReaderState state, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Wait for the state to change from a specific state.
-        /// </summary>
-        /// <returns>
-        /// The current state.
-        /// </returns>
-        /// <remarks>
-        /// If the state change to a final state, then all awaiting tasks will complete.
-        /// </remarks>
-        ValueTask<ReaderStateChanged> StateChangedFrom(ReaderState state, CancellationToken cancellationToken = default);
-
         /// <summary>
         /// The topic of the reader.
         /// </summary>

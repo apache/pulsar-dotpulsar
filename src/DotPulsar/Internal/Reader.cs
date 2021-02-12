@@ -20,8 +20,6 @@ namespace DotPulsar.Internal
     using DotPulsar.Internal.PulsarApi;
     using Events;
     using System;
-    using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -29,7 +27,7 @@ namespace DotPulsar.Internal
     {
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
-        private IReaderChannel _channel;
+        private IConsumerChannel _channel;
         private readonly IExecute _executor;
         private readonly IStateChanged<ReaderState> _state;
         private int _isDisposed;
@@ -40,7 +38,7 @@ namespace DotPulsar.Internal
             Guid correlationId,
             string topic,
             IRegisterEvent eventRegister,
-            IReaderChannel initialChannel,
+            IConsumerChannel initialChannel,
             IExecute executor,
             IStateChanged<ReaderState> state)
         {
@@ -55,17 +53,11 @@ namespace DotPulsar.Internal
             _eventRegister.Register(new ReaderCreated(_correlationId, this));
         }
 
-        public async ValueTask<ReaderStateChanged> StateChangedTo(ReaderState state, CancellationToken cancellationToken)
-        {
-            var newState = await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
-            return new ReaderStateChanged(this, newState);
-        }
+        public async ValueTask<ReaderState> OnStateChangeTo(ReaderState state, CancellationToken cancellationToken)
+            => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask<ReaderStateChanged> StateChangedFrom(ReaderState state, CancellationToken cancellationToken)
-        {
-            var newState = await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
-            return new ReaderStateChanged(this, newState);
-        }
+        public async ValueTask<ReaderState> OnStateChangeFrom(ReaderState state, CancellationToken cancellationToken)
+            => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 
         public bool IsFinalState()
             => _state.IsFinalState();
@@ -82,28 +74,24 @@ namespace DotPulsar.Internal
         }
 
         private async ValueTask<MessageId> GetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
-        {
-            var response = await _channel.Send(command, cancellationToken).ConfigureAwait(false);
-            return new MessageId(response.LastMessageId);
-        }
+            => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
-        public async IAsyncEnumerable<Message> Messages([EnumeratorCancellation] CancellationToken cancellationToken)
+        public async ValueTask<Message> Receive(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            while (!cancellationToken.IsCancellationRequested)
-                yield return await _executor.Execute(() => Receive(cancellationToken), cancellationToken).ConfigureAwait(false);
+            return await _executor.Execute(() => ReceiveMessage(cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
-        private async ValueTask<Message> Receive(CancellationToken cancellationToken)
+        private async ValueTask<Message> ReceiveMessage(CancellationToken cancellationToken)
             => await _channel.Receive(cancellationToken).ConfigureAwait(false);
 
         public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            var seek = new CommandSeek { MessageId = messageId.Data };
-            _ = await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+            var seek = new CommandSeek { MessageId = messageId.ToMessageIdData() };
+            await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask Seek(ulong publishTime, CancellationToken cancellationToken)
@@ -111,23 +99,7 @@ namespace DotPulsar.Internal
             ThrowIfDisposed();
 
             var seek = new CommandSeek { MessagePublishTime = publishTime };
-            _ = await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
-        }
-
-        public async ValueTask Seek(DateTime publishTime, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            var seek = new CommandSeek { MessagePublishTime = (ulong) new DateTimeOffset(publishTime).ToUnixTimeMilliseconds() };
-            _ = await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
-        }
-
-        public async ValueTask Seek(DateTimeOffset publishTime, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            var seek = new CommandSeek { MessagePublishTime = (ulong) publishTime.ToUnixTimeMilliseconds() };
-            _ = await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+            await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async ValueTask DisposeAsync()
@@ -140,10 +112,10 @@ namespace DotPulsar.Internal
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
-        private async ValueTask<CommandSuccess> Seek(CommandSeek command, CancellationToken cancellationToken)
+        private async Task Seek(CommandSeek command, CancellationToken cancellationToken)
             => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
-        internal async ValueTask SetChannel(IReaderChannel channel)
+        internal async ValueTask SetChannel(IConsumerChannel channel)
         {
             if (_isDisposed != 0)
             {

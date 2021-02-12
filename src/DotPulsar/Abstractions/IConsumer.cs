@@ -22,95 +22,17 @@ namespace DotPulsar.Abstractions
     /// <summary>
     /// A consumer abstraction.
     /// </summary>
-    public interface IConsumer : IAsyncDisposable
+    public interface IConsumer : IGetLastMessageId, IReceive, ISeek, IState<ConsumerState>, IAsyncDisposable
     {
-        /// <summary>
-        /// Acknowledge the consumption of a single message.
-        /// </summary>
-        ValueTask Acknowledge(Message message, CancellationToken cancellationToken = default);
-
         /// <summary>
         /// Acknowledge the consumption of a single message using the MessageId.
         /// </summary>
         ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Acknowledge the consumption of all the messages in the topic up to and including the provided message.
-        /// </summary>
-        ValueTask AcknowledgeCumulative(Message message, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Acknowledge the consumption of all the messages in the topic up to and including the provided MessageId.
         /// </summary>
         ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Get the MessageId of the last message on the topic.
-        /// </summary>
-        ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Ask whether the current state is final, meaning that it will never change.
-        /// </summary>
-        /// <returns>
-        /// True if it's final and False if it's not.
-        /// </returns>
-        bool IsFinalState();
-
-        /// <summary>
-        /// Ask whether the provided state is final, meaning that it will never change.
-        /// </summary>
-        /// <returns>
-        /// True if it's final and False if it's not.
-        /// </returns>
-        bool IsFinalState(ConsumerState state);
-
-        /// <summary>
-        /// Get an IAsyncEnumerable for consuming messages.
-        /// </summary>
-        IAsyncEnumerable<Message> Messages(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Reset the subscription associated with this consumer to a specific MessageId.
-        /// </summary>
-        ValueTask Seek(MessageId messageId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Reset the subscription associated with this consumer to a specific message publish time using unix time in milliseconds.
-        /// </summary>
-        ValueTask Seek(ulong publishTime, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Reset the subscription associated with this consumer to a specific message publish time using an UTC DateTime.
-        /// </summary>
-        ValueTask Seek(DateTime publishTime, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Reset the subscription associated with this consumer to a specific message publish time using a DateTimeOffset.
-        /// </summary>
-        ValueTask Seek(DateTimeOffset publishTime, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Wait for the state to change to a specific state.
-        /// </summary>
-        /// <returns>
-        /// The current state.
-        /// </returns>
-        /// <remarks>
-        /// If the state change to a final state, then all awaiting tasks will complete.
-        /// </remarks>
-        ValueTask<ConsumerStateChanged> StateChangedTo(ConsumerState state, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Wait for the state to change from a specific state.
-        /// </summary>
-        /// <returns>
-        /// The current state.
-        /// </returns>
-        /// <remarks>
-        /// If the state change to a final state, then all awaiting tasks will complete.
-        /// </remarks>
-        ValueTask<ConsumerStateChanged> StateChangedFrom(ConsumerState state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// The topic of the consumer.
@@ -125,11 +47,11 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Redeliver the pending messages that were pushed to this consumer that are not yet acknowledged.
         /// </summary>
-        ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken);
+        ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Redeliver all pending messages that were pushed to this consumer that are not yet acknowledged.
         /// </summary>
-        ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken);
+        ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken = default);
     }
 }

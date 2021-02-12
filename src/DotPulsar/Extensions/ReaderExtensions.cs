@@ -14,22 +14,15 @@
 
 namespace DotPulsar.Extensions
 {
-    using Abstractions;
-    using Internal;
+    using DotPulsar.Abstractions;
     using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Extensions for IProducer.
+    /// Extensions for IReader.
     /// </summary>
-    public static class ProducerExtensions
+    public static class ReaderExtensions
     {
-        /// <summary>
-        /// Get a builder that can be used to configure and build a Message.
-        /// </summary>
-        public static IMessageBuilder NewMessage(this IProducer producer)
-            => new MessageBuilder(producer);
-
         /// <summary>
         /// Wait for the state to change to a specific state.
         /// </summary>
@@ -39,10 +32,10 @@ namespace DotPulsar.Extensions
         /// <remarks>
         /// If the state change to a final state, then all awaiting tasks will complete.
         /// </remarks>
-        public static async ValueTask<ProducerStateChanged> StateChangedTo(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
+        public static async ValueTask<ReaderStateChanged> StateChangedTo(this IReader reader, ReaderState state, CancellationToken cancellationToken = default)
         {
-            var newState = await producer.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
-            return new ProducerStateChanged(producer, newState);
+            var newState = await reader.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
+            return new ReaderStateChanged(reader, newState);
         }
 
         /// <summary>
@@ -54,10 +47,10 @@ namespace DotPulsar.Extensions
         /// <remarks>
         /// If the state change to a final state, then all awaiting tasks will complete.
         /// </remarks>
-        public static  async ValueTask<ProducerStateChanged> StateChangedFrom(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
+        public static async ValueTask<ReaderStateChanged> StateChangedFrom(this IReader reader, ReaderState state, CancellationToken cancellationToken = default)
         {
-            var newState = await producer.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
-            return new ProducerStateChanged(producer, newState);
+            var newState = await reader.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
+            return new ReaderStateChanged(reader, newState);
         }
     }
 }

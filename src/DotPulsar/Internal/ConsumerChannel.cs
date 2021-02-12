@@ -21,7 +21,7 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class ConsumerChannel : IConsumerChannel, IReaderChannel
+    public sealed class ConsumerChannel : IConsumerChannel
     {
         private readonly ulong _id;
         private readonly AsyncQueue<MessagePackage> _queue;
@@ -88,7 +88,7 @@ namespace DotPulsar.Internal
 
                     return metadata.ShouldSerializeNumMessagesInBatch()
                         ? _batchHandler.Add(messageId, redeliveryCount, metadata, data)
-                        : MessageFactory.Create(new MessageId(messageId), redeliveryCount, metadata, data);
+                        : MessageFactory.Create(messageId.ToMessageId(), redeliveryCount, metadata, data);
                 }
             }
         }
@@ -117,29 +117,27 @@ namespace DotPulsar.Internal
             await _connection.Send(command, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<CommandSuccess> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
+        public async Task Send(CommandUnsubscribe command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
             var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.Success);
-            return response.Success;
         }
 
-        public async Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken)
+        public async Task Send(CommandSeek command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
             var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.Success);
             _batchHandler.Clear();
-            return response.Success;
         }
 
-        public async Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
+        public async Task<MessageId> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
             var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.GetLastMessageIdResponse);
-            return response.GetLastMessageIdResponse;
+            return response.GetLastMessageIdResponse.LastMessageId.ToMessageId();
         }
 
         public async ValueTask DisposeAsync()

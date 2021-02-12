@@ -14,16 +14,17 @@
 
 namespace DotPulsar.Abstractions
 {
-    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
-    /// A producer abstraction.
+    /// An abstraction for receiving a single message.
     /// </summary>
-    public interface IProducer : ISend, IState<ProducerState>, IAsyncDisposable
+    public interface IReceive
     {
         /// <summary>
-        /// The topic of the producer.
+        /// Receive a single message.
         /// </summary>
-        string Topic { get; }
+        ValueTask<Message> Receive(CancellationToken cancellationToken = default);
     }
 }

@@ -17,6 +17,7 @@ namespace DotPulsar.Internal
     using Abstractions;
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
+    using DotPulsar.Internal.Extensions;
     using Events;
     using Microsoft.Extensions.ObjectPool;
     using System;
@@ -60,17 +61,11 @@ namespace DotPulsar.Internal
             _eventRegister.Register(new ProducerCreated(_correlationId, this));
         }
 
-        public async ValueTask<ProducerStateChanged> StateChangedTo(ProducerState state, CancellationToken cancellationToken)
-        {
-            var newState = await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
-            return new ProducerStateChanged(this, newState);
-        }
+        public async ValueTask<ProducerState> OnStateChangeTo(ProducerState state, CancellationToken cancellationToken)
+            => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask<ProducerStateChanged> StateChangedFrom(ProducerState state, CancellationToken cancellationToken)
-        {
-            var newState = await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
-            return new ProducerStateChanged(this, newState);
-        }
+        public async ValueTask<ProducerState> OnStateChangeFrom(ProducerState state, CancellationToken cancellationToken)
+            => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 
         public bool IsFinalState()
             => _state.IsFinalState();
@@ -88,12 +83,6 @@ namespace DotPulsar.Internal
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
-        public ValueTask<MessageId> Send(byte[] data, CancellationToken cancellationToken)
-            => Send(new ReadOnlySequence<byte>(data), cancellationToken);
-
-        public ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => Send(new ReadOnlySequence<byte>(data), cancellationToken);
-
         public async ValueTask<MessageId> Send(ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
@@ -109,12 +98,6 @@ namespace DotPulsar.Internal
                 _messageMetadataPool.Return(metadata);
             }
         }
-
-        public ValueTask<MessageId> Send(MessageMetadata metadata, byte[] data, CancellationToken cancellationToken)
-            => Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
-
-        public ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-            => Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken);
 
         public async ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
@@ -138,7 +121,7 @@ namespace DotPulsar.Internal
         private async ValueTask<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
             var response = await _channel.Send(metadata, data, cancellationToken).ConfigureAwait(false);
-            return new MessageId(response.MessageId);
+            return response.MessageId.ToMessageId();
         }
 
         internal async ValueTask SetChannel(IProducerChannel channel)
