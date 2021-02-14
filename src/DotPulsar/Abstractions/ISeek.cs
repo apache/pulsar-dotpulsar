@@ -12,31 +12,24 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar.Abstractions
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
-    /// The possible states a producer can be in.
+    /// An abstraction for seeking.
     /// </summary>
-    public enum ProducerState : byte
+    public interface ISeek
     {
         /// <summary>
-        /// The producer is closed. This is a final state.
+        /// Reset the cursor associated with the consumer or reader to a specific MessageId.
         /// </summary>
-        Closed,
+        ValueTask Seek(MessageId messageId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// The producer is connected.
+        /// Reset the cursor associated with the consumer or reader to a specific message publish time using unix time in milliseconds.
         /// </summary>
-        Connected,
-
-        /// <summary>
-        /// The producer is disconnected.
-        /// </summary>
-        Disconnected,
-
-        /// <summary>
-        /// The producer is faulted. This is a final state.
-        /// </summary>
-        Faulted
+        ValueTask Seek(ulong publishTime, CancellationToken cancellationToken = default);
     }
 }

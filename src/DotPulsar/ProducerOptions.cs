@@ -26,6 +26,9 @@ namespace DotPulsar
         /// </summary>
         public static readonly ulong DefaultInitialSequenceId = 0;
 
+        /// <summary>
+        /// Initializes a new instance using the specified topic.
+        /// </summary>
         public ProducerOptions(string topic)
         {
             InitialSequenceId = DefaultInitialSequenceId;

@@ -12,31 +12,25 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar.Extensions
 {
+    using DotPulsar.Abstractions;
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
+
     /// <summary>
-    /// The possible states a producer can be in.
+    /// Extensions for IReceive.
     /// </summary>
-    public enum ProducerState : byte
+    public static class ReceiveExtensions
     {
         /// <summary>
-        /// The producer is closed. This is a final state.
+        /// Get an IAsyncEnumerable for receiving messages.
         /// </summary>
-        Closed,
-
-        /// <summary>
-        /// The producer is connected.
-        /// </summary>
-        Connected,
-
-        /// <summary>
-        /// The producer is disconnected.
-        /// </summary>
-        Disconnected,
-
-        /// <summary>
-        /// The producer is faulted. This is a final state.
-        /// </summary>
-        Faulted
+        public static async IAsyncEnumerable<Message> Messages(this IReceive receiver, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+                yield return await receiver.Receive(cancellationToken).ConfigureAwait(false);
+        }
     }
 }

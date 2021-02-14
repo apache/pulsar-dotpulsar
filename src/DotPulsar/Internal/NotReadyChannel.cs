@@ -22,7 +22,7 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class NotReadyChannel : IConsumerChannel, IProducerChannel, IReaderChannel
+    public sealed class NotReadyChannel : IConsumerChannel, IProducerChannel
     {
         public ValueTask DisposeAsync()
             => new ValueTask();
@@ -31,9 +31,6 @@ namespace DotPulsar.Internal
             => new ValueTask();
 
         public ValueTask<Message> Receive(CancellationToken cancellationToken = default)
-            => throw GetException();
-
-        public Task<CommandSendReceipt> Send(ulong sequenceId, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
             => throw GetException();
 
         public Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
@@ -45,13 +42,13 @@ namespace DotPulsar.Internal
         public Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken)
             => throw GetException();
 
-        public Task<CommandSuccess> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
+        public Task Send(CommandUnsubscribe command, CancellationToken cancellationToken)
             => throw GetException();
 
-        public Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken)
+        public Task Send(CommandSeek command, CancellationToken cancellationToken)
             => throw GetException();
 
-        public Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
+        public Task<MessageId> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
             => throw GetException();
 
         private static Exception GetException()

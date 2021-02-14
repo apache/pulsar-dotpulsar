@@ -12,31 +12,25 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar.Abstractions
 {
+    using System.Buffers;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
-    /// The possible states a producer can be in.
+    /// An abstraction for sending a message.
     /// </summary>
-    public enum ProducerState : byte
+    public interface ISend
     {
         /// <summary>
-        /// The producer is closed. This is a final state.
+        /// Sends a message.
         /// </summary>
-        Closed,
+        ValueTask<MessageId> Send(ReadOnlySequence<byte> data, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// The producer is connected.
+        /// Sends a message with metadata.
         /// </summary>
-        Connected,
-
-        /// <summary>
-        /// The producer is disconnected.
-        /// </summary>
-        Disconnected,
-
-        /// <summary>
-        /// The producer is faulted. This is a final state.
-        /// </summary>
-        Faulted
+        ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken = default);
     }
 }

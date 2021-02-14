@@ -54,19 +54,23 @@ namespace DotPulsar.Internal
             await _pipeline.Send(sequence).ConfigureAwait(false);
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#if NETSTANDARD2_0
+        public ValueTask DisposeAsync()
+        {
+            if (Interlocked.Exchange(ref _isDisposed, 1) == 0)
+                _stream.Dispose();
+            
+            return new ValueTask();
+        }
+#else
         public async ValueTask DisposeAsync()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                 return;
 
-#if NETSTANDARD2_0
-            _stream.Dispose();
-#else
             await _stream.DisposeAsync().ConfigureAwait(false);
-#endif
         }
+#endif
 
         private async Task FillPipe(CancellationToken cancellationToken)
         {

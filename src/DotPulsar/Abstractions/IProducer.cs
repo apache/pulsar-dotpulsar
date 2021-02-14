@@ -15,85 +15,19 @@
 namespace DotPulsar.Abstractions
 {
     using System;
-    using System.Buffers;
-    using System.Threading;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// A producer abstraction.
     /// </summary>
-    public interface IProducer : IAsyncDisposable
+    public interface IProducer : ISend, IState<ProducerState>, IAsyncDisposable
     {
         /// <summary>
-        /// Ask whether the current state is final, meaning that it will never change.
+        /// The producer's service url.
         /// </summary>
-        /// <returns>
-        /// True if it's final and False if it's not.
-        /// </returns>
-        bool IsFinalState();
+        public Uri ServiceUrl { get; }
 
         /// <summary>
-        /// Ask whether the provided state is final, meaning that it will never change.
-        /// </summary>
-        /// <returns>
-        /// True if it's final and False if it's not.
-        /// </returns>
-        bool IsFinalState(ProducerState state);
-
-        /// <summary>
-        /// Sends a message.
-        /// </summary>
-        ValueTask<MessageId> Send(byte[] data, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Sends a message.
-        /// </summary>
-        ValueTask<MessageId> Send(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Sends a message.
-        /// </summary>
-        ValueTask<MessageId> Send(ReadOnlySequence<byte> data, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Sends a message with metadata.
-        /// </summary>
-        ValueTask<MessageId> Send(MessageMetadata metadata, byte[] data, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Sends a message with metadata.
-        /// </summary>
-        ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Sends a message with metadata.
-        /// </summary>
-        ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Wait for the state to change to a specific state.
-        /// </summary>
-        /// <returns>
-        /// The current state.
-        /// </returns>
-        /// <remarks>
-        /// If the state change to a final state, then all awaiting tasks will complete.
-        /// </remarks>
-        ValueTask<ProducerStateChanged> StateChangedTo(ProducerState state, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Wait for the state to change from a specific state.
-        /// </summary>
-        /// <returns>
-        /// The current state.
-        /// </returns>
-        /// <remarks>
-        /// If the state change to a final state, then all awaiting tasks will complete.
-        /// </remarks>
-        ValueTask<ProducerStateChanged> StateChangedFrom(ProducerState state, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// The topic of the producer.
+        /// The producer's topic.
         /// </summary>
         string Topic { get; }
     }

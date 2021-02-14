@@ -12,18 +12,17 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Internal
 {
-    using DotPulsar.Internal.PulsarApi;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+    using System.Diagnostics;
 
-    public interface IReaderChannel : IAsyncDisposable
+    public static class DotPulsarActivitySource
     {
-        Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken);
-        Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
-        ValueTask<Message> Receive(CancellationToken cancellationToken);
-        ValueTask ClosedByClient(CancellationToken cancellationToken);
+        static DotPulsarActivitySource()
+        {
+            ActivitySource = new ActivitySource(Constants.ClientName, Constants.ClientVersion);
+        }
+
+        public static ActivitySource ActivitySource { get; }
     }
 }

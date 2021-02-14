@@ -13,7 +13,6 @@
  */
 
 #pragma warning disable 8601
-#pragma warning disable 8625
 
 namespace DotPulsar.StressTests
 {

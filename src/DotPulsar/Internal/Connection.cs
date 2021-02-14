@@ -18,7 +18,6 @@ namespace DotPulsar.Internal
     using Exceptions;
     using Extensions;
     using PulsarApi;
-    using System;
     using System.Buffers;
     using System.Threading;
     using System.Threading.Tasks;
@@ -172,19 +171,13 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            if (command.Command is null)
-                throw new ArgumentNullException(nameof(command.Command));
-
-            if (command.Metadata is null)
-                throw new ArgumentNullException(nameof(command.Metadata));
-
             Task<BaseCommand>? response;
 
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
-                var baseCommand = command.Command.AsBaseCommand();
+                var baseCommand = command.Command!.AsBaseCommand();
                 response = _requestResponseHandler.Outgoing(baseCommand);
-                var sequence = Serializer.Serialize(baseCommand, command.Metadata, command.Payload);
+                var sequence = Serializer.Serialize(baseCommand, command.Metadata!, command.Payload);
                 await _stream.Send(sequence).ConfigureAwait(false);
             }
 
@@ -218,7 +211,7 @@ namespace DotPulsar.Internal
             }
         }
 
-        public async Task ProcessIncommingFrames(CancellationToken cancellationToken)
+        public async Task ProcessIncommingFrames()
         {
             await Task.Yield();
 
@@ -247,7 +240,7 @@ namespace DotPulsar.Internal
                             _channelManager.Incoming(command.CloseProducer);
                             break;
                         case BaseCommand.Type.Ping:
-                            _pingPongHandler.Incoming(command.Ping, cancellationToken);
+                            _pingPongHandler.GotPing();
                             break;
                         default:
                             _requestResponseHandler.Incoming(command);

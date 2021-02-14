@@ -14,6 +14,7 @@
 
 namespace DotPulsar
 {
+    using DotPulsar.Internal.Extensions;
     using Internal.PulsarApi;
     using System;
 
@@ -38,39 +39,36 @@ namespace DotPulsar
         /// </summary>
         public static MessageId Latest { get; }
 
-        internal MessageId(MessageIdData messageIdData)
-            => Data = messageIdData;
-
+        /// <summary>
+        /// Initializes a new instance using the specified ledgerId, entryId, partition and batchIndex.
+        /// </summary>
         public MessageId(ulong ledgerId, ulong entryId, int partition, int batchIndex)
-            => Data = new MessageIdData
-            {
-                LedgerId = ledgerId,
-                EntryId = entryId,
-                Partition = partition,
-                BatchIndex = batchIndex
-            };
-
-        internal MessageIdData Data { get; }
+        {
+            LedgerId = ledgerId;
+            EntryId = entryId;
+            Partition = partition;
+            BatchIndex = batchIndex;
+        }
 
         /// <summary>
         /// The id of the ledger.
         /// </summary>
-        public ulong LedgerId => Data.LedgerId;
+        public ulong LedgerId { get; }
 
         /// <summary>
         /// The id of the entry.
         /// </summary>
-        public ulong EntryId => Data.EntryId;
+        public ulong EntryId { get; }
 
         /// <summary>
         /// The partition.
         /// </summary>
-        public int Partition => Data.Partition;
+        public int Partition { get; }
 
         /// <summary>
         /// The batch index.
         /// </summary>
-        public int BatchIndex => Data.BatchIndex;
+        public int BatchIndex { get; }
 
         public int CompareTo(MessageId? other) => other is null ? 1 : Data.CompareTo(other.Data);
 
@@ -84,7 +82,7 @@ namespace DotPulsar
             => x is not null ? x.CompareTo(y) >= 0 : y is null;
 
         public static bool operator <=(MessageId x, MessageId y)
-            => x is not null ? x.CompareTo(y) <= 0 : true;
+            => x is null || x.CompareTo(y) <= 0;
 
         public override bool Equals(object? o)
             => o is MessageId id && Equals(id);
@@ -102,6 +100,13 @@ namespace DotPulsar
             => HashCode.Combine(LedgerId, EntryId, Partition, BatchIndex);
 
         public override string ToString()
-            => $"LedgerId: {LedgerId}, EntryId: {EntryId}, Partition: {Partition}, BatchIndex: {BatchIndex}";
+            => $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}";
+
+        internal MessageIdData ToMessageIdData()
+        {
+            var messageIdData = new MessageIdData();
+            messageIdData.MapFrom(this);
+            return messageIdData;
+        }
     }
 }

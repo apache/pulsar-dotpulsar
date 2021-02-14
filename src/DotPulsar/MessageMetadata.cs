@@ -23,10 +23,13 @@ namespace DotPulsar
     /// </summary>
     public sealed class MessageMetadata
     {
+        /// <summary>
+        /// Initializes a new instance of the message metadata builder.
+        /// </summary>
         public MessageMetadata()
             => Metadata = new Internal.PulsarApi.MessageMetadata();
 
-        internal readonly Internal.PulsarApi.MessageMetadata Metadata;
+        internal Internal.PulsarApi.MessageMetadata Metadata { get; }
 
         /// <summary>
         /// The delivery time of the message as unix time in milliseconds.

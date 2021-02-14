@@ -12,13 +12,19 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Abstractions
 {
     using System.Threading;
     using System.Threading.Tasks;
 
-    public interface IReaderChannelFactory
+    /// <summary>
+    /// An abstraction for getting the last message id.
+    /// </summary>
+    public interface IGetLastMessageId
     {
-        Task<IReaderChannel> Create(CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Get the MessageId of the last message on the topic.
+        /// </summary>
+        ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default);
     }
 }

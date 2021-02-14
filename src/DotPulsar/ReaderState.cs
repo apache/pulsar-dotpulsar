@@ -14,12 +14,34 @@
 
 namespace DotPulsar
 {
+    /// <summary>
+    /// The possible states a reader can be in.
+    /// </summary>
     public enum ReaderState : byte
     {
+        /// <summary>
+        /// The reader is closed. This is a final state.
+        /// </summary>
         Closed,
+
+        /// <summary>
+        /// The reader is connected.
+        /// </summary>
         Connected,
+
+        /// <summary>
+        /// The reader is disconnected.
+        /// </summary>
         Disconnected,
+
+        /// <summary>
+        /// The reader is faulted. This is a final state.
+        /// </summary>
         Faulted,
+
+        /// <summary>
+        /// The reader has reached the end of the topic. This is a final state.
+        /// </summary>
         ReachedEndOfTopic
     }
 }

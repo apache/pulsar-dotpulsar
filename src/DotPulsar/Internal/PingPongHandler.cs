@@ -16,7 +16,6 @@ namespace DotPulsar.Internal
 {
     using Abstractions;
     using PulsarApi;
-    using System.Threading;
     using System.Threading.Tasks;
 
     public sealed class PingPongHandler
@@ -30,14 +29,14 @@ namespace DotPulsar.Internal
             _pong = new CommandPong();
         }
 
-        public void Incoming(CommandPing ping, CancellationToken cancellationToken)
-            => Task.Factory.StartNew(() => SendPong(cancellationToken));
+        public void GotPing()
+            => Task.Factory.StartNew(() => SendPong());
 
-        private async Task SendPong(CancellationToken cancellationToken)
+        private async Task SendPong()
         {
             try
             {
-                await _connection.Send(_pong, cancellationToken).ConfigureAwait(false);
+                await _connection.Send(_pong, default).ConfigureAwait(false);
             }
             catch { }
         }

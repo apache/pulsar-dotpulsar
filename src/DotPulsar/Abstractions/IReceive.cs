@@ -12,31 +12,19 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar.Abstractions
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
-    /// The possible states a producer can be in.
+    /// An abstraction for receiving a single message.
     /// </summary>
-    public enum ProducerState : byte
+    public interface IReceive
     {
         /// <summary>
-        /// The producer is closed. This is a final state.
+        /// Receive a single message.
         /// </summary>
-        Closed,
-
-        /// <summary>
-        /// The producer is connected.
-        /// </summary>
-        Connected,
-
-        /// <summary>
-        /// The producer is disconnected.
-        /// </summary>
-        Disconnected,
-
-        /// <summary>
-        /// The producer is faulted. This is a final state.
-        /// </summary>
-        Faulted
+        ValueTask<Message> Receive(CancellationToken cancellationToken = default);
     }
 }

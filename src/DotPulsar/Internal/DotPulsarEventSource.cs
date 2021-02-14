@@ -14,96 +14,73 @@
 
 namespace DotPulsar.Internal
 {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_0
+    public sealed class DotPulsarEventSource
+    {
+        public static readonly DotPulsarEventSource Log = new DotPulsarEventSource();
+
+        public void ClientCreated() { }
+
+        public void ClientDisposed() { }
+
+        public void ConnectionCreated() { }
+
+        public void ConnectionDisposed() { }
+
+        public void ConsumerCreated() { }
+
+        public void ConsumerDisposed() { }
+
+        public void ProducerCreated() { }
+
+        public void ProducerDisposed() { }
+
+        public void ReaderCreated() { }
+
+        public void ReaderDisposed() { }
+    }
+
+#else
     using System.Diagnostics.Tracing;
     using System.Threading;
 
     public sealed class DotPulsarEventSource : EventSource
     {
-        private readonly PollingCounter _totalClientsCounter;
+#pragma warning disable IDE0052 // Remove unread private members
+        private PollingCounter? _totalClientsCounter;
         private long _totalClients;
 
-        private readonly PollingCounter _currentClientsCounter;
+        private PollingCounter? _currentClientsCounter;
         private long _currentClients;
 
-        private readonly PollingCounter _totalConnectionsCounter;
+        private PollingCounter? _totalConnectionsCounter;
         private long _totalConnections;
 
-        private readonly PollingCounter _currentConnectionsCounter;
+        private PollingCounter? _currentConnectionsCounter;
         private long _currentConnections;
 
-        private readonly PollingCounter _totalConsumersCounter;
+        private PollingCounter? _totalConsumersCounter;
         private long _totalConsumers;
 
-        private readonly PollingCounter _currentConsumersCounter;
+        private PollingCounter? _currentConsumersCounter;
         private long _currentConsumers;
 
-        private readonly PollingCounter _totalProducersCounter;
+        private PollingCounter? _totalProducersCounter;
         private long _totalProducers;
 
-        private readonly PollingCounter _currentProducersCounter;
+        private PollingCounter? _currentProducersCounter;
         private long _currentProducers;
 
-        private readonly PollingCounter _totalReadersCounter;
+        private PollingCounter? _totalReadersCounter;
         private long _totalReaders;
 
-        private readonly PollingCounter _currentReadersCounter;
+        private PollingCounter? _currentReadersCounter;
         private long _currentReaders;
+#pragma warning restore IDE0052 // Remove unread private members
 
         public static readonly DotPulsarEventSource Log = new DotPulsarEventSource();
 
-        public DotPulsarEventSource() : base("DotPulsar")
-        {
-            _totalClientsCounter = new PollingCounter("total-clients", this, () => Interlocked.Read(ref _totalClients))
-            {
-                DisplayName = "Total number of clients"
-            };
-
-            _currentClientsCounter = new PollingCounter("current-clients", this, () => Interlocked.Read(ref _currentClients))
-            {
-                DisplayName = "Current number of clients"
-            };
-
-            _totalConnectionsCounter = new PollingCounter("total-connections", this, () => Interlocked.Read(ref _totalConnections))
-            {
-                DisplayName = "Total number of connections"
-            };
-
-            _currentConnectionsCounter = new PollingCounter("current-connections", this, () => Interlocked.Read(ref _currentConnections))
-            {
-                DisplayName = "Current number of connections"
-            };
-
-            _totalConsumersCounter = new PollingCounter("total-consumers", this, () => Interlocked.Read(ref _totalConsumers))
-            {
-                DisplayName = "Total number of consumers"
-            };
-
-            _currentConsumersCounter = new PollingCounter("current-consumers", this, () => Interlocked.Read(ref _currentConsumers))
-            {
-                DisplayName = "Current number of consumers"
-            };
-
-            _totalProducersCounter = new PollingCounter("total-producers", this, () => Interlocked.Read(ref _totalProducers))
-            {
-                DisplayName = "Total number of producers"
-            };
-
-            _currentProducersCounter = new PollingCounter("current-producers", this, () => Interlocked.Read(ref _currentProducers))
-            {
-                DisplayName = "Current number of producers"
-            };
-
-            _totalReadersCounter = new PollingCounter("total-readers", this, () => Interlocked.Read(ref _totalReaders))
-            {
-                DisplayName = "Total number of readers"
-            };
-
-            _currentReadersCounter = new PollingCounter("current-readers", this, () => Interlocked.Read(ref _currentReaders))
-            {
-                DisplayName = "Current number of readers"
-            };
-        }
+        public DotPulsarEventSource() : base("DotPulsar") { }
 
         public void ClientCreated()
         {
@@ -159,31 +136,62 @@ namespace DotPulsar.Internal
         {
             Interlocked.Decrement(ref _currentReaders);
         }
-    }
-#else
-    public sealed class DotPulsarEventSource
-    {
-        public static readonly DotPulsarEventSource Log = new DotPulsarEventSource();
 
-        public void ClientCreated() { }
+        protected override void OnEventCommand(EventCommandEventArgs command)
+        {
+            if (command.Command != EventCommand.Enable)
+                return;
 
-        public void ClientDisposed() { }
+            _totalClientsCounter ??= new PollingCounter("total-clients", this, () => Volatile.Read(ref _totalClients))
+            {
+                DisplayName = "Total number of clients"
+            };
 
-        public void ConnectionCreated() { }
+            _currentClientsCounter ??= new PollingCounter("current-clients", this, () => Volatile.Read(ref _currentClients))
+            {
+                DisplayName = "Current number of clients"
+            };
 
-        public void ConnectionDisposed() { }
+            _totalConnectionsCounter ??= new PollingCounter("total-connections", this, () => Volatile.Read(ref _totalConnections))
+            {
+                DisplayName = "Total number of connections"
+            };
 
-        public void ConsumerCreated() { }
+            _currentConnectionsCounter ??= new PollingCounter("current-connections", this, () => Volatile.Read(ref _currentConnections))
+            {
+                DisplayName = "Current number of connections"
+            };
 
-        public void ConsumerDisposed() { }
+            _totalConsumersCounter ??= new PollingCounter("total-consumers", this, () => Volatile.Read(ref _totalConsumers))
+            {
+                DisplayName = "Total number of consumers"
+            };
 
-        public void ProducerCreated() { }
+            _currentConsumersCounter ??= new PollingCounter("current-consumers", this, () => Volatile.Read(ref _currentConsumers))
+            {
+                DisplayName = "Current number of consumers"
+            };
 
-        public void ProducerDisposed() { }
+            _totalProducersCounter ??= new PollingCounter("total-producers", this, () => Volatile.Read(ref _totalProducers))
+            {
+                DisplayName = "Total number of producers"
+            };
 
-        public void ReaderCreated() { }
+            _currentProducersCounter ??= new PollingCounter("current-producers", this, () => Volatile.Read(ref _currentProducers))
+            {
+                DisplayName = "Current number of producers"
+            };
 
-        public void ReaderDisposed() { }
+            _totalReadersCounter ??= new PollingCounter("total-readers", this, () => Volatile.Read(ref _totalReaders))
+            {
+                DisplayName = "Total number of readers"
+            };
+
+            _currentReadersCounter ??= new PollingCounter("current-readers", this, () => Volatile.Read(ref _currentReaders))
+            {
+                DisplayName = "Current number of readers"
+            };
+        }
     }
 #endif
 }

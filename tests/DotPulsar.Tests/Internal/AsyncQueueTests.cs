@@ -110,13 +110,13 @@ namespace DotPulsar.Tests.Internal
             CancellationTokenSource source1 = new CancellationTokenSource(), source2 = new CancellationTokenSource();
             const int excepted = 1;
             var queue = new AsyncQueue<int>();
-            var task1 = queue.Dequeue(source1.Token);
-            var task2 = queue.Dequeue(source2.Token);
+            var task1 = queue.Dequeue(source1.Token).AsTask();
+            var task2 = queue.Dequeue(source2.Token).AsTask();
 
             //Act
             source1.Cancel();
             queue.Enqueue(excepted);
-            var exception = await Record.ExceptionAsync(() => task1.AsTask()).ConfigureAwait(false); // xUnit can't record ValueTask yet
+            var exception = await Record.ExceptionAsync(() => task1).ConfigureAwait(false);
             await task2.ConfigureAwait(false);
 
             //Assert

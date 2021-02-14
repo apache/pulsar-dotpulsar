@@ -25,7 +25,7 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Called after a state has changed.
         /// </summary>
-        ValueTask OnStateChanged(TStateChanged stateChanged, CancellationToken cancellationToken);
+        ValueTask OnStateChanged(TStateChanged stateChanged, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// The cancellation token to use when waiting for and handling state changes.

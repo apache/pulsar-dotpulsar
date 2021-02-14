@@ -25,7 +25,7 @@ namespace Consuming
 
     internal static class Program
     {
-        private static async Task Main(string[] args)
+        private static async Task Main()
         {
             const string myTopic = "persistent://public/default/mytopic";
 

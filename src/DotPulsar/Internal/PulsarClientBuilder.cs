@@ -41,7 +41,7 @@ namespace DotPulsar.Internal
             _commandConnect = new CommandConnect
             {
                 ProtocolVersion = Constants.ProtocolVersion,
-                ClientVersion = Constants.ClientVersion
+                ClientVersion = $"{Constants.ClientName} {Constants.ClientVersion}"
             };
 
             _exceptionHandlers = new List<IHandleException>();
@@ -157,7 +157,7 @@ namespace DotPulsar.Internal
             var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
             var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);
 
-            return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline);
+            return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline, _serviceUrl);
         }
     }
 }

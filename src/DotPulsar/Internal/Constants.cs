@@ -15,18 +15,22 @@
 namespace DotPulsar.Internal
 {
     using System;
-    using System.Reflection;
 
     public static class Constants
     {
         static Constants()
         {
-            var assemblyName = Assembly.GetCallingAssembly().GetName();
+            var assembly = typeof(Constants).Assembly;
+            var assemblyName = assembly.GetName();
+            if (assemblyName.Name is null)
+                throw new Exception($"Assembly name of {assembly.FullName} is null");
+
             var assemblyVersion = assemblyName.Version;
             if (assemblyVersion is null)
-                throw new Exception("Assembly version of CallingAssembly is null");
+                throw new Exception($"Assembly version of {assembly.FullName} is null");
 
-            ClientVersion = $"{assemblyName.Name} {assemblyVersion.ToString(3)}";
+            ClientName = assemblyName.Name;
+            ClientVersion = assemblyVersion.ToString(3);
             ProtocolVersion = 14;
             PulsarScheme = "pulsar";
             PulsarSslScheme = "pulsar+ssl";
@@ -37,6 +41,7 @@ namespace DotPulsar.Internal
             MetadataOffset = 10;
         }
 
+        public static string ClientName { get; }
         public static string ClientVersion { get; }
         public static int ProtocolVersion { get; }
         public static string PulsarScheme { get; }

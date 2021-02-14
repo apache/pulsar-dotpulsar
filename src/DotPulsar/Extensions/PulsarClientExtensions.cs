@@ -17,6 +17,9 @@ namespace DotPulsar.Extensions
     using Abstractions;
     using Internal;
 
+    /// <summary>
+    /// Extensions for IPulsarClient.
+    /// </summary>
     public static class PulsarClientExtensions
     {
         /// <summary>

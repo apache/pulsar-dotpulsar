@@ -12,23 +12,31 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Extensions
+namespace DotPulsar.Abstractions
 {
-    using Abstractions;
-    using Internal;
     using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Extensions for IProducer.
+    /// A state change monitoring abstraction.
     /// </summary>
-    public static class ProducerExtensions
+    public interface IState<TState> where TState : notnull
     {
         /// <summary>
-        /// Get a builder that can be used to configure and build a Message.
+        /// Ask whether the current state is final, meaning that it will never change.
         /// </summary>
-        public static IMessageBuilder NewMessage(this IProducer producer)
-            => new MessageBuilder(producer);
+        /// <returns>
+        /// True if it's final and False if it's not.
+        /// </returns>
+        bool IsFinalState();
+
+        /// <summary>
+        /// Ask whether the provided state is final, meaning that it will never change.
+        /// </summary>
+        /// <returns>
+        /// True if it's final and False if it's not.
+        /// </returns>
+        bool IsFinalState(TState state);
 
         /// <summary>
         /// Wait for the state to change to a specific state.
@@ -39,11 +47,7 @@ namespace DotPulsar.Extensions
         /// <remarks>
         /// If the state change to a final state, then all awaiting tasks will complete.
         /// </remarks>
-        public static async ValueTask<ProducerStateChanged> StateChangedTo(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
-        {
-            var newState = await producer.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
-            return new ProducerStateChanged(producer, newState);
-        }
+        ValueTask<TState> OnStateChangeTo(TState state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Wait for the state to change from a specific state.
@@ -54,10 +58,6 @@ namespace DotPulsar.Extensions
         /// <remarks>
         /// If the state change to a final state, then all awaiting tasks will complete.
         /// </remarks>
-        public static  async ValueTask<ProducerStateChanged> StateChangedFrom(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
-        {
-            var newState = await producer.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
-            return new ProducerStateChanged(producer, newState);
-        }
+        ValueTask<TState> OnStateChangeFrom(TState state, CancellationToken cancellationToken = default);
     }
 }
