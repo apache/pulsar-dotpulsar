@@ -24,6 +24,7 @@ namespace DotPulsar.Internal
     {
         private readonly IPulsarClient _pulsarClient;
         private string? _producerName;
+        private CompressionType _compressionType;
         private ulong _initialSequenceId;
         private string? _topic;
         private IHandleStateChanged<ProducerStateChanged>? _stateChangedHandler;
@@ -31,7 +32,14 @@ namespace DotPulsar.Internal
         public ProducerBuilder(IPulsarClient pulsarClient)
         {
             _pulsarClient = pulsarClient;
+            _compressionType = ProducerOptions.DefaultCompressionType;
             _initialSequenceId = ProducerOptions.DefaultInitialSequenceId;
+        }
+
+        public IProducerBuilder CompressionType(CompressionType compressionType)
+        {
+            _compressionType = compressionType;
+            return this;
         }
 
         public IProducerBuilder InitialSequenceId(ulong initialSequenceId)
@@ -77,6 +85,7 @@ namespace DotPulsar.Internal
 
             var options = new ProducerOptions(_topic!)
             {
+                CompressionType = _compressionType,
                 InitialSequenceId = _initialSequenceId,
                 ProducerName = _producerName,
                 StateChangedHandler = _stateChangedHandler

@@ -65,10 +65,8 @@ namespace DotPulsar.Internal
 #else
         public async ValueTask DisposeAsync()
         {
-            if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
-                return;
-
-            await _stream.DisposeAsync().ConfigureAwait(false);
+            if (Interlocked.Exchange(ref _isDisposed, 1) == 0)
+                await _stream.DisposeAsync().ConfigureAwait(false);
         }
 #endif
 

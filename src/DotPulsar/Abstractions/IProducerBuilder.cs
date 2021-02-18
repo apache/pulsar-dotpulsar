@@ -24,6 +24,11 @@ namespace DotPulsar.Abstractions
     public interface IProducerBuilder
     {
         /// <summary>
+        /// Set the compression type. The default is 'None'.
+        /// </summary>
+        IProducerBuilder CompressionType(CompressionType compressionType);
+
+        /// <summary>
         /// Set the initial sequence id. The default is 0.
         /// </summary>
         IProducerBuilder InitialSequenceId(ulong initialSequenceId);

@@ -22,6 +22,11 @@ namespace DotPulsar
     public sealed class ProducerOptions
     {
         /// <summary>
+        /// The default compression type.
+        /// </summary>
+        public static readonly CompressionType DefaultCompressionType = CompressionType.None;
+
+        /// <summary>
         /// The default initial sequence id.
         /// </summary>
         public static readonly ulong DefaultInitialSequenceId = 0;
@@ -31,9 +36,15 @@ namespace DotPulsar
         /// </summary>
         public ProducerOptions(string topic)
         {
+            CompressionType = DefaultCompressionType;
             InitialSequenceId = DefaultInitialSequenceId;
             Topic = topic;
         }
+
+        /// <summary>
+        /// Set the compression type. The default is 'None'.
+        /// </summary>
+        public CompressionType CompressionType { get; set; }
 
         /// <summary>
         /// Set the initial sequence id. The default is 0.

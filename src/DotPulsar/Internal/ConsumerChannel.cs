@@ -74,9 +74,9 @@ namespace DotPulsar.Internal
 
                     var messagePackage = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);
 
-                    if (!messagePackage.IsValid())
+                    if (!messagePackage.ValidateMagicNumberAndChecksum())
                     {
-                        await RejectPackage(messagePackage, cancellationToken).ConfigureAwait(false);
+                        await RejectPackage(messagePackage, CommandAck.ValidationErrorType.ChecksumMismatch, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
 
@@ -84,6 +84,9 @@ namespace DotPulsar.Internal
                     var redeliveryCount = messagePackage.RedeliveryCount;
                     var data = messagePackage.ExtractData(metadataSize);
                     var metadata = messagePackage.ExtractMetadata(metadataSize);
+
+                    // TODO decompress if needed
+
                     var messageId = messagePackage.MessageId;
 
                     return metadata.ShouldSerializeNumMessagesInBatch()
@@ -159,9 +162,13 @@ namespace DotPulsar.Internal
             _sendWhenZero = _cachedCommandFlow.MessagePermits;
         }
 
-        private async Task RejectPackage(MessagePackage messagePackage, CancellationToken cancellationToken)
+        private async Task RejectPackage(MessagePackage messagePackage, CommandAck.ValidationErrorType validationErrorType, CancellationToken cancellationToken)
         {
-            var ack = new CommandAck { Type = CommandAck.AckType.Individual, ValidationError = CommandAck.ValidationErrorType.ChecksumMismatch };
+            var ack = new CommandAck
+            {
+                Type = CommandAck.AckType.Individual,
+                ValidationError = validationErrorType
+            };
 
             ack.MessageIds.Add(messagePackage.MessageId);
 
