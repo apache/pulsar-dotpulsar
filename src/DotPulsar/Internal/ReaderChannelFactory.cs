@@ -17,6 +17,7 @@ namespace DotPulsar.Internal
     using Abstractions;
     using PulsarApi;
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -29,13 +30,15 @@ namespace DotPulsar.Internal
         private readonly CommandSubscribe _subscribe;
         private readonly uint _messagePrefetchCount;
         private readonly BatchHandler _batchHandler;
+        private readonly IEnumerable<IDecompressorFactory> _decompressorFactories;
 
         public ReaderChannelFactory(
             Guid correlationId,
             IRegisterEvent eventRegister,
             IConnectionPool connectionPool,
             IExecute executor,
-            ReaderOptions options)
+            ReaderOptions options,
+            IEnumerable<IDecompressorFactory> decompressorFactories)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;
@@ -54,6 +57,7 @@ namespace DotPulsar.Internal
             };
 
             _batchHandler = new BatchHandler(false);
+            _decompressorFactories = decompressorFactories;
         }
 
         public async Task<IConsumerChannel> Create(CancellationToken cancellationToken)
@@ -65,7 +69,7 @@ namespace DotPulsar.Internal
             var messageQueue = new AsyncQueue<MessagePackage>();
             var channel = new Channel(_correlationId, _eventRegister, messageQueue);
             var response = await connection.Send(_subscribe, channel, cancellationToken).ConfigureAwait(false);
-            return new ConsumerChannel(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler);
+            return new ConsumerChannel(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler, _decompressorFactories);
         }
     }
 }

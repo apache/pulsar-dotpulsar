@@ -14,8 +14,11 @@
 
 namespace DotPulsar.Internal.Abstractions
 {
+    using DotPulsar.Internal.PulsarApi;
+
     public interface IDecompressorFactory
     {
+        CompressionType CompressionType { get; }
         IDecompress Create();
     }
 }

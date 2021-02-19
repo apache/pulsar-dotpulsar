@@ -45,8 +45,8 @@ namespace DotPulsar.Internal.Compression
                 var encode = FindEncode(methods, lz4Level);
                 var maximumOutputSize = FindMaximumOutputSize(methods);
 
-                compressorFactory = new CompressorFactory(() => new Compressor(CreateCompressor(encode, maximumOutputSize)));
-                decompressorFactory = new DecompressorFactory(() => new Decompressor(CreateDecompressor(decode)));
+                compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Lz4, () => new Compressor(CreateCompressor(encode, maximumOutputSize)));
+                decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Lz4, () => new Decompressor(CreateDecompressor(decode)));
                 return true;
             }
             catch

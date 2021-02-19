@@ -41,8 +41,8 @@ namespace DotPulsar.Internal.Compression
                 var decode = FindDecode(methods);
                 var encode = FindEncode(methods);
 
-                compressorFactory = new CompressorFactory(() => new Compressor(CreateCompressor(encode)));
-                decompressorFactory = new DecompressorFactory(() => new Decompressor(CreateDecompressor(decode)));
+                compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Snappy, () => new Compressor(CreateCompressor(encode)));
+                decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Snappy, () => new Decompressor(CreateDecompressor(decode)));
                 return true;
             }
             catch

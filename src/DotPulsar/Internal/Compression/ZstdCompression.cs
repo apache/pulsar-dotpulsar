@@ -43,7 +43,7 @@ namespace DotPulsar.Internal.Compression
                 var compressorMethods = compressorType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
                 var wrapMethod = FindWrap(compressorMethods);
 
-                compressorFactory = new CompressorFactory(() =>
+                compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Zstd, () =>
                 {
                     var compressor = Activator.CreateInstance(compressorType);
                     if (compressor is null)
@@ -53,7 +53,7 @@ namespace DotPulsar.Internal.Compression
                     return new Compressor(CreateCompressor(wrap), (IDisposable) compressor);
                 });
 
-                decompressorFactory = new DecompressorFactory(() =>
+                decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Zstd, () =>
                 {
                     var decompressor = Activator.CreateInstance(decompressorType);
                     if (decompressor is null)

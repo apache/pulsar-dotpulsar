@@ -15,9 +15,11 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Exceptions;
     using Extensions;
     using PulsarApi;
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -28,6 +30,7 @@ namespace DotPulsar.Internal
         private readonly IConnection _connection;
         private readonly BatchHandler _batchHandler;
         private readonly CommandFlow _cachedCommandFlow;
+        private readonly IDecompress?[] _decompressors;
         private readonly AsyncLock _lock;
         private uint _sendWhenZero;
         private bool _firstFlow;
@@ -37,12 +40,20 @@ namespace DotPulsar.Internal
             uint messagePrefetchCount,
             AsyncQueue<MessagePackage> queue,
             IConnection connection,
-            BatchHandler batchHandler)
+            BatchHandler batchHandler,
+            IEnumerable<IDecompressorFactory> decompressorFactories)
         {
             _id = id;
             _queue = queue;
             _connection = connection;
             _batchHandler = batchHandler;
+
+            _decompressors = new IDecompress[5];
+
+            foreach (var decompressorFactory in decompressorFactories)
+            {
+                _decompressors[(int) decompressorFactory.CompressionType] = decompressorFactory.Create();
+            }
 
             _lock = new AsyncLock();
 
@@ -81,13 +92,28 @@ namespace DotPulsar.Internal
                     }
 
                     var metadataSize = messagePackage.GetMetadataSize();
-                    var redeliveryCount = messagePackage.RedeliveryCount;
-                    var data = messagePackage.ExtractData(metadataSize);
                     var metadata = messagePackage.ExtractMetadata(metadataSize);
+                    var data = messagePackage.ExtractData(metadataSize);
 
-                    // TODO decompress if needed
+                    if (metadata.Compression != CompressionType.None)
+                    {
+                        var decompressor = _decompressors[(int) metadata.Compression];
+                        if (decompressor is null)
+                            throw new CompressionException($"Support for {metadata.Compression} compression was not found");
+
+                        try
+                        {
+                            data = decompressor.Decompress(data, (int) metadata.UncompressedSize);
+                        }
+                        catch
+                        {
+                            await RejectPackage(messagePackage, CommandAck.ValidationErrorType.DecompressionError, cancellationToken).ConfigureAwait(false);
+                            continue;
+                        }
+                    }
 
                     var messageId = messagePackage.MessageId;
+                    var redeliveryCount = messagePackage.RedeliveryCount;
 
                     return metadata.ShouldSerializeNumMessagesInBatch()
                         ? _batchHandler.Add(messageId, redeliveryCount, metadata, data)
@@ -146,6 +172,12 @@ namespace DotPulsar.Internal
         public async ValueTask DisposeAsync()
         {
             _queue.Dispose();
+
+            for (var i = 0; i < _decompressors.Length; ++i)
+            {
+                _decompressors[i]?.Dispose();
+            }
+
             await _lock.DisposeAsync().ConfigureAwait(false);
         }
 

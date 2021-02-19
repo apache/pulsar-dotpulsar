@@ -32,6 +32,7 @@ namespace DotPulsar.Internal.Compression
         public ReadOnlySequence<byte> Decompress(ReadOnlySequence<byte> data, int decompressedSize)
             => _decompress(data, decompressedSize);
 
-        public void Dispose() => _disposable?.Dispose();
+        public void Dispose()
+            => _disposable?.Dispose();
     }
 }

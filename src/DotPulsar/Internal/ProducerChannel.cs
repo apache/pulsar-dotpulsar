@@ -29,14 +29,20 @@ namespace DotPulsar.Internal
         private readonly ulong _id;
         private readonly string _name;
         private readonly IConnection _connection;
+        private readonly ICompressorFactory? _compressorFactory;
 
-        public ProducerChannel(ulong id, string name, IConnection connection)
+        public ProducerChannel(
+            ulong id,
+            string name,
+            IConnection connection,
+            ICompressorFactory? compressorFactory)
         {
             var sendPackagePolicy = new DefaultPooledObjectPolicy<SendPackage>();
             _sendPackagePool = new DefaultObjectPool<SendPackage>(sendPackagePolicy);
             _id = id;
             _name = name;
             _connection = connection;
+            _compressorFactory = compressorFactory;
         }
 
         public async ValueTask ClosedByClient(CancellationToken cancellationToken)
@@ -74,7 +80,16 @@ namespace DotPulsar.Internal
 
                 sendPackage.Command.SequenceId = metadata.SequenceId;
                 sendPackage.Metadata = metadata;
-                sendPackage.Payload = payload;
+
+                if (_compressorFactory is null)
+                    sendPackage.Payload = payload;
+                else
+                {
+                    sendPackage.Metadata.Compression = _compressorFactory.CompressionType;
+                    sendPackage.Metadata.UncompressedSize = (uint) payload.Length;
+                    using var compressor = _compressorFactory.Create();
+                    sendPackage.Payload = compressor.Compress(payload);
+                }
 
                 var response = await _connection.Send(sendPackage, cancellationToken).ConfigureAwait(false);
                 response.Expect(BaseCommand.Type.SendReceipt);

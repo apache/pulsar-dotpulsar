@@ -27,13 +27,15 @@ namespace DotPulsar.Internal
         private readonly IConnectionPool _connectionPool;
         private readonly IExecute _executor;
         private readonly CommandProducer _commandProducer;
+        private readonly ICompressorFactory? _compressorFactory;
 
         public ProducerChannelFactory(
             Guid correlationId,
             IRegisterEvent eventRegister,
             IConnectionPool connectionPool,
             IExecute executor,
-            ProducerOptions options)
+            ProducerOptions options,
+            ICompressorFactory? compressorFactory)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;
@@ -45,6 +47,8 @@ namespace DotPulsar.Internal
                 ProducerName = options.ProducerName,
                 Topic = options.Topic
             };
+
+            _compressorFactory = compressorFactory;
         }
 
         public async Task<IProducerChannel> Create(CancellationToken cancellationToken)
@@ -55,7 +59,7 @@ namespace DotPulsar.Internal
             var connection = await _connectionPool.FindConnectionForTopic(_commandProducer.Topic, cancellationToken).ConfigureAwait(false);
             var channel = new Channel(_correlationId, _eventRegister, new AsyncQueue<MessagePackage>());
             var response = await connection.Send(_commandProducer, channel, cancellationToken).ConfigureAwait(false);
-            return new ProducerChannel(response.ProducerId, response.ProducerName, connection);
+            return new ProducerChannel(response.ProducerId, response.ProducerName, connection, _compressorFactory);
         }
     }
 }

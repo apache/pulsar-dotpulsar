@@ -15,14 +15,20 @@
 namespace DotPulsar.Internal.Compression
 {
     using DotPulsar.Internal.Abstractions;
+    using DotPulsar.Internal.PulsarApi;
     using System;
 
     public sealed class CompressorFactory : ICompressorFactory
     {
         private readonly Func<ICompress> _create;
 
-        public CompressorFactory(Func<ICompress> create)
-            => _create = create;
+        public CompressorFactory(CompressionType compressionType, Func<ICompress> create)
+        {
+            CompressionType = compressionType;
+            _create = create;
+        }
+
+        public CompressionType CompressionType { get; }
 
         public ICompress Create()
             => _create();

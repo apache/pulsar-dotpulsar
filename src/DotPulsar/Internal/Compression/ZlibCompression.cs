@@ -41,8 +41,8 @@ namespace DotPulsar.Internal.Compression
                 var compressBuffer = FindCompressBuffer(methods);
                 var uncompressBuffer = FindUncompressBuffer(methods);
 
-                compressorFactory = new CompressorFactory(() => new Compressor(CreateCompressor(compressBuffer)));
-                decompressorFactory = new DecompressorFactory(() => new Decompressor(CreateDecompressor(uncompressBuffer)));
+                compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Zlib, () => new Compressor(CreateCompressor(compressBuffer)));
+                decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Zlib, () => new Decompressor(CreateDecompressor(uncompressBuffer)));
                 return true;
             }
             catch

@@ -15,10 +15,12 @@
 namespace DotPulsar
 {
     using Abstractions;
+    using DotPulsar.Internal.Compression;
     using Exceptions;
     using Internal;
     using Internal.Abstractions;
     using System;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -60,9 +62,20 @@ namespace DotPulsar
         public IProducer CreateProducer(ProducerOptions options)
         {
             ThrowIfDisposed();
+
+            ICompressorFactory? compressorFactory = null;
+
+            if (options.CompressionType != CompressionType.None)
+            {
+                var compressionType = (Internal.PulsarApi.CompressionType) options.CompressionType;
+                compressorFactory = CompressionFactories.CompressorFactories().SingleOrDefault(f => f.CompressionType == compressionType);
+                if (compressorFactory is null)
+                    throw new CompressionException($"Support for {compressionType} compression was not found");
+            }
+
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
+            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options, compressorFactory);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
             var producer = new Producer(correlationId, ServiceUrl, options.Topic, options.InitialSequenceId, _processManager, new NotReadyChannel(), executor, stateManager);
             if (options.StateChangedHandler is not null)
@@ -81,7 +94,7 @@ namespace DotPulsar
             ThrowIfDisposed();
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
+            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options, CompressionFactories.DecompressorFactories());
             var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
             var consumer = new Consumer(correlationId, ServiceUrl, options.SubscriptionName, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             if (options.StateChangedHandler is not null)
@@ -100,7 +113,7 @@ namespace DotPulsar
             ThrowIfDisposed();
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ReaderChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
+            var factory = new ReaderChannelFactory(correlationId, _processManager, _connectionPool, executor, options, CompressionFactories.DecompressorFactories());
             var stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
             var reader = new Reader(correlationId, ServiceUrl, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             if (options.StateChangedHandler is not null)
