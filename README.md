@@ -2,11 +2,9 @@
 
 ![CI - Unit](https://github.com/apache/pulsar-dotpulsar/workflows/CI%20-%20Unit/badge.svg)
 
-.NET/C# client library for [Apache Pulsar](https://pulsar.apache.org/).
+The official .NET/C# client library for [Apache Pulsar](https://pulsar.apache.org/).
 
-DotPulsar is written entirely in C# and implements Apache Pulsar's [binary protocol](https://pulsar.apache.org/docs/en/develop-binary-protocol/). Other options was using the [C++ client library](https://pulsar.apache.org/docs/en/client-libraries-cpp/) (which is what the [Python client](https://pulsar.apache.org/docs/en/client-libraries-python/) and [Go client](https://pulsar.apache.org/docs/en/client-libraries-go/) do) or build on top of the [WebSocket API](https://pulsar.apache.org/docs/en/client-libraries-websocket/). We decided to implement the binary protocol to gain full control and maximize portability and performance.
-
-DotPulsar's API is strongly inspired by Apache Pulsar's official [Java client](https://pulsar.apache.org/docs/en/client-libraries-java/), but a 100% match is not a goal.
+DotPulsar is written entirely in C# and implements Apache Pulsar's [binary protocol](https://pulsar.apache.org/docs/en/develop-binary-protocol/).
 
 ## What's new?
 
@@ -52,47 +50,25 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 - [X] TLS Authentication
 - [X] JSON Web Token Authentication
 - [X] Producer send with custom metadata
-- [X] Producer send with event time, sequence id and delayed message delivery
+- [X] Producer send with event time, sequence id, and delayed message delivery
 - [X] Producer send with key and ordering key
 - [X] Consumer subscription with initial position and priority level
-- [X] Consumer subscription types exclusive, shared, failover and key shared
+- [X] Consumer subscription types exclusive, shared, failover, and key shared
 - [X] Consumer receive and single + cumulative acknowledge
-- [X] Consumer and Reader seek on message id and publish time
+- [X] Consumer and Reader seek on message-id and publish time
 - [X] Consumer unsubscribe
 - [X] Consume compacted topics
 - [X] Reader API
 - [X] Read/Consume/Acknowledge batched messages
 - [X] Pulsar Proxy
+- [X] [LZ4 message compression](https://github.com/apache/pulsar-dotpulsar/wiki/Compression)
+- [X] [ZLIB message compression](https://github.com/apache/pulsar-dotpulsar/wiki/Compression)
+- [X] [ZSTD message compression](https://github.com/apache/pulsar-dotpulsar/wiki/Compression)
+- [X] [SNAPPY message compression](https://github.com/apache/pulsar-dotpulsar/wiki/Compression)
 
 ## Roadmap
 
 Help prioritizing the roadmap is most welcome, so please reach out and tell us what you want and need.
-
-### 1.0.0
-
-We are feature complete for this release. We just need testing.
-
-- [X] Use IAsyncDisposable
-- [X] Use IAsyncEnumerable
-- [X] Use ValueTask instead of Task
-- [X] Make solution nullable
-- [X] Support .NET Standard 2.0 and 2.1
-
-### If requested by the community
-
-Let us know which features you need by creating an issue or by giving existing issues a "Thumbs up".
-
-* [Message encryption](https://github.com/apache/pulsar-dotpulsar/issues/8)
-* [Batching when producing](https://github.com/apache/pulsar-dotpulsar/issues/7)
-* [Schema](https://github.com/apache/pulsar-dotpulsar/issues/6)
-* [Partitioned topics](https://github.com/apache/pulsar-dotpulsar/issues/4)
-* [Multi-topic subscriptions](https://github.com/apache/pulsar-dotpulsar/issues/5)
-* Athenz Authentication
-* Kerberos Authentication
-* LZ4 message compression
-* ZLIB message compression
-* ZSTD message compression
-* SNAPPY message compression
 
 ## Join Our Community
 
