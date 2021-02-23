@@ -37,27 +37,18 @@ namespace DotPulsar.Internal
             IRegisterEvent eventRegister,
             IConnectionPool connectionPool,
             IExecute executor,
-            ConsumerOptions options,
+            CommandSubscribe subscribe,
+            uint messagePrefetchCount,
+            BatchHandler batchHandler,
             IEnumerable<IDecompressorFactory> decompressorFactories)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;
             _connectionPool = connectionPool;
             _executor = executor;
-            _messagePrefetchCount = options.MessagePrefetchCount;
-
-            _subscribe = new CommandSubscribe
-            {
-                ConsumerName = options.ConsumerName,
-                InitialPosition = (CommandSubscribe.InitialPositionType) options.InitialPosition,
-                PriorityLevel = options.PriorityLevel,
-                ReadCompacted = options.ReadCompacted,
-                Subscription = options.SubscriptionName,
-                Topic = options.Topic,
-                Type = (CommandSubscribe.SubType) options.SubscriptionType
-            };
-
-            _batchHandler = new BatchHandler(true);
+            _subscribe = subscribe;
+            _messagePrefetchCount = messagePrefetchCount;
+            _batchHandler = batchHandler;
             _decompressorFactories = decompressorFactories;
         }
 

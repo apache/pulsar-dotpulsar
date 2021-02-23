@@ -18,7 +18,7 @@
 #
 
 github:
-  description: ".NET/C# client library for Apache Pulsar"
+  description: "The official .NET/C# client library for Apache Pulsar"
   homepage: https://pulsar.apache.org/
   labels:
     - pulsar

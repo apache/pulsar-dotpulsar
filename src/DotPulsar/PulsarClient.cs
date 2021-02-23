@@ -16,6 +16,7 @@ namespace DotPulsar
 {
     using Abstractions;
     using DotPulsar.Internal.Compression;
+    using DotPulsar.Internal.PulsarApi;
     using Exceptions;
     using Internal;
     using Internal.Abstractions;
@@ -92,9 +93,23 @@ namespace DotPulsar
         public IConsumer CreateConsumer(ConsumerOptions options)
         {
             ThrowIfDisposed();
+
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, options, CompressionFactories.DecompressorFactories());
+            var subscribe = new CommandSubscribe
+            {
+                ConsumerName = options.ConsumerName,
+                InitialPosition = (CommandSubscribe.InitialPositionType) options.InitialPosition,
+                PriorityLevel = options.PriorityLevel,
+                ReadCompacted = options.ReadCompacted,
+                Subscription = options.SubscriptionName,
+                Topic = options.Topic,
+                Type = (CommandSubscribe.SubType) options.SubscriptionType
+            };
+            var messagePrefetchCount = options.MessagePrefetchCount;
+            var batchHandler = new BatchHandler(true);
+            var decompressorFactories = CompressionFactories.DecompressorFactories();
+            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, subscribe, messagePrefetchCount, batchHandler, decompressorFactories);
             var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
             var consumer = new Consumer(correlationId, ServiceUrl, options.SubscriptionName, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             if (options.StateChangedHandler is not null)
@@ -111,9 +126,22 @@ namespace DotPulsar
         public IReader CreateReader(ReaderOptions options)
         {
             ThrowIfDisposed();
+
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ReaderChannelFactory(correlationId, _processManager, _connectionPool, executor, options, CompressionFactories.DecompressorFactories());
+            var subscribe = new CommandSubscribe
+            {
+                ConsumerName = options.ReaderName,
+                Durable = false,
+                ReadCompacted = options.ReadCompacted,
+                StartMessageId = options.StartMessageId.ToMessageIdData(),
+                Subscription = $"Reader-{Guid.NewGuid():N}",
+                Topic = options.Topic
+            };
+            var messagePrefetchCount = options.MessagePrefetchCount;
+            var batchHandler = new BatchHandler(false);
+            var decompressorFactories = CompressionFactories.DecompressorFactories();
+            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, subscribe, messagePrefetchCount, batchHandler, decompressorFactories);
             var stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
             var reader = new Reader(correlationId, ServiceUrl, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             if (options.StateChangedHandler is not null)

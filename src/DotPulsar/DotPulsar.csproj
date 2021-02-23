@@ -5,11 +5,12 @@
     <Version>0.11.0</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <Authors>DanskeCommodities;dblank</Authors>
-    <Company>Danske Commodities A/S</Company>
+    <Authors>ApachePulsar,DanskeCommodities,dblank</Authors>
+    <Company>Apache Software Foundation</Company>
     <Copyright>$(Company)</Copyright>
     <Title>DotPulsar</Title>
     <PackageTags>Apache;Pulsar</PackageTags>
+    <PackageIcon>PackageIcon.png</PackageIcon>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageReleaseNotes>Please refer to CHANGELOG.md for details</PackageReleaseNotes>
     <Description>The official .NET/C# client library for Apache Pulsar</Description>
@@ -30,6 +31,10 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="PackageIcon.png" Pack="true" PackagePath="/" Visible="False" />
   </ItemGroup>
 
 </Project>
