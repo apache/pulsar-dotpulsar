@@ -58,6 +58,8 @@ namespace DotPulsar.Internal
                 case ChannelState.ClosedByServer:
                 case ChannelState.Disconnected:
                     _stateManager.SetState(ProducerState.Disconnected);
+                    // Ugly hack to stop producers from publishing to a dead channel, which will never complete Sends
+                    _producer.ChannelClosedByServer();
                     SetupChannel();
                     return;
                 case ChannelState.Connected:

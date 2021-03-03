@@ -38,6 +38,12 @@ namespace DotPulsar.Internal
                 tcs.SetResult(result);
         }
 
+        public void Fault(T item, Exception exceptionToRelay)
+        {
+            if (_items.TryRemove(item, out var tcs))
+                tcs.SetException(exceptionToRelay);
+        }
+
         public void Dispose()
         {
             foreach (var item in _items.Values)

@@ -19,17 +19,19 @@ namespace DotPulsar
 
     public sealed class ExceptionContext
     {
-        internal ExceptionContext(Exception exception, CancellationToken cancellationToken)
+        internal ExceptionContext(Exception exception, CancellationToken cancellationToken, int retryNumber)
         {
             Exception = exception;
             CancellationToken = cancellationToken;
             ExceptionHandled = false;
             Result = FaultAction.Rethrow;
+            RetryNumber = retryNumber;
         }
 
         public Exception Exception { set; get; }
         public CancellationToken CancellationToken { get; }
         public bool ExceptionHandled { get; set; }
         public FaultAction Result { get; set; }
+        public int RetryNumber { get; set; }
     }
 }

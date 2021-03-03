@@ -136,6 +136,15 @@ namespace DotPulsar.Internal
             }
         }
 
+        internal void ChannelClosedByServer()
+        {
+            if (_isDisposed != 0)
+                return;
+
+            // No need to dispose of the old channel, the server did it for us
+            _channel = new NotReadyChannel();
+        }
+
         internal async ValueTask SetChannel(IProducerChannel channel)
         {
             if (_isDisposed != 0)

@@ -36,7 +36,7 @@ namespace DotPulsar.Internal
 
         public async ValueTask Execute(Action action, CancellationToken cancellationToken)
         {
-            while (true)
+            for (int retryNumber = 0; ; retryNumber++)
             {
                 try
                 {
@@ -45,7 +45,7 @@ namespace DotPulsar.Internal
                 }
                 catch (Exception ex)
                 {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    if (await Handle(ex, cancellationToken, retryNumber).ConfigureAwait(false))
                         throw;
                 }
 
@@ -55,7 +55,7 @@ namespace DotPulsar.Internal
 
         public async ValueTask Execute(Func<Task> func, CancellationToken cancellationToken)
         {
-            while (true)
+            for (int retryNumber = 0; ; retryNumber++)
             {
                 try
                 {
@@ -64,7 +64,7 @@ namespace DotPulsar.Internal
                 }
                 catch (Exception ex)
                 {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    if (await Handle(ex, cancellationToken, retryNumber).ConfigureAwait(false))
                         throw;
                 }
 
@@ -74,7 +74,7 @@ namespace DotPulsar.Internal
 
         public async ValueTask Execute(Func<ValueTask> func, CancellationToken cancellationToken)
         {
-            while (true)
+            for (int retryNumber = 0; ; retryNumber++)
             {
                 try
                 {
@@ -83,7 +83,7 @@ namespace DotPulsar.Internal
                 }
                 catch (Exception ex)
                 {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    if (await Handle(ex, cancellationToken, retryNumber).ConfigureAwait(false))
                         throw;
                 }
 
@@ -93,7 +93,7 @@ namespace DotPulsar.Internal
 
         public async ValueTask<TResult> Execute<TResult>(Func<TResult> func, CancellationToken cancellationToken)
         {
-            while (true)
+            for (int retryNumber = 0; ; retryNumber++)
             {
                 try
                 {
@@ -101,7 +101,7 @@ namespace DotPulsar.Internal
                 }
                 catch (Exception ex)
                 {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    if (await Handle(ex, cancellationToken, retryNumber).ConfigureAwait(false))
                         throw;
                 }
 
@@ -111,7 +111,7 @@ namespace DotPulsar.Internal
 
         public async ValueTask<TResult> Execute<TResult>(Func<Task<TResult>> func, CancellationToken cancellationToken)
         {
-            while (true)
+            for (int retryNumber = 0; ; retryNumber++)
             {
                 try
                 {
@@ -119,7 +119,7 @@ namespace DotPulsar.Internal
                 }
                 catch (Exception ex)
                 {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    if (await Handle(ex, cancellationToken, retryNumber).ConfigureAwait(false))
                         throw;
                 }
 
@@ -129,7 +129,7 @@ namespace DotPulsar.Internal
 
         public async ValueTask<TResult> Execute<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken)
         {
-            while (true)
+            for (int retryNumber = 0; ; retryNumber++)
             {
                 try
                 {
@@ -137,7 +137,7 @@ namespace DotPulsar.Internal
                 }
                 catch (Exception ex)
                 {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    if (await Handle(ex, cancellationToken, retryNumber).ConfigureAwait(false))
                         throw;
                 }
 
@@ -145,12 +145,12 @@ namespace DotPulsar.Internal
             }
         }
 
-        private async ValueTask<bool> Handle(Exception exception, CancellationToken cancellationToken)
+        private async ValueTask<bool> Handle(Exception exception, CancellationToken cancellationToken, int retryNumber)
         {
             if (cancellationToken.IsCancellationRequested)
                 return true;
 
-            var context = new ExceptionContext(exception, cancellationToken);
+            var context = new ExceptionContext(exception, cancellationToken, retryNumber);
 
             await _exceptionHandler.OnException(context).ConfigureAwait(false);
 

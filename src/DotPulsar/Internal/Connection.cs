@@ -181,14 +181,17 @@ namespace DotPulsar.Internal
             if (command.Metadata is null)
                 throw new ArgumentNullException(nameof(command.Metadata));
 
-            Task<BaseCommand>? response;
+            var baseCommand = command.Command.AsBaseCommand();
+            var response = _requestResponseHandler.Outgoing(baseCommand);;
+            var sequence = Serializer.Serialize(baseCommand, command.Metadata, command.Payload);
 
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
-                var baseCommand = command.Command.AsBaseCommand();
-                response = _requestResponseHandler.Outgoing(baseCommand);
-                var sequence = Serializer.Serialize(baseCommand, command.Metadata, command.Payload);
-                await _stream.Send(sequence).ConfigureAwait(false);
+                // By the time we enter this lock, the broker may have closed our producer
+                if (!response.IsFaulted)
+                {
+                    await _stream.Send(sequence).ConfigureAwait(false);
+                }
             }
 
             return await response.ConfigureAwait(false);
@@ -248,6 +251,8 @@ namespace DotPulsar.Internal
                             break;
                         case BaseCommand.Type.CloseProducer:
                             _channelManager.Incoming(command.CloseProducer);
+                            // We need to fault all outstanding sends for this producer now also, or else they will hang forever
+                            FaultAllOutstandingSendsForProducer(command.CloseProducer.ProducerId, new ServiceNotReadyException("Broker has closed the producer."));
                             break;
                         case BaseCommand.Type.Ping:
                             _pingPongHandler.Incoming(command.Ping, cancellationToken);
@@ -273,6 +278,11 @@ namespace DotPulsar.Internal
             _requestResponseHandler.Dispose();
             _channelManager.Dispose();
             await _stream.DisposeAsync().ConfigureAwait(false);
+        }
+
+        private void FaultAllOutstandingSendsForProducer(ulong producerId, Exception exceptionToRelay)
+        {
+            _requestResponseHandler.FaultAllOutstandingSendsForProducer(producerId, exceptionToRelay);
         }
 
         private void ThrowIfDisposed()

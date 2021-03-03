@@ -14,17 +14,19 @@
 
 namespace DotPulsar.Internal
 {
+    using System.Threading;
+
     public sealed class RequestId
     {
-        private ulong _current;
+        private long _current;
 
         public RequestId()
-            => _current = 0;
+            => _current = -1;
 
         public bool IsPastInitialId()
-            => _current != 0;
+            => _current != -1;
 
         public ulong FetchNext()
-            => _current++;
+            => unchecked((ulong)Interlocked.Increment(ref _current));
     }
 }

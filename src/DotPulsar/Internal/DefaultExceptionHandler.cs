@@ -33,9 +33,16 @@ namespace DotPulsar.Internal
         public async ValueTask OnException(ExceptionContext exceptionContext)
         {
             exceptionContext.Result = DetermineFaultAction(exceptionContext.Exception, exceptionContext.CancellationToken);
-
-            if (exceptionContext.Result == FaultAction.Retry)
-                await Task.Delay(_retryInterval, exceptionContext.CancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (exceptionContext.Result == FaultAction.Retry)
+                    await Task.Delay(_retryInterval, exceptionContext.CancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Set to rethrow the original exception instead of just generating one here
+                exceptionContext.Result = FaultAction.Rethrow;
+            }
 
             exceptionContext.ExceptionHandled = true;
         }

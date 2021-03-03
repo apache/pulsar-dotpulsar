@@ -16,6 +16,7 @@ namespace DotPulsar.Internal
 {
     using PulsarApi;
     using System;
+    using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
     public sealed class RequestResponseHandler : IDisposable
@@ -24,11 +25,13 @@ namespace DotPulsar.Internal
 
         private readonly Awaiter<string, BaseCommand> _responses;
         private readonly RequestId _requestId;
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<string, int>> _producersMessages;
 
         public RequestResponseHandler()
         {
             _responses = new Awaiter<string, BaseCommand>();
             _requestId = new RequestId();
+            _producersMessages = new ConcurrentDictionary<ulong, ConcurrentDictionary<string, int>>();
         }
 
         public void Dispose()
@@ -37,7 +40,14 @@ namespace DotPulsar.Internal
         public Task<BaseCommand> Outgoing(BaseCommand command)
         {
             SetRequestId(command);
-            return _responses.CreateTask(GetResponseIdentifier(command));
+            var identifier = GetResponseIdentifier(command);
+            if (command.CommandType == BaseCommand.Type.Send)
+            {
+                // On send, track outstanding messages in case broker closes the producer
+                var messages = _producersMessages.GetOrAdd(command.Send.ProducerId, _ => new ConcurrentDictionary<string, int>());
+                messages.TryAdd(identifier, 0);
+            }
+            return _responses.CreateTask(identifier);
         }
 
         public void Incoming(BaseCommand command)
@@ -45,7 +55,30 @@ namespace DotPulsar.Internal
             var identifier = GetResponseIdentifier(command);
 
             if (identifier is not null)
+            {
+                if (command.CommandType == BaseCommand.Type.SendReceipt ||
+                    command.CommandType == BaseCommand.Type.SendError)
+                {
+                    var producerId = command.SendReceipt?.ProducerId ?? command.SendError?.ProducerId ?? ulong.MaxValue;
+                    // On send receipt/error, remove the outstanding message tracker
+                    if (_producersMessages.TryGetValue(producerId, out var messages))
+                    {
+                        messages.TryRemove(identifier, out _);
+                    }
+                }
                 _responses.SetResult(identifier, command);
+            }
+        }
+
+        public void FaultAllOutstandingSendsForProducer(ulong producerId, Exception exceptionToRelay)
+        {
+            if (_producersMessages.TryGetValue(producerId, out var messages))
+            {
+                foreach (var message in messages.Keys)
+                {
+                    _responses.Fault(message, exceptionToRelay);
+                }
+            }
         }
 
         private void SetRequestId(BaseCommand cmd)
