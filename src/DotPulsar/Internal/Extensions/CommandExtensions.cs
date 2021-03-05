@@ -40,8 +40,11 @@ namespace DotPulsar.Internal.Extensions
         public static void Throw(this CommandLookupTopicResponse command)
             => Throw(command.Error, command.Message);
 
-        public static void Throw(this CommandError error)
-            => Throw(error.Error, error.Message);
+        public static void Throw(this CommandError command)
+            => Throw(command.Error, command.Message);
+
+        public static void Throw(this CommandGetOrCreateSchemaResponse command)
+            => Throw(command.ErrorCode, command.ErrorMessage);
 
         private static void Throw(ServerError error, string message)
             => throw (error switch
@@ -176,6 +179,13 @@ namespace DotPulsar.Internal.Extensions
             {
                 CommandType = BaseCommand.Type.RedeliverUnacknowledgedMessages,
                 RedeliverUnacknowledgedMessages = command
+            };
+
+        public static BaseCommand AsBaseCommand(this CommandGetOrCreateSchema command)
+            => new BaseCommand
+            {
+                CommandType = BaseCommand.Type.GetOrCreateSchema,
+                GetOrCreateSchema = command
             };
     }
 }

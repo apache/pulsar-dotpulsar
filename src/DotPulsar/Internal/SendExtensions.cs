@@ -28,25 +28,25 @@ namespace DotPulsar.Extensions
         /// <summary>
         /// Sends a message.
         /// </summary>
-        public static async ValueTask<MessageId> Send(this ISend sender, byte[] data, CancellationToken cancellationToken = default)
+        public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, byte[] data, CancellationToken cancellationToken = default)
             => await sender.Send(new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         /// Sends a message.
         /// </summary>
-        public static async ValueTask<MessageId> Send(this ISend sender, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+        public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
             => await sender.Send(new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         /// Sends a message with metadata.
         /// </summary>
-        public static async ValueTask<MessageId> Send(this ISend sender, MessageMetadata metadata, byte[] data, CancellationToken cancellationToken = default)
+        public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, MessageMetadata metadata, byte[] data, CancellationToken cancellationToken = default)
             => await sender.Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         /// Sends a message with metadata.
         /// </summary>
-        public static async ValueTask<MessageId> Send(this ISend sender, MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+        public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
             => await sender.Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
     }
 }

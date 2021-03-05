@@ -22,7 +22,7 @@ namespace DotPulsar.Abstractions
     /// <summary>
     /// A consumer abstraction.
     /// </summary>
-    public interface IConsumer : IGetLastMessageId, IReceive, ISeek, IState<ConsumerState>, IAsyncDisposable
+    public interface IConsumer : IGetLastMessageId, ISeek, IState<ConsumerState>, IAsyncDisposable
     {
         /// <summary>
         /// Acknowledge the consumption of a single message using the MessageId.

@@ -24,17 +24,17 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Create a producer.
         /// </summary>
-        IProducer CreateProducer(ProducerOptions options);
+        IProducer<TMessage> CreateProducer<TMessage>(ProducerOptions<TMessage> options);
 
         /// <summary>
         /// Create a consumer.
         /// </summary>
-        IConsumer CreateConsumer(ConsumerOptions options);
+        IConsumer<TMessage> CreateConsumer<TMessage>(ConsumerOptions<TMessage> options);
 
         /// <summary>
         /// Create a reader.
         /// </summary>
-        IReader CreateReader(ReaderOptions options);
+        IReader<TMessage> CreateReader<TMessage>(ReaderOptions<TMessage> options);
 
         /// <summary>
         /// The client's service url.

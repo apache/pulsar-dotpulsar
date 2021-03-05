@@ -14,53 +14,64 @@
 
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
+    using DotPulsar.Internal.Abstractions;
     using Extensions;
     using PulsarApi;
     using System.Buffers;
     using System.Collections;
     using System.Collections.Generic;
 
-    public sealed class BatchHandler
+    public sealed class BatchHandler<TMessage>
     {
         private readonly object _lock;
         private readonly bool _trackBatches;
-        private readonly Queue<Message> _messages;
+        private readonly IMessageFactory<TMessage> _messageFactory;
+        private readonly Queue<IMessage<TMessage>> _messages;
         private readonly LinkedList<Batch> _batches;
 
-        public BatchHandler(bool trackBatches)
+        public BatchHandler(bool trackBatches, IMessageFactory<TMessage> messageFactory)
         {
             _lock = new object();
             _trackBatches = trackBatches;
-            _messages = new Queue<Message>();
+            _messageFactory = messageFactory;
+            _messages = new Queue<IMessage<TMessage>>();
             _batches = new LinkedList<Batch>();
         }
 
-        public Message Add(MessageIdData messageId, uint redeliveryCount, MessageMetadata metadata, ReadOnlySequence<byte> data)
+        public IMessage<TMessage> Add(MessageIdData messageId, uint redeliveryCount, MessageMetadata metadata, ReadOnlySequence<byte> data)
         {
+            var messages = new List<IMessage<TMessage>>(metadata.NumMessagesInBatch);
+
+            long index = 0;
+
+            for (var i = 0; i < metadata.NumMessagesInBatch; ++i)
+            {
+                var singleMetadataSize = data.ReadUInt32(index, true);
+                index += 4;
+                var singleMetadata = Serializer.Deserialize<SingleMessageMetadata>(data.Slice(index, singleMetadataSize));
+                index += singleMetadataSize;
+                var singleMessageId = new MessageId(messageId.LedgerId, messageId.EntryId, messageId.Partition, i);
+                var message = _messageFactory.Create(singleMessageId, redeliveryCount, data.Slice(index, singleMetadata.PayloadSize), metadata, singleMetadata);
+                messages.Add(message);
+                index += (uint) singleMetadata.PayloadSize;
+            }
+
             lock (_lock)
             {
                 if (_trackBatches)
                     _batches.AddLast(new Batch(messageId, metadata.NumMessagesInBatch));
 
-                long index = 0;
-
-                for (var i = 0; i < metadata.NumMessagesInBatch; ++i)
+                foreach (var message in messages)
                 {
-                    var singleMetadataSize = data.ReadUInt32(index, true);
-                    index += 4;
-                    var singleMetadata = Serializer.Deserialize<SingleMessageMetadata>(data.Slice(index, singleMetadataSize));
-                    index += singleMetadataSize;
-                    var singleMessageId = new MessageId(messageId.LedgerId, messageId.EntryId, messageId.Partition, i);
-                    var message = MessageFactory.Create(singleMessageId, redeliveryCount, metadata, singleMetadata, data.Slice(index, singleMetadata.PayloadSize));
                     _messages.Enqueue(message);
-                    index += (uint) singleMetadata.PayloadSize;
                 }
 
                 return _messages.Dequeue();
             }
         }
 
-        public Message? GetNext()
+        public IMessage<TMessage>? GetNext()
         {
             lock (_lock)
                 return _messages.Count == 0 ? null : _messages.Dequeue();

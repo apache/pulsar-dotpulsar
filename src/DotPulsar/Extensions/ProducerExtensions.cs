@@ -27,8 +27,8 @@ namespace DotPulsar.Extensions
         /// <summary>
         /// Get a builder that can be used to configure and build a Message.
         /// </summary>
-        public static IMessageBuilder NewMessage(this IProducer producer)
-            => new MessageBuilder(producer);
+        public static IMessageBuilder<TMessage> NewMessage<TMessage>(this IProducer<TMessage> producer)
+            => new MessageBuilder<TMessage>(producer);
 
         /// <summary>
         /// Wait for the state to change to a specific state.

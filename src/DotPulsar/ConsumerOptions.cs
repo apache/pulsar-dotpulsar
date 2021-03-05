@@ -19,7 +19,7 @@ namespace DotPulsar
     /// <summary>
     /// The consumer building options.
     /// </summary>
-    public sealed class ConsumerOptions
+    public sealed class ConsumerOptions<TMessage>
     {
         /// <summary>
         /// The default initial position.
@@ -49,7 +49,7 @@ namespace DotPulsar
         /// <summary>
         /// Initializes a new instance using the specified subscription name and topic.
         /// </summary>
-        public ConsumerOptions(string subscriptionName, string topic)
+        public ConsumerOptions(string subscriptionName, string topic, ISchema<TMessage> schema)
         {
             InitialPosition = DefaultInitialPosition;
             PriorityLevel = DefaultPriorityLevel;
@@ -58,6 +58,7 @@ namespace DotPulsar
             SubscriptionType = DefaultSubscriptionType;
             SubscriptionName = subscriptionName;
             Topic = topic;
+            Schema = schema;
         }
 
         /// <summary>
@@ -84,6 +85,11 @@ namespace DotPulsar
         /// Whether to read from the compacted topic. The default is 'false'.
         /// </summary>
         public bool ReadCompacted { get; set; }
+
+        /// <summary>
+        /// Set the schema. This is required.
+        /// </summary>
+        public ISchema<TMessage> Schema { get; set; }
 
         /// <summary>
         /// Register a state changed handler. This is optional.

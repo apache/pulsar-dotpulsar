@@ -16,74 +16,61 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
 
-    public sealed class ProducerBuilder : IProducerBuilder
+    public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
     {
         private readonly IPulsarClient _pulsarClient;
+        private readonly ISchema<TMessage> _schema;
         private string? _producerName;
         private CompressionType _compressionType;
         private ulong _initialSequenceId;
         private string? _topic;
         private IHandleStateChanged<ProducerStateChanged>? _stateChangedHandler;
 
-        public ProducerBuilder(IPulsarClient pulsarClient)
+        public ProducerBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
         {
             _pulsarClient = pulsarClient;
-            _compressionType = ProducerOptions.DefaultCompressionType;
-            _initialSequenceId = ProducerOptions.DefaultInitialSequenceId;
+            _schema = schema;
+            _compressionType = ProducerOptions<TMessage>.DefaultCompressionType;
+            _initialSequenceId = ProducerOptions<TMessage>.DefaultInitialSequenceId;
         }
 
-        public IProducerBuilder CompressionType(CompressionType compressionType)
+        public IProducerBuilder<TMessage> CompressionType(CompressionType compressionType)
         {
             _compressionType = compressionType;
             return this;
         }
 
-        public IProducerBuilder InitialSequenceId(ulong initialSequenceId)
+        public IProducerBuilder<TMessage> InitialSequenceId(ulong initialSequenceId)
         {
             _initialSequenceId = initialSequenceId;
             return this;
         }
 
-        public IProducerBuilder ProducerName(string name)
+        public IProducerBuilder<TMessage> ProducerName(string name)
         {
             _producerName = name;
             return this;
         }
 
-        public IProducerBuilder StateChangedHandler(IHandleStateChanged<ProducerStateChanged> handler)
+        public IProducerBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ProducerStateChanged> handler)
         {
             _stateChangedHandler = handler;
             return this;
         }
 
-        public IProducerBuilder StateChangedHandler(Action<ProducerStateChanged, CancellationToken> handler, CancellationToken cancellationToken)
-        {
-            _stateChangedHandler = new ActionStateChangedHandler<ProducerStateChanged>(handler, cancellationToken);
-            return this;
-        }
-
-        public IProducerBuilder StateChangedHandler(Func<ProducerStateChanged, CancellationToken, ValueTask> handler, CancellationToken cancellationToken)
-        {
-            _stateChangedHandler = new FuncStateChangedHandler<ProducerStateChanged>(handler, cancellationToken);
-            return this;
-        }
-
-        public IProducerBuilder Topic(string topic)
+        public IProducerBuilder<TMessage> Topic(string topic)
         {
             _topic = topic;
             return this;
         }
 
-        public IProducer Create()
+        public IProducer<TMessage> Create()
         {
             if (string.IsNullOrEmpty(_topic))
                 throw new ConfigurationException("ProducerOptions.Topic may not be null or empty");
 
-            var options = new ProducerOptions(_topic!)
+            var options = new ProducerOptions<TMessage>(_topic!, _schema)
             {
                 CompressionType = _compressionType,
                 InitialSequenceId = _initialSequenceId,
@@ -91,7 +78,7 @@ namespace DotPulsar.Internal
                 StateChangedHandler = _stateChangedHandler
             };
 
-            return _pulsarClient.CreateProducer(options);
+            return _pulsarClient.CreateProducer<TMessage>(options);
         }
     }
 }

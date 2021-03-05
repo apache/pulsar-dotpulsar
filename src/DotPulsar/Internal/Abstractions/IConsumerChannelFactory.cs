@@ -17,8 +17,8 @@ namespace DotPulsar.Internal.Abstractions
     using System.Threading;
     using System.Threading.Tasks;
 
-    public interface IConsumerChannelFactory
+    public interface IConsumerChannelFactory<TMessage>
     {
-        Task<IConsumerChannel> Create(CancellationToken cancellationToken = default);
+        Task<IConsumerChannel<TMessage>> Create(CancellationToken cancellationToken = default);
     }
 }

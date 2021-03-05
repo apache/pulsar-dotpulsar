@@ -23,13 +23,14 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class Reader : IReader
+    public sealed class Reader<TMessage> : IEstablishNewChannel, IReader<TMessage>
     {
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
-        private IConsumerChannel _channel;
+        private IConsumerChannel<TMessage> _channel;
         private readonly IExecute _executor;
         private readonly IStateChanged<ReaderState> _state;
+        private readonly IConsumerChannelFactory<TMessage> _factory;
         private int _isDisposed;
 
         public Uri ServiceUrl { get; }
@@ -40,9 +41,10 @@ namespace DotPulsar.Internal
             Uri serviceUrl,
             string topic,
             IRegisterEvent eventRegister,
-            IConsumerChannel initialChannel,
+            IConsumerChannel<TMessage> initialChannel,
             IExecute executor,
-            IStateChanged<ReaderState> state)
+            IStateChanged<ReaderState> state,
+            IConsumerChannelFactory<TMessage> factory)
         {
             _correlationId = correlationId;
             ServiceUrl = serviceUrl;
@@ -51,9 +53,10 @@ namespace DotPulsar.Internal
             _channel = initialChannel;
             _executor = executor;
             _state = state;
+            _factory = factory;
             _isDisposed = 0;
 
-            _eventRegister.Register(new ReaderCreated(_correlationId, this));
+            _eventRegister.Register(new ReaderCreated(_correlationId));
         }
 
         public async ValueTask<ReaderState> OnStateChangeTo(ReaderState state, CancellationToken cancellationToken)
@@ -79,14 +82,14 @@ namespace DotPulsar.Internal
         private async ValueTask<MessageId> GetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
             => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask<Message> Receive(CancellationToken cancellationToken)
+        public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
             return await _executor.Execute(() => ReceiveMessage(cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
-        private async ValueTask<Message> ReceiveMessage(CancellationToken cancellationToken)
+        private async ValueTask<IMessage<TMessage>> ReceiveMessage(CancellationToken cancellationToken)
             => await _channel.Receive(cancellationToken).ConfigureAwait(false);
 
         public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
@@ -110,7 +113,7 @@ namespace DotPulsar.Internal
             if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                 return;
 
-            _eventRegister.Register(new ReaderDisposed(_correlationId, this));
+            _eventRegister.Register(new ReaderDisposed(_correlationId));
             await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
@@ -118,13 +121,9 @@ namespace DotPulsar.Internal
         private async Task Seek(CommandSeek command, CancellationToken cancellationToken)
             => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
-        internal async ValueTask SetChannel(IConsumerChannel channel)
+        public async Task EstablishNewChannel(CancellationToken cancellationToken)
         {
-            if (_isDisposed != 0)
-            {
-                await channel.DisposeAsync().ConfigureAwait(false);
-                return;
-            }
+            var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
 
             var oldChannel = _channel;
             _channel = channel;
@@ -136,7 +135,7 @@ namespace DotPulsar.Internal
         private void ThrowIfDisposed()
         {
             if (_isDisposed != 0)
-                throw new ReaderDisposedException();
+                throw new ReaderDisposedException(GetType().FullName!);
         }
     }
 }

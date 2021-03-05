@@ -27,7 +27,7 @@ namespace DotPulsar.Extensions
         /// <summary>
         /// Get an IAsyncEnumerable for receiving messages.
         /// </summary>
-        public static async IAsyncEnumerable<Message> Messages(this IReceive receiver, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public static async IAsyncEnumerable<TMessage> Messages<TMessage>(this IReceive<TMessage> receiver, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             while (!cancellationToken.IsCancellationRequested)
                 yield return await receiver.Receive(cancellationToken).ConfigureAwait(false);

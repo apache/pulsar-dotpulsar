@@ -30,12 +30,14 @@ namespace DotPulsar.Internal
         private readonly string _name;
         private readonly IConnection _connection;
         private readonly ICompressorFactory? _compressorFactory;
+        private readonly byte[]? _schemaVersion;
 
         public ProducerChannel(
             ulong id,
             string name,
             IConnection connection,
-            ICompressorFactory? compressorFactory)
+            ICompressorFactory? compressorFactory,
+            byte[]? schemaVersion)
         {
             var sendPackagePolicy = new DefaultPooledObjectPolicy<SendPackage>();
             _sendPackagePool = new DefaultObjectPool<SendPackage>(sendPackagePolicy);
@@ -43,6 +45,7 @@ namespace DotPulsar.Internal
             _name = name;
             _connection = connection;
             _compressorFactory = compressorFactory;
+            _schemaVersion = schemaVersion;
         }
 
         public async ValueTask ClosedByClient(CancellationToken cancellationToken)
@@ -68,6 +71,9 @@ namespace DotPulsar.Internal
             {
                 metadata.PublishTime = (ulong) DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 metadata.ProducerName = _name;
+
+                if (metadata.SchemaVersion is null && _schemaVersion is not null)
+                    metadata.SchemaVersion = _schemaVersion;
 
                 if (sendPackage.Command is null)
                 {

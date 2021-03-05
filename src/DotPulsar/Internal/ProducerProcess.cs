@@ -21,17 +21,14 @@ namespace DotPulsar.Internal
     public sealed class ProducerProcess : Process
     {
         private readonly IStateManager<ProducerState> _stateManager;
-        private readonly IProducerChannelFactory _factory;
-        private readonly Producer _producer;
+        private readonly IEstablishNewChannel _producer;
 
         public ProducerProcess(
             Guid correlationId,
             IStateManager<ProducerState> stateManager,
-            IProducerChannelFactory factory,
-            Producer producer) : base(correlationId)
+            IEstablishNewChannel producer) : base(correlationId)
         {
             _stateManager = stateManager;
-            _factory = factory;
             _producer = producer;
         }
 
@@ -44,7 +41,7 @@ namespace DotPulsar.Internal
 
         protected override void CalculateState()
         {
-            if (_producer.IsFinalState())
+            if (_stateManager.IsFinalState())
                 return;
 
             if (ExecutorState == ExecutorState.Faulted)
@@ -58,24 +55,11 @@ namespace DotPulsar.Internal
                 case ChannelState.ClosedByServer:
                 case ChannelState.Disconnected:
                     _stateManager.SetState(ProducerState.Disconnected);
-                    SetupChannel();
+                    _ = _producer.EstablishNewChannel(CancellationTokenSource.Token);
                     return;
                 case ChannelState.Connected:
                     _stateManager.SetState(ProducerState.Connected);
                     return;
-            }
-        }
-
-        private async void SetupChannel()
-        {
-            try
-            {
-                var channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
-                await _producer.SetChannel(channel).ConfigureAwait(false);
-            }
-            catch
-            {
-                // ignored
             }
         }
     }

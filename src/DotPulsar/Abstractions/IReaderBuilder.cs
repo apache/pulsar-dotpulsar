@@ -14,58 +14,44 @@
 
 namespace DotPulsar.Abstractions
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// A reader building abstraction.
     /// </summary>
-    public interface IReaderBuilder
+    public interface IReaderBuilder<TMessage>
     {
         /// <summary>
         /// Number of messages that will be prefetched. The default is 1000.
         /// </summary>
-        IReaderBuilder MessagePrefetchCount(uint count);
+        IReaderBuilder<TMessage> MessagePrefetchCount(uint count);
 
         /// <summary>
         /// Whether to read from the compacted topic. The default is 'false'.
         /// </summary>
-        IReaderBuilder ReadCompacted(bool readCompacted);
+        IReaderBuilder<TMessage> ReadCompacted(bool readCompacted);
 
         /// <summary>
         /// Set the reader name. This is optional.
         /// </summary>
-        IReaderBuilder ReaderName(string name);
+        IReaderBuilder<TMessage> ReaderName(string name);
 
         /// <summary>
         /// The initial reader position is set to the specified message id. This is required.
         /// </summary>
-        IReaderBuilder StartMessageId(MessageId messageId);
+        IReaderBuilder<TMessage> StartMessageId(MessageId messageId);
 
         /// <summary>
         /// Register a state changed handler.
         /// </summary>
-        IReaderBuilder StateChangedHandler(IHandleStateChanged<ReaderStateChanged> handler);
-
-        /// <summary>
-        /// Register a state changed handler.
-        /// </summary>
-        IReaderBuilder StateChangedHandler(Action<ReaderStateChanged, CancellationToken> handler, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Register a state changed handler.
-        /// </summary>
-        IReaderBuilder StateChangedHandler(Func<ReaderStateChanged, CancellationToken, ValueTask> handler, CancellationToken cancellationToken = default);
+        IReaderBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ReaderStateChanged> handler);
 
         /// <summary>
         /// Set the topic for this reader. This is required.
         /// </summary>
-        IReaderBuilder Topic(string topic);
+        IReaderBuilder<TMessage> Topic(string topic);
 
         /// <summary>
         /// Create the reader.
         /// </summary>
-        IReader Create();
+        IReader<TMessage> Create();
     }
 }

@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Abstractions;
     using Exceptions;
     using PulsarApi;
     using System;
@@ -22,7 +23,7 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class NotReadyChannel : IConsumerChannel, IProducerChannel
+    public sealed class NotReadyChannel<TMessage> : IConsumerChannel<TMessage>, IProducerChannel
     {
         public ValueTask DisposeAsync()
             => new ValueTask();
@@ -30,7 +31,7 @@ namespace DotPulsar.Internal
         public ValueTask ClosedByClient(CancellationToken cancellationToken)
             => new ValueTask();
 
-        public ValueTask<Message> Receive(CancellationToken cancellationToken = default)
+        public ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken = default)
             => throw GetException();
 
         public Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)

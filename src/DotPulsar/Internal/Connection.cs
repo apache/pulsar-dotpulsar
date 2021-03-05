@@ -184,6 +184,23 @@ namespace DotPulsar.Internal
             return await response.ConfigureAwait(false);
         }
 
+        public async Task<BaseCommand> Send(CommandGetOrCreateSchema command, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            Task<BaseCommand>? responseTask;
+
+            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+            {
+                var baseCommand = command.AsBaseCommand();
+                responseTask = _requestResponseHandler.Outgoing(baseCommand);
+                var sequence = Serializer.Serialize(baseCommand);
+                await _stream.Send(sequence).ConfigureAwait(false);
+            }
+
+            return await responseTask.ConfigureAwait(false);
+        }
+
         private async Task<BaseCommand> SendRequestResponse(BaseCommand command, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();

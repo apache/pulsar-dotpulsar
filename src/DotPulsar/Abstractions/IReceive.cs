@@ -20,11 +20,11 @@ namespace DotPulsar.Abstractions
     /// <summary>
     /// An abstraction for receiving a single message.
     /// </summary>
-    public interface IReceive
+    public interface IReceive<TMessage>
     {
         /// <summary>
         /// Receive a single message.
         /// </summary>
-        ValueTask<Message> Receive(CancellationToken cancellationToken = default);
+        ValueTask<TMessage> Receive(CancellationToken cancellationToken = default);
     }
 }

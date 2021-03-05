@@ -19,7 +19,7 @@ namespace DotPulsar.Abstractions
     /// <summary>
     /// A reader abstraction.
     /// </summary>
-    public interface IReader : IGetLastMessageId, IReceive, ISeek, IState<ReaderState>, IAsyncDisposable
+    public interface IReader : IGetLastMessageId, ISeek, IState<ReaderState>, IAsyncDisposable
     {
         /// <summary>
         /// The reader's service url.

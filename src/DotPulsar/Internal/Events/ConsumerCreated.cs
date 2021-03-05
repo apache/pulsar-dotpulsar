@@ -19,13 +19,9 @@ namespace DotPulsar.Internal.Events
 
     public sealed class ConsumerCreated : IEvent
     {
-        public ConsumerCreated(Guid correlationId, Consumer consumer)
-        {
-            CorrelationId = correlationId;
-            Consumer = consumer;
-        }
+        public ConsumerCreated(Guid correlationId)
+            => CorrelationId = correlationId;
 
         public Guid CorrelationId { get; }
-        public Consumer Consumer { get; }
     }
 }

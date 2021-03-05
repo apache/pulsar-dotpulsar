@@ -18,8 +18,6 @@ namespace Reading
     using DotPulsar.Abstractions;
     using DotPulsar.Extensions;
     using System;
-    using System.Buffers;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -39,7 +37,7 @@ namespace Reading
 
             await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
-            await using var reader = client.NewReader()
+            await using var reader = client.NewReader(Schema.String)
                 .StartMessageId(MessageId.Earliest)
                 .StateChangedHandler(Monitor)
                 .Topic(myTopic)
@@ -50,14 +48,13 @@ namespace Reading
             await ReadMessages(reader, cts.Token);
         }
 
-        private static async Task ReadMessages(IReader reader, CancellationToken cancellationToken)
+        private static async Task ReadMessages(IReader<string> reader, CancellationToken cancellationToken)
         {
             try
             {
                 await foreach (var message in reader.Messages(cancellationToken))
                 {
-                    var data = Encoding.UTF8.GetString(message.Data.ToArray());
-                    Console.WriteLine("Received: " + data);
+                    Console.WriteLine("Received: " + message.Value);
                 }
             }
             catch (OperationCanceledException) { }

@@ -19,13 +19,9 @@ namespace DotPulsar.Internal.Events
 
     public sealed class ReaderCreated : IEvent
     {
-        public ReaderCreated(Guid correlationId, Reader reader)
-        {
-            CorrelationId = correlationId;
-            Reader = reader;
-        }
+        public ReaderCreated(Guid correlationId)
+            => CorrelationId = correlationId;
 
         public Guid CorrelationId { get; }
-        public Reader Reader { get; }
     }
 }

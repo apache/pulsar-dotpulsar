@@ -19,7 +19,7 @@ namespace DotPulsar
     /// <summary>
     /// The producer building options.
     /// </summary>
-    public sealed class ProducerOptions
+    public sealed class ProducerOptions<TMessage>
     {
         /// <summary>
         /// The default compression type.
@@ -34,11 +34,12 @@ namespace DotPulsar
         /// <summary>
         /// Initializes a new instance using the specified topic.
         /// </summary>
-        public ProducerOptions(string topic)
+        public ProducerOptions(string topic, ISchema<TMessage> schema)
         {
             CompressionType = DefaultCompressionType;
             InitialSequenceId = DefaultInitialSequenceId;
             Topic = topic;
+            Schema = schema;
         }
 
         /// <summary>
@@ -55,6 +56,11 @@ namespace DotPulsar
         /// Set the producer name. This is optional.
         /// </summary>
         public string? ProducerName { get; set; }
+
+        /// <summary>
+        /// Set the schema. This is required.
+        /// </summary>
+        public ISchema<TMessage> Schema { get; set; }
 
         /// <summary>
         /// Register a state changed handler. This is optional.

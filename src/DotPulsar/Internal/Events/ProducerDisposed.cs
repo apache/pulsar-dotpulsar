@@ -19,13 +19,9 @@ namespace DotPulsar.Internal.Events
 
     public sealed class ProducerDisposed : IEvent
     {
-        public ProducerDisposed(Guid correlationId, Producer producer)
-        {
-            CorrelationId = correlationId;
-            Producer = producer;
-        }
+        public ProducerDisposed(Guid correlationId)
+            => CorrelationId = correlationId;
 
         public Guid CorrelationId { get; }
-        public Producer Producer { get; }
     }
 }

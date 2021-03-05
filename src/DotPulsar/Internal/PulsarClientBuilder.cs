@@ -21,7 +21,6 @@ namespace DotPulsar.Internal
     using System.Collections.Generic;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
-    using System.Threading.Tasks;
 
     public sealed class PulsarClientBuilder : IPulsarClientBuilder
     {
@@ -76,18 +75,6 @@ namespace DotPulsar.Internal
         public IPulsarClientBuilder ExceptionHandler(IHandleException exceptionHandler)
         {
             _exceptionHandlers.Add(exceptionHandler);
-            return this;
-        }
-
-        public IPulsarClientBuilder ExceptionHandler(Action<ExceptionContext> exceptionHandler)
-        {
-            _exceptionHandlers.Add(new ActionExceptionHandler(exceptionHandler));
-            return this;
-        }
-
-        public IPulsarClientBuilder ExceptionHandler(Func<ExceptionContext, ValueTask> exceptionHandler)
-        {
-            _exceptionHandlers.Add(new FuncExceptionHandler(exceptionHandler));
             return this;
         }
 

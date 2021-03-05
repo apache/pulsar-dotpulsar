@@ -16,7 +16,6 @@ namespace DotPulsar.Abstractions
 {
     using System;
     using System.Security.Cryptography.X509Certificates;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// A pulsar client building abstraction.
@@ -42,16 +41,6 @@ namespace DotPulsar.Abstractions
         /// Register a custom exception handler that will be invoked before the default exception handler.
         /// </summary>
         IPulsarClientBuilder ExceptionHandler(IHandleException exceptionHandler);
-
-        /// <summary>
-        /// Register a custom exception handler that will be invoked before the default exception handler.
-        /// </summary>
-        IPulsarClientBuilder ExceptionHandler(Action<ExceptionContext> exceptionHandler);
-
-        /// <summary>
-        /// Register a custom exception handler that will be invoked before the default exception handler.
-        /// </summary>
-        IPulsarClientBuilder ExceptionHandler(Func<ExceptionContext, ValueTask> exceptionHandler);
 
         /// <summary>
         /// The time to wait before retrying an operation or a reconnect. The default is 3 seconds.

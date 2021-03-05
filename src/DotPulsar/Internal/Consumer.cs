@@ -27,14 +27,15 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class Consumer : IConsumer
+    public sealed class Consumer<TMessage> : IEstablishNewChannel, IConsumer<TMessage>
     {
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
-        private IConsumerChannel _channel;
+        private IConsumerChannel<TMessage> _channel;
         private readonly ObjectPool<CommandAck> _commandAckPool;
         private readonly IExecute _executor;
         private readonly IStateChanged<ConsumerState> _state;
+        private readonly IConsumerChannelFactory<TMessage> _factory;
         private int _isDisposed;
 
         public Uri ServiceUrl { get; }
@@ -47,9 +48,10 @@ namespace DotPulsar.Internal
             string subscriptionName,
             string topic,
             IRegisterEvent eventRegister,
-            IConsumerChannel initialChannel,
+            IConsumerChannel<TMessage> initialChannel,
             IExecute executor,
-            IStateChanged<ConsumerState> state)
+            IStateChanged<ConsumerState> state,
+            IConsumerChannelFactory<TMessage> factory)
         {
             _correlationId = correlationId;
             ServiceUrl = serviceUrl;
@@ -59,10 +61,11 @@ namespace DotPulsar.Internal
             _channel = initialChannel;
             _executor = executor;
             _state = state;
+            _factory = factory;
             _commandAckPool = new DefaultObjectPool<CommandAck>(new DefaultPooledObjectPolicy<CommandAck>());
             _isDisposed = 0;
 
-            _eventRegister.Register(new ConsumerCreated(_correlationId, this));
+            _eventRegister.Register(new ConsumerCreated(_correlationId));
         }
 
         public async ValueTask<ConsumerState> OnStateChangeTo(ConsumerState state, CancellationToken cancellationToken)
@@ -82,19 +85,19 @@ namespace DotPulsar.Internal
             if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                 return;
 
-            _eventRegister.Register(new ConsumerDisposed(_correlationId, this));
+            _eventRegister.Register(new ConsumerDisposed(_correlationId));
             await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
 
-        public async ValueTask<Message> Receive(CancellationToken cancellationToken)
+        public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
             return await _executor.Execute(() => ReceiveMessage(cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
-        private async ValueTask<Message> ReceiveMessage(CancellationToken cancellationToken)
+        private async ValueTask<IMessage<TMessage>> ReceiveMessage(CancellationToken cancellationToken)
             => await _channel.Receive(cancellationToken).ConfigureAwait(false);
 
         public async ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken)
@@ -183,25 +186,21 @@ namespace DotPulsar.Internal
         private async ValueTask RedeliverUnacknowledgedMessages(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken)
             => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
-        internal async ValueTask SetChannel(IConsumerChannel channel)
+        private void ThrowIfDisposed()
         {
             if (_isDisposed != 0)
-            {
-                await channel.DisposeAsync().ConfigureAwait(false);
-                return;
-            }
+                throw new ConsumerDisposedException(GetType().FullName!);
+        }
+
+        public async Task EstablishNewChannel(CancellationToken cancellationToken)
+        {
+            var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
 
             var oldChannel = _channel;
             _channel = channel;
 
             if (oldChannel is not null)
                 await oldChannel.DisposeAsync().ConfigureAwait(false);
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (_isDisposed != 0)
-                throw new ConsumerDisposedException();
         }
     }
 }

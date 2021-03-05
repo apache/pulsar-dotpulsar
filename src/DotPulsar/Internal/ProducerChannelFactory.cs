@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Internal.Extensions;
     using PulsarApi;
     using System;
     using System.Threading;
@@ -25,41 +26,60 @@ namespace DotPulsar.Internal
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
         private readonly IConnectionPool _connectionPool;
-        private readonly IExecute _executor;
         private readonly CommandProducer _commandProducer;
         private readonly ICompressorFactory? _compressorFactory;
+        private readonly Schema? _schema;
 
         public ProducerChannelFactory(
             Guid correlationId,
             IRegisterEvent eventRegister,
             IConnectionPool connectionPool,
-            IExecute executor,
-            ProducerOptions options,
+            string topic,
+            string? producerName,
+            SchemaInfo schemaInfo,
             ICompressorFactory? compressorFactory)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;
             _connectionPool = connectionPool;
-            _executor = executor;
 
             _commandProducer = new CommandProducer
             {
-                ProducerName = options.ProducerName,
-                Topic = options.Topic
+                ProducerName = producerName,
+                Topic = topic
             };
 
             _compressorFactory = compressorFactory;
+            _schema = schemaInfo.PulsarSchema;
         }
 
         public async Task<IProducerChannel> Create(CancellationToken cancellationToken)
-            => await _executor.Execute(() => GetChannel(cancellationToken), cancellationToken).ConfigureAwait(false);
-
-        private async ValueTask<IProducerChannel> GetChannel(CancellationToken cancellationToken)
         {
             var connection = await _connectionPool.FindConnectionForTopic(_commandProducer.Topic, cancellationToken).ConfigureAwait(false);
+            var schemaVersion = await GetSchemaVersion(connection, cancellationToken).ConfigureAwait(false);
             var channel = new Channel(_correlationId, _eventRegister, new AsyncQueue<MessagePackage>());
             var response = await connection.Send(_commandProducer, channel, cancellationToken).ConfigureAwait(false);
-            return new ProducerChannel(response.ProducerId, response.ProducerName, connection, _compressorFactory);
+            return new ProducerChannel(response.ProducerId, response.ProducerName, connection, _compressorFactory, schemaVersion);
+        }
+
+        private async ValueTask<byte[]?> GetSchemaVersion(IConnection connection, CancellationToken cancellationToken)
+        {
+            if (_schema is null)
+                return null;
+
+            var command = new CommandGetOrCreateSchema
+            {
+                Schema = _schema,
+                Topic = _commandProducer.Topic
+            };
+
+            var response = await connection.Send(command, cancellationToken).ConfigureAwait(false);
+
+            response.Expect(BaseCommand.Type.GetOrCreateSchemaResponse);
+            if (response.GetOrCreateSchemaResponse.ShouldSerializeErrorCode())
+                response.GetOrCreateSchemaResponse.Throw();
+
+            return response.GetOrCreateSchemaResponse.SchemaVersion;
         }
     }
 }

@@ -21,17 +21,14 @@ namespace DotPulsar.Internal
     public sealed class ReaderProcess : Process
     {
         private readonly IStateManager<ReaderState> _stateManager;
-        private readonly IConsumerChannelFactory _factory;
-        private readonly Reader _reader;
+        private readonly IEstablishNewChannel _reader;
 
         public ReaderProcess(
             Guid correlationId,
             IStateManager<ReaderState> stateManager,
-            IConsumerChannelFactory factory,
-            Reader reader) : base(correlationId)
+            IEstablishNewChannel reader) : base(correlationId)
         {
             _stateManager = stateManager;
-            _factory = factory;
             _reader = reader;
         }
 
@@ -44,7 +41,7 @@ namespace DotPulsar.Internal
 
         protected override void CalculateState()
         {
-            if (_reader.IsFinalState())
+            if (_stateManager.IsFinalState())
                 return;
 
             if (ExecutorState == ExecutorState.Faulted)
@@ -58,7 +55,7 @@ namespace DotPulsar.Internal
                 case ChannelState.ClosedByServer:
                 case ChannelState.Disconnected:
                     _stateManager.SetState(ReaderState.Disconnected);
-                    SetupChannel();
+                    _ = _reader.EstablishNewChannel(CancellationTokenSource.Token);
                     return;
                 case ChannelState.Connected:
                     _stateManager.SetState(ReaderState.Connected);
@@ -66,19 +63,6 @@ namespace DotPulsar.Internal
                 case ChannelState.ReachedEndOfTopic:
                     _stateManager.SetState(ReaderState.ReachedEndOfTopic);
                     return;
-            }
-        }
-
-        private async void SetupChannel()
-        {
-            try
-            {
-                var channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
-                await _reader.SetChannel(channel).ConfigureAwait(false);
-            }
-            catch
-            {
-                // ignored
             }
         }
     }

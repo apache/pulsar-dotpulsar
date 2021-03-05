@@ -18,8 +18,6 @@ namespace Consuming
     using DotPulsar.Abstractions;
     using DotPulsar.Extensions;
     using System;
-    using System.Buffers;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -39,7 +37,7 @@ namespace Consuming
 
             await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
-            await using var consumer = client.NewConsumer()
+            await using var consumer = client.NewConsumer(Schema.String)
                 .StateChangedHandler(Monitor)
                 .SubscriptionName("MySubscription")
                 .Topic(myTopic)
@@ -50,14 +48,13 @@ namespace Consuming
             await ConsumeMessages(consumer, cts.Token);
         }
 
-        private static async Task ConsumeMessages(IConsumer consumer, CancellationToken cancellationToken)
+        private static async Task ConsumeMessages(IConsumer<string> consumer, CancellationToken cancellationToken)
         {
             try
             {
                 await foreach (var message in consumer.Messages(cancellationToken))
                 {
-                    var data = Encoding.UTF8.GetString(message.Data.ToArray());
-                    Console.WriteLine("Received: " + data);
+                    Console.WriteLine("Received: " + message.Value);
                     await consumer.Acknowledge(message, cancellationToken);
                 }
             }

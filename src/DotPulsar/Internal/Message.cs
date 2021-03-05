@@ -12,17 +12,17 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
     using System;
     using System.Buffers;
     using System.Collections.Generic;
 
-    /// <summary>
-    /// The message received by consumers and readers.
-    /// </summary>
-    public sealed class Message
+    public sealed class Message<TValue> : IMessage<TValue>
     {
+        private readonly ISchema<TValue> _schema;
+
         internal Message(
             MessageId messageId,
             ReadOnlySequence<byte> data,
@@ -34,7 +34,9 @@ namespace DotPulsar
             IReadOnlyDictionary<string, string> properties,
             bool hasBase64EncodedKey,
             string? key,
-            byte[]? orderingKey)
+            byte[]? orderingKey,
+            byte[]? schemaVersion,
+            ISchema<TValue> schema)
         {
             MessageId = messageId;
             Data = data;
@@ -47,101 +49,50 @@ namespace DotPulsar
             HasBase64EncodedKey = hasBase64EncodedKey;
             Key = key;
             OrderingKey = orderingKey;
+            SchemaVersion = schemaVersion;
+            _schema = schema;
         }
 
-        /// <summary>
-        /// The id of the message.
-        /// </summary>
         public MessageId MessageId { get; }
 
-        /// <summary>
-        /// The raw payload of the message.
-        /// </summary>
         public ReadOnlySequence<byte> Data { get; }
 
-        /// <summary>
-        /// The name of the producer who produced the message.
-        /// </summary>
         public string ProducerName { get; }
 
-        /// <summary>
-        /// The sequence id of the message.
-        /// </summary>
+        public byte[]? SchemaVersion { get; }
+
         public ulong SequenceId { get; }
 
-        /// <summary>
-        /// The redelivery count (maintained by the broker) of the message.
-        /// </summary>
         public uint RedeliveryCount { get; }
 
-        /// <summary>
-        /// Check whether the message has an event time.
-        /// </summary>
         public bool HasEventTime => EventTime != 0;
 
-        /// <summary>
-        /// The event time of the message as unix time in milliseconds.
-        /// </summary>
         public ulong EventTime { get; }
 
-        /// <summary>
-        /// The event time of the message as an UTC DateTime.
-        /// </summary>
         public DateTime EventTimeAsDateTime => EventTimeAsDateTimeOffset.UtcDateTime;
 
-        /// <summary>
-        /// The event time of the message as a DateTimeOffset with an offset of 0.
-        /// </summary>
         public DateTimeOffset EventTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) EventTime);
 
-        /// <summary>
-        /// Check whether the key been base64 encoded.
-        /// </summary>
         public bool HasBase64EncodedKey { get; }
 
-        /// <summary>
-        /// Check whether the message has a key.
-        /// </summary>
         public bool HasKey => Key is not null;
 
-        /// <summary>
-        /// The key as a string.
-        /// </summary>
         public string? Key { get; }
 
-        /// <summary>
-        /// The key as bytes.
-        /// </summary>
         public byte[]? KeyBytes => Key is not null ? Convert.FromBase64String(Key) : null;
 
-        /// <summary>
-        /// Check whether the message has an ordering key.
-        /// </summary>
         public bool HasOrderingKey => OrderingKey is not null;
 
-        /// <summary>
-        /// The ordering key of the message.
-        /// </summary>
         public byte[]? OrderingKey { get; }
 
-        /// <summary>
-        /// The publish time of the message as unix time in milliseconds.
-        /// </summary>
         public ulong PublishTime { get; }
 
-        /// <summary>
-        /// The publish time of the message as an UTC DateTime.
-        /// </summary>
         public DateTime PublishTimeAsDateTime => PublishTimeAsDateTimeOffset.UtcDateTime;
 
-        /// <summary>
-        /// The publish time of the message as a DateTimeOffset with an offset of 0.
-        /// </summary>
         public DateTimeOffset PublishTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) PublishTime);
 
-        /// <summary>
-        /// The properties of the message.
-        /// </summary>
         public IReadOnlyDictionary<string, string> Properties { get; }
+
+        public TValue Value => _schema.Decode(Data);
     }
 }

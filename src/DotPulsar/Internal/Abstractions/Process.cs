@@ -12,9 +12,8 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal.Abstractions
 {
-    using Abstractions;
     using Events;
     using System;
     using System.Threading;

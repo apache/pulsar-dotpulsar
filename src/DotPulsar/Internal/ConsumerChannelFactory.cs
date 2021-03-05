@@ -21,47 +21,44 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class ConsumerChannelFactory : IConsumerChannelFactory
+    public sealed class ConsumerChannelFactory<TMessage> : IConsumerChannelFactory<TMessage>
     {
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
         private readonly IConnectionPool _connectionPool;
-        private readonly IExecute _executor;
         private readonly CommandSubscribe _subscribe;
         private readonly uint _messagePrefetchCount;
-        private readonly BatchHandler _batchHandler;
+        private readonly BatchHandler<TMessage> _batchHandler;
+        private readonly IMessageFactory<TMessage> _messageFactory;
         private readonly IEnumerable<IDecompressorFactory> _decompressorFactories;
 
         public ConsumerChannelFactory(
             Guid correlationId,
             IRegisterEvent eventRegister,
             IConnectionPool connectionPool,
-            IExecute executor,
             CommandSubscribe subscribe,
             uint messagePrefetchCount,
-            BatchHandler batchHandler,
+            BatchHandler<TMessage> batchHandler,
+            IMessageFactory<TMessage> messageFactory,
             IEnumerable<IDecompressorFactory> decompressorFactories)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;
             _connectionPool = connectionPool;
-            _executor = executor;
             _subscribe = subscribe;
             _messagePrefetchCount = messagePrefetchCount;
             _batchHandler = batchHandler;
+            _messageFactory = messageFactory;
             _decompressorFactories = decompressorFactories;
         }
 
-        public async Task<IConsumerChannel> Create(CancellationToken cancellationToken)
-            => await _executor.Execute(() => GetChannel(cancellationToken), cancellationToken).ConfigureAwait(false);
-
-        private async ValueTask<IConsumerChannel> GetChannel(CancellationToken cancellationToken)
+        public async Task<IConsumerChannel<TMessage>> Create(CancellationToken cancellationToken)
         {
             var connection = await _connectionPool.FindConnectionForTopic(_subscribe.Topic, cancellationToken).ConfigureAwait(false);
             var messageQueue = new AsyncQueue<MessagePackage>();
             var channel = new Channel(_correlationId, _eventRegister, messageQueue);
             var response = await connection.Send(_subscribe, channel, cancellationToken).ConfigureAwait(false);
-            return new ConsumerChannel(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler, _decompressorFactories);
+            return new ConsumerChannel<TMessage>(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler, _messageFactory, _decompressorFactories);
         }
     }
 }

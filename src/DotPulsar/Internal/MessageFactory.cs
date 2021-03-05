@@ -14,11 +14,13 @@
 
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
+    using DotPulsar.Internal.Abstractions;
     using DotPulsar.Internal.PulsarApi;
     using System.Buffers;
     using System.Collections.Generic;
 
-    public static class MessageFactory
+    public sealed class MessageFactory<TValue> : IMessageFactory<TValue>
     {
         private static readonly Dictionary<string, string> _empty;
 
@@ -40,13 +42,26 @@ namespace DotPulsar.Internal
             return dictionary;
         }
 
-        public static Message Create(
+        private readonly ISchema<TValue> _schema;
+
+        public MessageFactory(ISchema<TValue> schema)
+            => _schema = schema;
+
+        public IMessage<TValue> Create(MessageId messageId, uint redeliveryCount, ReadOnlySequence<byte> data, MessageMetadata metadata, SingleMessageMetadata? singleMetadata = null)
+        {
+            if (singleMetadata is null)
+                return Create(messageId, redeliveryCount, metadata, data);
+
+            return Create(messageId, redeliveryCount, metadata, singleMetadata, data);
+        }
+
+        private Message<TValue> Create(
             MessageId messageId,
             uint redeliveryCount,
             MessageMetadata metadata,
             ReadOnlySequence<byte> data)
         {
-            return new Message(
+            return new Message<TValue>(
                 messageId: messageId,
                 data: data,
                 producerName: metadata.ProducerName,
@@ -57,17 +72,19 @@ namespace DotPulsar.Internal
                 properties: FromKeyValueList(metadata.Properties),
                 hasBase64EncodedKey: metadata.PartitionKeyB64Encoded,
                 key: metadata.PartitionKey,
-                orderingKey: metadata.OrderingKey);
+                orderingKey: metadata.OrderingKey,
+                schemaVersion: metadata.SchemaVersion,
+                _schema);
         }
 
-        public static Message Create(
+        private Message<TValue> Create(
             MessageId messageId,
             uint redeliveryCount,
             MessageMetadata metadata,
             SingleMessageMetadata singleMetadata,
             ReadOnlySequence<byte> data)
         {
-            return new Message(
+            return new Message<TValue>(
                 messageId: messageId,
                 data: data,
                 producerName: metadata.ProducerName,
@@ -78,23 +95,9 @@ namespace DotPulsar.Internal
                 properties: FromKeyValueList(singleMetadata.Properties),
                 hasBase64EncodedKey: singleMetadata.PartitionKeyB64Encoded,
                 key: singleMetadata.PartitionKey,
-                orderingKey: singleMetadata.OrderingKey);
+                orderingKey: singleMetadata.OrderingKey,
+                schemaVersion: metadata.SchemaVersion,
+                _schema);
         }
-
-        /// <summary>
-        /// Intended for testing.
-        /// </summary>
-        public static Message Create(
-            MessageId messageId,
-            ReadOnlySequence<byte> data,
-            string producerName,
-            ulong sequenceId,
-            uint redeliveryCount,
-            ulong eventTime,
-            ulong publishTime,
-            IReadOnlyDictionary<string, string> properties,
-            bool hasBase64EncodedKey,
-            string? key,
-            byte[]? orderingKey) => new Message(messageId, data, producerName, sequenceId, redeliveryCount, eventTime, publishTime, properties, hasBase64EncodedKey, key, orderingKey);
     }
 }

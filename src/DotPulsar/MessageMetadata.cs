@@ -148,6 +148,15 @@ namespace DotPulsar
         }
 
         /// <summary>
+        /// The schema version of the message.
+        /// </summary>
+        public byte[]? SchemaVersion
+        {
+            get => Metadata.SchemaVersion;
+            set => Metadata.SchemaVersion = value;
+        }
+
+        /// <summary>
         /// The sequence id of the message.
         /// </summary>
         public ulong SequenceId

@@ -60,7 +60,7 @@ namespace DotPulsar
         /// <summary>
         /// Create a producer.
         /// </summary>
-        public IProducer CreateProducer(ProducerOptions options)
+        public IProducer<TMessage> CreateProducer<TMessage>(ProducerOptions<TMessage> options)
         {
             ThrowIfDisposed();
 
@@ -76,12 +76,18 @@ namespace DotPulsar
 
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options, compressorFactory);
+            var topic = options.Topic;
+            var producerName = options.ProducerName;
+            var schema = options.Schema;
+            var initialSequenceId = options.InitialSequenceId;
+
+            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, schema.SchemaInfo, compressorFactory);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var producer = new Producer(correlationId, ServiceUrl, options.Topic, options.InitialSequenceId, _processManager, new NotReadyChannel(), executor, stateManager);
+            var initialChannel = new NotReadyChannel<TMessage>();
+            var producer = new Producer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
-            var process = new ProducerProcess(correlationId, stateManager, factory, producer);
+            var process = new ProducerProcess(correlationId, stateManager, producer);
             _processManager.Add(process);
             process.Start();
             return producer;
@@ -90,7 +96,7 @@ namespace DotPulsar
         /// <summary>
         /// Create a consumer.
         /// </summary>
-        public IConsumer CreateConsumer(ConsumerOptions options)
+        public IConsumer<TMessage> CreateConsumer<TMessage>(ConsumerOptions<TMessage> options)
         {
             ThrowIfDisposed();
 
@@ -107,14 +113,16 @@ namespace DotPulsar
                 Type = (CommandSubscribe.SubType) options.SubscriptionType
             };
             var messagePrefetchCount = options.MessagePrefetchCount;
-            var batchHandler = new BatchHandler(true);
+            var messageFactory = new MessageFactory<TMessage>(options.Schema);
+            var batchHandler = new BatchHandler<TMessage>(true, messageFactory);
             var decompressorFactories = CompressionFactories.DecompressorFactories();
-            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, subscribe, messagePrefetchCount, batchHandler, decompressorFactories);
+            var factory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decompressorFactories);
             var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
-            var consumer = new Consumer(correlationId, ServiceUrl, options.SubscriptionName, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
+            var initialChannel = new NotReadyChannel<TMessage>();
+            var consumer = new Consumer<TMessage>(correlationId, ServiceUrl, options.SubscriptionName, options.Topic, _processManager, initialChannel, executor, stateManager, factory);
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorConsumer(consumer, options.StateChangedHandler);
-            var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
+            var process = new ConsumerProcess(correlationId, stateManager, consumer, options.SubscriptionType == SubscriptionType.Failover);
             _processManager.Add(process);
             process.Start();
             return consumer;
@@ -123,7 +131,7 @@ namespace DotPulsar
         /// <summary>
         /// Create a reader.
         /// </summary>
-        public IReader CreateReader(ReaderOptions options)
+        public IReader<TMessage> CreateReader<TMessage>(ReaderOptions<TMessage> options)
         {
             ThrowIfDisposed();
 
@@ -139,14 +147,16 @@ namespace DotPulsar
                 Topic = options.Topic
             };
             var messagePrefetchCount = options.MessagePrefetchCount;
-            var batchHandler = new BatchHandler(false);
+            var messageFactory = new MessageFactory<TMessage>(options.Schema);
+            var batchHandler = new BatchHandler<TMessage>(false, messageFactory);
             var decompressorFactories = CompressionFactories.DecompressorFactories();
-            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, subscribe, messagePrefetchCount, batchHandler, decompressorFactories);
+            var factory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decompressorFactories);
             var stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
-            var reader = new Reader(correlationId, ServiceUrl, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
+            var initialChannel = new NotReadyChannel<TMessage>();
+            var reader = new Reader<TMessage>(correlationId, ServiceUrl, options.Topic, _processManager, initialChannel, executor, stateManager, factory);
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorReader(reader, options.StateChangedHandler);
-            var process = new ReaderProcess(correlationId, stateManager, factory, reader);
+            var process = new ReaderProcess(correlationId, stateManager, reader);
             _processManager.Add(process);
             process.Start();
             return reader;

@@ -19,7 +19,7 @@ namespace DotPulsar
     /// <summary>
     /// The reader building options.
     /// </summary>
-    public sealed class ReaderOptions
+    public sealed class ReaderOptions<TMessage>
     {
         /// <summary>
         /// The default message prefetch count.
@@ -34,12 +34,13 @@ namespace DotPulsar
         /// <summary>
         /// Initializes a new instance using the specified startMessageId and topic.
         /// </summary>
-        public ReaderOptions(MessageId startMessageId, string topic)
+        public ReaderOptions(MessageId startMessageId, string topic, ISchema<TMessage> schema)
         {
             MessagePrefetchCount = DefaultMessagePrefetchCount;
             ReadCompacted = DefaultReadCompacted;
             StartMessageId = startMessageId;
             Topic = topic;
+            Schema = schema;
         }
 
         /// <summary>
@@ -56,6 +57,11 @@ namespace DotPulsar
         /// Set the reader name. This is optional.
         /// </summary>
         public string? ReaderName { get; set; }
+
+        /// <summary>
+        /// Set the schema. This is required.
+        /// </summary>
+        public ISchema<TMessage> Schema { get; set; }
 
         /// <summary>
         /// The initial reader position is set to the specified message id. This is required.

@@ -14,19 +14,20 @@
 
 namespace DotPulsar.Internal.Abstractions
 {
+    using DotPulsar.Abstractions;
     using PulsarApi;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
 
-    public interface IConsumerChannel : IAsyncDisposable
+    public interface IConsumerChannel<TMessage> : IAsyncDisposable
     {
         Task Send(CommandAck command, CancellationToken cancellationToken);
         Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken);
         Task Send(CommandUnsubscribe command, CancellationToken cancellationToken);
         Task Send(CommandSeek command, CancellationToken cancellationToken);
         Task<MessageId> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
-        ValueTask<Message> Receive(CancellationToken cancellationToken);
+        ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken);
         ValueTask ClosedByClient(CancellationToken cancellationToken);
     }
 }

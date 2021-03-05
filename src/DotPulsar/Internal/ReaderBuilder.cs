@@ -16,13 +16,11 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
 
-    public sealed class ReaderBuilder : IReaderBuilder
+    public sealed class ReaderBuilder<TMessage> : IReaderBuilder<TMessage>
     {
         private readonly IPulsarClient _pulsarClient;
+        private readonly ISchema<TMessage> _schema;
         private string? _readerName;
         private uint _messagePrefetchCount;
         private bool _readCompacted;
@@ -30,62 +28,51 @@ namespace DotPulsar.Internal
         private string? _topic;
         private IHandleStateChanged<ReaderStateChanged>? _stateChangedHandler;
 
-        public ReaderBuilder(IPulsarClient pulsarClient)
+        public ReaderBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
         {
             _pulsarClient = pulsarClient;
-            _messagePrefetchCount = ReaderOptions.DefaultMessagePrefetchCount;
-            _readCompacted = ReaderOptions.DefaultReadCompacted;
+            _schema = schema;
+            _messagePrefetchCount = ReaderOptions<TMessage>.DefaultMessagePrefetchCount;
+            _readCompacted = ReaderOptions<TMessage>.DefaultReadCompacted;
         }
 
-        public IReaderBuilder MessagePrefetchCount(uint count)
+        public IReaderBuilder<TMessage> MessagePrefetchCount(uint count)
         {
             _messagePrefetchCount = count;
             return this;
         }
 
-        public IReaderBuilder ReadCompacted(bool readCompacted)
+        public IReaderBuilder<TMessage> ReadCompacted(bool readCompacted)
         {
             _readCompacted = readCompacted;
             return this;
         }
 
-        public IReaderBuilder ReaderName(string name)
+        public IReaderBuilder<TMessage> ReaderName(string name)
         {
             _readerName = name;
             return this;
         }
 
-        public IReaderBuilder StartMessageId(MessageId messageId)
+        public IReaderBuilder<TMessage> StartMessageId(MessageId messageId)
         {
             _startMessageId = messageId;
             return this;
         }
 
-        public IReaderBuilder StateChangedHandler(IHandleStateChanged<ReaderStateChanged> handler)
+        public IReaderBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ReaderStateChanged> handler)
         {
             _stateChangedHandler = handler;
             return this;
         }
 
-        public IReaderBuilder StateChangedHandler(Action<ReaderStateChanged, CancellationToken> handler, CancellationToken cancellationToken)
-        {
-            _stateChangedHandler = new ActionStateChangedHandler<ReaderStateChanged>(handler, cancellationToken);
-            return this;
-        }
-
-        public IReaderBuilder StateChangedHandler(Func<ReaderStateChanged, CancellationToken, ValueTask> handler, CancellationToken cancellationToken)
-        {
-            _stateChangedHandler = new FuncStateChangedHandler<ReaderStateChanged>(handler, cancellationToken);
-            return this;
-        }
-
-        public IReaderBuilder Topic(string topic)
+        public IReaderBuilder<TMessage> Topic(string topic)
         {
             _topic = topic;
             return this;
         }
 
-        public IReader Create()
+        public IReader<TMessage> Create()
         {
             if (_startMessageId is null)
                 throw new ConfigurationException("StartMessageId may not be null");
@@ -93,7 +80,7 @@ namespace DotPulsar.Internal
             if (string.IsNullOrEmpty(_topic))
                 throw new ConfigurationException("Topic may not be null or empty");
 
-            var options = new ReaderOptions(_startMessageId, _topic!)
+            var options = new ReaderOptions<TMessage>(_startMessageId, _topic!, _schema)
             {
                 MessagePrefetchCount = _messagePrefetchCount,
                 ReadCompacted = _readCompacted,

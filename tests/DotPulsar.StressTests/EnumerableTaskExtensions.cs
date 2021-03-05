@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-#pragma warning disable 8601
+#pragma warning disable 8601, 8618
 
 namespace DotPulsar.StressTests
 {

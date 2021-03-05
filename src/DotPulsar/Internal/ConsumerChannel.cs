@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
     using Extensions;
     using PulsarApi;
@@ -23,13 +24,14 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class ConsumerChannel : IConsumerChannel
+    public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
     {
         private readonly ulong _id;
         private readonly AsyncQueue<MessagePackage> _queue;
         private readonly IConnection _connection;
-        private readonly BatchHandler _batchHandler;
+        private readonly BatchHandler<TMessage> _batchHandler;
         private readonly CommandFlow _cachedCommandFlow;
+        private readonly IMessageFactory<TMessage> _messageFactory;
         private readonly IDecompress?[] _decompressors;
         private readonly AsyncLock _lock;
         private uint _sendWhenZero;
@@ -40,13 +42,15 @@ namespace DotPulsar.Internal
             uint messagePrefetchCount,
             AsyncQueue<MessagePackage> queue,
             IConnection connection,
-            BatchHandler batchHandler,
+            BatchHandler<TMessage> batchHandler,
+            IMessageFactory<TMessage> messageFactory,
             IEnumerable<IDecompressorFactory> decompressorFactories)
         {
             _id = id;
             _queue = queue;
             _connection = connection;
             _batchHandler = batchHandler;
+            _messageFactory = messageFactory;
 
             _decompressors = new IDecompress[5];
 
@@ -67,7 +71,7 @@ namespace DotPulsar.Internal
             _firstFlow = true;
         }
 
-        public async ValueTask<Message> Receive(CancellationToken cancellationToken)
+        public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
         {
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
@@ -115,9 +119,20 @@ namespace DotPulsar.Internal
                     var messageId = messagePackage.MessageId;
                     var redeliveryCount = messagePackage.RedeliveryCount;
 
-                    return metadata.ShouldSerializeNumMessagesInBatch()
-                        ? _batchHandler.Add(messageId, redeliveryCount, metadata, data)
-                        : MessageFactory.Create(messageId.ToMessageId(), redeliveryCount, metadata, data);
+                    if (metadata.ShouldSerializeNumMessagesInBatch())
+                    {
+                        try
+                        {
+                            return _batchHandler.Add(messageId, redeliveryCount, metadata, data);
+                        }
+                        catch
+                        {
+                            await RejectPackage(messagePackage, CommandAck.ValidationErrorType.BatchDeSerializeError, cancellationToken).ConfigureAwait(false);
+                            continue;
+                        }
+                    }
+
+                    return _messageFactory.Create(messageId.ToMessageId(), redeliveryCount, data, metadata);
                 }
             }
         }

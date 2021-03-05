@@ -14,53 +14,39 @@
 
 namespace DotPulsar.Abstractions
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// A producer building abstraction.
     /// </summary>
-    public interface IProducerBuilder
+    public interface IProducerBuilder<TMessage>
     {
         /// <summary>
         /// Set the compression type. The default is 'None'.
         /// </summary>
-        IProducerBuilder CompressionType(CompressionType compressionType);
+        IProducerBuilder<TMessage> CompressionType(CompressionType compressionType);
 
         /// <summary>
         /// Set the initial sequence id. The default is 0.
         /// </summary>
-        IProducerBuilder InitialSequenceId(ulong initialSequenceId);
+        IProducerBuilder<TMessage> InitialSequenceId(ulong initialSequenceId);
 
         /// <summary>
         /// Set the producer name. This is optional.
         /// </summary>
-        IProducerBuilder ProducerName(string name);
+        IProducerBuilder<TMessage> ProducerName(string name);
 
         /// <summary>
         /// Register a state changed handler.
         /// </summary>
-        IProducerBuilder StateChangedHandler(IHandleStateChanged<ProducerStateChanged> handler);
-
-        /// <summary>
-        /// Register a state changed handler.
-        /// </summary>
-        IProducerBuilder StateChangedHandler(Action<ProducerStateChanged, CancellationToken> handler, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Register a state changed handler.
-        /// </summary>
-        IProducerBuilder StateChangedHandler(Func<ProducerStateChanged, CancellationToken, ValueTask> handler, CancellationToken cancellationToken = default);
+        IProducerBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ProducerStateChanged> handler);
 
         /// <summary>
         /// Set the topic for this producer. This is required.
         /// </summary>
-        IProducerBuilder Topic(string topic);
+        IProducerBuilder<TMessage> Topic(string topic);
 
         /// <summary>
         /// Create the producer.
         /// </summary>
-        IProducer Create();
+        IProducer<TMessage> Create();
     }
 }

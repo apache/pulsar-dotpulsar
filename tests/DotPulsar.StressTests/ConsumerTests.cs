@@ -15,7 +15,7 @@
 namespace DotPulsar.StressTests
 {
     using DotPulsar.Abstractions;
-    using Extensions;
+    using DotPulsar.Extensions;
     using Fixtures;
     using FluentAssertions;
     using System;
@@ -48,14 +48,14 @@ namespace DotPulsar.StressTests
                 .ServiceUrl(new Uri("pulsar://localhost:54545"))
                 .Build();
 
-            await using var consumer = client.NewConsumer()
+            await using var consumer = client.NewConsumer(Schema.Bytes)
                 .ConsumerName($"consumer-{testRunId}")
                 .InitialPosition(SubscriptionInitialPosition.Earliest)
                 .SubscriptionName($"subscription-{testRunId}")
                 .Topic(topic)
                 .Create();
 
-            await using var producer = client.NewProducer()
+            await using var producer = client.NewProducer(Schema.Bytes)
                 .ProducerName($"producer-{testRunId}")
                 .Topic(topic)
                 .Create();
@@ -70,7 +70,7 @@ namespace DotPulsar.StressTests
             consumed.Should().BeEquivalentTo(produced);
         }
 
-        private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer producer, int numberOfMessages, CancellationToken ct)
+        private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<byte[]> producer, int numberOfMessages, CancellationToken ct)
         {
             var messageIds = new MessageId[numberOfMessages];
 
@@ -83,7 +83,7 @@ namespace DotPulsar.StressTests
             return messageIds;
         }
 
-        private static async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer consumer, int numberOfMessages, CancellationToken ct)
+        private static async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer<byte[]> consumer, int numberOfMessages, CancellationToken ct)
         {
             var messageIds = new List<MessageId>(numberOfMessages);
 

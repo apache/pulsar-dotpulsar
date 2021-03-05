@@ -79,6 +79,9 @@ namespace DotPulsar.Internal
                 case BaseCommand.Type.GetLastMessageId:
                     cmd.GetLastMessageId.RequestId = _requestId.FetchNext();
                     return;
+                case BaseCommand.Type.GetOrCreateSchema:
+                    cmd.GetOrCreateSchema.RequestId = _requestId.FetchNext();
+                    return;
             }
         }
 
@@ -103,6 +106,8 @@ namespace DotPulsar.Internal
                 BaseCommand.Type.CloseConsumer => cmd.CloseConsumer.RequestId.ToString(),
                 BaseCommand.Type.GetLastMessageId => cmd.GetLastMessageId.RequestId.ToString(),
                 BaseCommand.Type.GetLastMessageIdResponse => cmd.GetLastMessageIdResponse.RequestId.ToString(),
+                BaseCommand.Type.GetOrCreateSchema => cmd.GetOrCreateSchema.RequestId.ToString(),
+                BaseCommand.Type.GetOrCreateSchemaResponse => cmd.GetOrCreateSchemaResponse.RequestId.ToString(),
                 _ => throw new ArgumentOutOfRangeException(nameof(cmd.CommandType), cmd.CommandType, "CommandType not supported as request/response type")
             };
     }

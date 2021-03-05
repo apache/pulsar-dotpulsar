@@ -16,13 +16,11 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
 
-    public sealed class ConsumerBuilder : IConsumerBuilder
+    public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
     {
         private readonly IPulsarClient _pulsarClient;
+        private readonly ISchema<TMessage> _schema;
         private string? _consumerName;
         private SubscriptionInitialPosition _initialPosition;
         private int _priorityLevel;
@@ -33,83 +31,72 @@ namespace DotPulsar.Internal
         private string? _topic;
         private IHandleStateChanged<ConsumerStateChanged>? _stateChangedHandler;
 
-        public ConsumerBuilder(IPulsarClient pulsarClient)
+        public ConsumerBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
         {
+            _schema = schema;
             _pulsarClient = pulsarClient;
-            _initialPosition = ConsumerOptions.DefaultInitialPosition;
-            _priorityLevel = ConsumerOptions.DefaultPriorityLevel;
-            _messagePrefetchCount = ConsumerOptions.DefaultMessagePrefetchCount;
-            _readCompacted = ConsumerOptions.DefaultReadCompacted;
-            _subscriptionType = ConsumerOptions.DefaultSubscriptionType;
+            _initialPosition = ConsumerOptions<TMessage>.DefaultInitialPosition;
+            _priorityLevel = ConsumerOptions<TMessage>.DefaultPriorityLevel;
+            _messagePrefetchCount = ConsumerOptions<TMessage>.DefaultMessagePrefetchCount;
+            _readCompacted = ConsumerOptions<TMessage>.DefaultReadCompacted;
+            _subscriptionType = ConsumerOptions<TMessage>.DefaultSubscriptionType;
         }
 
-        public IConsumerBuilder ConsumerName(string name)
+        public IConsumerBuilder<TMessage> ConsumerName(string name)
         {
             _consumerName = name;
             return this;
         }
 
-        public IConsumerBuilder InitialPosition(SubscriptionInitialPosition initialPosition)
+        public IConsumerBuilder<TMessage> InitialPosition(SubscriptionInitialPosition initialPosition)
         {
             _initialPosition = initialPosition;
             return this;
         }
 
-        public IConsumerBuilder MessagePrefetchCount(uint count)
+        public IConsumerBuilder<TMessage> MessagePrefetchCount(uint count)
         {
             _messagePrefetchCount = count;
             return this;
         }
 
-        public IConsumerBuilder PriorityLevel(int priorityLevel)
+        public IConsumerBuilder<TMessage> PriorityLevel(int priorityLevel)
         {
             _priorityLevel = priorityLevel;
             return this;
         }
 
-        public IConsumerBuilder ReadCompacted(bool readCompacted)
+        public IConsumerBuilder<TMessage> ReadCompacted(bool readCompacted)
         {
             _readCompacted = readCompacted;
             return this;
         }
 
-        public IConsumerBuilder StateChangedHandler(IHandleStateChanged<ConsumerStateChanged> handler)
+        public IConsumerBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ConsumerStateChanged> handler)
         {
             _stateChangedHandler = handler;
             return this;
         }
 
-        public IConsumerBuilder StateChangedHandler(Action<ConsumerStateChanged, CancellationToken> handler, CancellationToken cancellationToken)
-        {
-            _stateChangedHandler = new ActionStateChangedHandler<ConsumerStateChanged>(handler, cancellationToken);
-            return this;
-        }
-
-        public IConsumerBuilder StateChangedHandler(Func<ConsumerStateChanged, CancellationToken, ValueTask> handler, CancellationToken cancellationToken)
-        {
-            _stateChangedHandler = new FuncStateChangedHandler<ConsumerStateChanged>(handler, cancellationToken);
-            return this;
-        }
-
-        public IConsumerBuilder SubscriptionName(string name)
+        public IConsumerBuilder<TMessage> SubscriptionName(string name)
         {
             _subscriptionName = name;
             return this;
         }
 
-        public IConsumerBuilder SubscriptionType(SubscriptionType type)
+        public IConsumerBuilder<TMessage> SubscriptionType(SubscriptionType type)
         {
             _subscriptionType = type;
             return this;
         }
 
-        public IConsumerBuilder Topic(string topic)
+        public IConsumerBuilder<TMessage> Topic(string topic)
         {
             _topic = topic;
             return this;
         }
 
-        public IConsumer Create()
+        public IConsumer<TMessage> Create()
         {
             if (string.IsNullOrEmpty(_subscriptionName))
                 throw new ConfigurationException("SubscriptionName may not be null or empty");
@@ -117,7 +104,7 @@ namespace DotPulsar.Internal
             if (string.IsNullOrEmpty(_topic))
                 throw new ConfigurationException("Topic may not be null or empty");
 
-            var options = new ConsumerOptions(_subscriptionName!, _topic!)
+            var options = new ConsumerOptions<TMessage>(_subscriptionName!, _topic!, _schema)
             {
                 ConsumerName = _consumerName,
                 InitialPosition = _initialPosition,

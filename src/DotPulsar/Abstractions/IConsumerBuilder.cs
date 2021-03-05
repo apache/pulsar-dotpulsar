@@ -14,73 +14,59 @@
 
 namespace DotPulsar.Abstractions
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     /// <summary>
     /// A consumer building abstraction.
     /// </summary>
-    public interface IConsumerBuilder
+    public interface IConsumerBuilder<TMessage>
     {
         /// <summary>
         /// Set the consumer name. This is optional.
         /// </summary>
-        IConsumerBuilder ConsumerName(string name);
+        IConsumerBuilder<TMessage> ConsumerName(string name);
 
         /// <summary>
         /// Set initial position for the subscription. The default is 'Latest'.
         /// </summary>
-        IConsumerBuilder InitialPosition(SubscriptionInitialPosition initialPosition);
+        IConsumerBuilder<TMessage> InitialPosition(SubscriptionInitialPosition initialPosition);
 
         /// <summary>
         /// Number of messages that will be prefetched. The default is 1000.
         /// </summary>
-        IConsumerBuilder MessagePrefetchCount(uint count);
+        IConsumerBuilder<TMessage> MessagePrefetchCount(uint count);
 
         /// <summary>
         /// Set the priority level for the shared subscription consumer. The default is 0.
         /// </summary>
-        IConsumerBuilder PriorityLevel(int priorityLevel);
+        IConsumerBuilder<TMessage> PriorityLevel(int priorityLevel);
 
         /// <summary>
         /// Whether to read from the compacted topic. The default is 'false'.
         /// </summary>
-        IConsumerBuilder ReadCompacted(bool readCompacted);
+        IConsumerBuilder<TMessage> ReadCompacted(bool readCompacted);
 
         /// <summary>
         /// Register a state changed handler.
         /// </summary>
-        IConsumerBuilder StateChangedHandler(IHandleStateChanged<ConsumerStateChanged> handler);
-
-        /// <summary>
-        /// Register a state changed handler.
-        /// </summary>
-        IConsumerBuilder StateChangedHandler(Action<ConsumerStateChanged, CancellationToken> handler, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Register a state changed handler.
-        /// </summary>
-        IConsumerBuilder StateChangedHandler(Func<ConsumerStateChanged, CancellationToken, ValueTask> handler, CancellationToken cancellationToken = default);
+        IConsumerBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ConsumerStateChanged> handler);
 
         /// <summary>
         /// Set the subscription name for this consumer. This is required.
         /// </summary>
-        IConsumerBuilder SubscriptionName(string name);
+        IConsumerBuilder<TMessage> SubscriptionName(string name);
 
         /// <summary>
         /// Set the subscription type for this consumer. The default is 'Exclusive'.
         /// </summary>
-        IConsumerBuilder SubscriptionType(SubscriptionType type);
+        IConsumerBuilder<TMessage> SubscriptionType(SubscriptionType type);
 
         /// <summary>
         /// Set the topic for this consumer. This is required.
         /// </summary>
-        IConsumerBuilder Topic(string topic);
+        IConsumerBuilder<TMessage> Topic(string topic);
 
         /// <summary>
         /// Create the consumer.
         /// </summary>
-        IConsumer Create();
+        IConsumer<TMessage> Create();
     }
 }

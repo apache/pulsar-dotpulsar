@@ -19,7 +19,7 @@ namespace DotPulsar.Abstractions
     /// <summary>
     /// A producer abstraction.
     /// </summary>
-    public interface IProducer : ISend, IState<ProducerState>, IAsyncDisposable
+    public interface IProducer : IState<ProducerState>, IAsyncDisposable
     {
         /// <summary>
         /// The producer's service url.

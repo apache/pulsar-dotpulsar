@@ -18,7 +18,6 @@ namespace Producing
     using DotPulsar.Abstractions;
     using DotPulsar.Extensions;
     using System;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -38,7 +37,7 @@ namespace Producing
 
             await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
-            await using var producer = client.NewProducer()
+            await using var producer = client.NewProducer(Schema.String)
                 .StateChangedHandler(Monitor)
                 .Topic(myTopic)
                 .Create();
@@ -48,7 +47,7 @@ namespace Producing
             await ProduceMessages(producer, cts.Token);
         }
 
-        private static async Task ProduceMessages(IProducer producer, CancellationToken cancellationToken)
+        private static async Task ProduceMessages(IProducer<string> producer, CancellationToken cancellationToken)
         {
             var delay = TimeSpan.FromSeconds(5);
 
@@ -57,8 +56,7 @@ namespace Producing
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var data = DateTime.UtcNow.ToLongTimeString();
-                    var bytes = Encoding.UTF8.GetBytes(data);
-                    _ = await producer.Send(bytes, cancellationToken);
+                    _ = await producer.Send(data, cancellationToken);
                     Console.WriteLine("Sent: " + data);
                     await Task.Delay(delay, cancellationToken);
                 }
