@@ -54,7 +54,7 @@ namespace Consuming
             {
                 await foreach (var message in consumer.Messages(cancellationToken))
                 {
-                    Console.WriteLine("Received: " + message.Value);
+                    Console.WriteLine("Received: " + message.Value());
                     await consumer.Acknowledge(message, cancellationToken);
                 }
             }

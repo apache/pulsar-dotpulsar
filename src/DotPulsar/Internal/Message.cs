@@ -93,6 +93,6 @@ namespace DotPulsar.Internal
 
         public IReadOnlyDictionary<string, string> Properties { get; }
 
-        public TValue Value => _schema.Decode(Data);
+        public TValue Value() => _schema.Decode(Data);
     }
 }

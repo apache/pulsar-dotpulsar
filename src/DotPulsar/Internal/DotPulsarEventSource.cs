@@ -17,7 +17,7 @@ namespace DotPulsar.Internal
 #if NETSTANDARD2_0
     public sealed class DotPulsarEventSource
     {
-        public static readonly DotPulsarEventSource Log = new DotPulsarEventSource();
+        public static readonly DotPulsarEventSource Log = new();
 
         public void ClientCreated() { }
 
@@ -78,7 +78,7 @@ namespace DotPulsar.Internal
         private long _currentReaders;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        public static readonly DotPulsarEventSource Log = new DotPulsarEventSource();
+        public static readonly DotPulsarEventSource Log = new();
 
         public DotPulsarEventSource() : base("DotPulsar") { }
 

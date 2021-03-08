@@ -26,10 +26,10 @@ namespace DotPulsar.Internal
     public sealed class NotReadyChannel<TMessage> : IConsumerChannel<TMessage>, IProducerChannel
     {
         public ValueTask DisposeAsync()
-            => new ValueTask();
+            => new();
 
         public ValueTask ClosedByClient(CancellationToken cancellationToken)
-            => new ValueTask();
+            => new();
 
         public ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken = default)
             => throw GetException();

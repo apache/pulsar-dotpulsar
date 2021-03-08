@@ -255,6 +255,7 @@ namespace DotPulsar.Internal
                             break;
                         case BaseCommand.Type.CloseProducer:
                             _channelManager.Incoming(command.CloseProducer);
+                            _requestResponseHandler.Incoming(command.CloseProducer);
                             break;
                         case BaseCommand.Type.Ping:
                             _pingPongHandler.GotPing();

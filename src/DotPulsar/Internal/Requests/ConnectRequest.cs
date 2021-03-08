@@ -12,16 +12,21 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Internal.Requests
 {
-    /// <summary>
-    /// A generic message abstraction.
-    /// </summary>
-    public interface IMessage<TValue> : IMessage
+    using DotPulsar.Internal.Abstractions;
+    using System.Diagnostics.CodeAnalysis;
+
+    public struct ConnectRequest : IRequest
     {
-        /// <summary>
-        /// The value of the message.
-        /// </summary>
-        public TValue Value();
+#if NETSTANDARD2_0
+        public bool Equals(IRequest other)
+#else
+        public bool Equals([AllowNull] IRequest other)
+#endif
+            => other is ConnectRequest;
+
+        public override int GetHashCode()
+            => int.MinValue;
     }
 }

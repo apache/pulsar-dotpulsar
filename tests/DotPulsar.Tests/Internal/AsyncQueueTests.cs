@@ -107,7 +107,7 @@ namespace DotPulsar.Tests.Internal
         public async Task DequeueAsync_GivenTokenIsCanceled_ShouldCancelTask()
         {
             //Arrange
-            CancellationTokenSource source1 = new CancellationTokenSource(), source2 = new CancellationTokenSource();
+            CancellationTokenSource source1 = new(), source2 = new();
             const int excepted = 1;
             var queue = new AsyncQueue<int>();
             var task1 = queue.Dequeue(source1.Token).AsTask();

@@ -20,6 +20,9 @@ namespace DotPulsar.Extensions
     using System.Threading;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Extensions for IConsumerBuilder.
+    /// </summary>
     public static class ConsumerBuilderExtensions
     {
         /// <summary>

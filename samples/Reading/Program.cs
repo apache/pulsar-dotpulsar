@@ -54,7 +54,7 @@ namespace Reading
             {
                 await foreach (var message in reader.Messages(cancellationToken))
                 {
-                    Console.WriteLine("Received: " + message.Value);
+                    Console.WriteLine("Received: " + message.Value());
                 }
             }
             catch (OperationCanceledException) { }

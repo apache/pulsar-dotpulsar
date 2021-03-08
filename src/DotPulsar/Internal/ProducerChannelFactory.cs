@@ -64,7 +64,7 @@ namespace DotPulsar.Internal
 
         private async ValueTask<byte[]?> GetSchemaVersion(IConnection connection, CancellationToken cancellationToken)
         {
-            if (_schema is null)
+            if (_schema is null || _schema.Type == Schema.SchemaType.None)
                 return null;
 
             var command = new CommandGetOrCreateSchema

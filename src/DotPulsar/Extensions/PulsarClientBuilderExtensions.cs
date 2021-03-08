@@ -19,6 +19,9 @@ namespace DotPulsar.Extensions
     using System;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Extensions for IPulsarClientBuilder.
+    /// </summary>
     public static class PulsarClientBuilderExtensions
     {
         /// <summary>

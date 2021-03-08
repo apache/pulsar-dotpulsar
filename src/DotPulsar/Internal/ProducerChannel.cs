@@ -61,7 +61,7 @@ namespace DotPulsar.Internal
             }
         }
 
-        public ValueTask DisposeAsync() => new ValueTask();
+        public ValueTask DisposeAsync() => new();
 
         public async Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
         {

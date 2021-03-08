@@ -20,6 +20,9 @@ namespace DotPulsar.Extensions
     using System.Threading;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Extensions for IMessageBuilder.
+    /// </summary>
     public static class MessageBuilderExtensions
     {
         /// <summary>

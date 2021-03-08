@@ -19,7 +19,7 @@ namespace DotPulsar.Internal.Extensions
     public static class MessageIdDataExtensions
     {
         public static MessageId ToMessageId(this MessageIdData messageIdData)
-            => new MessageId(messageIdData.LedgerId, messageIdData.EntryId, messageIdData.Partition, messageIdData.BatchIndex);
+            => new(messageIdData.LedgerId, messageIdData.EntryId, messageIdData.Partition, messageIdData.BatchIndex);
 
         public static void MapFrom(this MessageIdData destination, MessageId source)
         {

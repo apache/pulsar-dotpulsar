@@ -16,6 +16,7 @@ namespace DotPulsar.Internal
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     public sealed class Awaiter<T, TResult> : IDisposable where T : notnull
@@ -37,6 +38,14 @@ namespace DotPulsar.Internal
             if (_items.TryRemove(item, out var tcs))
                 tcs.SetResult(result);
         }
+
+        public void Cancel(T item)
+        {
+            if (_items.TryRemove(item, out var tcs))
+                tcs.SetCanceled();
+        }
+
+        public IEnumerable<T> Keys => _items.Keys;
 
         public void Dispose()
         {

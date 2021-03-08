@@ -77,112 +77,112 @@ namespace DotPulsar.Internal.Extensions
             });
 
         public static BaseCommand AsBaseCommand(this CommandAck command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.Ack,
                 Ack = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandConnect command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.Connect,
                 Connect = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandPing command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.Ping,
                 Ping = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandPong command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.Pong,
                 Pong = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandProducer command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.Producer,
                 Producer = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandGetLastMessageId command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.GetLastMessageId,
                 GetLastMessageId = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandUnsubscribe command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.Unsubscribe,
                 Unsubscribe = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandSubscribe command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.Subscribe,
                 Subscribe = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandLookupTopic command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.Lookup,
                 LookupTopic = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandSend command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.Send,
                 Send = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandFlow command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.Flow,
                 Flow = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandCloseProducer command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.CloseProducer,
                 CloseProducer = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandCloseConsumer command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.CloseConsumer,
                 CloseConsumer = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandSeek command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.Seek,
                 Seek = command
             };
         
         public static BaseCommand AsBaseCommand(this CommandRedeliverUnacknowledgedMessages command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.RedeliverUnacknowledgedMessages,
                 RedeliverUnacknowledgedMessages = command
             };
 
         public static BaseCommand AsBaseCommand(this CommandGetOrCreateSchema command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.GetOrCreateSchema,
                 GetOrCreateSchema = command
