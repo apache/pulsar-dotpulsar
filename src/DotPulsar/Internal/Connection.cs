@@ -25,6 +25,8 @@ namespace DotPulsar.Internal
 
     public sealed class Connection : IConnection
     {
+        internal readonly DateTime CreatedOn;
+
         private readonly AsyncLock _lock;
         private readonly ChannelManager _channelManager;
         private readonly RequestResponseHandler _requestResponseHandler;
@@ -34,6 +36,7 @@ namespace DotPulsar.Internal
 
         public Connection(IPulsarStream stream)
         {
+            CreatedOn = DateTime.UtcNow;
             _lock = new AsyncLock();
             _channelManager = new ChannelManager();
             _requestResponseHandler = new RequestResponseHandler();

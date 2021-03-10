@@ -26,12 +26,13 @@ namespace DotPulsar.Internal
 
     public sealed class ConnectionPool : IConnectionPool
     {
-        private readonly AsyncLock _lock;
         private readonly CommandConnect _commandConnect;
         private readonly Uri _serviceUrl;
         private readonly Connector _connector;
         private readonly EncryptionPolicy _encryptionPolicy;
         private readonly ConcurrentDictionary<PulsarUrl, Connection> _connections;
+        private readonly ConcurrentDictionary<PulsarUrl, Connection> _connecting;
+        private readonly ConcurrentDictionary<PulsarUrl, AsyncLock> _connectionLocks;
 
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _closeInactiveConnections;
@@ -43,12 +44,13 @@ namespace DotPulsar.Internal
             EncryptionPolicy encryptionPolicy,
             TimeSpan closeInactiveConnectionsInterval)
         {
-            _lock = new AsyncLock();
+            _connectionLocks = new ConcurrentDictionary<PulsarUrl, AsyncLock>();
             _commandConnect = commandConnect;
             _serviceUrl = serviceUrl;
             _connector = connector;
             _encryptionPolicy = encryptionPolicy;
             _connections = new ConcurrentDictionary<PulsarUrl, Connection>();
+            _connecting = new ConcurrentDictionary<PulsarUrl, Connection>();
             _cancellationTokenSource = new CancellationTokenSource();
             _closeInactiveConnections = CloseInactiveConnections(closeInactiveConnectionsInterval, _cancellationTokenSource.Token);
         }
@@ -59,11 +61,19 @@ namespace DotPulsar.Internal
 
             await _closeInactiveConnections.ConfigureAwait(false);
 
-            await _lock.DisposeAsync().ConfigureAwait(false);
-
             foreach (var serviceUrl in _connections.Keys.ToArray())
             {
                 await DisposeConnection(serviceUrl).ConfigureAwait(false);
+            }
+
+            foreach (var serviceUrl in _connecting.Keys.ToArray())
+            {
+                await DisposeConnection(serviceUrl).ConfigureAwait(false);
+            }
+
+            foreach (var connectionLock in _connectionLocks.Values.ToArray())
+            {
+                await connectionLock.DisposeAsync().ConfigureAwait(false);
             }
         }
 
@@ -139,10 +149,14 @@ namespace DotPulsar.Internal
 
         private async ValueTask<Connection> GetConnection(PulsarUrl url, CancellationToken cancellationToken)
         {
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+            if (_connections.TryGetValue(url, out Connection? connection) && connection is not null)
+                return connection;
+
+            using (await _connectionLocks.GetOrAdd(url, _ => new AsyncLock()).Lock(cancellationToken).ConfigureAwait(false))
             {
-                if (_connections.TryGetValue(url, out Connection? connection) && connection is not null)
-                    return connection;
+                // Make sure once we get in here that the previous owner didn't actually make a connection
+                if (_connections.TryGetValue(url, out Connection? newConnection) && newConnection is not null)
+                    return newConnection;
 
                 return await EstablishNewConnection(url, cancellationToken).ConfigureAwait(false);
             }
@@ -153,7 +167,7 @@ namespace DotPulsar.Internal
             var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
             var connection = new Connection(new PulsarStream(stream));
             DotPulsarEventSource.Log.ConnectionCreated();
-            _connections[url] = connection;
+            _connecting[url] = connection;
             _ = connection.ProcessIncommingFrames(cancellationToken).ContinueWith(t => DisposeConnection(url));
             var commandConnect = _commandConnect;
 
@@ -162,15 +176,26 @@ namespace DotPulsar.Internal
 
             var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.Connected);
+            _connections[url] = connection;
+            _ = _connecting.TryRemove(url, out _);
+
             return connection;
         }
 
         private async ValueTask DisposeConnection(PulsarUrl serviceUrl)
         {
-            if (_connections.TryRemove(serviceUrl, out Connection? connection) && connection is not null)
+            using (await _connectionLocks.GetOrAdd(serviceUrl, _ => new AsyncLock()).Lock(CancellationToken.None).ConfigureAwait(false))
             {
-                await connection.DisposeAsync().ConfigureAwait(false);
-                DotPulsarEventSource.Log.ConnectionDisposed();
+                if (_connections.TryRemove(serviceUrl, out Connection? connection) && connection is not null)
+                {
+                    await connection.DisposeAsync().ConfigureAwait(false);
+                    DotPulsarEventSource.Log.ConnectionDisposed();
+                }
+                else if (_connecting.TryRemove(serviceUrl, out Connection? connectingConnection) && connection is not null)
+                {
+                    await connectingConnection.DisposeAsync().ConfigureAwait(false);
+                    DotPulsarEventSource.Log.ConnectionDisposed();
+                }
             }
         }
 
@@ -198,17 +223,20 @@ namespace DotPulsar.Internal
                 {
                     await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
 
-                    using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+                    var serviceUrls = _connections.Keys;
+                    foreach (var serviceUrl in serviceUrls)
                     {
-                        var serviceUrls = _connections.Keys;
-                        foreach (var serviceUrl in serviceUrls)
-                        {
-                            var connection = _connections[serviceUrl];
-                            if (connection is null)
-                                continue;
+                        var connection = _connections[serviceUrl];
+                        if (connection is null)
+                            continue;
 
+                        if (connection.CreatedOn < (DateTime.UtcNow - interval))
+                        {
+                            // Candidate for removal if idle
                             if (!await connection.HasChannels(cancellationToken).ConfigureAwait(false))
+                            {
                                 await DisposeConnection(serviceUrl).ConfigureAwait(false);
+                            }
                         }
                     }
                 }

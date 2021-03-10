@@ -16,107 +16,46 @@ namespace DotPulsar.Internal
 {
     using Exceptions;
     using System;
-    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
     public sealed class AsyncLock : IAsyncDisposable
     {
-        private readonly LinkedList<CancelableCompletionSource<IDisposable>> _pending;
         private readonly SemaphoreSlim _semaphoreSlim;
-        private readonly Releaser _releaser;
-        private readonly Task<IDisposable> _completedTask;
         private int _isDisposed;
+        private readonly CancellationTokenSource _disposedCancellation;
 
         public AsyncLock()
         {
-            _pending = new LinkedList<CancelableCompletionSource<IDisposable>>();
             _semaphoreSlim = new SemaphoreSlim(1, 1);
-            _releaser = new Releaser(Release);
-            _completedTask = Task.FromResult((IDisposable) _releaser);
+            _isDisposed = 0;
+            _disposedCancellation = new CancellationTokenSource();
         }
 
-        public Task<IDisposable> Lock(CancellationToken cancellationToken)
+        public async Task<IDisposable> Lock(CancellationToken cancellationToken)
         {
-            LinkedListNode<CancelableCompletionSource<IDisposable>>? node = null;
-
-            lock (_pending)
+            try
             {
-                ThrowIfDisposed();
+                // This is a bit ugly and wasteful of allocations; it would be better to be able to dispose the semaphore without waiting
+                var requestToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _disposedCancellation.Token).Token;
 
-                if (_semaphoreSlim.CurrentCount == 1) //Lock is free
-                {
-                    _semaphoreSlim.Wait(cancellationToken); //Will never block
-                    return _completedTask;
-                }
-
-                //Lock was not free
-                var ccs = new CancelableCompletionSource<IDisposable>();
-                node = _pending.AddLast(ccs);
+                await _semaphoreSlim.WaitAsync(requestToken);
+                return new Releaser(() => _semaphoreSlim.Release());
             }
-
-            cancellationToken.Register(() => Cancel(node));
-
-            return node.Value.Task;
+            catch (ObjectDisposedException)
+            {
+                throw new AsyncLockDisposedException();
+            }
         }
 
         public async ValueTask DisposeAsync()
         {
-            lock (_pending)
+            if (Interlocked.CompareExchange(ref _isDisposed, 1, 0) == 0)
             {
-                if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
-                    return;
-
-                foreach (var pending in _pending)
-                    pending.Dispose();
-
-                _pending.Clear();
+                _disposedCancellation.Cancel();
+                await _semaphoreSlim.WaitAsync().ConfigureAwait(false); //Wait for possible lock-holder to finish
+                _semaphoreSlim.Dispose();
             }
-
-            await _semaphoreSlim.WaitAsync().ConfigureAwait(false); //Wait for possible lock-holder to finish
-
-            _semaphoreSlim.Release();
-            _semaphoreSlim.Dispose();
-        }
-
-        private void Cancel(LinkedListNode<CancelableCompletionSource<IDisposable>> node)
-        {
-            lock (_pending)
-            {
-                try
-                {
-                    _pending.Remove(node);
-                    node.Value.Dispose();
-                }
-                catch
-                {
-                    // Ignore
-                }
-            }
-        }
-
-        private void Release()
-        {
-            lock (_pending)
-            {
-                var node = _pending.First;
-                if (node is not null)
-                {
-                    node.Value.SetResult(_releaser);
-                    node.Value.Dispose();
-                    _pending.RemoveFirst();
-                    return;
-                }
-
-                if (_semaphoreSlim.CurrentCount == 0)
-                    _semaphoreSlim.Release();
-            }
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (_isDisposed != 0)
-                throw new AsyncLockDisposedException();
         }
 
         private class Releaser : IDisposable
