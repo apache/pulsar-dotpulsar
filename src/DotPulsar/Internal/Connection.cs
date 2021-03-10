@@ -18,6 +18,7 @@ namespace DotPulsar.Internal
     using Exceptions;
     using Extensions;
     using PulsarApi;
+    using System;
     using System.Buffers;
     using System.Threading;
     using System.Threading.Tasks;
@@ -232,6 +233,19 @@ namespace DotPulsar.Internal
         {
             await Task.Yield();
 
+            var lookup = new EnumLookup<BaseCommand.Type, Action<BaseCommand>>(cmd => _requestResponseHandler.Incoming(cmd));
+
+            lookup.Set(BaseCommand.Type.CloseConsumer, cmd => _channelManager.Incoming(cmd.CloseConsumer));
+            lookup.Set(BaseCommand.Type.ActiveConsumerChange, cmd => _channelManager.Incoming(cmd.ActiveConsumerChange));
+            lookup.Set(BaseCommand.Type.ReachedEndOfTopic, cmd => _channelManager.Incoming(cmd.ReachedEndOfTopic));
+            lookup.Set(BaseCommand.Type.Ping, cmd => _pingPongHandler.GotPing());
+            lookup.Set(BaseCommand.Type.CloseProducer, cmd =>
+            {
+                _channelManager.Incoming(cmd.CloseProducer);
+                _requestResponseHandler.Incoming(cmd.CloseProducer);
+            });
+            
+
             try
             {
                 await foreach (var frame in _stream.Frames())
@@ -239,31 +253,10 @@ namespace DotPulsar.Internal
                     var commandSize = frame.ReadUInt32(0, true);
                     var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
 
-                    switch (command.CommandType)
-                    {
-                        case BaseCommand.Type.Message:
-                            _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
-                            break;
-                        case BaseCommand.Type.CloseConsumer:
-                            _channelManager.Incoming(command.CloseConsumer);
-                            break;
-                        case BaseCommand.Type.ActiveConsumerChange:
-                            _channelManager.Incoming(command.ActiveConsumerChange);
-                            break;
-                        case BaseCommand.Type.ReachedEndOfTopic:
-                            _channelManager.Incoming(command.ReachedEndOfTopic);
-                            break;
-                        case BaseCommand.Type.CloseProducer:
-                            _channelManager.Incoming(command.CloseProducer);
-                            _requestResponseHandler.Incoming(command.CloseProducer);
-                            break;
-                        case BaseCommand.Type.Ping:
-                            _pingPongHandler.GotPing();
-                            break;
-                        default:
-                            _requestResponseHandler.Incoming(command);
-                            break;
-                    }
+                    if (command.CommandType == BaseCommand.Type.Message)
+                        _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
+                    else
+                        lookup.Get(command.CommandType)(command);
                 }
             }
             catch

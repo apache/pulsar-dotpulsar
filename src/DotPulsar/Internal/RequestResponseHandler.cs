@@ -22,27 +22,64 @@ namespace DotPulsar.Internal
 
     public sealed class RequestResponseHandler : IDisposable
     {
-        private readonly Awaiter<IRequest, BaseCommand> _requests;
         private readonly RequestId _requestId;
+        private readonly Awaiter<IRequest, BaseCommand> _requests;
+        private readonly EnumLookup<BaseCommand.Type, Action<BaseCommand>> _setRequestId;
+        private readonly EnumLookup<BaseCommand.Type, Func<BaseCommand, IRequest>> _getResponseIdentifier;
 
         public RequestResponseHandler()
         {
-            _requests = new Awaiter<IRequest, BaseCommand>();
             _requestId = new RequestId();
+
+            _requests = new Awaiter<IRequest, BaseCommand>();
+
+            _setRequestId = new EnumLookup<BaseCommand.Type, Action<BaseCommand>>(cmd => { });
+            _setRequestId.Set(BaseCommand.Type.Seek, cmd => cmd.Seek.RequestId = _requestId.FetchNext());
+            _setRequestId.Set(BaseCommand.Type.Error, cmd => cmd.Error.RequestId = _requestId.FetchNext());
+            _setRequestId.Set(BaseCommand.Type.Producer, cmd => cmd.Producer.RequestId = _requestId.FetchNext());
+            _setRequestId.Set(BaseCommand.Type.Lookup, cmd => cmd.LookupTopic.RequestId = _requestId.FetchNext());
+            _setRequestId.Set(BaseCommand.Type.Subscribe, cmd => cmd.Subscribe.RequestId = _requestId.FetchNext());
+            _setRequestId.Set(BaseCommand.Type.Unsubscribe, cmd => cmd.Unsubscribe.RequestId = _requestId.FetchNext());
+            _setRequestId.Set(BaseCommand.Type.CloseConsumer, cmd => cmd.CloseConsumer.RequestId = _requestId.FetchNext());
+            _setRequestId.Set(BaseCommand.Type.CloseProducer, cmd => cmd.CloseProducer.RequestId = _requestId.FetchNext());
+            _setRequestId.Set(BaseCommand.Type.GetLastMessageId, cmd => cmd.GetLastMessageId.RequestId = _requestId.FetchNext());
+            _setRequestId.Set(BaseCommand.Type.GetOrCreateSchema, cmd => cmd.GetOrCreateSchema.RequestId = _requestId.FetchNext());
+
+            _getResponseIdentifier = new EnumLookup<BaseCommand.Type, Func<BaseCommand, IRequest>>(cmd => throw new ArgumentOutOfRangeException(nameof(cmd.CommandType), cmd.CommandType, "CommandType not supported as request/response type"));
+            _getResponseIdentifier.Set(BaseCommand.Type.Connect, cmd => new ConnectRequest());
+            _getResponseIdentifier.Set(BaseCommand.Type.Connected, cmd => new ConnectRequest());
+            _getResponseIdentifier.Set(BaseCommand.Type.Seek, cmd => new StandardRequest(cmd.Seek.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.Send, cmd => new SendRequest(cmd.Send.ProducerId, cmd.Send.SequenceId));
+            _getResponseIdentifier.Set(BaseCommand.Type.SendError, cmd => new SendRequest(cmd.SendError.ProducerId, cmd.SendError.SequenceId));
+            _getResponseIdentifier.Set(BaseCommand.Type.SendReceipt, cmd => new SendRequest(cmd.SendReceipt.ProducerId, cmd.SendReceipt.SequenceId));
+            _getResponseIdentifier.Set(BaseCommand.Type.Producer, cmd => new StandardRequest(cmd.Producer.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.ProducerSuccess, cmd => new StandardRequest(cmd.ProducerSuccess.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.CloseConsumer, cmd => new StandardRequest(cmd.CloseConsumer.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.CloseProducer, cmd => new StandardRequest(cmd.CloseProducer.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.Lookup, cmd => new StandardRequest(cmd.LookupTopic.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.LookupResponse, cmd => new StandardRequest(cmd.LookupTopicResponse.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.Subscribe, cmd => new StandardRequest(cmd.Subscribe.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.Unsubscribe, cmd => new StandardRequest(cmd.Unsubscribe.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.GetLastMessageId, cmd => new StandardRequest(cmd.GetLastMessageId.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.GetLastMessageIdResponse, cmd => new StandardRequest(cmd.GetLastMessageIdResponse.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.GetOrCreateSchema, cmd => new StandardRequest(cmd.GetOrCreateSchema.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.GetOrCreateSchemaResponse, cmd => new StandardRequest(cmd.GetOrCreateSchemaResponse.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.Success, cmd => new StandardRequest(cmd.Success.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.Error, cmd => !_requestId.IsPastInitialId() ? new ConnectRequest() : new StandardRequest(cmd.Error.RequestId));
         }
 
         public void Dispose()
-            => _requests.Dispose();
+                => _requests.Dispose();
 
         public Task<BaseCommand> Outgoing(BaseCommand command)
         {
-            SetRequestId(command);
-            return _requests.CreateTask(GetResponseIdentifier(command));
+            _setRequestId.Get(command.CommandType)(command);
+            return _requests.CreateTask(_getResponseIdentifier.Get(command.CommandType)(command));
         }
 
         public void Incoming(BaseCommand command)
         {
-            var identifier = GetResponseIdentifier(command);
+            var identifier = _getResponseIdentifier.Get(command.CommandType)(command);
 
             if (identifier is not null)
                 _requests.SetResult(identifier, command);
@@ -57,68 +94,5 @@ namespace DotPulsar.Internal
                     _requests.Cancel(request);
             }
         }
-
-        private void SetRequestId(BaseCommand cmd)
-        {
-            switch (cmd.CommandType)
-            {
-                case BaseCommand.Type.Seek:
-                    cmd.Seek.RequestId = _requestId.FetchNext();
-                    return;
-                case BaseCommand.Type.Lookup:
-                    cmd.LookupTopic.RequestId = _requestId.FetchNext();
-                    return;
-                case BaseCommand.Type.Error:
-                    cmd.Error.RequestId = _requestId.FetchNext();
-                    return;
-                case BaseCommand.Type.Producer:
-                    cmd.Producer.RequestId = _requestId.FetchNext();
-                    return;
-                case BaseCommand.Type.CloseProducer:
-                    cmd.CloseProducer.RequestId = _requestId.FetchNext();
-                    return;
-                case BaseCommand.Type.Subscribe:
-                    cmd.Subscribe.RequestId = _requestId.FetchNext();
-                    return;
-                case BaseCommand.Type.Unsubscribe:
-                    cmd.Unsubscribe.RequestId = _requestId.FetchNext();
-                    return;
-                case BaseCommand.Type.CloseConsumer:
-                    cmd.CloseConsumer.RequestId = _requestId.FetchNext();
-                    return;
-                case BaseCommand.Type.GetLastMessageId:
-                    cmd.GetLastMessageId.RequestId = _requestId.FetchNext();
-                    return;
-                case BaseCommand.Type.GetOrCreateSchema:
-                    cmd.GetOrCreateSchema.RequestId = _requestId.FetchNext();
-                    return;
-            }
-        }
-
-        private IRequest GetResponseIdentifier(BaseCommand cmd)
-            => cmd.CommandType switch
-            {
-                BaseCommand.Type.Send => new SendRequest(cmd.Send.ProducerId, cmd.Send.SequenceId),
-                BaseCommand.Type.SendReceipt => new SendRequest(cmd.SendReceipt.ProducerId, cmd.SendReceipt.SequenceId),
-                BaseCommand.Type.SendError => new SendRequest(cmd.SendError.ProducerId, cmd.SendError.SequenceId),
-                BaseCommand.Type.Connect => new ConnectRequest(),
-                BaseCommand.Type.Connected => new ConnectRequest(),
-                BaseCommand.Type.Error => !_requestId.IsPastInitialId() ? new ConnectRequest() : new StandardRequest(cmd.Error.RequestId),
-                BaseCommand.Type.Producer => new StandardRequest(cmd.Producer.RequestId),
-                BaseCommand.Type.ProducerSuccess => new StandardRequest(cmd.ProducerSuccess.RequestId),
-                BaseCommand.Type.CloseProducer => new StandardRequest(cmd.CloseProducer.RequestId),
-                BaseCommand.Type.Lookup => new StandardRequest(cmd.LookupTopic.RequestId),
-                BaseCommand.Type.LookupResponse => new StandardRequest(cmd.LookupTopicResponse.RequestId),
-                BaseCommand.Type.Unsubscribe => new StandardRequest(cmd.Unsubscribe.RequestId),
-                BaseCommand.Type.Subscribe => new StandardRequest(cmd.Subscribe.RequestId),
-                BaseCommand.Type.Success => new StandardRequest(cmd.Success.RequestId),
-                BaseCommand.Type.Seek => new StandardRequest(cmd.Seek.RequestId),
-                BaseCommand.Type.CloseConsumer => new StandardRequest(cmd.CloseConsumer.RequestId),
-                BaseCommand.Type.GetLastMessageId => new StandardRequest(cmd.GetLastMessageId.RequestId),
-                BaseCommand.Type.GetLastMessageIdResponse => new StandardRequest(cmd.GetLastMessageIdResponse.RequestId),
-                BaseCommand.Type.GetOrCreateSchema => new StandardRequest(cmd.GetOrCreateSchema.RequestId),
-                BaseCommand.Type.GetOrCreateSchemaResponse => new StandardRequest(cmd.GetOrCreateSchemaResponse.RequestId),
-                _ => throw new ArgumentOutOfRangeException(nameof(cmd.CommandType), cmd.CommandType, "CommandType not supported as request/response type")
-            };
     }
 }
