@@ -15,40 +15,97 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using Exceptions;
     using System;
+    using System.Collections.Generic;
     using System.Threading;
-    using System.Threading.Channels;
     using System.Threading.Tasks;
 
     public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
     {
-        private readonly Channel<T> _channel;
-        private readonly ChannelReader<T> _reader;
-        private readonly ChannelWriter<T> _writer;
+        private readonly object _lock;
+        private readonly Queue<T> _queue;
+        private readonly LinkedList<CancelableCompletionSource<T>> _pendingDequeues;
+        private int _isDisposed;
 
         public AsyncQueue()
         {
-            _channel = System.Threading.Channels.Channel.CreateUnbounded<T>();
-            _reader = _channel.Reader;
-            _writer = _channel.Writer;
+            _lock = new object();
+            _queue = new Queue<T>();
+            _pendingDequeues = new LinkedList<CancelableCompletionSource<T>>();
         }
 
         public void Enqueue(T item)
         {
-            if (!_writer.TryWrite(item))
+            lock (_lock)
             {
-                throw new InvalidOperationException("Channel did not accept new message");
+                ThrowIfDisposed();
+
+                var node = _pendingDequeues.First;
+                if (node is not null)
+                {
+                    node.Value.SetResult(item);
+                    node.Value.Dispose();
+                    _pendingDequeues.RemoveFirst();
+                }
+                else
+                    _queue.Enqueue(item);
             }
         }
 
         public ValueTask<T> Dequeue(CancellationToken cancellationToken = default)
         {
-            return _reader.ReadAsync(cancellationToken);
+            LinkedListNode<CancelableCompletionSource<T>>? node = null;
+
+            lock (_lock)
+            {
+                ThrowIfDisposed();
+
+                if (_queue.Count > 0)
+                    return new ValueTask<T>(_queue.Dequeue());
+
+                node = _pendingDequeues.AddLast(new CancelableCompletionSource<T>());
+            }
+
+            node.Value.SetupCancellation(() => Cancel(node), cancellationToken);
+            return new ValueTask<T>(node.Value.Task);
         }
 
         public void Dispose()
         {
-            _writer.TryComplete();
+            lock (_lock)
+            {
+                if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
+                    return;
+
+                foreach (var pendingDequeue in _pendingDequeues)
+                    pendingDequeue.Dispose();
+
+                _pendingDequeues.Clear();
+                _queue.Clear();
+            }
+        }
+
+        private void Cancel(LinkedListNode<CancelableCompletionSource<T>> node)
+        {
+            lock (_lock)
+            {
+                try
+                {
+                    node.Value.Dispose();
+                    _pendingDequeues.Remove(node);
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_isDisposed != 0)
+                throw new AsyncQueueDisposedException();
         }
     }
 }

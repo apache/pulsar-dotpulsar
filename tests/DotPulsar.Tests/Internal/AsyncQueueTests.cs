@@ -16,7 +16,6 @@ namespace DotPulsar.Tests.Internal
 {
     using DotPulsar.Internal;
     using FluentAssertions;
-    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using Xunit;
@@ -109,20 +108,20 @@ namespace DotPulsar.Tests.Internal
         {
             //Arrange
             CancellationTokenSource source1 = new CancellationTokenSource(), source2 = new CancellationTokenSource();
-            const int expected = 1;
+            const int excepted = 1;
             var queue = new AsyncQueue<int>();
             var task1 = queue.Dequeue(source1.Token);
             var task2 = queue.Dequeue(source2.Token);
 
             //Act
             source1.Cancel();
-            queue.Enqueue(expected);
+            queue.Enqueue(excepted);
             var exception = await Record.ExceptionAsync(() => task1.AsTask()).ConfigureAwait(false); // xUnit can't record ValueTask yet
-            var result2 = await task2.ConfigureAwait(false);
+            await task2.ConfigureAwait(false);
 
             //Assert
-            exception.Should().BeOfType<OperationCanceledException>();
-            result2.Should().Be(expected);
+            exception.Should().BeOfType<TaskCanceledException>();
+            task2.Result.Should().Be(excepted);
 
             //Annihilate
             source1.Dispose();

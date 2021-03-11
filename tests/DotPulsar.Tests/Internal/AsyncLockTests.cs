@@ -17,7 +17,6 @@ namespace DotPulsar.Tests.Internal
     using DotPulsar.Internal;
     using DotPulsar.Internal.Exceptions;
     using FluentAssertions;
-    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using Xunit;
@@ -75,7 +74,7 @@ namespace DotPulsar.Tests.Internal
         }
 
         [Fact]
-        public async Task Lock_GivenLockIsDisposedWhileAwaitingLock_ShouldThrowOperationCanceledException()
+        public async Task Lock_GivenLockIsDisposedWhileAwaitingLock_ShouldThrowTaskCanceledException()
         {
             //Arrange
             var sut = new AsyncLock();
@@ -87,7 +86,7 @@ namespace DotPulsar.Tests.Internal
             var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
 
             //Assert
-            exception.Should().BeOfType<OperationCanceledException>();
+            exception.Should().BeOfType<TaskCanceledException>();
 
             //Annihilate
             await sut.DisposeAsync().ConfigureAwait(false);
@@ -95,7 +94,7 @@ namespace DotPulsar.Tests.Internal
         }
 
         [Fact]
-        public async Task Lock_GivenLockIsTakenAndCancellationTokenIsActivated_ShouldThrowOperationCanceledException()
+        public async Task Lock_GivenLockIsTakenAndCancellationTokenIsActivated_ShouldThrowTaskCanceledException()
         {
             //Arrange
             var cts = new CancellationTokenSource();
@@ -108,7 +107,7 @@ namespace DotPulsar.Tests.Internal
             var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
 
             //Assert
-            exception.Should().BeOfType<OperationCanceledException>();
+            exception.Should().BeOfType<TaskCanceledException>();
 
             //Annihilate
             cts.Dispose();
