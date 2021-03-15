@@ -26,6 +26,8 @@ namespace DotPulsar.Internal
 
     public sealed class Producer : IProducer
     {
+        private static readonly IProducerChannel _notReadyChannel = new NotReadyChannel();
+
         private readonly ObjectPool<PulsarApi.MessageMetadata> _messageMetadataPool;
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
@@ -85,7 +87,9 @@ namespace DotPulsar.Internal
 
             _eventRegister.Register(new ProducerDisposed(_correlationId, this));
 
-            await _channel.DisposeAsync().ConfigureAwait(false);
+            var channel = Interlocked.Exchange(ref this._channel, _notReadyChannel);
+            if (channel is not null)
+                await channel.DisposeAsync().ConfigureAwait(false);
         }
 
         public ValueTask<MessageId> Send(byte[] data, CancellationToken cancellationToken)
@@ -101,7 +105,7 @@ namespace DotPulsar.Internal
             try
             {
                 metadata.SequenceId = _sequenceId.FetchNext();
-                var response = await _executor.Execute(() => _channel.Send(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
+                var response = await _executor.Execute(() => Interlocked.CompareExchange(ref this._channel, _notReadyChannel, _notReadyChannel).Send(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
                 return new MessageId(response.MessageId);
             }
             finally
@@ -126,7 +130,7 @@ namespace DotPulsar.Internal
 
             try
             {
-                var response = await _executor.Execute(() => _channel.Send(metadata.Metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
+                var response = await _executor.Execute(() => Interlocked.CompareExchange(ref this._channel, _notReadyChannel, _notReadyChannel).Send(metadata.Metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
                 return new MessageId(response.MessageId);
             }
             finally
@@ -142,7 +146,7 @@ namespace DotPulsar.Internal
                 return;
 
             // No need to dispose of the old channel, the server did it for us
-            _channel = new NotReadyChannel();
+            Interlocked.Exchange(ref this._channel, _notReadyChannel);
         }
 
         internal async ValueTask SetChannel(IProducerChannel channel)
@@ -153,8 +157,7 @@ namespace DotPulsar.Internal
                 return;
             }
 
-            var oldChannel = _channel;
-            _channel = channel;
+            var oldChannel = Interlocked.Exchange(ref this._channel, channel);
 
             if (oldChannel is not null)
                 await oldChannel.DisposeAsync().ConfigureAwait(false);
