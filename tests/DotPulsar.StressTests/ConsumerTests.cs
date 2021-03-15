@@ -48,14 +48,14 @@ namespace DotPulsar.StressTests
                 .ServiceUrl(new Uri("pulsar://localhost:54545"))
                 .Build();
 
-            await using var consumer = client.NewConsumer(Schema.Bytes)
+            await using var consumer = client.NewConsumer(Schema.ByteArray)
                 .ConsumerName($"consumer-{testRunId}")
                 .InitialPosition(SubscriptionInitialPosition.Earliest)
                 .SubscriptionName($"subscription-{testRunId}")
                 .Topic(topic)
                 .Create();
 
-            await using var producer = client.NewProducer(Schema.Bytes)
+            await using var producer = client.NewProducer(Schema.ByteArray)
                 .ProducerName($"producer-{testRunId}")
                 .Topic(topic)
                 .Create();

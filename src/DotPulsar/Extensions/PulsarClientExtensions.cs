@@ -28,19 +28,19 @@ namespace DotPulsar.Extensions
         /// Get a builder that can be used to configure and build a Producer instance.
         /// </summary>
         public static IProducerBuilder<ReadOnlySequence<byte>> NewProducer(this IPulsarClient pulsarClient)
-            => new ProducerBuilder<ReadOnlySequence<byte>>(pulsarClient, new ByteSequenceSchema());
+            => new ProducerBuilder<ReadOnlySequence<byte>>(pulsarClient, Schema.ByteSequence);
 
         /// <summary>
         /// Get a builder that can be used to configure and build a Consumer instance.
         /// </summary>
         public static IConsumerBuilder<ReadOnlySequence<byte>> NewConsumer(this IPulsarClient pulsarClient)
-            => new ConsumerBuilder<ReadOnlySequence<byte>>(pulsarClient, new ByteSequenceSchema());
+            => new ConsumerBuilder<ReadOnlySequence<byte>>(pulsarClient, Schema.ByteSequence);
 
         /// <summary>
         /// Get a builder that can be used to configure and build a Reader instance.
         /// </summary>
         public static IReaderBuilder<ReadOnlySequence<byte>> NewReader(this IPulsarClient pulsarClient)
-            => new ReaderBuilder<ReadOnlySequence<byte>>(pulsarClient, new ByteSequenceSchema());
+            => new ReaderBuilder<ReadOnlySequence<byte>>(pulsarClient, Schema.ByteSequence);
 
         /// <summary>
         /// Get a builder that can be used to configure and build a Producer instance.

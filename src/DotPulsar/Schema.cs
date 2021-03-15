@@ -23,7 +23,8 @@ namespace DotPulsar
     {
         static Schema()
         {
-            Bytes = new ByteArraySchema();
+            ByteSequence = new ByteSequenceSchema();
+            ByteArray = new ByteArraySchema();
             String = StringSchema.UTF8;
             Boolean = new BooleanSchema();
             Int8 = new ByteSchema();
@@ -37,9 +38,14 @@ namespace DotPulsar
         }
 
         /// <summary>
+        /// Raw bytes schema using ReadOnlySequence of bytes.
+        /// </summary>
+        public static ByteSequenceSchema ByteSequence { get; }
+
+        /// <summary>
         /// Raw bytes schema using byte[].
         /// </summary>
-        public static ByteArraySchema Bytes { get; }
+        public static ByteArraySchema ByteArray { get; }
 
         /// <summary>
         /// UTF-8 schema.

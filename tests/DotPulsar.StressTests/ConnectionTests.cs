@@ -48,7 +48,7 @@ namespace DotPulsar.StressTests
 
             await using var client = builder.Build();
 
-            await using var producer = client.NewProducer(Schema.Bytes)
+            await using var producer = client.NewProducer(Schema.ByteArray)
                 .ProducerName($"producer-{testRunId}")
                 .Topic(topic)
                 .Create();

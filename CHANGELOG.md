@@ -4,6 +4,40 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- A number of resilience, correctness, and performance improvements
+- Experimental: Added an extension method for IConsumer that will 'Process' and auto-acknowledge messages while creating an Activity (useful for doing tracing)
+- Schemas with support for the following types
+    - Boolean
+    - Bytes (using byte[] and ReadOnlySequence\<byte\>)
+    - String (UTF-8, UTF-16, and US-ASCII)
+    - INT8, INT16, INT32, and INT64
+	- Float and Double
+    - Time (using TimeSpan)
+    - Timestamp and Date (using DateTime)
+
+### Changed
+
+- Breaking: Building a producer will now create an IProducer\<T\>
+  The non-generic IProducer interface is still there, but messages can only be sent (ISend) with IProducer\<T\>
+- Breaking: Building a reader or consumer will now create an IConsumer\<T\> or IReader\<T\>
+  The non-genric IReader and IConsumer are still there, but messages can only be consumed/read (IReceive) with IConsumer\<T\> and IReader\<T\>
+- Breaking: Receiving a message with now return an IMessage\<T\> instead of the Message class (which is now internal)
+  The non-generic IMessage can be used if 'Value()' (decoding the 'Data' bytes) is not used (when just handling raw messages)
+- Breaking: The message builder is now generic
+- Setting an Action and Func StateChangedHandler on the ConsumerBuilder, ReaderBuilder, and ProducerBuilder are now extension methods
+- Setting an Action and Func ExceptionHandler on the PulsarClientBuilder are now extension methods
+
+### Fixed
+
+- When the broker sends a CommandClose[Producer/Consumer] all in-flight (and following) requests to the broker are ignored.
+  Even though we reconnect the consumer, reader, or producer the tasks for the in-flight requests will hang as long as the connection is kept alive by other producers/consumers/readers.
+  This situation is now handled and the requests will be sent again on the new connection.
+  As a client library, we can only handle this (unexpected) behavior for requests that get a response. For "fire and forget" requests, like "Flow", this remains a problem and should be solved broker/server-side by sending a response for all requests in all situations.
+
 ## [0.11.0] - 2021-02-21
 
 ### Added
