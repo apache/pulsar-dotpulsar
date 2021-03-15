@@ -19,6 +19,12 @@ namespace DotPulsar.Internal.Requests
 
     public struct ConnectRequest : IRequest
     {
+        public bool SenderIsConsumer(ulong consumerId)
+            => false;
+
+        public bool SenderIsProducer(ulong producerId)
+            => false;
+
 #if NETSTANDARD2_0
         public bool Equals(IRequest other)
 #else

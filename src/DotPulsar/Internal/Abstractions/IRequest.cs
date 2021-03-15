@@ -16,5 +16,9 @@ namespace DotPulsar.Internal.Abstractions
 {
     using System;
 
-    public interface IRequest : IEquatable<IRequest> { }
+    public interface IRequest : IEquatable<IRequest>
+    {
+        bool SenderIsProducer(ulong producerId);
+        bool SenderIsConsumer(ulong consumerId);
+    }
 }

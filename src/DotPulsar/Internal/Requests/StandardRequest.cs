@@ -20,10 +20,31 @@ namespace DotPulsar.Internal.Requests
 
     public struct StandardRequest : IRequest
     {
-        public ulong RequestId { get; }
+        private readonly ulong _requestId;
+        private readonly ulong? _consumerId;
+        private readonly ulong? _producerId;
 
-        public StandardRequest(ulong requestId)
-            => RequestId = requestId;
+        private StandardRequest(ulong requestId, ulong? consumerId, ulong? producerId)
+        {
+            _requestId = requestId;
+            _consumerId = consumerId;
+            _producerId = producerId;
+        }
+
+        public static StandardRequest WithRequestId(ulong requestId)
+            => new(requestId, null, null);
+
+        public static StandardRequest WithConsumerId(ulong requestId, ulong consumerId)
+            => new(requestId, consumerId, null);
+
+        public static StandardRequest WithProducerId(ulong requestId, ulong producerId)
+            => new (requestId, null, producerId);
+
+        public bool SenderIsConsumer(ulong consumerId)
+            => _consumerId.HasValue && _consumerId.Value == consumerId;
+
+        public bool SenderIsProducer(ulong producerId)
+            => _producerId.HasValue && _producerId.Value == producerId;
 
 #if NETSTANDARD2_0
         public bool Equals(IRequest other)
@@ -32,12 +53,12 @@ namespace DotPulsar.Internal.Requests
 #endif
         {
             if (other is StandardRequest request)
-                return RequestId.Equals(request.RequestId);
+                return _requestId.Equals(request._requestId);
 
             return false;
         }
 
         public override int GetHashCode()
-            => HashCode.Combine(RequestId);
+            => HashCode.Combine(_requestId);
     }
 }

@@ -20,14 +20,20 @@ namespace DotPulsar.Internal.Requests
 
     public struct SendRequest : IRequest
     {
-        public ulong ProducerId { get; }
-        public ulong SequenceId { get; }
+        private readonly ulong _producerId;
+        private readonly ulong _sequenceId;
 
         public SendRequest(ulong producerId, ulong sequenceId)
         {
-            ProducerId = producerId;
-            SequenceId = sequenceId;
+            _producerId = producerId;
+            _sequenceId = sequenceId;
         }
+
+        public bool SenderIsConsumer(ulong consumerId)
+            => false;
+
+        public bool SenderIsProducer(ulong producerId)
+            => _producerId == producerId;
 
 #if NETSTANDARD2_0
         public bool Equals(IRequest other)
@@ -36,12 +42,12 @@ namespace DotPulsar.Internal.Requests
 #endif
         {
             if (other is SendRequest request)
-                return ProducerId.Equals(request.ProducerId) && SequenceId.Equals(request.SequenceId);
+                return _producerId.Equals(request._producerId) && _sequenceId.Equals(request._sequenceId);
 
             return false;
         }
 
         public override int GetHashCode()
-            => HashCode.Combine(ProducerId, SequenceId);
+            => HashCode.Combine(_producerId, _sequenceId);
     }
 }

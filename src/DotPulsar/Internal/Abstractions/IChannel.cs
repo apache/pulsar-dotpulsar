@@ -14,6 +14,8 @@
 
 namespace DotPulsar.Internal.Abstractions
 {
+    using System;
+
     public interface IChannel
     {
         void Received(MessagePackage message);
@@ -24,5 +26,6 @@ namespace DotPulsar.Internal.Abstractions
         void Disconnected();
         void ReachedEndOfTopic();
         void Unsubscribed();
+        IDisposable SenderLock();
     }
 }

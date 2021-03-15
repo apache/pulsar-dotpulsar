@@ -17,15 +17,18 @@ namespace DotPulsar.Internal
     using Abstractions;
     using Events;
     using System;
+    using System.Threading;
 
     public sealed class Channel : IChannel
     {
+        private readonly Lock _senderLock;
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
         private readonly IEnqueue<MessagePackage> _enqueue;
 
         public Channel(Guid correlationId, IRegisterEvent eventRegister, IEnqueue<MessagePackage> enqueue)
         {
+            _senderLock = new Lock();
             _correlationId = correlationId;
             _eventRegister = eventRegister;
             _enqueue = enqueue;
@@ -38,7 +41,10 @@ namespace DotPulsar.Internal
             => _eventRegister.Register(new ChannelActivated(_correlationId));
 
         public void ClosedByServer()
-            => _eventRegister.Register(new ChannelClosedByServer(_correlationId));
+        {
+            _senderLock.Disable();
+            _eventRegister.Register(new ChannelClosedByServer(_correlationId));
+        }
 
         public void Connected()
             => _eventRegister.Register(new ChannelConnected(_correlationId));
@@ -47,12 +53,51 @@ namespace DotPulsar.Internal
             => _eventRegister.Register(new ChannelDeactivated(_correlationId));
 
         public void Disconnected()
-            => _eventRegister.Register(new ChannelDisconnected(_correlationId));
+        {
+            _senderLock.Disable();
+            _eventRegister.Register(new ChannelDisconnected(_correlationId));
+        }
 
         public void ReachedEndOfTopic()
             => _eventRegister.Register(new ChannelReachedEndOfTopic(_correlationId));
 
         public void Unsubscribed()
             => _eventRegister.Register(new ChannelUnsubscribed(_correlationId));
+
+        public IDisposable SenderLock()
+            => _senderLock.Enter();
+
+        private sealed class Lock : IDisposable
+        {
+            private readonly object _lock;
+            private bool _canSend;
+
+            public Lock()
+            {
+                _lock = new object();
+                _canSend = true;
+            }
+
+            public void Disable()
+            {
+                Monitor.Enter(_lock);
+                _canSend = false;
+                Monitor.Exit(_lock);
+            }
+
+            public IDisposable Enter()
+            {
+                Monitor.Enter(_lock);
+
+                if (_canSend)
+                    return this;
+
+                Monitor.Exit(_lock);
+                throw new OperationCanceledException();
+            }
+
+            public void Dispose()
+                => Monitor.Exit(_lock);
+        }
     }
 }
