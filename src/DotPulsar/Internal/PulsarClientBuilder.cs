@@ -27,6 +27,7 @@ namespace DotPulsar.Internal
         private readonly CommandConnect _commandConnect;
         private readonly List<IHandleException> _exceptionHandlers;
         private EncryptionPolicy? _encryptionPolicy;
+        private string? _listenerName;
         private TimeSpan _retryInterval;
         private Uri _serviceUrl;
         private X509Certificate2? _trustedCertificateAuthority;
@@ -75,6 +76,12 @@ namespace DotPulsar.Internal
         public IPulsarClientBuilder ExceptionHandler(IHandleException exceptionHandler)
         {
             _exceptionHandlers.Add(exceptionHandler);
+            return this;
+        }
+
+        public IPulsarClientBuilder ListenerName(string listenerName)
+        {
+            _listenerName = listenerName;
             return this;
         }
 
@@ -139,7 +146,7 @@ namespace DotPulsar.Internal
 
 
             var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
-            var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval);
+            var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName);
             var processManager = new ProcessManager(connectionPool);
             var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
             var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);

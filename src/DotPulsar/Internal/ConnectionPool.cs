@@ -32,22 +32,24 @@ namespace DotPulsar.Internal
         private readonly Connector _connector;
         private readonly EncryptionPolicy _encryptionPolicy;
         private readonly ConcurrentDictionary<PulsarUrl, Connection> _connections;
-
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _closeInactiveConnections;
+        private readonly string? _listenerName;
 
         public ConnectionPool(
             CommandConnect commandConnect,
             Uri serviceUrl,
             Connector connector,
             EncryptionPolicy encryptionPolicy,
-            TimeSpan closeInactiveConnectionsInterval)
+            TimeSpan closeInactiveConnectionsInterval,
+            string? listenerName)
         {
             _lock = new AsyncLock();
             _commandConnect = commandConnect;
             _serviceUrl = serviceUrl;
             _connector = connector;
             _encryptionPolicy = encryptionPolicy;
+            _listenerName = listenerName;
             _connections = new ConcurrentDictionary<PulsarUrl, Connection>();
             _cancellationTokenSource = new CancellationTokenSource();
             _closeInactiveConnections = CloseInactiveConnections(closeInactiveConnectionsInterval, _cancellationTokenSource.Token);
@@ -72,7 +74,8 @@ namespace DotPulsar.Internal
             var lookup = new CommandLookupTopic
             {
                 Topic = topic,
-                Authoritative = false
+                Authoritative = false,
+                AdvertisedListenerName = _listenerName
             };
 
             var physicalUrl = _serviceUrl;

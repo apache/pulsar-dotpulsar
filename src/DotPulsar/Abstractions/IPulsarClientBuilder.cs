@@ -43,6 +43,11 @@ namespace DotPulsar.Abstractions
         IPulsarClientBuilder ExceptionHandler(IHandleException exceptionHandler);
 
         /// <summary>
+        /// Set the listener name. This is optional.
+        /// </summary>
+        IPulsarClientBuilder ListenerName(string listenerName);
+
+        /// <summary>
         /// The time to wait before retrying an operation or a reconnect. The default is 3 seconds.
         /// </summary>
         IPulsarClientBuilder RetryInterval(TimeSpan interval);
