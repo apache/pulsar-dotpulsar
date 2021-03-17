@@ -40,7 +40,7 @@ namespace DotPulsar.Extensions
             => await consumer.AcknowledgeCumulative(message.MessageId, cancellationToken).ConfigureAwait(false);
 
         /// <summary>
-        /// Process and auto-acknowledge a message.
+        /// Process and auto-acknowledge a message. This is experimental.
         /// </summary>
         public static async ValueTask Process<TMessage>(
             this IConsumer<TMessage> consumer,

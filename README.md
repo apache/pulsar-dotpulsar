@@ -2,7 +2,7 @@
 
 ![CI - Unit](https://github.com/apache/pulsar-dotpulsar/workflows/CI%20-%20Unit/badge.svg)
 
-The official .NET/C# client library for [Apache Pulsar](https://pulsar.apache.org/).
+The official .NET client library for [Apache Pulsar](https://pulsar.apache.org/).
 
 DotPulsar is written entirely in C# and implements Apache Pulsar's [binary protocol](https://pulsar.apache.org/docs/en/develop-binary-protocol/).
 
@@ -65,6 +65,14 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 - [X] [ZLIB message compression](https://github.com/apache/pulsar-dotpulsar/wiki/Compression)
 - [X] [ZSTD message compression](https://github.com/apache/pulsar-dotpulsar/wiki/Compression)
 - [X] [SNAPPY message compression](https://github.com/apache/pulsar-dotpulsar/wiki/Compression)
+- [X] Schemas
+    - Boolean
+    - Bytes (using byte[] and ReadOnlySequence\<byte\>)
+    - String (UTF-8, UTF-16, and US-ASCII)
+    - INT8, INT16, INT32, and INT64
+    - Float and Double
+    - Time (using TimeSpan)
+    - Timestamp and Date (using DateTime)
 
 ## Roadmap
 

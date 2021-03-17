@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal.Requests
 {
     using DotPulsar.Internal.Abstractions;
+    using DotPulsar.Internal.PulsarApi;
     using System.Diagnostics.CodeAnalysis;
 
     public struct ConnectRequest : IRequest
@@ -24,6 +25,9 @@ namespace DotPulsar.Internal.Requests
 
         public bool SenderIsProducer(ulong producerId)
             => false;
+
+        public bool IsCommandType(BaseCommand.Type commandType)
+            => commandType == BaseCommand.Type.Connect;
 
 #if NETSTANDARD2_0
         public bool Equals(IRequest other)

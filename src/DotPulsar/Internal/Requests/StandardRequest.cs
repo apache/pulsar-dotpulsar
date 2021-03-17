@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal.Requests
 {
     using DotPulsar.Internal.Abstractions;
+    using DotPulsar.Internal.PulsarApi;
     using System;
     using System.Diagnostics.CodeAnalysis;
 
@@ -23,28 +24,33 @@ namespace DotPulsar.Internal.Requests
         private readonly ulong _requestId;
         private readonly ulong? _consumerId;
         private readonly ulong? _producerId;
+        private readonly BaseCommand.Type? _commandType;
 
-        private StandardRequest(ulong requestId, ulong? consumerId, ulong? producerId)
+        private StandardRequest(ulong requestId, ulong? consumerId, ulong? producerId, BaseCommand.Type? commandType)
         {
             _requestId = requestId;
             _consumerId = consumerId;
             _producerId = producerId;
+            _commandType = commandType;
         }
 
         public static StandardRequest WithRequestId(ulong requestId)
-            => new(requestId, null, null);
+            => new(requestId, null, null, null);
 
-        public static StandardRequest WithConsumerId(ulong requestId, ulong consumerId)
-            => new(requestId, consumerId, null);
+        public static StandardRequest WithConsumerId(ulong requestId, ulong consumerId, BaseCommand.Type? commandType = null)
+            => new(requestId, consumerId, null, commandType);
 
-        public static StandardRequest WithProducerId(ulong requestId, ulong producerId)
-            => new (requestId, null, producerId);
+        public static StandardRequest WithProducerId(ulong requestId, ulong producerId, BaseCommand.Type? commandType = null)
+            => new (requestId, null, producerId, commandType);
 
         public bool SenderIsConsumer(ulong consumerId)
             => _consumerId.HasValue && _consumerId.Value == consumerId;
 
         public bool SenderIsProducer(ulong producerId)
             => _producerId.HasValue && _producerId.Value == producerId;
+
+        public bool IsCommandType(BaseCommand.Type commandType)
+            => _commandType.HasValue && _commandType.Value == commandType;
 
 #if NETSTANDARD2_0
         public bool Equals(IRequest other)

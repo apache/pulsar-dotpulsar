@@ -108,7 +108,7 @@ namespace DotPulsar.Internal
         public Task<BaseCommand> Outgoing(CommandSeek command)
         {
             command.RequestId = _requestId.FetchNext();
-            return _requests.CreateTask(StandardRequest.WithConsumerId(command.RequestId, command.ConsumerId));
+            return _requests.CreateTask(StandardRequest.WithConsumerId(command.RequestId, command.ConsumerId, BaseCommand.Type.Seek));
         }
 
         public Task<BaseCommand> Outgoing(CommandGetLastMessageId command)
@@ -131,7 +131,12 @@ namespace DotPulsar.Internal
             foreach (var request in requests)
             {
                 if (request.SenderIsConsumer(command.ConsumerId))
-                    _requests.Cancel(request);
+                {
+                    if (request.IsCommandType(BaseCommand.Type.Seek))
+                        _requests.SetResult(request, new BaseCommand { CommandType = BaseCommand.Type.Success });
+                    else
+                        _requests.Cancel(request);
+                }
             }
         }
 
