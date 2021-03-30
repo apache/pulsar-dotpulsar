@@ -27,6 +27,6 @@ namespace DotPulsar.Internal.Abstractions
         Task<CommandSuccess> Send(CommandSeek command, CancellationToken cancellationToken);
         Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
         ValueTask<Message> Receive(CancellationToken cancellationToken);
-        Task UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken);
+        void UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken);
     }
 }

@@ -201,11 +201,10 @@ namespace DotPulsar.Internal
                 await oldChannel.DisposeAsync().ConfigureAwait(false);
         }
 
-        internal async Task UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken)
+        internal void UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken)
         {
             _factory.UpdateMessagePrefetchCount(messagePrefetchCount);
-            await _channel.UpdateMessagePrefetchCount(messagePrefetchCount, cancellationToken)
-                          .ConfigureAwait(false);
+            _channel.UpdateMessagePrefetchCount(messagePrefetchCount, cancellationToken);
         }
 
         private void ThrowIfDisposed()

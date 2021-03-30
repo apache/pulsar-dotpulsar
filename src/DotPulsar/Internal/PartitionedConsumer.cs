@@ -359,8 +359,7 @@ namespace DotPulsar.Internal
 
                         foreach (ConsumerUsageData consumerUsageData in _consumers.Values)
                         {
-                            await consumerUsageData.Consumer.UpdateMessagePrefetchCount(prefetchCount, cancellationToken)
-                                                            .ConfigureAwait(false);
+                            consumerUsageData.Consumer.UpdateMessagePrefetchCount(prefetchCount, cancellationToken);
                         }
 
                         // construct new consumers

@@ -166,13 +166,10 @@ namespace DotPulsar.Internal
             }
         }
 
-        public async Task UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken)
+        public void UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken)
         {
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                _cachedCommandFirstFlow.MessagePermits = messagePrefetchCount;
-                _cachedCommandOtherFlow.MessagePermits = (uint) Math.Ceiling(messagePrefetchCount * 0.5);
-            }
+            _cachedCommandFirstFlow.MessagePermits = messagePrefetchCount;
+            _cachedCommandOtherFlow.MessagePermits = (uint) Math.Max(Math.Ceiling(messagePrefetchCount * 0.5), 1.0);
         }
 
         private async ValueTask SendFlow(CancellationToken cancellationToken)
