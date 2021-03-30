@@ -160,6 +160,9 @@ namespace DotPulsar.Internal
         public Task<BaseCommand> Outgoing(CommandLookupTopic command)
             => _requestResponseHandler.Outgoing(command);
 
+        public Task<BaseCommand> Outgoing(CommandPartitionedTopicMetadata command)
+            => _requestResponseHandler.Outgoing(command);
+
         public Task<BaseCommand> Outgoing(CommandSeek command)
         {
             using (TakeConsumerSenderLock(command.ConsumerId))

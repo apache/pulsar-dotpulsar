@@ -41,5 +41,6 @@ namespace DotPulsar.Internal.Abstractions
         Task<BaseCommand> Send(CommandCloseConsumer command, CancellationToken cancellationToken);
         Task<BaseCommand> Send(SendPackage command, CancellationToken cancellationToken);
         Task<BaseCommand> Send(CommandGetOrCreateSchema command, CancellationToken cancellationToken);
+        Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken);
     }
 }

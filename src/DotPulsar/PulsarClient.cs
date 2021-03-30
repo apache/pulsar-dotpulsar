@@ -20,6 +20,7 @@ namespace DotPulsar
     using Exceptions;
     using Internal;
     using Internal.Abstractions;
+    using Internal.Extensions;
     using System;
     using System.Linq;
     using System.Threading;
@@ -37,7 +38,7 @@ namespace DotPulsar
 
         public Uri ServiceUrl { get; }
 
-        internal PulsarClient(
+        public PulsarClient(
             IConnectionPool connectionPool,
             ProcessManager processManager,
             IHandleException exceptionHandler,
@@ -56,6 +57,20 @@ namespace DotPulsar
         /// </summary>
         public static IPulsarClientBuilder Builder()
             => new PulsarClientBuilder();
+
+        public async Task<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken)
+        {
+            var connection = await _connectionPool.FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
+            var commandPartitionedMetadata = new CommandPartitionedTopicMetadata() { Topic = topic };
+            var response = await connection.Send(commandPartitionedMetadata, cancellationToken).ConfigureAwait(false);
+
+            response.Expect(BaseCommand.Type.PartitionedMetadataResponse);
+
+            if (response.PartitionMetadataResponse.Response == CommandPartitionedTopicMetadataResponse.LookupType.Failed)
+                response.PartitionMetadataResponse.Throw();
+
+            return response.PartitionMetadataResponse.Partitions;
+        }
 
         /// <summary>
         /// Create a producer.
@@ -85,6 +100,51 @@ namespace DotPulsar
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
             var initialChannel = new NotReadyChannel<TMessage>();
             var producer = new Producer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
+
+            if (options.StateChangedHandler is not null)
+                _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
+            var process = new ProducerProcess(correlationId, stateManager, producer);
+            _processManager.Add(process);
+            process.Start();
+            return producer;
+        }
+
+        /// <summary>
+        /// Create a producer internally.
+        /// This method is used to create internal producer for partitioned producer.
+        /// </summary>
+        /// <param name="topic">topic name</param>
+        /// <param name="partitionIndex">partition index</param>
+        /// <param name="options">producer options</param>
+        /// <typeparam name="TMessage">schema type of the producer</typeparam>
+        /// <returns></returns>
+        /// <exception cref="CompressionException"></exception>
+        private Producer<TMessage> NewProducer<TMessage>(string topic, int partitionIndex, ProducerOptions<TMessage> options)
+        {
+            ThrowIfDisposed();
+
+            ICompressorFactory? compressorFactory = null;
+
+            if (options.CompressionType != CompressionType.None)
+            {
+                var compressionType = (Internal.PulsarApi.CompressionType) options.CompressionType;
+                compressorFactory = CompressionFactories.CompressorFactories().SingleOrDefault(f => f.CompressionType == compressionType);
+
+                if (compressorFactory is null)
+                    throw new CompressionException($"Support for {compressionType} compression was not found");
+            }
+
+            var correlationId = Guid.NewGuid();
+            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
+            var producerName = options.ProducerName;
+            var schema = options.Schema;
+            var initialSequenceId = options.InitialSequenceId;
+
+            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, schema.SchemaInfo, compressorFactory);
+            var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+            var initialChannel = new NotReadyChannel<TMessage>();
+            var producer = new Producer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
+
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
             var process = new ProducerProcess(correlationId, stateManager, producer);
