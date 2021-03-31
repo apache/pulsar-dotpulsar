@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using Events;
     using System;
     using System.Threading.Tasks;
 
@@ -23,18 +24,29 @@ namespace DotPulsar.Internal
         private readonly IStateManager<ProducerState> _stateManager;
         private readonly IEstablishNewChannel _producer;
 
+        // The following variables are only used when producing in partitioned topic.
+        private readonly IRegisterEvent _processManager;
+        private readonly Guid? _partitionedProducerId;
+        private readonly uint? _partitionIndex;
+
         public ProducerProcess(
             Guid correlationId,
             IStateManager<ProducerState> stateManager,
-            IEstablishNewChannel producer) : base(correlationId)
+            IEstablishNewChannel producer,
+            IRegisterEvent processManager = null!,
+            Guid? partitionedProducerId = null,
+            uint? partitionIndex = null) : base(correlationId)
         {
             _stateManager = stateManager;
             _producer = producer;
+            _processManager = processManager;
+            _partitionedProducerId = partitionedProducerId;
+            _partitionIndex = partitionIndex;
         }
 
         public override async ValueTask DisposeAsync()
         {
-            _stateManager.SetState(ProducerState.Closed);
+            SetState(ProducerState.Closed);
             CancellationTokenSource.Cancel();
             await _producer.DisposeAsync().ConfigureAwait(false);
         }
@@ -54,13 +66,21 @@ namespace DotPulsar.Internal
             {
                 case ChannelState.ClosedByServer:
                 case ChannelState.Disconnected:
-                    _stateManager.SetState(ProducerState.Disconnected);
+                    SetState(ProducerState.Disconnected);
                     _ = _producer.EstablishNewChannel(CancellationTokenSource.Token);
                     return;
                 case ChannelState.Connected:
-                    _stateManager.SetState(ProducerState.Connected);
+                    SetState(ProducerState.Connected);
                     return;
             }
+        }
+
+        private void SetState(ProducerState state)
+        {
+            _stateManager.SetState(state);
+
+            if (_partitionedProducerId.HasValue && _partitionIndex.HasValue)
+                _processManager.Register(new PartitionedSubProducerStateChanged(_partitionedProducerId.Value, state, _partitionIndex.Value));
         }
     }
 }
