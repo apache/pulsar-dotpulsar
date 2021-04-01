@@ -24,7 +24,7 @@ namespace DotPulsar.Internal
         private readonly IStateManager<ProducerState> _stateManager;
         private readonly IEstablishNewChannel _producer;
 
-        // The following variables are only used when producing in partitioned topic.
+        // The following variables are only used when when the producer is PartitionedProducer.
         private readonly IRegisterEvent _processManager;
         private readonly Guid? _partitionedProducerId;
         private readonly uint? _partitionIndex;
@@ -58,7 +58,7 @@ namespace DotPulsar.Internal
 
             if (ExecutorState == ExecutorState.Faulted)
             {
-                _stateManager.SetState(ProducerState.Faulted);
+                SetState(ProducerState.Faulted);
                 return;
             }
 
