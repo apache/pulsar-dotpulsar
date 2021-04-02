@@ -26,7 +26,7 @@ namespace DotPulsar.Internal.Events
         public ProducerState ProducerState { get; }
         public uint PartitionIndex { get; }
 
-        internal PartitionedSubProducerStateChanged(Guid correlationId, ProducerState producerState, uint partitionIndex)
+        public PartitionedSubProducerStateChanged(Guid correlationId, ProducerState producerState, uint partitionIndex)
         {
             CorrelationId = correlationId;
             ProducerState = producerState;

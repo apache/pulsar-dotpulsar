@@ -56,7 +56,7 @@ namespace DotPulsar.Tests.Internal
 
             var partitionedStateManager =
                 new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var partitionedProducerProcess = new PartitionedProducerProcess(partitionedProducerGuid, partitionedStateManager, producersGroup);
+            var partitionedProducerProcess = new PartitionedProducerProcess(partitionedProducerGuid, partitionedStateManager, (uint) producersGroup.Count);
             processManager.Add(partitionedProducerProcess);
 
             // Test connect
@@ -79,6 +79,27 @@ namespace DotPulsar.Tests.Internal
             // Test fault
             processManager.Register(new ExecutorFaulted(producerGuids[1]));
             Assert.Equal(ProducerState.Faulted, partitionedStateManager.CurrentState);
+        }
+
+        [Fact]
+        public void TestUpdatePartitions()
+        {
+            var connectionPoolMock = new Mock<IConnectionPool>(MockBehavior.Loose);
+            var connectionPool = connectionPoolMock.Object;
+            var processManager = new ProcessManager(connectionPool);
+
+            var guid = Guid.NewGuid();
+            var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+            var process = new PartitionedProducerProcess(guid, stateManager, 1);
+            processManager.Add(process);
+
+            Assert.Equal(ProducerState.Disconnected, stateManager.CurrentState);
+            processManager.Register(new PartitionedSubProducerStateChanged(guid, ProducerState.Connected, 0));
+            Assert.Equal(ProducerState.Connected, stateManager.CurrentState);
+            processManager.Register(new UpdatePartitions(guid, 2));
+            Assert.Equal(ProducerState.PartiallyConnected, stateManager.CurrentState);
+            processManager.Register(new PartitionedSubProducerStateChanged(guid, ProducerState.Connected, 1));
+            Assert.Equal(ProducerState.Connected, stateManager.CurrentState);
         }
     }
 }
