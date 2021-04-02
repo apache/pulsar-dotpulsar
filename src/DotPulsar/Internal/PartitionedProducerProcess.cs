@@ -25,18 +25,16 @@ namespace DotPulsar.Internal
     {
         private readonly IStateManager<ProducerState> _stateManager;
 
-        /// <summary>
-        /// The producers group is shared between PartitionedProducerProcess and PartitionedProducer.
-        /// </summary>
-        private readonly ConcurrentDictionary<uint, IProducer> _producersGroup;
-
+        private uint _partitionsCount;
         private uint _connectedProducersCount = 0;
 
-        public PartitionedProducerProcess(Guid correlationId, IStateManager<ProducerState> stateManager, ConcurrentDictionary<uint, IProducer> producersGroup)
+        public PartitionedProducerProcess(Guid correlationId,
+            IStateManager<ProducerState> stateManager,
+            uint partitionsCount)
         {
             CorrelationId = correlationId;
             _stateManager = stateManager;
-            _producersGroup = producersGroup;
+            _partitionsCount = partitionsCount;
         }
 
         public ValueTask DisposeAsync()
@@ -52,30 +50,37 @@ namespace DotPulsar.Internal
             if (_stateManager.IsFinalState())
                 return;
 
-            if (e is PartitionedSubProducerStateChanged stateChanged)
+            switch (e)
             {
-                switch (stateChanged.ProducerState)
-                {
-                    case ProducerState.Closed:
-                        _stateManager.SetState(ProducerState.Closed);
-                        break;
-                    case ProducerState.Connected:
-                        _connectedProducersCount++;
-                        break;
-                    case ProducerState.Disconnected:
-                        _connectedProducersCount--;
-                        break;
-                    case ProducerState.Faulted:
-                        _stateManager.SetState(ProducerState.Faulted);
-                        break;
-                    default: throw new ArgumentOutOfRangeException();
-                }
+                case PartitionedSubProducerStateChanged stateChanged:
+                    switch (stateChanged.ProducerState)
+                    {
+                        case ProducerState.Closed:
+                            _stateManager.SetState(ProducerState.Closed);
+                            break;
+                        case ProducerState.Connected:
+                            _connectedProducersCount++;
+                            break;
+                        case ProducerState.Disconnected:
+                            _connectedProducersCount--;
+                            break;
+                        case ProducerState.Faulted:
+                            _stateManager.SetState(ProducerState.Faulted);
+                            break;
+                        case ProducerState.PartiallyConnected: break;
+                        default: throw new ArgumentOutOfRangeException();
+                    }
+
+                    break;
+                case UpdatePartitions updatePartitions:
+                    _partitionsCount = updatePartitions.PartitionsCount;
+                    break;
             }
 
             if (_stateManager.IsFinalState())
                 return;
 
-            if (_connectedProducersCount == _producersGroup.Count)
+            if (_connectedProducersCount == _partitionsCount)
                 _stateManager.SetState(ProducerState.Connected);
             else if (_connectedProducersCount == 0)
                 _stateManager.SetState(ProducerState.Disconnected);
