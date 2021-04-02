@@ -16,40 +16,81 @@ namespace DotPulsar.Internal
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public sealed class Awaiter<T, TResult> : IDisposable where T : notnull
     {
-        private readonly ConcurrentDictionary<T, TaskCompletionSource<TResult>> _items;
+        private readonly ConcurrentDictionary<T, (TaskCompletionSource<TResult> tcs, DateTime expiry)> _items;
+        private readonly int _timeoutMs;
+        private readonly CancellationTokenSource _disposed = new CancellationTokenSource();
 
-        public Awaiter()
-            => _items = new ConcurrentDictionary<T, TaskCompletionSource<TResult>>();
+        public Awaiter(int timeoutMs)
+        {
+            _items = new ConcurrentDictionary<T, (TaskCompletionSource<TResult> tcs, DateTime expiry)>();
+            _timeoutMs = timeoutMs;
+            _ = TimeoutScanner(_disposed.Token);
+        }
 
-        public Task<TResult> CreateTask(T item)
+        public Task<TResult> CreateTask(T item, int? timeoutOverrideMs = null)
         {
             var tcs = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _ = _items.TryAdd(item, tcs);
+            int thisTimeout = timeoutOverrideMs ?? _timeoutMs;
+            DateTime expiry = (thisTimeout > 0) ? DateTime.UtcNow.AddMilliseconds(thisTimeout) : DateTime.MaxValue;
+            _ = _items.TryAdd(item, (tcs, expiry));
             return tcs.Task;
         }
 
         public void SetResult(T item, TResult result)
         {
-            if (_items.TryRemove(item, out var tcs))
-                tcs.SetResult(result);
+            if (_items.TryRemove(item, out var tuple))
+                tuple.tcs.SetResult(result);
         }
 
         public void Fault(T item, Exception exceptionToRelay)
         {
-            if (_items.TryRemove(item, out var tcs))
-                tcs.SetException(exceptionToRelay);
+            if (_items.TryRemove(item, out var tuple))
+                tuple.tcs.SetException(exceptionToRelay);
         }
 
         public void Dispose()
         {
+            _disposed.Cancel();
+
             foreach (var item in _items.Values)
-                item.SetCanceled();
+                item.tcs.SetCanceled();
 
             _items.Clear();
+        }
+
+        private async Task TimeoutScanner(CancellationToken stop)
+        {
+            try
+            {
+                await Task.Yield();
+                while (!stop.IsCancellationRequested)
+                {
+                    var thisLoopNow = DateTime.UtcNow;
+                    foreach (var itemToCheck in _items)
+                    {
+                        // If the item is expired, and we could remove it from the collection to operate on
+                        if ((itemToCheck.Value.expiry < thisLoopNow) && _items.TryRemove(itemToCheck.Key, out var maybeExpiredItem))
+                        {
+                            // Make sure it's either the same item we checked, or we're too late to put it back
+                            if ((maybeExpiredItem == itemToCheck.Value) || !_items.TryAdd(itemToCheck.Key, maybeExpiredItem))
+                            {
+                                maybeExpiredItem.tcs.TrySetCanceled();
+                            }
+                        }
+                    }
+
+                    await Task.Delay(1000);
+                }
+            }
+            catch
+            {
+                // Do nothing but die
+            }
         }
     }
 }

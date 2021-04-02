@@ -17,6 +17,7 @@ namespace DotPulsar.Internal
     using PulsarApi;
     using System;
     using System.Collections.Concurrent;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public sealed class RequestResponseHandler : IDisposable
@@ -27,9 +28,9 @@ namespace DotPulsar.Internal
         private readonly RequestId _requestId;
         private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<string, int>> _producersMessages;
 
-        public RequestResponseHandler()
+        public RequestResponseHandler(int commandTimeoutMs)
         {
-            _responses = new Awaiter<string, BaseCommand>();
+            _responses = new Awaiter<string, BaseCommand>(commandTimeoutMs);
             _requestId = new RequestId();
             _producersMessages = new ConcurrentDictionary<ulong, ConcurrentDictionary<string, int>>();
         }
@@ -37,7 +38,7 @@ namespace DotPulsar.Internal
         public void Dispose()
             => _responses.Dispose();
 
-        public Task<BaseCommand> Outgoing(BaseCommand command)
+        public Task<BaseCommand> Outgoing(BaseCommand command, int? timeoutOverrideMs = null)
         {
             SetRequestId(command);
             var identifier = GetResponseIdentifier(command);
@@ -47,7 +48,7 @@ namespace DotPulsar.Internal
                 var messages = _producersMessages.GetOrAdd(command.Send.ProducerId, _ => new ConcurrentDictionary<string, int>());
                 messages.TryAdd(identifier, 0);
             }
-            return _responses.CreateTask(identifier);
+            return _responses.CreateTask(identifier, timeoutOverrideMs);
         }
 
         public void Incoming(BaseCommand command)
