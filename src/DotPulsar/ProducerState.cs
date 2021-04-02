@@ -37,6 +37,11 @@ namespace DotPulsar
         /// <summary>
         /// The producer is faulted. This is a final state.
         /// </summary>
-        Faulted
+        Faulted,
+
+        /// <summary>
+        /// Some of the sub-producers are disconnected.
+        /// </summary>
+        PartiallyConnected
     }
 }

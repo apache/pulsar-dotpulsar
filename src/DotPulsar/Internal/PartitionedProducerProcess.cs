@@ -23,7 +23,7 @@ namespace DotPulsar.Internal
 
     public class PartitionedProducerProcess : IProcess
     {
-        private readonly IStateManager<PartitionedProducerState> _stateManager;
+        private readonly IStateManager<ProducerState> _stateManager;
 
         /// <summary>
         /// The producers group is shared between PartitionedProducerProcess and PartitionedProducer.
@@ -32,7 +32,7 @@ namespace DotPulsar.Internal
 
         private uint _connectedProducersCount = 0;
 
-        public PartitionedProducerProcess(Guid correlationId, IStateManager<PartitionedProducerState> stateManager, ConcurrentDictionary<uint, IProducer> producersGroup)
+        public PartitionedProducerProcess(Guid correlationId, IStateManager<ProducerState> stateManager, ConcurrentDictionary<uint, IProducer> producersGroup)
         {
             CorrelationId = correlationId;
             _stateManager = stateManager;
@@ -57,7 +57,7 @@ namespace DotPulsar.Internal
                 switch (stateChanged.ProducerState)
                 {
                     case ProducerState.Closed:
-                        _stateManager.SetState(PartitionedProducerState.Closed);
+                        _stateManager.SetState(ProducerState.Closed);
                         break;
                     case ProducerState.Connected:
                         _connectedProducersCount++;
@@ -66,7 +66,7 @@ namespace DotPulsar.Internal
                         _connectedProducersCount--;
                         break;
                     case ProducerState.Faulted:
-                        _stateManager.SetState(PartitionedProducerState.Faulted);
+                        _stateManager.SetState(ProducerState.Faulted);
                         break;
                     default: throw new ArgumentOutOfRangeException();
                 }
@@ -76,11 +76,11 @@ namespace DotPulsar.Internal
                 return;
 
             if (_connectedProducersCount == _producersGroup.Count)
-                _stateManager.SetState(PartitionedProducerState.Connected);
+                _stateManager.SetState(ProducerState.Connected);
             else if (_connectedProducersCount == 0)
-                _stateManager.SetState(PartitionedProducerState.Disconnected);
+                _stateManager.SetState(ProducerState.Disconnected);
             else
-                _stateManager.SetState(PartitionedProducerState.PartiallyConnected);
+                _stateManager.SetState(ProducerState.PartiallyConnected);
         }
     }
 }

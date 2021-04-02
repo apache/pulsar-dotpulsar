@@ -55,30 +55,30 @@ namespace DotPulsar.Tests.Internal
             }
 
             var partitionedStateManager =
-                new StateManager<PartitionedProducerState>(PartitionedProducerState.Disconnected, PartitionedProducerState.Closed, PartitionedProducerState.Faulted);
+                new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
             var partitionedProducerProcess = new PartitionedProducerProcess(partitionedProducerGuid, partitionedStateManager, producersGroup);
             processManager.Add(partitionedProducerProcess);
 
             // Test connect
-            Assert.Equal(PartitionedProducerState.Disconnected, partitionedStateManager.CurrentState);
+            Assert.Equal(ProducerState.Disconnected, partitionedStateManager.CurrentState);
             processManager.Register(new ChannelConnected(producerGuids[0]));
-            Assert.Equal(PartitionedProducerState.PartiallyConnected, partitionedStateManager.CurrentState);
+            Assert.Equal(ProducerState.PartiallyConnected, partitionedStateManager.CurrentState);
             processManager.Register(new ChannelConnected(producerGuids[1]));
-            Assert.Equal(PartitionedProducerState.PartiallyConnected, partitionedStateManager.CurrentState);
+            Assert.Equal(ProducerState.PartiallyConnected, partitionedStateManager.CurrentState);
             processManager.Register(new ChannelConnected(producerGuids[2]));
-            Assert.Equal(PartitionedProducerState.Connected, partitionedStateManager.CurrentState);
+            Assert.Equal(ProducerState.Connected, partitionedStateManager.CurrentState);
 
             // Test disconnect
             processManager.Register(new ChannelDisconnected(producerGuids[1]));
-            Assert.Equal(PartitionedProducerState.PartiallyConnected, partitionedStateManager.CurrentState);
+            Assert.Equal(ProducerState.PartiallyConnected, partitionedStateManager.CurrentState);
 
             // Test reconnect
             processManager.Register(new ChannelConnected(producerGuids[1]));
-            Assert.Equal(PartitionedProducerState.Connected, partitionedStateManager.CurrentState);
+            Assert.Equal(ProducerState.Connected, partitionedStateManager.CurrentState);
 
             // Test fault
             processManager.Register(new ExecutorFaulted(producerGuids[1]));
-            Assert.Equal(PartitionedProducerState.Faulted, partitionedStateManager.CurrentState);
+            Assert.Equal(ProducerState.Faulted, partitionedStateManager.CurrentState);
         }
     }
 }
