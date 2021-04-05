@@ -318,9 +318,9 @@ namespace DotPulsar.Internal
                     {
                         lock (_statusLock)
                         {
-                            if (_consumers.TryGetValue(partitionIndex, out ConsumerUsageData consumerUsageData))
+                            if (_consumers.TryGetValue(partitionIndex, out ConsumerUsageData? consumerUsageData))
                             {
-                                consumerUsageData.IsActive = state == ConsumerState.Active;
+                                consumerUsageData!.IsActive = state == ConsumerState.Active;
                             }
                             _state.SetState(_consumers.Any(x => !x.Value.IsActive) ? ConsumerState.Disconnected : ConsumerState.Active);
                         }
@@ -359,8 +359,7 @@ namespace DotPulsar.Internal
 
                         foreach (ConsumerUsageData consumerUsageData in _consumers.Values)
                         {
-                            await consumerUsageData.Consumer.UpdateMessagePrefetchCount(prefetchCount, cancellationToken)
-                                                            .ConfigureAwait(false);
+                            consumerUsageData.Consumer.UpdateMessagePrefetchCount(prefetchCount, cancellationToken);
                         }
 
                         // construct new consumers
@@ -402,9 +401,9 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            if (_consumers.TryGetValue(partitionId, out ConsumerUsageData result))
+            if (_consumers.TryGetValue(partitionId, out ConsumerUsageData? result))
             {
-                return result.Consumer;
+                return result!.Consumer;
             }
             else
             {

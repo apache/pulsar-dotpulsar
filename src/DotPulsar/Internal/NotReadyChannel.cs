@@ -54,10 +54,9 @@ namespace DotPulsar.Internal
         public Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
             => throw GetException();
 
-        public Task UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken)
+        public void UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken)
         {
             // no-op
-            return Task.CompletedTask;
         }
 
         private static Exception GetException()

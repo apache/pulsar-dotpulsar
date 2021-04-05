@@ -17,6 +17,7 @@ namespace DotPulsar.Tests.Internal
     using DotPulsar.Internal;
     using DotPulsar.Internal.Exceptions;
     using FluentAssertions;
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using Xunit;
@@ -86,7 +87,7 @@ namespace DotPulsar.Tests.Internal
             var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
 
             //Assert
-            exception.Should().BeOfType<TaskCanceledException>();
+            exception.Should().BeOfType<OperationCanceledException>();
 
             //Annihilate
             await sut.DisposeAsync().ConfigureAwait(false);
@@ -107,7 +108,7 @@ namespace DotPulsar.Tests.Internal
             var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
 
             //Assert
-            exception.Should().BeOfType<TaskCanceledException>();
+            exception.Should().BeOfType<OperationCanceledException>();
 
             //Annihilate
             cts.Dispose();
