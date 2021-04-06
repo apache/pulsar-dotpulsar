@@ -34,12 +34,12 @@ namespace DotPulsar.Internal
         private readonly IPulsarStream _stream;
         private int _isDisposed;
 
-        public Connection(IPulsarStream stream)
+        public Connection(IPulsarStream stream, int commandTimeoutMs)
         {
             CreatedOn = DateTime.UtcNow;
             _lock = new AsyncLock();
             _channelManager = new ChannelManager();
-            _requestResponseHandler = new RequestResponseHandler();
+            _requestResponseHandler = new RequestResponseHandler(commandTimeoutMs);
             _pingPongHandler = new PingPongHandler(this);
             _stream = stream;
         }
@@ -123,8 +123,9 @@ namespace DotPulsar.Internal
             return await responseTask.ConfigureAwait(false);
         }
 
+        // Special case connect commands as outside the command timeout
         public Task<BaseCommand> Send(CommandConnect command, CancellationToken cancellationToken)
-            => SendRequestResponse(command.AsBaseCommand(), cancellationToken);
+            => SendRequestResponse(command.AsBaseCommand(), cancellationToken, Timeout.Infinite);
 
         public Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken)
             => SendRequestResponse(command.AsBaseCommand(), cancellationToken);
@@ -200,7 +201,7 @@ namespace DotPulsar.Internal
             return await response.ConfigureAwait(false);
         }
 
-        private async Task<BaseCommand> SendRequestResponse(BaseCommand command, CancellationToken cancellationToken)
+        private async Task<BaseCommand> SendRequestResponse(BaseCommand command, CancellationToken cancellationToken, int? timeoutOverrideMs = null)
         {
             ThrowIfDisposed();
 
@@ -208,7 +209,7 @@ namespace DotPulsar.Internal
 
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
-                response = _requestResponseHandler.Outgoing(command);
+                response = _requestResponseHandler.Outgoing(command, timeoutOverrideMs);
                 var sequence = Serializer.Serialize(command);
                 await _stream.Send(sequence).ConfigureAwait(false);
             }
