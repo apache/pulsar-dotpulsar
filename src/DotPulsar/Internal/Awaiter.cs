@@ -79,6 +79,11 @@ namespace DotPulsar.Internal
                             // Make sure it's either the same item we checked, or we're too late to put it back
                             if ((maybeExpiredItem == itemToCheck.Value) || !_items.TryAdd(itemToCheck.Key, maybeExpiredItem))
                             {
+                                // In the implementation as of this code change, we do not expect to ever actually hit
+                                // either of these conditions, because Awaiters are unique to a Connection, and commands
+                                // outside of Connect have unique request IDs within a Connection.
+                                // This code is only for safety.  In case these assumptions are invalidated later,
+                                // we will cancel this task because it can no longer be tracked correctly due to a race.
                                 maybeExpiredItem.tcs.TrySetCanceled();
                             }
                         }
