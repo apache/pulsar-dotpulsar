@@ -34,6 +34,11 @@ namespace DotPulsar.Abstractions
         IPulsarClientBuilder AuthenticateUsingToken(string token);
 
         /// <summary>
+        /// Set the command timeout. The default is Timeout.InfiniteTimeSpan (no timeout). Timeouts do not apply to the initial connect command.
+        /// </summary>
+        IPulsarClientBuilder CommandTimeout(TimeSpan commandTimeout);
+
+        /// <summary>
         /// Set connection encryption policy. The default is 'EnforceUnencrypted' if the ServiceUrl scheme is 'pulsar' and 'EnforceEncrypted' if it's 'pulsar+ssl'.
         /// </summary>
         IPulsarClientBuilder ConnectionSecurity(EncryptionPolicy encryptionPolicy);
