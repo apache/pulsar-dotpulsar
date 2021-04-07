@@ -75,6 +75,9 @@ namespace DotPulsar.Internal
                 case UpdatePartitions updatePartitions:
                     _partitionsCount = updatePartitions.PartitionsCount;
                     break;
+                case ProducerDisposed:
+                    _stateManager.SetState(ProducerState.Closed);
+                    break;
             }
 
             if (_stateManager.IsFinalState())

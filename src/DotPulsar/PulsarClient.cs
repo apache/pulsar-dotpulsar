@@ -116,14 +116,20 @@ namespace DotPulsar
         /// <param name="topic">topic name</param>
         /// <param name="partitionIndex">partition index</param>
         /// <param name="options">producer options</param>
+        /// <param name="partitionedProducerGuid"></param>
         /// <typeparam name="TMessage">schema type of the producer</typeparam>
         /// <returns></returns>
         /// <exception cref="CompressionException"></exception>
-        private Producer<TMessage> NewProducer<TMessage>(string topic, int partitionIndex, ProducerOptions<TMessage> options)
+        internal Producer<TMessage> NewProducer<TMessage>(string topic, ProducerOptions<TMessage> options, uint? partitionIndex = null, Guid? partitionedProducerGuid = null)
         {
             ThrowIfDisposed();
 
             ICompressorFactory? compressorFactory = null;
+
+            if (partitionIndex.HasValue)
+            {
+                topic = $"{topic}-{partitionIndex}";
+            }
 
             if (options.CompressionType != CompressionType.None)
             {
@@ -145,9 +151,9 @@ namespace DotPulsar
             var initialChannel = new NotReadyChannel<TMessage>();
             var producer = new Producer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
 
-            if (options.StateChangedHandler is not null)
+            if (options.StateChangedHandler is not null && partitionIndex.HasValue) // the StateChangeHandler of the sub producers in partitioned producers should be disabled.
                 _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
-            var process = new ProducerProcess(correlationId, stateManager, producer);
+            var process = new ProducerProcess(correlationId, stateManager, producer, _processManager, partitionedProducerGuid, partitionIndex);
             _processManager.Add(process);
             process.Start();
             return producer;

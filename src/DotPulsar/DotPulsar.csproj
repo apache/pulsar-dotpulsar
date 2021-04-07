@@ -22,6 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>    
+    <PackageReference Include="HashDepot" Version="2.0.3" />    
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="5.0.4" />    
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="protobuf-net" Version="3.0.73" />
