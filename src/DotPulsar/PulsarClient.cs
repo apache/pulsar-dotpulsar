@@ -119,7 +119,7 @@ namespace DotPulsar
 
             if (partitionIndex.HasValue)
             {
-                topic = $"{topic}-{partitionIndex}";
+                topic = $"{topic}-partition-{partitionIndex}";
             }
 
             if (options.CompressionType != CompressionType.None)
