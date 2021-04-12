@@ -62,7 +62,7 @@ namespace DotPulsar.Tests
 
             //Assert
             Assert.NotNull(saveGetPartitions);
-            Assert.Equal(saveGetPartitions.Topic, topicName);
+            Assert.Equal(saveGetPartitions?.Topic, topicName);
             Assert.Equal(partitions, expectedPartitions);
         }
     }

@@ -15,22 +15,21 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
-    using DotPulsar.Abstractions;
     using Events;
     using System;
-    using System.Collections.Concurrent;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public class PartitionedProducerProcess : IProcess
     {
         private readonly IStateManager<ProducerState> _stateManager;
 
-        private uint _partitionsCount;
-        private uint _connectedProducersCount = 0;
+        private int _partitionsCount;
+        private int _connectedProducersCount = 0;
 
         public PartitionedProducerProcess(Guid correlationId,
             IStateManager<ProducerState> stateManager,
-            uint partitionsCount)
+            int partitionsCount)
         {
             CorrelationId = correlationId;
             _stateManager = stateManager;
@@ -59,10 +58,10 @@ namespace DotPulsar.Internal
                             _stateManager.SetState(ProducerState.Closed);
                             break;
                         case ProducerState.Connected:
-                            _connectedProducersCount++;
+                            Interlocked.Increment(ref _connectedProducersCount);
                             break;
                         case ProducerState.Disconnected:
-                            _connectedProducersCount--;
+                            Interlocked.Decrement(ref _connectedProducersCount);
                             break;
                         case ProducerState.Faulted:
                             _stateManager.SetState(ProducerState.Faulted);
@@ -73,7 +72,7 @@ namespace DotPulsar.Internal
 
                     break;
                 case UpdatePartitions updatePartitions:
-                    _partitionsCount = updatePartitions.PartitionsCount;
+                    _partitionsCount = (int) updatePartitions.PartitionsCount;
                     break;
                 case ProducerDisposed:
                     _stateManager.SetState(ProducerState.Closed);

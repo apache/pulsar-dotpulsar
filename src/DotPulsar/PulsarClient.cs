@@ -58,7 +58,7 @@ namespace DotPulsar
         public static IPulsarClientBuilder Builder()
             => new PulsarClientBuilder();
 
-        private async Task<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken)
+        public async Task<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken)
         {
             var connection = await _connectionPool.FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
             var commandPartitionedMetadata = new CommandPartitionedTopicMetadata() { Topic = topic };
@@ -95,14 +95,17 @@ namespace DotPulsar
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
 
             var producer = new PartitionedProducer<TMessage>(correlationId, ServiceUrl, options.Topic, _processManager, stateManager, partitionsCount, options, this);
-            var process = new PartitionedProducerProcess(correlationId, stateManager, partitionsCount);
+
+            if (options.StateChangedHandler is not null)
+                _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
+            var process = new PartitionedProducerProcess(correlationId, stateManager, (int) partitionsCount);
             _processManager.Add(process);
             return producer;
         }
 
         /// <summary>
         /// Create a producer internally.
-        /// This method is used to create internal producer for partitioned producer.
+        /// This method is used to create internal producers for partitioned producer.
         /// </summary>
         /// <param name="topic">topic name</param>
         /// <param name="partitionIndex">partition index</param>

@@ -74,7 +74,7 @@ namespace DotPulsar
         public string Topic { get; set; }
 
         /// <summary>
-        /// Set the message router. The default router is Round Robind routing mode.
+        /// Set the message router. The default router is Round Robin partition router.
         /// </summary>
         public IMessageRouter MessageRouter { get; set; }
     }

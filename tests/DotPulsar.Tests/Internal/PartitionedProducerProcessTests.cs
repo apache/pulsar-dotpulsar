@@ -56,7 +56,7 @@ namespace DotPulsar.Tests.Internal
 
             var partitionedStateManager =
                 new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var partitionedProducerProcess = new PartitionedProducerProcess(partitionedProducerGuid, partitionedStateManager, (uint) producersGroup.Count);
+            var partitionedProducerProcess = new PartitionedProducerProcess(partitionedProducerGuid, partitionedStateManager, producersGroup.Count);
             processManager.Add(partitionedProducerProcess);
 
             // Test connect
