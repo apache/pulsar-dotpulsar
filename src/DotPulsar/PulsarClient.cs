@@ -58,7 +58,7 @@ namespace DotPulsar
         public static IPulsarClientBuilder Builder()
             => new PulsarClientBuilder();
 
-        public async Task<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken)
+        private async Task<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken)
         {
             var connection = await _connectionPool.FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
             var commandPartitionedMetadata = new CommandPartitionedTopicMetadata() { Topic = topic };
@@ -79,33 +79,24 @@ namespace DotPulsar
         {
             ThrowIfDisposed();
 
-            ICompressorFactory? compressorFactory = null;
+            var partitionsCount = GetNumberOfPartitions(options.Topic, default).Result;
 
-            if (options.CompressionType != CompressionType.None)
+            if (partitionsCount == 0)
             {
-                var compressionType = (Internal.PulsarApi.CompressionType) options.CompressionType;
-                compressorFactory = CompressionFactories.CompressorFactories().SingleOrDefault(f => f.CompressionType == compressionType);
-                if (compressorFactory is null)
-                    throw new CompressionException($"Support for {compressionType} compression was not found");
+                return NewProducer(options.Topic, options);
             }
 
+            return NewPartitionedProducer(options.Topic, options, partitionsCount);
+        }
+
+        private IProducer<TMessage> NewPartitionedProducer<TMessage>(string topic, ProducerOptions<TMessage> options, uint partitionsCount)
+        {
             var correlationId = Guid.NewGuid();
-            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var topic = options.Topic;
-            var producerName = options.ProducerName;
-            var schema = options.Schema;
-            var initialSequenceId = options.InitialSequenceId;
-
-            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, schema.SchemaInfo, compressorFactory);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var initialChannel = new NotReadyChannel<TMessage>();
-            var producer = new Producer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
 
-            if (options.StateChangedHandler is not null)
-                _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
-            var process = new ProducerProcess(correlationId, stateManager, producer);
+            var producer = new PartitionedProducer<TMessage>(correlationId, ServiceUrl, options.Topic, _processManager, stateManager, partitionsCount, options, this);
+            var process = new PartitionedProducerProcess(correlationId, stateManager, partitionsCount);
             _processManager.Add(process);
-            process.Start();
             return producer;
         }
 
@@ -151,7 +142,7 @@ namespace DotPulsar
             var initialChannel = new NotReadyChannel<TMessage>();
             var producer = new Producer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
 
-            if (options.StateChangedHandler is not null && partitionIndex.HasValue) // the StateChangeHandler of the sub producers in partitioned producers should be disabled.
+            if (options.StateChangedHandler is not null && !partitionIndex.HasValue) // the StateChangeHandler of the sub producers in partitioned producers should be disabled.
                 _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
             var process = new ProducerProcess(correlationId, stateManager, producer, _processManager, partitionedProducerGuid, partitionIndex);
             _processManager.Add(process);
