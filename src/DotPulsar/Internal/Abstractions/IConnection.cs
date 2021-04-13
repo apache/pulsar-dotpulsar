@@ -21,6 +21,8 @@ namespace DotPulsar.Internal.Abstractions
 
     public interface IConnection : IAsyncDisposable
     {
+        Guid Id { get; }
+
         ValueTask<bool> HasChannels(CancellationToken cancellationToken);
 
         Task<ProducerResponse> Send(CommandProducer command, IChannel channel, CancellationToken cancellationToken);

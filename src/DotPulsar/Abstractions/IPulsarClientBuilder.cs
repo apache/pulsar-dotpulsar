@@ -59,6 +59,13 @@ namespace DotPulsar.Abstractions
         IPulsarClientBuilder ExceptionHandler(Func<ExceptionContext, ValueTask> exceptionHandler);
 
         /// <summary>
+        /// Sets a logging handler for the pulsar client to use internally.
+        /// It is up to the provided class to filter out log levels it is not interested in, and perform
+        /// the actual logging.
+        /// </summary>
+        IPulsarClientBuilder LogHandler(IPulsarClientLogger logger);
+
+        /// <summary>
         /// The time to wait before retrying an operation or a reconnect. The default is 3 seconds.
         /// </summary>
         IPulsarClientBuilder RetryInterval(TimeSpan interval);

@@ -15,7 +15,10 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Abstractions;
+    using Extensions;
     using PulsarApi;
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -23,23 +26,32 @@ namespace DotPulsar.Internal
     {
         private readonly IConnection _connection;
         private readonly CommandPong _pong;
+        private readonly IPulsarClientLogger? _logger;
 
-        public PingPongHandler(IConnection connection)
+        public PingPongHandler(IConnection connection, IPulsarClientLogger? logger)
         {
             _connection = connection;
+            _logger = logger;
             _pong = new CommandPong();
         }
 
         public void Incoming(CommandPing ping, CancellationToken cancellationToken)
-            => Task.Factory.StartNew(() => SendPong(cancellationToken));
+        {
+            _logger.Trace(nameof(PingPongHandler), nameof(Incoming), "Received Ping command on {0}, sending Pong", _connection.Id);
+            Task.Factory.StartNew(() => SendPong(cancellationToken));
+        }
 
         private async Task SendPong(CancellationToken cancellationToken)
         {
             try
             {
                 await _connection.Send(_pong, cancellationToken).ConfigureAwait(false);
+                _logger.Trace(nameof(PingPongHandler), nameof(SendPong), "Sent Pong response on {0}", _connection.Id);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.DebugException(nameof(PingPongHandler), nameof(SendPong), ex, "Exception while sending Pong response on {0}", _connection.Id);
+            }
         }
     }
 }

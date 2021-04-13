@@ -22,6 +22,8 @@ namespace DotPulsar.Internal
     using System.Security.Authentication;
     using System.Security.Cryptography.X509Certificates;
     using System.Threading.Tasks;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Internal.Extensions;
 
     public sealed class Connector
     {
@@ -29,17 +31,20 @@ namespace DotPulsar.Internal
         private readonly X509Certificate2? _trustedCertificateAuthority;
         private readonly bool _verifyCertificateAuthority;
         private readonly bool _verifyCertificateName;
+        private readonly IPulsarClientLogger? _logger;
 
         public Connector(
             X509Certificate2Collection clientCertificates,
             X509Certificate2? trustedCertificateAuthority,
             bool verifyCertificateAuthority,
-            bool verifyCertificateName)
+            bool verifyCertificateName,
+            IPulsarClientLogger? logger)
         {
             _clientCertificates = clientCertificates;
             _trustedCertificateAuthority = trustedCertificateAuthority;
             _verifyCertificateAuthority = verifyCertificateAuthority;
             _verifyCertificateName = verifyCertificateName;
+            _logger = logger;
         }
 
         public async Task<Stream> Connect(Uri serviceUrl)
@@ -49,6 +54,8 @@ namespace DotPulsar.Internal
             var port = serviceUrl.Port;
             var encrypt = scheme == Constants.PulsarSslScheme;
 
+            _logger.Trace(nameof(Connector), nameof(Connect), "Connecting to {0}", serviceUrl);
+
             if (port == -1)
                 port = encrypt ? Constants.DefaultPulsarSSLPort : Constants.DefaultPulsarPort;
 
@@ -56,6 +63,8 @@ namespace DotPulsar.Internal
 
             if (encrypt)
                 stream = await EncryptStream(stream, host).ConfigureAwait(false);
+
+            _logger.Trace(nameof(Connector), nameof(Connect), "Connected to {0}", serviceUrl);
 
             return stream;
         }

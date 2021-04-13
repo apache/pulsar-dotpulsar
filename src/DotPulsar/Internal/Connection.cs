@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Abstractions;
     using Exceptions;
     using Extensions;
     using PulsarApi;
@@ -26,22 +27,26 @@ namespace DotPulsar.Internal
     public sealed class Connection : IConnection
     {
         internal readonly DateTime CreatedOn;
+        public Guid Id { get; }
 
         private readonly AsyncLock _lock;
         private readonly ChannelManager _channelManager;
         private readonly RequestResponseHandler _requestResponseHandler;
         private readonly PingPongHandler _pingPongHandler;
         private readonly IPulsarStream _stream;
+        private readonly IPulsarClientLogger? _logger;
         private int _isDisposed;
 
-        public Connection(IPulsarStream stream, int commandTimeoutMs)
+        public Connection(IPulsarStream stream, int commandTimeoutMs, IPulsarClientLogger? logger)
         {
+            Id = Guid.NewGuid();
             CreatedOn = DateTime.UtcNow;
             _lock = new AsyncLock();
             _channelManager = new ChannelManager();
             _requestResponseHandler = new RequestResponseHandler(commandTimeoutMs);
-            _pingPongHandler = new PingPongHandler(this);
+            _pingPongHandler = new PingPongHandler(this, logger);
             _stream = stream;
+            _logger = logger;
         }
 
         public async ValueTask<bool> HasChannels(CancellationToken cancellationToken)
@@ -267,9 +272,10 @@ namespace DotPulsar.Internal
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // ignored
+                _logger.InfoException(nameof(Connection), nameof(ProcessIncommingFrames), ex, "Caught exception during incoming message processing loop for connection {0}", Id);
             }
         }
 
@@ -277,6 +283,8 @@ namespace DotPulsar.Internal
         {
             if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                 return;
+
+            _logger.Debug(nameof(Connection), nameof(DisposeAsync), "Disposing of connection {0}", Id);
 
             await _lock.DisposeAsync().ConfigureAwait(false);
             _requestResponseHandler.Dispose();

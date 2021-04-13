@@ -15,6 +15,8 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Abstractions;
+    using DotPulsar.Internal.Extensions;
     using Events;
     using System;
     using System.Collections.Concurrent;
@@ -25,15 +27,18 @@ namespace DotPulsar.Internal
     {
         private readonly ConcurrentDictionary<Guid, IProcess> _processes;
         private readonly IConnectionPool _connectionPool;
+        private readonly IPulsarClientLogger? _logger;
 
-        public ProcessManager(IConnectionPool connectionPool)
+        public ProcessManager(IConnectionPool connectionPool, IPulsarClientLogger? logger)
         {
             _processes = new ConcurrentDictionary<Guid, IProcess>();
             _connectionPool = connectionPool;
+            _logger = logger;
         }
 
         public async ValueTask DisposeAsync()
         {
+            _logger.Trace(nameof(ProcessManager), nameof(DisposeAsync), "Disposing");
             foreach (var proc in _processes.Values.ToArray())
                 await proc.DisposeAsync().ConfigureAwait(false);
 

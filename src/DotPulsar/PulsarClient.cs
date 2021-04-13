@@ -34,13 +34,15 @@ namespace DotPulsar
         private readonly ProcessManager _processManager;
         private readonly IHandleException _exceptionHandler;
         private int _isDisposed;
+        private readonly IPulsarClientLogger? _logger;
 
-        public PulsarClient(IConnectionPool connectionPool, ProcessManager processManager, IHandleException exceptionHandler)
+        public PulsarClient(IConnectionPool connectionPool, ProcessManager processManager, IHandleException exceptionHandler, IPulsarClientLogger? logger)
         {
             _connectionPool = connectionPool;
             _processManager = processManager;
             _exceptionHandler = exceptionHandler;
             _isDisposed = 0;
+            _logger = logger;
             DotPulsarEventSource.Log.ClientCreated();
         }
 
@@ -56,6 +58,7 @@ namespace DotPulsar
         public IProducer CreateProducer(ProducerOptions options)
         {
             ThrowIfDisposed();
+            _logger.Trace(nameof(PulsarClient), nameof(CreateProducer), "Creating producer for topic {0}", options.Topic);
             var partitionedTopicMetadata = GetPartitionTopicMetadata(options.Topic).Result;
             if (partitionedTopicMetadata.Partitions > 0)
             {
@@ -86,6 +89,7 @@ namespace DotPulsar
             var process = new ProducerProcess(correlationId, stateManager, factory, producer);
             _processManager.Add(process);
             process.Start();
+            _logger.Trace(nameof(PulsarClient), nameof(CreateProducerWithoutCheckingPartition), "Created producer for topic {0}", options.Topic);
             return producer;
         }
 
@@ -112,6 +116,7 @@ namespace DotPulsar
         public IConsumer CreateConsumer(ConsumerOptions options)
         {
             ThrowIfDisposed();
+            _logger.Trace(nameof(PulsarClient), nameof(CreateConsumer), "Creating consumer for topic {0} subscription {1}", options.Topic, options.SubscriptionName);
 
             PartitionedTopicMetadata partitionedTopicMetadata = GetPartitionTopicMetadata(options.Topic).GetAwaiter().GetResult();
 
@@ -166,6 +171,7 @@ namespace DotPulsar
             var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
             _processManager.Add(process);
             process.Start();
+            _logger.Trace(nameof(PulsarClient), nameof(CreateConsumerWithoutCheckingPartition), "Created consumer for topic {0} subscription {1}", options.Topic, options.SubscriptionName);
             return consumer;
         }
 
