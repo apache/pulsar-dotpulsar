@@ -43,7 +43,7 @@ namespace DotPulsar.Internal
             CreatedOn = DateTime.UtcNow;
             _lock = new AsyncLock();
             _channelManager = new ChannelManager();
-            _requestResponseHandler = new RequestResponseHandler(commandTimeoutMs);
+            _requestResponseHandler = new RequestResponseHandler(commandTimeoutMs, logger, Id);
             _pingPongHandler = new PingPongHandler(this, logger);
             _stream = stream;
             _logger = logger;
@@ -251,6 +251,7 @@ namespace DotPulsar.Internal
                             break;
                         case BaseCommand.Type.CloseConsumer:
                             _channelManager.Incoming(command.CloseConsumer);
+                            _logger.Debug(nameof(Connection), nameof(ProcessIncommingFrames), "Received CloseConsumer command from broker on {0} for consumer {1}", Id, command.CloseConsumer.ConsumerId);
                             break;
                         case BaseCommand.Type.ActiveConsumerChange:
                             _channelManager.Incoming(command.ActiveConsumerChange);
@@ -260,6 +261,7 @@ namespace DotPulsar.Internal
                             break;
                         case BaseCommand.Type.CloseProducer:
                             _channelManager.Incoming(command.CloseProducer);
+                            _logger.Debug(nameof(Connection), nameof(ProcessIncommingFrames), "Received CloseProducer command from broker on {0} for producer {1}", Id, command.CloseProducer.ProducerId);
                             // We need to fault all outstanding sends for this producer now also, or else they will hang forever
                             FaultAllOutstandingSendsForProducer(command.CloseProducer.ProducerId, new ServiceNotReadyException("Broker has closed the producer."));
                             break;

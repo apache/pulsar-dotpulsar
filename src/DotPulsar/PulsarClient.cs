@@ -83,7 +83,7 @@ namespace DotPulsar
         {
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
+            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, executor, options, _logger);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
             var producer = new Producer(correlationId, options.Topic, options.InitialSequenceId, _processManager, new NotReadyChannel(), executor, stateManager);
             var process = new ProducerProcess(correlationId, stateManager, factory, producer);
