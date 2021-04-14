@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
     using Extensions;
     using PulsarApi;
@@ -37,6 +38,7 @@ namespace DotPulsar.Internal
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _closeInactiveConnections;
         private readonly int _defaultCommandTimeoutMs;
+        private readonly IPulsarClientLogger? _logger;
 
         public ConnectionPool(
             CommandConnect commandConnect,
@@ -44,7 +46,8 @@ namespace DotPulsar.Internal
             Connector connector,
             EncryptionPolicy encryptionPolicy,
             TimeSpan closeInactiveConnectionsInterval,
-            int defaultCommandTimeoutMs)
+            int defaultCommandTimeoutMs,
+            IPulsarClientLogger? logger)
         {
             _connectionLocks = new ConcurrentDictionary<PulsarUrl, AsyncLock>();
             _commandConnect = commandConnect;
@@ -56,6 +59,7 @@ namespace DotPulsar.Internal
             _cancellationTokenSource = new CancellationTokenSource();
             _closeInactiveConnections = CloseInactiveConnections(closeInactiveConnectionsInterval, _cancellationTokenSource.Token);
             _defaultCommandTimeoutMs = defaultCommandTimeoutMs;
+            _logger = logger;
         }
 
         public async ValueTask DisposeAsync()
@@ -82,6 +86,8 @@ namespace DotPulsar.Internal
 
         public async ValueTask<IConnection> FindConnectionForTopic(string topic, CancellationToken cancellationToken)
         {
+            _logger.Trace(nameof(ConnectionPool), nameof(FindConnectionForTopic), "Finding connection for topic {0}", topic);
+
             var lookup = new CommandLookupTopic
             {
                 Topic = topic,
@@ -113,13 +119,17 @@ namespace DotPulsar.Internal
                 if (response.LookupTopicResponse.ProxyThroughServiceUrl)
                 {
                     var url = new PulsarUrl(physicalUrl, lookupResponseServiceUrl);
-                    return await GetConnection(url, cancellationToken).ConfigureAwait(false);
+                    var proxyConnection = await GetConnection(url, cancellationToken).ConfigureAwait(false);
+                    _logger.Trace(nameof(ConnectionPool), nameof(FindConnectionForTopic), "Found proxied connection {0} to url {1} (broker {2}) for topic {3}", proxyConnection.Id, physicalUrl, lookupResponseServiceUrl, topic);
+                    return proxyConnection;
                 }
 
                 // LookupType is 'Connect', ServiceUrl is local and response is authoritative. Assume the Pulsar server is a standalone docker.
-                return lookupResponseServiceUrl.IsLoopback
+                var topicConnection = lookupResponseServiceUrl.IsLoopback
                     ? connection
                     : await GetConnection(lookupResponseServiceUrl, cancellationToken).ConfigureAwait(false);
+                _logger.Trace(nameof(ConnectionPool), nameof(FindConnectionForTopic), "Found connection {0} to url {1} for topic {2}", topicConnection.Id, lookupResponseServiceUrl, topic);
+                return topicConnection;
             }
         }
 
@@ -168,7 +178,8 @@ namespace DotPulsar.Internal
         private async Task<Connection> EstablishNewConnection(PulsarUrl url, CancellationToken cancellationToken)
         {
             var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
-            var connection = new Connection(new PulsarStream(stream), _defaultCommandTimeoutMs);
+            var connection = new Connection(new PulsarStream(stream), _defaultCommandTimeoutMs, _logger);
+            _logger.Debug(nameof(ConnectionPool), nameof(EstablishNewConnection), "New pending connection {0} established to {1}", connection.Id, url.Physical);
             DotPulsarEventSource.Log.ConnectionCreated();
             _connecting[url] = connection;
             _ = connection.ProcessIncommingFrames(cancellationToken).ContinueWith(t => DisposeConnection(url));
@@ -177,8 +188,10 @@ namespace DotPulsar.Internal
             if (url.ProxyThroughServiceUrl)
                 commandConnect = WithProxyToBroker(_commandConnect, url.Logical);
 
+            _logger.Trace(nameof(ConnectionPool), nameof(EstablishNewConnection), "Sending connect command to {0}", connection.Id);
             var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.Connected);
+            _logger.Trace(nameof(ConnectionPool), nameof(EstablishNewConnection), "Connected response received on {0}", connection.Id);
             _connections[url] = connection;
             _ = _connecting.TryRemove(url, out _);
 

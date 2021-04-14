@@ -37,6 +37,7 @@ namespace DotPulsar.Internal
         private bool _verifyCertificateName;
         private TimeSpan _closeInactiveConnectionsInterval;
         private TimeSpan _commandTimeout;
+        private IPulsarClientLogger? _logger;
 
         public PulsarClientBuilder()
         {
@@ -97,6 +98,12 @@ namespace DotPulsar.Internal
         public IPulsarClientBuilder ExceptionHandler(Func<ExceptionContext, ValueTask> exceptionHandler)
         {
             _exceptionHandlers.Add(new FuncExceptionHandler(exceptionHandler));
+            return this;
+        }
+
+        public IPulsarClientBuilder LogHandler(IPulsarClientLogger logger)
+        {
+            _logger = logger;
             return this;
         }
 
@@ -162,13 +169,13 @@ namespace DotPulsar.Internal
 
             var commandTimeoutMs = (int)Math.Floor(_commandTimeout.TotalMilliseconds);
 
-            var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
-            var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, commandTimeoutMs);
-            var processManager = new ProcessManager(connectionPool);
+            var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName, _logger);
+            var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, commandTimeoutMs, _logger);
+            var processManager = new ProcessManager(connectionPool, _logger);
             var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
             var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);
 
-            return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline);
+            return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline, _logger);
         }
     }
 }

@@ -14,6 +14,8 @@
 
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
+    using Extensions;
     using System;
     using System.Collections.Concurrent;
     using System.Threading;
@@ -24,11 +26,15 @@ namespace DotPulsar.Internal
         private readonly ConcurrentDictionary<T, (TaskCompletionSource<TResult> tcs, DateTime expiry)> _items;
         private readonly int _timeoutMs;
         private readonly CancellationTokenSource _disposed = new CancellationTokenSource();
+        private readonly IPulsarClientLogger? _logger;
+        private readonly Guid _connectionId;
 
-        public Awaiter(int timeoutMs)
+        public Awaiter(int timeoutMs, IPulsarClientLogger? logger, Guid connectionId)
         {
             _items = new ConcurrentDictionary<T, (TaskCompletionSource<TResult> tcs, DateTime expiry)>();
             _timeoutMs = timeoutMs;
+            _logger = logger;
+            _connectionId = connectionId;
             _ = TimeoutScanner(_disposed.Token);
         }
 
@@ -85,6 +91,7 @@ namespace DotPulsar.Internal
                                 // This code is only for safety.  In case these assumptions are invalidated later,
                                 // we will cancel this task because it can no longer be tracked correctly due to a race.
                                 maybeExpiredItem.tcs.TrySetCanceled();
+                                _logger.Debug(nameof(Awaiter<T, TResult>), nameof(TimeoutScanner), "Request {0} on connection [1} timed out", itemToCheck.Key, _connectionId);
                             }
                         }
                     }
@@ -92,9 +99,10 @@ namespace DotPulsar.Internal
                     await Task.Delay(1000);
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Do nothing but die
+                _logger.InfoException(nameof(Awaiter<T, TResult>), nameof(TimeoutScanner), ex, "TimeoutScanner on connection {0} died with exception", _connectionId);
             }
         }
     }

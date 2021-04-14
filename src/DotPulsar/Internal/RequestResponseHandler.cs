@@ -14,6 +14,8 @@
 
 namespace DotPulsar.Internal
 {
+    using DotPulsar.Abstractions;
+    using Extensions;
     using PulsarApi;
     using System;
     using System.Collections.Concurrent;
@@ -27,12 +29,16 @@ namespace DotPulsar.Internal
         private readonly Awaiter<string, BaseCommand> _responses;
         private readonly RequestId _requestId;
         private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<string, int>> _producersMessages;
+        private readonly IPulsarClientLogger? _logger;
+        private readonly Guid _connectionId;
 
-        public RequestResponseHandler(int commandTimeoutMs)
+        public RequestResponseHandler(int commandTimeoutMs, IPulsarClientLogger? logger, Guid connectionId)
         {
-            _responses = new Awaiter<string, BaseCommand>(commandTimeoutMs);
+            _responses = new Awaiter<string, BaseCommand>(commandTimeoutMs, logger, connectionId);
             _requestId = new RequestId();
             _producersMessages = new ConcurrentDictionary<ulong, ConcurrentDictionary<string, int>>();
+            _logger = logger;
+            _connectionId = connectionId;
         }
 
         public void Dispose()
@@ -42,6 +48,7 @@ namespace DotPulsar.Internal
         {
             SetRequestId(command);
             var identifier = GetResponseIdentifier(command);
+            _logger.Trace(nameof(RequestResponseHandler), nameof(Outgoing), "Tracking request of {0} - {1} on connection {2}", command.CommandType, identifier, _connectionId);
             if (command.CommandType == BaseCommand.Type.Send)
             {
                 // On send, track outstanding messages in case broker closes the producer
@@ -57,6 +64,8 @@ namespace DotPulsar.Internal
 
             if (identifier is not null)
             {
+                _logger.Trace(nameof(RequestResponseHandler), nameof(Incoming), "Received response for request of {0} - {1} on connection {2}", command.CommandType, identifier, _connectionId);
+
                 if (command.CommandType == BaseCommand.Type.SendReceipt ||
                     command.CommandType == BaseCommand.Type.SendError)
                 {
@@ -77,6 +86,7 @@ namespace DotPulsar.Internal
             {
                 foreach (var message in messages.Keys)
                 {
+                    _logger.Trace(nameof(RequestResponseHandler), nameof(Outgoing), "Faulting request of {0} on connection {2}", message, _connectionId);
                     _responses.Fault(message, exceptionToRelay);
                 }
             }

@@ -50,7 +50,8 @@ namespace DotPulsar.Tests
                 .ReturnsAsync(connection);
             var connectionPool = connectionPoolMock.Object;
 
-            var client = new PulsarClient(connectionPoolMock.Object, new ProcessManager(connectionPool), new Mock<IHandleException>().Object);
+            var logger = new Mock<IPulsarClientLogger>().Object;
+            var client = new PulsarClient(connectionPoolMock.Object, new ProcessManager(connectionPool, logger), new Mock<IHandleException>().Object, logger);
             var options = new ProducerOptions(topicName) { AutoUpdatePartitionsInterval = TimeSpan.FromSeconds(60) };
 
             //Act
