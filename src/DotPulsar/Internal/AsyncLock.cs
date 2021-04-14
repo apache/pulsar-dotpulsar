@@ -38,8 +38,15 @@ namespace DotPulsar.Internal
             ThrowIfDisposed();
 
             var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_disposing.Token, cancellationToken);
-            await _semaphoreSlim.WaitAsync(linkedTokenSource.Token);
-            return _releaser;
+            try
+            {
+                await _semaphoreSlim.WaitAsync(linkedTokenSource.Token);
+                return _releaser;
+            }
+            finally
+            {
+                linkedTokenSource.Dispose();
+            }
         }
 
         public ValueTask DisposeAsync()
