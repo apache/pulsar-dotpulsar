@@ -30,10 +30,6 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    strategy:
-      matrix:
-        dotnet: [ '2.1.x', '3.1.x', '5.0.x' ]
-    name: Unit test on dotnet ${{ matrix.dotnet }}
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -44,7 +40,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: ${{ matrix.dotnet }}
+          dotnet-version: '5.0.x'
 
       - name: run unit tests
         run: dotnet test ./tests/DotPulsar.Tests/DotPulsar.Tests.csproj --logger "trx;verbosity=detailed"
