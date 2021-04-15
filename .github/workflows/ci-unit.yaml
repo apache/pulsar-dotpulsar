@@ -32,10 +32,7 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
+        uses: actions/checkout@main
 
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
