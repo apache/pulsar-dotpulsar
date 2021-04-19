@@ -226,6 +226,7 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
+            _logger.Trace(nameof(Connection), nameof(Send), "Sending {0} command on {1}", command.CommandType, Id);
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
                 var sequence = Serializer.Serialize(command);
@@ -244,33 +245,42 @@ namespace DotPulsar.Internal
                     var commandSize = frame.ReadUInt32(0, true);
                     var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
 
-                    switch (command.CommandType)
+                    try
                     {
-                        case BaseCommand.Type.Message:
-                            _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
-                            break;
-                        case BaseCommand.Type.CloseConsumer:
-                            _channelManager.Incoming(command.CloseConsumer);
-                            _logger.Debug(nameof(Connection), nameof(ProcessIncommingFrames), "Received CloseConsumer command from broker on {0} for consumer {1}", Id, command.CloseConsumer.ConsumerId);
-                            break;
-                        case BaseCommand.Type.ActiveConsumerChange:
-                            _channelManager.Incoming(command.ActiveConsumerChange);
-                            break;
-                        case BaseCommand.Type.ReachedEndOfTopic:
-                            _channelManager.Incoming(command.ReachedEndOfTopic);
-                            break;
-                        case BaseCommand.Type.CloseProducer:
-                            _channelManager.Incoming(command.CloseProducer);
-                            _logger.Debug(nameof(Connection), nameof(ProcessIncommingFrames), "Received CloseProducer command from broker on {0} for producer {1}", Id, command.CloseProducer.ProducerId);
-                            // We need to fault all outstanding sends for this producer now also, or else they will hang forever
-                            FaultAllOutstandingSendsForProducer(command.CloseProducer.ProducerId, new ServiceNotReadyException("Broker has closed the producer."));
-                            break;
-                        case BaseCommand.Type.Ping:
-                            _pingPongHandler.Incoming(command.Ping, cancellationToken);
-                            break;
-                        default:
-                            _requestResponseHandler.Incoming(command);
-                            break;
+                        switch (command.CommandType)
+                        {
+                            case BaseCommand.Type.Message:
+                                _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
+                                _logger.Trace(nameof(Connection), nameof(ProcessIncommingFrames), "Received Message command from {0} for consumer {1}, MessageId {2}:{3}", Id, command.Message.ConsumerId, command.Message.MessageId.LedgerId, command.Message.MessageId.EntryId);
+                                break;
+                            case BaseCommand.Type.CloseConsumer:
+                                _channelManager.Incoming(command.CloseConsumer);
+                                _logger.Debug(nameof(Connection), nameof(ProcessIncommingFrames), "Received CloseConsumer command from broker on {0} for consumer {1}", Id, command.CloseConsumer.ConsumerId);
+                                break;
+                            case BaseCommand.Type.ActiveConsumerChange:
+                                _channelManager.Incoming(command.ActiveConsumerChange);
+                                break;
+                            case BaseCommand.Type.ReachedEndOfTopic:
+                                _channelManager.Incoming(command.ReachedEndOfTopic);
+                                break;
+                            case BaseCommand.Type.CloseProducer:
+                                _channelManager.Incoming(command.CloseProducer);
+                                _logger.Debug(nameof(Connection), nameof(ProcessIncommingFrames), "Received CloseProducer command from broker on {0} for producer {1}", Id, command.CloseProducer.ProducerId);
+                                // We need to fault all outstanding sends for this producer now also, or else they will hang forever
+                                FaultAllOutstandingSendsForProducer(command.CloseProducer.ProducerId, new ServiceNotReadyException("Broker has closed the producer."));
+                                break;
+                            case BaseCommand.Type.Ping:
+                                _pingPongHandler.Incoming(command.Ping, cancellationToken);
+                                break;
+                            default:
+                                _requestResponseHandler.Incoming(command);
+                                break;
+                        }
+                    }
+                    catch (ObjectDisposedException disposedEx)
+                    {
+                        // Eat these inside the loop so a single disposed consumer/etc. doesn't kill processing for an entire connection
+                        _logger.DebugException(nameof(Connection), nameof(ProcessIncommingFrames), disposedEx, "Caught exception during incoming message processing loop for connection {0} due to disposed object while handling command type {1}", Id, command.CommandType);
                     }
                 }
             }
