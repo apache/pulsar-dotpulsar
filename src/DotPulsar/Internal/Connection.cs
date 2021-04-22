@@ -282,16 +282,16 @@ namespace DotPulsar.Internal
                         // Eat these inside the loop so a single disposed consumer/etc. doesn't kill processing for an entire connection
                         _logger.DebugException(nameof(Connection), nameof(ProcessIncommingFrames), disposedEx, "Caught exception during incoming message processing loop for connection {0} due to disposed object while handling command type {1}", Id, command.CommandType);
                     }
-                    finally
-                    {
-                        _logger.Trace(nameof(Connection), nameof(ProcessIncommingFrames), "Incoming message processing loop for connection {0} exiting", Id);
-                    }
                 }
             }
             catch (Exception ex)
             {
                 // ignored
                 _logger.InfoException(nameof(Connection), nameof(ProcessIncommingFrames), ex, "Caught exception during incoming message processing loop for connection {0}", Id);
+            }
+            finally
+            {
+                _logger.Trace(nameof(Connection), nameof(ProcessIncommingFrames), "Incoming message processing loop for connection {0} exiting", Id);
             }
         }
 
