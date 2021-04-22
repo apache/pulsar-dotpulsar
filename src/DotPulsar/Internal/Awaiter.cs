@@ -91,7 +91,7 @@ namespace DotPulsar.Internal
                                 // This code is only for safety.  In case these assumptions are invalidated later,
                                 // we will cancel this task because it can no longer be tracked correctly due to a race.
                                 maybeExpiredItem.tcs.TrySetCanceled();
-                                _logger.Debug(nameof(Awaiter<T, TResult>), nameof(TimeoutScanner), "Request {0} on connection [1} timed out", itemToCheck.Key, _connectionId);
+                                _logger.Debug(nameof(Awaiter<T, TResult>), nameof(TimeoutScanner), "Request {0} on connection {1} timed out", itemToCheck.Key, _connectionId);
                             }
                         }
                     }
