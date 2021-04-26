@@ -86,7 +86,7 @@ namespace DotPulsar.Internal
             {
                 foreach (var message in messages.Keys)
                 {
-                    _logger.Trace(nameof(RequestResponseHandler), nameof(Outgoing), "Faulting request of {0} on connection {2}", message, _connectionId);
+                    _logger.Trace(nameof(RequestResponseHandler), nameof(Outgoing), "Faulting request of {0} on connection {1}", message, _connectionId);
                     _responses.Fault(message, exceptionToRelay);
                 }
             }
