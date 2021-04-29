@@ -47,10 +47,14 @@ namespace DotPulsar.Internal
             return tcs.Task;
         }
 
-        public void SetResult(T item, TResult result)
+        public bool SetResult(T item, TResult result)
         {
             if (_items.TryRemove(item, out var tuple))
+            {
                 tuple.tcs.SetResult(result);
+                return true;
+            }
+            return false;
         }
 
         public void Fault(T item, Exception exceptionToRelay)

@@ -127,17 +127,25 @@ namespace DotPulsar.Tests.Internal.Extensions
             actual.Should().Be(expected);
         }
 
-        [Fact]
-        public void ReadUInt32_GivenSequenceWithMultipleSegments_ShouldGiveExceptedResult()
+        [Theory]
+        [InlineData(new byte[] {}, new byte[] { 0x00, 0x01, 0x02, 0x03 })]
+        [InlineData(new byte[] { 0x00 }, new byte[] { 0x01, 0x02, 0x03 })]
+        [InlineData(new byte[] { 0x00, 0x01 }, new byte[] { 0x02, 0x03 })]
+        [InlineData(new byte[] { 0x00, 0x01, 0x02 }, new byte[] { 0x03 })]
+        [InlineData(new byte[] { 0x00, 0x01, 0x02, 0x03 }, new byte[] {})]
+        public void ReadUInt32_GivenSequenceWithMultipleSegments_ShouldGiveExceptedResult(params byte[][] testPath)
         {
             //Arrange
-            var sequence = new SequenceBuilder<byte>().Append(new byte[] { 0x00, 0x01 }).Append(new byte[] { 0x02, 0x03 }).Build();
+            var sequenceBuilder = new SequenceBuilder<byte>();
+            foreach (var array in testPath)
+                sequenceBuilder.Append(array);
+            var sequence = sequenceBuilder.Build();
 
             //Act
             var actual = sequence.ReadUInt32(0, true);
 
             //Assert
-            const uint expected = 66051;
+            const uint expected = 0x00010203;
             actual.Should().Be(expected);
         }
 

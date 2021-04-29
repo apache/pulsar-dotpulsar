@@ -76,7 +76,14 @@ namespace DotPulsar.Internal
                         messages.TryRemove(identifier, out _);
                     }
                 }
-                _responses.SetResult(identifier, command);
+                if (!_responses.SetResult(identifier, command))
+                {
+                    _logger.Info(nameof(RequestResponseHandler), nameof(Incoming), "Received response for request of {0} - {1} on connection {2} but the request was not found; either the request has failed locally or the incoming message is corrupt", command.CommandType, identifier, _connectionId);
+                }
+            }
+            else
+            {
+                _logger.Error(nameof(RequestResponseHandler), nameof(Incoming), "Received a response {0} for a request with a null identifier on connection {1}", command.CommandType, _connectionId);
             }
         }
 
