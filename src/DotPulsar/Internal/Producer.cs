@@ -91,6 +91,7 @@ namespace DotPulsar.Internal
             await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
+
         public async ValueTask<MessageId> Send(TMessage message, CancellationToken cancellationToken)
             => await Send(_schema.Encode(message), cancellationToken).ConfigureAwait(false);
 
