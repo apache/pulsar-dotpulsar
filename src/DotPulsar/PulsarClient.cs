@@ -38,7 +38,7 @@ namespace DotPulsar
 
         public Uri ServiceUrl { get; }
 
-        public PulsarClient(
+        internal PulsarClient(
             IConnectionPool connectionPool,
             ProcessManager processManager,
             IHandleException exceptionHandler,

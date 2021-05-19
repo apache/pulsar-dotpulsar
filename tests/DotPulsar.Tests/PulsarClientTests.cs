@@ -55,7 +55,8 @@ namespace DotPulsar.Tests
                 .ReturnsAsync(connection);
             var connectionPool = connectionPoolMock.Object;
 
-            var client = new PulsarClient(connectionPoolMock.Object, new ProcessManager(connectionPool), new Mock<IHandleException>().Object, new Uri("pusarl://localhost:6650/"));
+            var client = PulsarClientFactory.CreatePulsarClient(connectionPoolMock.Object, new ProcessManager(connectionPool), new Mock<IHandleException>().Object, new Uri
+            ("pusarl://localhost:6650/"));
 
             //Act
             uint partitions = await client.GetNumberOfPartitions(topicName, CancellationToken.None).ConfigureAwait(false);
