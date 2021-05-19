@@ -20,7 +20,7 @@ namespace DotPulsar.Internal.Events
     /// <summary>
     /// Representation of the sub producer of a partitioned producer state change.
     /// </summary>
-    public class PartitionedSubProducerStateChanged : IEvent
+    public sealed class PartitionedSubProducerStateChanged : IEvent
     {
         public Guid CorrelationId { get; }
         public ProducerState ProducerState { get; }

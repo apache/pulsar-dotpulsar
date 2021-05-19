@@ -20,7 +20,7 @@ namespace DotPulsar.Internal.Events
     /// <summary>
     /// Representation of the partitions count of the partitioned topic updating.
     /// </summary>
-    public class UpdatePartitions : IEvent
+    public sealed class UpdatePartitions : IEvent
     {
         public Guid CorrelationId { get; }
 

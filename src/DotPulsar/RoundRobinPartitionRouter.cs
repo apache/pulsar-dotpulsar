@@ -19,7 +19,7 @@ namespace DotPulsar
     using System.Text;
     using System.Threading;
 
-    public class RoundRobinPartitionRouter : IMessageRouter
+    public sealed class RoundRobinPartitionRouter : IMessageRouter
     {
         private int _partitionIndex = -1;
 
