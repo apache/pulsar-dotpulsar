@@ -98,7 +98,7 @@ namespace DotPulsar
 
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
-            var process = new PartitionedProducerProcess(correlationId, stateManager, (int) partitionsCount);
+            var process = new ProducerProcess(correlationId, stateManager, null, _processManager, null, null, true, (int) partitionsCount);
             _processManager.Add(process);
             return producer;
         }

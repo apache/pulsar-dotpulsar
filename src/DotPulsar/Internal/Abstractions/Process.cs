@@ -68,11 +68,16 @@ namespace DotPulsar.Internal.Abstractions
                 case ChannelUnsubscribed _:
                     ChannelState = ChannelState.Unsubscribed;
                     break;
+                default:HandleExtend(e);
+                    break;
             }
 
             CalculateState();
         }
 
         protected abstract void CalculateState();
+
+        protected virtual void HandleExtend(IEvent e)
+            => throw new NotImplementedException();
     }
 }
