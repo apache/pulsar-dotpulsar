@@ -47,19 +47,16 @@
             _messageRouter = options.MessageRouter;
 
             _producers = new ConcurrentDictionary<int, IProducer<TMessage>>(Environment.ProcessorCount, _producersCount);
-            CreateSubProducers(0, _producersCount).Wait();
+            CreateSubProducers(0, _producersCount);
         }
 
-        private async Task CreateSubProducers(int startIndex, int count)
+        private void CreateSubProducers(int startIndex, int count)
         {
-            await Task.WhenAll(Enumerable.Range(startIndex, count).Select(n =>
+            for (int i = 0; i < count; i++)
             {
-                return Task.Run( () =>
-                {
-                    var producer = _pulsarClient.NewProducer(Topic, _options, (uint)n, _correlationId);
-                    _producers[n] = producer;
-                }, _cts.Token);
-            }).ToList()).ConfigureAwait(false);
+                var producer = _pulsarClient.NewProducer(Topic, _options, (uint)(i+startIndex), _correlationId);
+                _producers[i+startIndex] = producer;
+            }
         }
 
         public bool IsFinalState()
