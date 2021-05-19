@@ -22,12 +22,13 @@ namespace DotPulsar.Tests.Internal
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Xunit;
 
     public class PartitionedProducerProcessTests
     {
         [Fact]
-        public void TestPartitionedProducerStateManage()
+        public async Task TestPartitionedProducerStateManage_WhenSubProducersStateChange_ThenPartitionedProducerStateChangeCorrectly()
         {
             var connectionPoolMock = new Mock<IConnectionPool>(MockBehavior.Loose);
             var connectionPool = connectionPoolMock.Object;
@@ -82,7 +83,7 @@ namespace DotPulsar.Tests.Internal
         }
 
         [Fact]
-        public void TestUpdatePartitions()
+        public async Task TestUpdatePartitions_WhenIncreasePartitions_ThenPartitionedProducerStateChangeCorrectly()
         {
             var connectionPoolMock = new Mock<IConnectionPool>(MockBehavior.Loose);
             var connectionPool = connectionPoolMock.Object;
