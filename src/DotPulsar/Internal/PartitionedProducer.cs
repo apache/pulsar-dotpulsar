@@ -90,10 +90,10 @@
             _eventRegister.Register(new ProducerDisposed(_correlationId));
         }
 
-        public ValueTask<MessageId> Send(TMessage message, CancellationToken cancellationToken = default)
-            => _producers[_messageRouter.ChoosePartition(null, _producersCount)].Send(message, cancellationToken);
+        public async ValueTask<MessageId> Send(TMessage message, CancellationToken cancellationToken = default)
+            => await _producers[_messageRouter.ChoosePartition(null, _producersCount)].Send(message, cancellationToken);
 
-        public ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default)
-            => _producers[_messageRouter.ChoosePartition(metadata, _producersCount)].Send(message, cancellationToken);
+        public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default)
+            => await _producers[_messageRouter.ChoosePartition(metadata, _producersCount)].Send(message, cancellationToken);
     }
 }
