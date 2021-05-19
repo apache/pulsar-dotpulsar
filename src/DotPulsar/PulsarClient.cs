@@ -58,7 +58,7 @@ namespace DotPulsar
         public static IPulsarClientBuilder Builder()
             => new PulsarClientBuilder();
 
-        public async Task<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken)
+        private async Task<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken)
         {
             var connection = await _connectionPool.FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
             var commandPartitionedMetadata = new CommandPartitionedTopicMetadata() { Topic = topic };

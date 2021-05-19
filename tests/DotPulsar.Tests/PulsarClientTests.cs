@@ -18,15 +18,18 @@ namespace DotPulsar.Tests
     using DotPulsar.Internal;
     using DotPulsar.Internal.Abstractions;
     using DotPulsar.Internal.PulsarApi;
+    using Extensions;
     using Moq;
     using System;
     using System.Threading;
+    using System.Threading.Tasks;
     using Xunit;
+    using Schema = DotPulsar.Schema;
 
     public class PulsarClientTests
     {
         [Fact]
-        public async void GetPartitions_GivenPartitionedTopic_ShouldReturnPartitionsNumber()
+        public async Task GetPartitionedProducer_GivenPartitionedTopic_ShouldReturnPartitionProducer()
         {
             //Arrange
             var topicName = "persistent://public/default/test-topic";
@@ -59,12 +62,12 @@ namespace DotPulsar.Tests
             ("pusarl://localhost:6650/"));
 
             //Act
-            uint partitions = await client.GetNumberOfPartitions(topicName, CancellationToken.None).ConfigureAwait(false);
+            await using var producer = client.NewProducer(Schema.String).Topic(topicName).Create();
 
             //Assert
             Assert.NotNull(saveGetPartitions);
             Assert.Equal(saveGetPartitions?.Topic, topicName);
-            Assert.Equal(partitions, expectedPartitions);
+            Assert.IsType<PartitionedProducer<string>>(producer);
         }
     }
 }
