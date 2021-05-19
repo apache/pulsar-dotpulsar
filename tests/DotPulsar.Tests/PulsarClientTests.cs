@@ -19,7 +19,7 @@ namespace DotPulsar.Tests
     using DotPulsar.Internal.Abstractions;
     using DotPulsar.Internal.PulsarApi;
     using Extensions;
-    using Moq;
+    using NSubstitute;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
@@ -35,30 +35,30 @@ namespace DotPulsar.Tests
             var topicName = "persistent://public/default/test-topic";
             uint expectedPartitions = 3;
 
-            var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
+            var connection = Substitute.For<IConnection>();
 
             // use saveGetPartitions to assert CommandPartitionedTopicMetadata.
             CommandPartitionedTopicMetadata saveGetPartitions = null;
 
-            _ = connectionMock.Setup(c => c.Send(It.IsAny<CommandPartitionedTopicMetadata>(), It.IsAny<CancellationToken>()))
-                .Callback<CommandPartitionedTopicMetadata, CancellationToken>((metadata, cancellationToken) => saveGetPartitions = metadata)
-                .ReturnsAsync(new BaseCommand()
+            connection.Send(Arg.Any<CommandPartitionedTopicMetadata>(), Arg.Any<CancellationToken>())
+                .Returns(new BaseCommand()
                 {
                     CommandType = BaseCommand.Type.PartitionedMetadataResponse,
                     PartitionMetadataResponse = new CommandPartitionedTopicMetadataResponse()
                     {
                         Response = CommandPartitionedTopicMetadataResponse.LookupType.Success, Partitions = expectedPartitions
                     }
+                })
+                .AndDoes(info =>
+                {
+                    saveGetPartitions = (CommandPartitionedTopicMetadata) info[0];
                 });
 
-            var connection = connectionMock.Object;
-            var connectionPoolMock = new Mock<IConnectionPool>(MockBehavior.Strict);
+            var connectionPool = Substitute.For<IConnectionPool>();
+            connectionPool.FindConnectionForTopic(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(connection);
 
-            _ = connectionPoolMock.Setup(c => c.FindConnectionForTopic(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(connection);
-            var connectionPool = connectionPoolMock.Object;
-
-            var client = PulsarClientFactory.CreatePulsarClient(connectionPoolMock.Object, new ProcessManager(connectionPool), new Mock<IHandleException>().Object, new Uri
+            var client = PulsarClientFactory.CreatePulsarClient(connectionPool, new ProcessManager(connectionPool), Substitute.For<IHandleException>(),new Uri
             ("pusarl://localhost:6650/"));
 
             //Act

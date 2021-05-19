@@ -18,7 +18,7 @@ namespace DotPulsar.Tests.Internal
     using DotPulsar.Internal;
     using DotPulsar.Internal.Abstractions;
     using DotPulsar.Internal.Events;
-    using Moq;
+    using NSubstitute;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -30,12 +30,9 @@ namespace DotPulsar.Tests.Internal
         [Fact]
         public async Task TestPartitionedProducerStateManage_WhenSubProducersStateChange_ThenPartitionedProducerStateChangeCorrectly()
         {
-            var connectionPoolMock = new Mock<IConnectionPool>(MockBehavior.Loose);
-            var connectionPool = connectionPoolMock.Object;
-            var establishNewChannelMock = new Mock<IEstablishNewChannel>(MockBehavior.Loose);
-            var establishNewChannel = establishNewChannelMock.Object;
-            var producerMock = new Mock<IProducer>(MockBehavior.Loose);
-            var producer = producerMock.Object;
+            var connectionPool = Substitute.For<IConnectionPool>();
+            var establishNewChannel = Substitute.For<IEstablishNewChannel>();
+            var producer = Substitute.For<IProducer>();
 
             var processManager = new ProcessManager(connectionPool);
 
@@ -85,8 +82,7 @@ namespace DotPulsar.Tests.Internal
         [Fact]
         public async Task TestUpdatePartitions_WhenIncreasePartitions_ThenPartitionedProducerStateChangeCorrectly()
         {
-            var connectionPoolMock = new Mock<IConnectionPool>(MockBehavior.Loose);
-            var connectionPool = connectionPoolMock.Object;
+            var connectionPool = Substitute.For<IConnectionPool>();
             var processManager = new ProcessManager(connectionPool);
 
             var guid = Guid.NewGuid();
