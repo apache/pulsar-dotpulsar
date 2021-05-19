@@ -9,7 +9,7 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    public class PartitionedProducer<TMessage> : IProducer<TMessage>
+    public sealed class PartitionedProducer<TMessage> : IProducer<TMessage>
     {
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
