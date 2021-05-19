@@ -19,8 +19,8 @@
         private readonly ConcurrentDictionary<int, IProducer<TMessage>> _producers;
         private readonly IMessageRouter _messageRouter;
         private readonly CancellationTokenSource _cts = new();
+        private readonly int _producersCount;
         private int _isDisposed;
-        private int _producersCount;
         public Uri ServiceUrl { get; }
         public string Topic { get; }
 
