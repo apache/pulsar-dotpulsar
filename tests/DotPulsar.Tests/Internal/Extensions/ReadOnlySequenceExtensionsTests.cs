@@ -127,34 +127,57 @@ namespace DotPulsar.Tests.Internal.Extensions
             actual.Should().Be(expected);
         }
 
-        [Fact]
-        public void ReadUInt32_GivenSequenceWithMultipleSegments_ShouldGiveExceptedResult()
+#pragma warning disable xUnit1025 // Miscoded warning can't tell these are all different
+        [Theory]
+        [InlineData(new byte[] { }, new byte[] { 0x02, 0x03, 0x04, 0x05 })]
+        [InlineData(new byte[] { 0x02 }, new byte[] { 0x03, 0x04, 0x05 })]
+        [InlineData(new byte[] { 0x02, 0x03 }, new byte[] { 0x04, 0x05 })]
+        [InlineData(new byte[] { 0x02, 0x03, 0x04 }, new byte[] { 0x05 })]
+        [InlineData(new byte[] { 0x02, 0x03, 0x04, 0x05 }, new byte[] { })]
+        [InlineData(new byte[] { 0x02 }, new byte[] { }, new byte[] { 0x03, 0x04, 0x05 })]
+        [InlineData(new byte[] { 0x02, 0x03 }, new byte[] { }, new byte[] { 0x04, 0x05 })]
+        [InlineData(new byte[] { 0x02, 0x03, 0x04 }, new byte[] { }, new byte[] { 0x05 })]
+        [InlineData(new byte[] { 0x02, 0x03 }, new byte[] { 0x04 }, new byte[] { 0x05 })]
+        [InlineData(new byte[] { 0x02 }, new byte[] { 0x03, 0x04 }, new byte[] { 0x05 })]
+        [InlineData(new byte[] { 0x02 }, new byte[] { 0x03 }, new byte[] { 0x04, 0x05 })]
+        [InlineData(new byte[] { 0x02 }, new byte[] { 0x03 }, new byte[] { 0x04 }, new byte[] { 0x05 })]
+        [InlineData(new byte[] { 0x02, 0x03, 0x04 }, new byte[] { 0x05, 0x09 })]
+        [InlineData(new byte[] { 0x02 }, new byte[] { 0x03, 0x04, 0x05 }, new byte[] { 0x09 })]
+        [InlineData(new byte[] { 0x02 }, new byte[] { 0x03 }, new byte[] { 0x04, 0x05 }, new byte[] { 0x09 })]
+#pragma warning restore xUnit1025 // InlineData should be unique within the Theory it belongs to
+        public void ReadUInt32_GivenSequenceWithMultipleSegments_ShouldGiveExceptedResult(params byte[][] testPath)
         {
             //Arrange
-            var sequence = new SequenceBuilder<byte>().Append(new byte[] { 0x00, 0x01 }).Append(new byte[] { 0x02, 0x03 }).Build();
+            var sequenceBuilder = new SequenceBuilder<byte>();
+            foreach (var array in testPath)
+                sequenceBuilder.Append(array);
+            var sequence = sequenceBuilder.Build();
 
             //Act
             var actual = sequence.ReadUInt32(0, true);
 
             //Assert
-            const uint expected = 66051;
+            const uint expected = 0x02030405;
             actual.Should().Be(expected);
         }
 
-        [Fact]
-        public void ReadUInt32_GivenSequenceWithMultipleSegmentsAndNonZeroStart_ShouldGiveExceptedResult()
+        [Theory]
+        [InlineData(2, new byte[] { 0x09, 0x09, 0x02 }, new byte[] { 0x03, 0x04, 0x05 }, new byte[] { 0x09, 0x09, 0x09 })]
+        [InlineData(3, new byte[] { 0x09, 0x09, 0x09 }, new byte[] { 0x02, 0x03, 0x04 }, new byte[] { 0x05, 0x09, 0x09 })]
+        [InlineData(4, new byte[] { 0x09, 0x09, 0x09 }, new byte[] { 0x09, 0x02, 0x03 }, new byte[] { 0x04, 0x05, 0x09 })]
+        public void ReadUInt32_GivenSequenceWithMultipleSegmentsAndNonZeroStart_ShouldGiveExceptedResult(long start, params byte[][] testPath)
         {
             //Arrange
-            var sequence = new SequenceBuilder<byte>()
-                .Append(new byte[] { 0x09, 0x09, 0x09 })
-                .Append(new byte[] { 0x09, 0x00, 0x01 })
-                .Append(new byte[] { 0x02, 0x03 }).Build();
+            var sequenceBuilder = new SequenceBuilder<byte>();
+            foreach (var array in testPath)
+                sequenceBuilder.Append(array);
+            var sequence = sequenceBuilder.Build();
 
             //Act
-            var actual = sequence.ReadUInt32(4, true);
+            var actual = sequence.ReadUInt32(start, true);
 
             //Assert
-            const uint expected = 66051;
+            const uint expected = 0x02030405;
             actual.Should().Be(expected);
         }
     }

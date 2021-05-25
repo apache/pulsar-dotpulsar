@@ -35,7 +35,16 @@ namespace DotPulsar.Internal
         }
 
         public void Received(MessagePackage message)
-            => _enqueue.Enqueue(message);
+        {
+            try
+            {
+                _enqueue.Enqueue(message);
+            }
+            catch
+            {
+                // Ignore
+            }
+        }
 
         public void Activated()
             => _eventRegister.Register(new ChannelActivated(_correlationId));
