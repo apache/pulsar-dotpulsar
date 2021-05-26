@@ -288,7 +288,7 @@ namespace DotPulsar.Internal
                         }
                         catch (Exception e)
                         {
-                            _logger.InfoException(nameof(Consumer), nameof(RedeliverNegativelyAcknowledgedMessages), e, "Failed to redeliver unacknowledged messages");
+                            _logger.DebugException(nameof(Consumer), nameof(RedeliverNegativelyAcknowledgedMessages), e, "Failed to redeliver unacknowledged messages");
                         }
 
                         // make sure to place all the message ids to redeliver back to _negativelyAcknowledgedMessageIds
@@ -307,7 +307,7 @@ namespace DotPulsar.Internal
                 }
                 catch (Exception e)
                 {
-                    _logger.InfoException(nameof(Consumer), nameof(RedeliverNegativelyAcknowledgedMessages), e, "Unexpected exception in RedeliverNegativelyAcknowledgedMessages task");
+                    _logger.ErrorException(nameof(Consumer), nameof(RedeliverNegativelyAcknowledgedMessages), e, "Unexpected exception in RedeliverNegativelyAcknowledgedMessages task");
                 }
             }
         }
