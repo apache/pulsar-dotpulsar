@@ -35,6 +35,16 @@ namespace DotPulsar.Abstractions
         ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Negative acknowledge single message, message will be re-consumer after delay.
+        /// </summary>
+        ValueTask NegativeAcknowledge(Message message, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Negative acknowledge single message using the MessageId, message will be re-consumer after delay.
+        /// </summary>
+        ValueTask NegativeAcknowledge(MessageId messageId, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Acknowledge the consumption of all the messages in the topic up to and including the provided message.
         /// </summary>
         ValueTask AcknowledgeCumulative(Message message, CancellationToken cancellationToken = default);

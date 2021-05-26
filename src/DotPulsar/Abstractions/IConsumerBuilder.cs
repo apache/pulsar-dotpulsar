@@ -14,6 +14,8 @@
 
 namespace DotPulsar.Abstractions
 {
+    using System;
+
     /// <summary>
     /// A consumer building abstraction.
     /// </summary>
@@ -68,6 +70,11 @@ namespace DotPulsar.Abstractions
         /// Set partitions auto update interval. Only applies to partitioned topics. The default is 60 seconds.
         /// </summary>
         IConsumerBuilder AutoUpdatePartitionsInterval(int autoUpdatePartitionsInterval);
+
+        /// <summary>
+        /// After what time message should be redelivered.
+        /// </summary>
+        IConsumerBuilder NegativeAcknowledgeRedeliveryDelay(TimeSpan delay);
 
         /// <summary>
         /// Create the consumer.

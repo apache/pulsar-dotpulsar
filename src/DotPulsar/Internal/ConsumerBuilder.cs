@@ -16,6 +16,7 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
+    using System;
 
     public sealed class ConsumerBuilder : IConsumerBuilder
     {
@@ -30,6 +31,7 @@ namespace DotPulsar.Internal
         private string? _topic;
         private bool _autoUpdatePartitions;
         private int _autoUpdatePartitionsInterval;
+        private TimeSpan _negativeAcknowledgeRedeliveryDelay;
 
         public ConsumerBuilder(IPulsarClient pulsarClient)
         {
@@ -41,6 +43,7 @@ namespace DotPulsar.Internal
             _subscriptionType = ConsumerOptions.DefaultSubscriptionType;
             _autoUpdatePartitions = ConsumerOptions.DefaultAutoUpdatePartitions;
             _autoUpdatePartitionsInterval = ConsumerOptions.DefaultAutoUpdatePartitionsInterval;
+            _negativeAcknowledgeRedeliveryDelay = ConsumerOptions.DefaultNegativeAcknowledgeRedeliveryDelay;
         }
 
         public IConsumerBuilder ConsumerName(string name)
@@ -103,6 +106,12 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IConsumerBuilder NegativeAcknowledgeRedeliveryDelay(TimeSpan delay)
+        {
+            _negativeAcknowledgeRedeliveryDelay = delay;
+            return this;
+        }
+
         public IConsumer Create()
         {
             if (string.IsNullOrEmpty(_subscriptionName))
@@ -120,7 +129,8 @@ namespace DotPulsar.Internal
                 ReadCompacted = _readCompacted,
                 SubscriptionType = _subscriptionType,
                 AutoUpdatePartitions = _autoUpdatePartitions,
-                AutoUpdatePartitionsInterval = _autoUpdatePartitionsInterval
+                AutoUpdatePartitionsInterval = _autoUpdatePartitionsInterval,
+                NegativeAcknowledgeRedeliveryDelay = _negativeAcknowledgeRedeliveryDelay,
             };
 
             return _pulsarClient.CreateConsumer(options);

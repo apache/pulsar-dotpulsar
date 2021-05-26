@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Abstractions;
     using PulsarApi;
     using System;
     using System.Threading;
@@ -30,18 +31,22 @@ namespace DotPulsar.Internal
         private readonly uint _messagePrefetchCount;
         private readonly BatchHandler _batchHandler;
 
+        private readonly IPulsarClientLogger? _logger;
+
         public ReaderChannelFactory(
             Guid correlationId,
             IRegisterEvent eventRegister,
             IConnectionPool connectionPool,
             IExecute executor,
-            ReaderOptions options)
+            ReaderOptions options,
+            IPulsarClientLogger? logger)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;
             _connectionPool = connectionPool;
             _executor = executor;
             _messagePrefetchCount = options.MessagePrefetchCount;
+            _logger = logger;
 
             _subscribe = new CommandSubscribe
             {
@@ -65,7 +70,14 @@ namespace DotPulsar.Internal
             var messageQueue = new AsyncQueue<MessagePackage>();
             var channel = new Channel(_correlationId, _eventRegister, messageQueue);
             var response = await connection.Send(_subscribe, channel, cancellationToken).ConfigureAwait(false);
-            return new ConsumerChannel(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler);
+            return new ConsumerChannel(response.ConsumerId,
+                                       _messagePrefetchCount,
+                                       messageQueue,
+                                       connection,
+                                       _batchHandler,
+                                       negativeAcknowledgeRedeliveryDelay: TimeSpan.Zero, // reader doesn't support negativeAcknowledge so we do not need to run the
+                                                                                          // task to redeliver negatively acknowledged messages
+                                       logger: _logger);
         }
     }
 }

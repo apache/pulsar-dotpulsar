@@ -28,5 +28,6 @@ namespace DotPulsar.Internal.Abstractions
         Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
         ValueTask<Message> Receive(CancellationToken cancellationToken);
         void UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken);
+        ValueTask NegativeAcknowledge(MessageId messageId, CancellationToken cancellationToken);
     }
 }

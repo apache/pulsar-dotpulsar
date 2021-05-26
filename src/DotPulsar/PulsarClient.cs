@@ -165,7 +165,7 @@ namespace DotPulsar
         {
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, batchHandler, options);
+            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, batchHandler, options, _logger);
             var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
             var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager, factory);
             var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
@@ -183,7 +183,7 @@ namespace DotPulsar
             ThrowIfDisposed();
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ReaderChannelFactory(correlationId, _processManager, _connectionPool, executor, options);
+            var factory = new ReaderChannelFactory(correlationId, _processManager, _connectionPool, executor, options, _logger);
             var stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
             var reader = new Reader(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager);
             var process = new ReaderProcess(correlationId, stateManager, factory, reader);
