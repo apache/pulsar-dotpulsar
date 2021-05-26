@@ -247,7 +247,7 @@ namespace DotPulsar.Internal
         internal async Task RedeliverNegativelyAcknowledgedMessages(CancellationToken cancellationToken)
         {
             // we need to keep track of negatively acknowledged messages in the channel as when channel is closed
-            // and we reconnect all unacknowledged and negatively acknowledged messages will be redelivered by Pulsar
+            // and we reconnect, all unacknowledged and negatively acknowledged messages will be redelivered by Pulsar
             // (that is we need to forget all requests to redeliver messages during disconnect, as we don't want duplicate deliveries)
 
             List<KeyValuePair<MessageId, DateTime>> messageIdsToRedeliver = new List<KeyValuePair<MessageId, DateTime>>();
@@ -260,10 +260,10 @@ namespace DotPulsar.Internal
 
                     DateTime evaluationDateTime = DateTime.UtcNow;
 
-                    // it is important to remove message ids to redelier before requesting redelivery as messages can arrive after RedeliverUnacknowledgedMessages call
-                    // succeeded but before we have a chance to remove message ids from this._negativelyAcknowledgedMessageIds in this case message might be processed
-                    // afain, negatively acknowledged, and after this we will delete it from this._negativelyAcknowledgedMessageIds resulting in message which won't be
-                    // redelivered and will be stuck until consumer restarts
+                    // it is important to remove message ids which will be redelivered from _negativelyAcknowledgedMessageIds before requesting redelivery as messages
+                    // can arrive after RedeliverUnacknowledgedMessages call succeeded but before we have a chance to remove message ids from _negativelyAcknowledgedMessageIds
+                    // in this case message might be processed again, negatively acknowledged, and after this we will delete it from _negativelyAcknowledgedMessageIds resulting
+                    // in message which won't be redelivered and will be stuck until consumer restarts
 
                     foreach (KeyValuePair<MessageId, DateTime> data in _negativelyAcknowledgedMessageIds)
                     {
@@ -278,7 +278,7 @@ namespace DotPulsar.Internal
                     {
                         try
                         {
-                            // RedeliverUnacknowledgedMessages or Acknowledge both call _channel.Send(...) which is single threaded, so we have two posibilities:
+                            // RedeliverUnacknowledgedMessages or Acknowledge both call Send(...) which is single threaded, so we have two posibilities:
                             // 1. RedeliverUnacknowledgedMessages is called before Acknowledge -> can result in redelivery of message which is acknowledged before being processed again
                             //                                                                    I think we can assume one message should not be 1st negativelyAcknowledged and then
                             //                                                                    acknowledged.
@@ -291,8 +291,8 @@ namespace DotPulsar.Internal
                             _logger.InfoException(nameof(Consumer), nameof(RedeliverNegativelyAcknowledgedMessages), e, "Failed to redeliver unacknowledged messages");
                         }
 
-                        // make sure to place all the message ids to redeliver back to this._negativelyAcknowledgedMessageIds
-                        // as we failed to request redelivery
+                        // make sure to place all the message ids to redeliver back to _negativelyAcknowledgedMessageIds
+                        // in case we failed to request redelivery
 
                         foreach (KeyValuePair<MessageId, DateTime> data in messageIdsToRedeliver)
                         {

@@ -73,6 +73,7 @@ namespace DotPulsar.Abstractions
 
         /// <summary>
         /// After what time message should be redelivered.
+        /// Messages won't be re-delivered sooner than {delay} but can be redelivered later by as much as >= 2 * {delay}.
         /// </summary>
         IConsumerBuilder NegativeAcknowledgeRedeliveryDelay(TimeSpan delay);
 
