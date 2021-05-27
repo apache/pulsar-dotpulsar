@@ -174,6 +174,7 @@ namespace DotPulsar.Internal
         {
             try
             {
+                _cancellationTokenSource.Cancel();
                 _cancellationTokenSource.Dispose();
                 _queue.Dispose();
                 await _lock.DisposeAsync();
