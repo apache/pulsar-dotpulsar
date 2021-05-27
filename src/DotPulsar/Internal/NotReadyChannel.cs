@@ -54,6 +54,13 @@ namespace DotPulsar.Internal
         public Task<CommandGetLastMessageIdResponse> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
             => throw GetException();
 
+        public ValueTask NegativeAcknowledge(MessageId messageId, CancellationToken cancellationToken)
+        {
+            // no-op, as channel isn't connected to Pulsar there is no point in requesting redeliver,
+            // it will happen automatically after client gets connected to Pulsar.
+            return new ValueTask();
+        }
+
         public void UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken)
         {
             // no-op

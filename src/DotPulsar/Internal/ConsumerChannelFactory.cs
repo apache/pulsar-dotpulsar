@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Abstractions;
     using PulsarApi;
     using System;
     using System.Threading;
@@ -30,6 +31,9 @@ namespace DotPulsar.Internal
         private readonly IExecute _executor;
         private readonly CommandSubscribe _subscribe;
         private readonly BatchHandler _batchHandler;
+        private readonly TimeSpan _negativeAcknowledgeRedeliveryDelay;
+
+        private readonly IPulsarClientLogger? _logger;
 
         public ConsumerChannelFactory(
             Guid correlationId,
@@ -37,7 +41,8 @@ namespace DotPulsar.Internal
             IConnectionPool connectionPool,
             IExecute executor,
             BatchHandler batchHandler,
-            ConsumerOptions options)
+            ConsumerOptions options,
+            IPulsarClientLogger? logger)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;
@@ -45,6 +50,8 @@ namespace DotPulsar.Internal
             _executor = executor;
             _batchHandler = batchHandler;
             _messagePrefetchCount = options.MessagePrefetchCount;
+            _negativeAcknowledgeRedeliveryDelay = options.NegativeAcknowledgeRedeliveryDelay;
+            _logger = logger;
 
             _subscribe = new CommandSubscribe
             {
@@ -72,7 +79,7 @@ namespace DotPulsar.Internal
             var messageQueue = new AsyncQueue<MessagePackage>();
             var channel = new Channel(_correlationId, _eventRegister, messageQueue);
             var response = await connection.Send(_subscribe, channel, cancellationToken).ConfigureAwait(false);
-            return new ConsumerChannel(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler);
+            return new ConsumerChannel(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler, _negativeAcknowledgeRedeliveryDelay, _logger);
         }
     }
 }

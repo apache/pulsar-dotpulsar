@@ -15,9 +15,13 @@
 namespace DotPulsar.Internal
 {
     using Abstractions;
+    using DotPulsar.Abstractions;
     using Extensions;
     using PulsarApi;
     using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -33,17 +37,27 @@ namespace DotPulsar.Internal
         private uint _sendWhenZero;
         private bool _firstFlow;
 
+        private readonly TimeSpan _negativeAcknowledgeRedeliveryDelay;
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly ConcurrentDictionary<MessageId, DateTime> _negativelyAcknowledgedMessageIds = new ConcurrentDictionary<MessageId, DateTime>();
+
+        private readonly IPulsarClientLogger? _logger;
+
         public ConsumerChannel(
             ulong id,
             uint messagePrefetchCount,
             AsyncQueue<MessagePackage> queue,
             IConnection connection,
-            BatchHandler batchHandler)
+            BatchHandler batchHandler,
+            TimeSpan negativeAcknowledgeRedeliveryDelay,
+            IPulsarClientLogger? logger)
         {
             _id = id;
             _queue = queue;
+            _logger = logger;
             _connection = connection;
             _batchHandler = batchHandler;
+            _negativeAcknowledgeRedeliveryDelay = negativeAcknowledgeRedeliveryDelay;
 
             _lock = new AsyncLock();
 
@@ -52,6 +66,11 @@ namespace DotPulsar.Internal
 
             _sendWhenZero = 0;
             _firstFlow = true;
+
+            if (_negativeAcknowledgeRedeliveryDelay > TimeSpan.Zero)
+            {
+                var _ = Task.Run(() => RedeliverNegativelyAcknowledgedMessages(_cancellationTokenSource.Token));
+            }
         }
 
         public async ValueTask<Message> Receive(CancellationToken cancellationToken)
@@ -155,6 +174,8 @@ namespace DotPulsar.Internal
         {
             try
             {
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
                 _queue.Dispose();
                 await _lock.DisposeAsync();
                 var closeConsumer = new CommandCloseConsumer { ConsumerId = _id };
@@ -199,6 +220,109 @@ namespace DotPulsar.Internal
             ack.MessageIds.Add(messagePackage.MessageId);
 
             await Send(ack, cancellationToken).ConfigureAwait(false);
+        }
+
+        public ValueTask NegativeAcknowledge(MessageId messageId, CancellationToken cancellationToken = default)
+        {
+            if (messageId is null)
+            {
+                throw new ArgumentNullException(nameof(messageId));
+            }
+
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                if (this._negativeAcknowledgeRedeliveryDelay == TimeSpan.Zero)
+                {
+                    return RedeliverUnacknowledgedMessages(new MessageId[] { messageId }, cancellationToken);
+                }
+                else
+                {
+                    DateTime redeliverDateTime = DateTime.UtcNow + this._negativeAcknowledgeRedeliveryDelay;
+                    this._negativelyAcknowledgedMessageIds.AddOrUpdate(messageId, redeliverDateTime, (x, y) => redeliverDateTime);
+                }
+            }
+
+            return new ValueTask();
+        }
+
+        internal async Task RedeliverNegativelyAcknowledgedMessages(CancellationToken cancellationToken)
+        {
+            // we need to keep track of negatively acknowledged messages in the channel as when channel is closed
+            // and we reconnect, all unacknowledged and negatively acknowledged messages will be redelivered by Pulsar
+            // (that is we need to forget all requests to redeliver messages during disconnect, as we don't want duplicate deliveries)
+
+            List<KeyValuePair<MessageId, DateTime>> messageIdsToRedeliver = new List<KeyValuePair<MessageId, DateTime>>();
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    messageIdsToRedeliver.Clear();
+
+                    DateTime evaluationDateTime = DateTime.UtcNow;
+
+                    // it is important to remove message ids which will be redelivered from _negativelyAcknowledgedMessageIds before requesting redelivery as messages
+                    // can arrive after RedeliverUnacknowledgedMessages call succeeded but before we have a chance to remove message ids from _negativelyAcknowledgedMessageIds
+                    // in this case message might be processed again, negatively acknowledged, and after this we will delete it from _negativelyAcknowledgedMessageIds resulting
+                    // in message which won't be redelivered and will be stuck until consumer restarts
+
+                    foreach (KeyValuePair<MessageId, DateTime> data in _negativelyAcknowledgedMessageIds)
+                    {
+                        if (data.Value <= evaluationDateTime &&
+                            _negativelyAcknowledgedMessageIds.TryRemove(data.Key, out DateTime redeliverDateTime))
+                        {
+                            // we don't case if time changed to later (double negative acknowledgment) as original request date / time check passed and we are going to resend this
+                            // message now.
+
+                            messageIdsToRedeliver.Add(new KeyValuePair<MessageId, DateTime>(data.Key, redeliverDateTime));
+                        }
+                    }
+
+                    if (messageIdsToRedeliver.Count > 0)
+                    {
+                        try
+                        {
+                            // RedeliverUnacknowledgedMessages or Acknowledge both call Send(...) which is single threaded, so we have two posibilities:
+                            // 1. RedeliverUnacknowledgedMessages is called before Acknowledge -> can result in redelivery of message which is acknowledged before being processed again
+                            //                                                                    I think we can assume one message should not be 1st negativelyAcknowledged and then
+                            //                                                                    acknowledged.
+                            // 2. Acknowledge is called before RedeliverUnacknowledgedMessages -> messages will never be redelivered
+                            await RedeliverUnacknowledgedMessages(messageIdsToRedeliver.Select(x => x.Key), cancellationToken);
+                            messageIdsToRedeliver.Clear();
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.DebugException(nameof(Consumer), nameof(RedeliverNegativelyAcknowledgedMessages), e, "Failed to redeliver unacknowledged messages");
+                        }
+
+                        // make sure to place all the message ids to redeliver back to _negativelyAcknowledgedMessageIds
+                        // in case we failed to request redelivery
+
+                        foreach (KeyValuePair<MessageId, DateTime> data in messageIdsToRedeliver)
+                        {
+                            // we use current time to re-deliver messages as previous attempt failed
+
+                            _negativelyAcknowledgedMessageIds.AddOrUpdate(data.Key, evaluationDateTime, (messagedId, redeliverDateTime) => evaluationDateTime);
+                        }
+                    }
+
+                    await Task.Delay(_negativeAcknowledgeRedeliveryDelay, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception e)
+                {
+                    _logger.ErrorException(nameof(Consumer), nameof(RedeliverNegativelyAcknowledgedMessages), e, "Unexpected exception in RedeliverNegativelyAcknowledgedMessages task");
+                }
+            }
+        }
+
+        private async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken)
+        {
+            var redeliverUnacknowledgedMessages = new CommandRedeliverUnacknowledgedMessages();
+            redeliverUnacknowledgedMessages.MessageIds.AddRange(messageIds.Select(m => m.Data).ToList());
+            await Send(redeliverUnacknowledgedMessages, cancellationToken);
         }
     }
 }

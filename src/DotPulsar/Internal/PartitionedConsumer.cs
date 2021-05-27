@@ -99,6 +99,20 @@ namespace DotPulsar.Internal
             return GetConsumer(messageId.Partition).AcknowledgeCumulative(messageId, cancellationToken);
         }
 
+        public ValueTask NegativeAcknowledge(Message message, CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+
+            return GetConsumer(message.MessageId.Partition).NegativeAcknowledge(message.MessageId, cancellationToken);
+        }
+
+        public ValueTask NegativeAcknowledge(MessageId messageId, CancellationToken cancellationToken = default)
+        {
+            ThrowIfDisposed();
+
+            return GetConsumer(messageId.Partition).NegativeAcknowledge(messageId, cancellationToken);
+        }
+
         public ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default)
         {
             // TODO

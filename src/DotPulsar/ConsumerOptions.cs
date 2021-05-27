@@ -14,6 +14,8 @@
 
 namespace DotPulsar
 {
+    using System;
+
     /// <summary>
     /// The consumer building options.
     /// </summary>
@@ -54,6 +56,11 @@ namespace DotPulsar
         /// </summary>
         public const int DefaultAutoUpdatePartitionsInterval = 60;
 
+        /// <summary>
+        /// The default delay before re-delivering negatively acked messages.
+        /// </summary>
+        public static readonly TimeSpan DefaultNegativeAcknowledgeRedeliveryDelay = TimeSpan.FromMinutes(1);
+
         public ConsumerOptions(string subscriptionName, string topic)
         {
             InitialPosition = DefaultInitialPosition;
@@ -64,6 +71,7 @@ namespace DotPulsar
             SubscriptionName = subscriptionName;
             AutoUpdatePartitions = DefaultAutoUpdatePartitions;
             AutoUpdatePartitionsInterval = DefaultAutoUpdatePartitionsInterval;
+            NegativeAcknowledgeRedeliveryDelay = DefaultNegativeAcknowledgeRedeliveryDelay;
             Topic = topic;
         }
 
@@ -79,6 +87,7 @@ namespace DotPulsar
             SubscriptionName = options.SubscriptionName;
             AutoUpdatePartitions = options.AutoUpdatePartitions;
             AutoUpdatePartitionsInterval = options.AutoUpdatePartitionsInterval;
+            NegativeAcknowledgeRedeliveryDelay = options.NegativeAcknowledgeRedeliveryDelay;
         }
 
         /// <summary>
@@ -130,5 +139,10 @@ namespace DotPulsar
         /// Time interval which determines frequency with which we are going to check for new partitions (in seconds).
         /// </summary>
         public int AutoUpdatePartitionsInterval { get; set; }
+
+        /// <summary>
+        /// Delay before re-delivering negatively acked messages.
+        /// </summary>
+        public TimeSpan NegativeAcknowledgeRedeliveryDelay { get; set; }
     }
 }
