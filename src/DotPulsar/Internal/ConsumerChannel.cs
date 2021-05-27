@@ -301,7 +301,7 @@ namespace DotPulsar.Internal
                         {
                             // we use current time to re-deliver messages as previous attempt failed
 
-                            _negativelyAcknowledgedMessageIds.AddOrUpdate(data.Key, data.Value, (messagedId, redeliverDateTime) => evaluationDateTime);
+                            _negativelyAcknowledgedMessageIds.AddOrUpdate(data.Key, evaluationDateTime, (messagedId, redeliverDateTime) => evaluationDateTime);
                         }
                     }
 
