@@ -36,11 +36,15 @@ namespace DotPulsar.Abstractions
 
         /// <summary>
         /// Negative acknowledge single message, message will be re-consumer after delay.
+        ///
+        /// IMPORTANT: You should call NegativeAcknowledge only once for each message you receive to avoid duplicate message deliveries.
         /// </summary>
         ValueTask NegativeAcknowledge(Message message, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Negative acknowledge single message using the MessageId, message will be re-consumer after delay.
+        ///
+        /// IMPORTANT: You should call NegativeAcknowledge only once for each message you receive to avoid duplicate message deliveries.
         /// </summary>
         ValueTask NegativeAcknowledge(MessageId messageId, CancellationToken cancellationToken = default);
 

@@ -270,6 +270,9 @@ namespace DotPulsar.Internal
                         if (data.Value <= evaluationDateTime &&
                             _negativelyAcknowledgedMessageIds.TryRemove(data.Key, out DateTime redeliverDateTime))
                         {
+                            // we don't case if time changed to later (double negative acknowledgment) as original request date / time check passed and we are going to resend this
+                            // message now.
+
                             messageIdsToRedeliver.Add(new KeyValuePair<MessageId, DateTime>(data.Key, redeliverDateTime));
                         }
                     }
@@ -296,7 +299,9 @@ namespace DotPulsar.Internal
 
                         foreach (KeyValuePair<MessageId, DateTime> data in messageIdsToRedeliver)
                         {
-                            _negativelyAcknowledgedMessageIds.AddOrUpdate(data.Key, data.Value, (messagedId, redeliverDateTime) => data.Value > redeliverDateTime ? data.Value : redeliverDateTime);
+                            // we use current time to re-deliver messages as previous attempt failed
+
+                            _negativelyAcknowledgedMessageIds.AddOrUpdate(data.Key, data.Value, (messagedId, redeliverDateTime) => evaluationDateTime);
                         }
                     }
 
