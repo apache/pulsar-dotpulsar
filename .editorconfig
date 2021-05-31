@@ -10,6 +10,7 @@ insert_final_newline = true
 
 # Microsoft .NET properties
 dotnet_sort_system_directives_first = false
+csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
 csharp_space_after_cast = true
 csharp_using_directive_placement = inside_namespace:error
 
@@ -29,6 +30,6 @@ resharper_space_within_single_line_array_initializer_braces = true
 resharper_use_indent_from_vs = false
 resharper_sort_usings_with_system_first = false
 
-[{*.yaml,*.yml,*.csproj}]
+[*.{yaml,yml,csproj}]
 
 indent_size = 2
