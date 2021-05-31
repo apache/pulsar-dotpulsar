@@ -1,14 +1,17 @@
-﻿[*]
+﻿# Suppress: EC112
+
+[*.cs]
+
 charset = utf-8-bom
 indent_style = space
 indent_size = 4
-tab_width = 4
 trim_trailing_whitespace = true
-insert_final_newline=true
+insert_final_newline = true
 
 # Microsoft .NET properties
-csharp_using_directive_placement = inside_namespace:error
+dotnet_sort_system_directives_first = false
 csharp_space_after_cast = true
+csharp_using_directive_placement = inside_namespace:error
 
 # ReSharper properties
 resharper_constructor_or_destructor_body = expression_body
@@ -26,5 +29,6 @@ resharper_space_within_single_line_array_initializer_braces = true
 resharper_use_indent_from_vs = false
 resharper_sort_usings_with_system_first = false
 
-[{*.yaml, *.yml}]
+[{*.yaml,*.yml,*.csproj}]
+
 indent_size = 2
