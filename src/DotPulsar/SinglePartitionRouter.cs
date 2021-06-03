@@ -19,15 +19,23 @@ namespace DotPulsar
     using System;
     using System.Text;
 
+    /// <summary>
+    /// If no key is provided, the producer will randomly pick one single partition and publish all the messages
+    /// into that partition. While if a key is specified on the message, the partitioned producer will hash the
+    /// key and assign message to a particular partition.
+    /// </summary>
     public sealed class SinglePartitionRouter : IMessageRouter
     {
         private int? _partitionIndex;
 
-        public SinglePartitionRouter(int? partitionIndex = null)
+        internal SinglePartitionRouter(int? partitionIndex = null)
         {
             _partitionIndex = partitionIndex;
         }
 
+        /// <summary>
+        /// Choose a partition in single partition routing mode
+        /// </summary>
         public int ChoosePartition(MessageMetadata? messageMetadata, int partitionsCount)
         {
             if (messageMetadata != null && !string.IsNullOrEmpty(messageMetadata.Key))

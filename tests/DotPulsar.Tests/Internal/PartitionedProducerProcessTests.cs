@@ -28,7 +28,7 @@ namespace DotPulsar.Tests.Internal
     public class PartitionedProducerProcessTests
     {
         [Fact]
-        public async Task TestPartitionedProducerStateManage_WhenSubProducersStateChange_ThenPartitionedProducerStateChangeCorrectly()
+        public Task TestPartitionedProducerStateManage_WhenSubProducersStateChange_ThenPartitionedProducerStateChangeCorrectly()
         {
             var connectionPool = Substitute.For<IConnectionPool>();
             var establishNewChannel = Substitute.For<IEstablishNewChannel>();
@@ -36,7 +36,6 @@ namespace DotPulsar.Tests.Internal
 
             var processManager = new ProcessManager(connectionPool);
 
-            var producerProcesses = new Dictionary<uint, ProducerProcess>(3);
             var producerGuids = new Dictionary<uint, Guid>(3);
             var producersGroup = new ConcurrentDictionary<uint, IProducer>(Environment.ProcessorCount, 3);
             var partitionedProducerGuid = Guid.NewGuid();
@@ -47,14 +46,15 @@ namespace DotPulsar.Tests.Internal
                 var correlationId = Guid.NewGuid();
                 var process = new ProducerProcess(correlationId, stateManager, establishNewChannel, processManager, partitionedProducerGuid, i);
                 producerGuids[i] = correlationId;
-                producerProcesses[i] = process;
                 producersGroup[i] = producer;
                 processManager.Add(process);
             }
 
             var partitionedStateManager =
                 new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var producerProcess = new ProducerProcess(partitionedProducerGuid, partitionedStateManager, null, null, null, null, true, producersGroup.Count);
+
+            var producerProcess = new ProducerProcess(partitionedProducerGuid, partitionedStateManager, null, new ProcessManager(connectionPool), null, null, true,
+                producersGroup.Count);
             processManager.Add(producerProcess);
 
             // Test connect
@@ -77,10 +77,12 @@ namespace DotPulsar.Tests.Internal
             // Test fault
             processManager.Register(new ExecutorFaulted(producerGuids[1]));
             Assert.Equal(ProducerState.Faulted, partitionedStateManager.CurrentState);
+
+            return Task.CompletedTask;
         }
 
         [Fact]
-        public async Task TestUpdatePartitions_WhenIncreasePartitions_ThenPartitionedProducerStateChangeCorrectly()
+        public Task TestUpdatePartitions_WhenIncreasePartitions_ThenPartitionedProducerStateChangeCorrectly()
         {
             var connectionPool = Substitute.For<IConnectionPool>();
             var processManager = new ProcessManager(connectionPool);
@@ -97,6 +99,8 @@ namespace DotPulsar.Tests.Internal
             Assert.Equal(ProducerState.PartiallyConnected, stateManager.CurrentState);
             processManager.Register(new PartitionedSubProducerStateChanged(guid, ProducerState.Connected, 1));
             Assert.Equal(ProducerState.Connected, stateManager.CurrentState);
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -38,7 +38,7 @@ namespace DotPulsar.Tests
             var connection = Substitute.For<IConnection>();
 
             // use saveGetPartitions to assert CommandPartitionedTopicMetadata.
-            CommandPartitionedTopicMetadata saveGetPartitions = null;
+            CommandPartitionedTopicMetadata? saveGetPartitions = null;
 
             connection.Send(Arg.Any<CommandPartitionedTopicMetadata>(), Arg.Any<CancellationToken>())
                 .Returns(new BaseCommand()
