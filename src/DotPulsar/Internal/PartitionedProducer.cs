@@ -46,16 +46,16 @@
             _producersCount = (int) partitionsCount;
             _messageRouter = options.MessageRouter;
 
-            _producers = new ConcurrentDictionary<int, IProducer<TMessage>>(Environment.ProcessorCount, _producersCount);
+            _producers = new ConcurrentDictionary<int, IProducer<TMessage>>(1, _producersCount);
             CreateSubProducers(0, _producersCount);
         }
 
         private void CreateSubProducers(int startIndex, int count)
         {
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
-                var producer = _pulsarClient.NewProducer(Topic, _options, (uint)(i+startIndex), _correlationId);
-                _producers[i+startIndex] = producer;
+                var producer = _pulsarClient.NewProducer(Topic, _options, (uint) (i + startIndex), _correlationId);
+                _producers[i + startIndex] = producer;
             }
         }
 
@@ -88,9 +88,9 @@
         }
 
         public async ValueTask<MessageId> Send(TMessage message, CancellationToken cancellationToken = default)
-            => await _producers[_messageRouter.ChoosePartition(null, _producersCount)].Send(message, cancellationToken);
+            => await _producers[_messageRouter.ChoosePartition(null, _producersCount)].Send(message, cancellationToken).ConfigureAwait(false);
 
         public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default)
-            => await _producers[_messageRouter.ChoosePartition(metadata, _producersCount)].Send(message, cancellationToken);
+            => await _producers[_messageRouter.ChoosePartition(metadata, _producersCount)].Send(message, cancellationToken).ConfigureAwait(false);
     }
 }
