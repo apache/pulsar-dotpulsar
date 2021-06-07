@@ -89,7 +89,7 @@ namespace DotPulsar.Tests.Internal
 
             var guid = Guid.NewGuid();
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var process = new ProducerProcess(guid, stateManager, null, null, null, null, true, 1);
+            var process = new ProducerProcess(guid, stateManager, null, new ProcessManager(connectionPool), null, null, true);
             processManager.Add(process);
 
             Assert.Equal(ProducerState.Disconnected, stateManager.CurrentState);

@@ -24,7 +24,7 @@ namespace DotPulsar.Tests
     using System.Threading;
     using System.Threading.Tasks;
     using Xunit;
-    using Schema = DotPulsar.Schema;
+    using Schema = Schema;
 
     public class PulsarClientTests
     {
@@ -55,11 +55,12 @@ namespace DotPulsar.Tests
                 });
 
             var connectionPool = Substitute.For<IConnectionPool>();
+
             connectionPool.FindConnectionForTopic(Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .Returns(connection);
 
-            var client = PulsarClientFactory.CreatePulsarClient(connectionPool, new ProcessManager(connectionPool), Substitute.For<IHandleException>(),new Uri
-            ("pusarl://localhost:6650/"));
+            var client = PulsarClientFactory.CreatePulsarClient(connectionPool, new ProcessManager(connectionPool), Substitute.For<IHandleException>(), new Uri
+                ("pusarl://localhost:6650/"));
 
             //Act
             await using var producer = client.NewProducer(Schema.String).Topic(topicName).Create();
