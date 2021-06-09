@@ -79,26 +79,20 @@ namespace DotPulsar
         {
             ThrowIfDisposed();
 
-            var partitionsCount = GetNumberOfPartitions(options.Topic, default).Result;
-
-            if (partitionsCount == 0)
-            {
-                return NewProducer(options.Topic, options);
-            }
-
-            return NewPartitionedProducer(options.Topic, options, partitionsCount);
+            return NewPartitionedProducer(options);
         }
 
-        private IProducer<TMessage> NewPartitionedProducer<TMessage>(string topic, ProducerOptions<TMessage> options, uint partitionsCount)
+        private IProducer<TMessage> NewPartitionedProducer<TMessage>(ProducerOptions<TMessage> options)
         {
             var correlationId = Guid.NewGuid();
+            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
 
-            var producer = new PartitionedProducer<TMessage>(correlationId, ServiceUrl, options.Topic, _processManager, stateManager, partitionsCount, options, this);
+            var producer = new PartitionedProducer<TMessage>(correlationId, ServiceUrl, options.Topic, _processManager, executor, stateManager, options, this);
 
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
-            var process = new ProducerProcess(correlationId, stateManager, null, _processManager, null, null, true, (int) partitionsCount);
+            var process = new ProducerProcess(correlationId, stateManager, null, _processManager);
             _processManager.Add(process);
             return producer;
         }
@@ -107,14 +101,9 @@ namespace DotPulsar
         /// Create a producer internally.
         /// This method is used to create internal producers for partitioned producer.
         /// </summary>
-        /// <param name="topic">topic name</param>
-        /// <param name="partitionIndex">partition index</param>
-        /// <param name="options">producer options</param>
-        /// <param name="partitionedProducerGuid"></param>
-        /// <typeparam name="TMessage">schema type of the producer</typeparam>
-        /// <returns></returns>
         /// <exception cref="CompressionException"></exception>
-        internal Producer<TMessage> NewProducer<TMessage>(string topic, ProducerOptions<TMessage> options, uint? partitionIndex = null, Guid? partitionedProducerGuid = null)
+        internal SubProducer<TMessage> NewSubProducer<TMessage>(string topic, ProducerOptions<TMessage> options, IExecute executor, Guid partitionedProducerGuid,
+            uint? partitionIndex = null)
         {
             ThrowIfDisposed();
 
@@ -135,7 +124,7 @@ namespace DotPulsar
             }
 
             var correlationId = Guid.NewGuid();
-            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
+
             var producerName = options.ProducerName;
             var schema = options.Schema;
             var initialSequenceId = options.InitialSequenceId;
@@ -143,11 +132,11 @@ namespace DotPulsar
             var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, schema.SchemaInfo, compressorFactory);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
             var initialChannel = new NotReadyChannel<TMessage>();
-            var producer = new Producer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
+            var producer = new SubProducer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
 
             if (options.StateChangedHandler is not null && !partitionIndex.HasValue) // the StateChangeHandler of the sub producers in partitioned producers should be disabled.
                 _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
-            var process = new ProducerProcess(correlationId, stateManager, producer, _processManager, partitionedProducerGuid, partitionIndex);
+            var process = new ProducerProcess(correlationId, stateManager, producer, _processManager, partitionedProducerGuid);
             _processManager.Add(process);
             process.Start();
             return producer;
