@@ -25,7 +25,7 @@ namespace DotPulsar.Internal
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class Producer<TMessage> : IEstablishNewChannel, IProducer<TMessage>
+    public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMessage>
     {
         private readonly ObjectPool<PulsarApi.MessageMetadata> _messageMetadataPool;
         private readonly Guid _correlationId;
@@ -41,7 +41,7 @@ namespace DotPulsar.Internal
         public Uri ServiceUrl { get; }
         public string Topic { get; }
 
-        public Producer(
+        public SubProducer(
             Guid correlationId,
             Uri serviceUrl,
             string topic,

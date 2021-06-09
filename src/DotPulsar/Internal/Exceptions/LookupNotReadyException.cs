@@ -12,23 +12,12 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Events
+namespace DotPulsar.Internal.Exceptions
 {
-    using Abstractions;
-    using System;
+    using DotPulsar.Exceptions;
 
-    /// <summary>
-    /// Representation of the sub producer of a partitioned producer state change.
-    /// </summary>
-    public sealed class PartitionedSubProducerStateChanged : IEvent
+    public sealed class LookupNotReadyException : DotPulsarException
     {
-        public Guid CorrelationId { get; }
-        public ProducerState ProducerState { get; }
-
-        public PartitionedSubProducerStateChanged(Guid correlationId, ProducerState producerState)
-        {
-            CorrelationId = correlationId;
-            ProducerState = producerState;
-        }
+        public LookupNotReadyException() : base("The topic lookup operation is not ready yet") { }
     }
 }

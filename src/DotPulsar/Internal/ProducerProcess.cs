@@ -24,34 +24,27 @@ namespace DotPulsar.Internal
     {
         private readonly IStateManager<ProducerState> _stateManager;
         private readonly IEstablishNewChannel? _producer;
-        private readonly bool _isPartitionedProducer;
 
         // The following variables are only used when the producer is PartitionedProducer.
         private readonly IRegisterEvent _processManager;
         private int _partitionsCount;
-        private int _connectedProducersCount = 0;
+        private int _connectedProducersCount;
+        private int _initialProducersCount;
 
         // The following variables are only used for sub producer
         private readonly Guid? _partitionedProducerId;
-        private readonly uint? _partitionIndex;
 
         public ProducerProcess(
             Guid correlationId,
             IStateManager<ProducerState> stateManager,
             IEstablishNewChannel? producer,
             IRegisterEvent processManager,
-            Guid? partitionedProducerId = null,
-            uint? partitionIndex = null,
-            bool isPartitionedProducer = false,
-            int partitionsCount = 1) : base(correlationId)
+            Guid? partitionedProducerId = null) : base(correlationId)
         {
             _stateManager = stateManager;
             _producer = producer;
             _processManager = processManager;
-            _isPartitionedProducer = isPartitionedProducer;
-            _partitionsCount = partitionsCount;
             _partitionedProducerId = partitionedProducerId;
-            _partitionIndex = partitionIndex;
         }
 
         public override async ValueTask DisposeAsync()
@@ -77,7 +70,10 @@ namespace DotPulsar.Internal
                             Interlocked.Increment(ref _connectedProducersCount);
                             break;
                         case ProducerState.Disconnected:
-                            Interlocked.Decrement(ref _connectedProducersCount);
+                            if (_initialProducersCount == 0)
+                                Interlocked.Decrement(ref _connectedProducersCount);
+                            else
+                                Interlocked.Decrement(ref _initialProducersCount);
                             break;
                         case ProducerState.Faulted:
                             _stateManager.SetState(ProducerState.Faulted);
@@ -88,7 +84,17 @@ namespace DotPulsar.Internal
 
                     break;
                 case UpdatePartitions updatePartitions:
-                    _partitionsCount = (int) updatePartitions.PartitionsCount;
+                    if (updatePartitions.PartitionsCount == 0)
+                    {
+                        Interlocked.Exchange(ref _initialProducersCount, 1);
+                        Interlocked.Exchange(ref _partitionsCount, 1);
+                    }
+                    else
+                    {
+                        Interlocked.Add(ref _initialProducersCount, (int) updatePartitions.PartitionsCount - _partitionsCount);
+                        Interlocked.Exchange(ref _partitionsCount, (int) updatePartitions.PartitionsCount);
+                    }
+
                     break;
             }
         }
@@ -98,12 +104,12 @@ namespace DotPulsar.Internal
             if (_stateManager.IsFinalState())
                 return;
 
-            if (_isPartitionedProducer)
+            if (!IsSubProducer()) // partitioned producer
             {
-                if (_connectedProducersCount == _partitionsCount)
-                    _stateManager.SetState(ProducerState.Connected);
-                else if (_connectedProducersCount == 0)
+                if (_connectedProducersCount <= 0)
                     _stateManager.SetState(ProducerState.Disconnected);
+                else if (_connectedProducersCount == _partitionsCount)
+                    _stateManager.SetState(ProducerState.Connected);
                 else
                     _stateManager.SetState(ProducerState.PartiallyConnected);
                 return;
@@ -120,7 +126,9 @@ namespace DotPulsar.Internal
                 case ChannelState.ClosedByServer:
                 case ChannelState.Disconnected:
                     SetState(ProducerState.Disconnected);
-                    _ = _producer!.EstablishNewChannel(CancellationTokenSource.Token);
+
+                    if (_producer != null)
+                        _ = _producer.EstablishNewChannel(CancellationTokenSource.Token);
                     return;
                 case ChannelState.Connected:
                     SetState(ProducerState.Connected);
@@ -128,13 +136,18 @@ namespace DotPulsar.Internal
             }
         }
 
+        /// <summary>
+        /// Check if this is the sub producer process of the partitioned producer.
+        /// </summary>
+        private bool IsSubProducer()
+            => _partitionedProducerId.HasValue;
+
         private void SetState(ProducerState state)
         {
             _stateManager.SetState(state);
 
-            // Check if this is the sub producer process of the partitioned producer.
-            if (_partitionedProducerId.HasValue && _partitionIndex.HasValue)
-                _processManager.Register(new PartitionedSubProducerStateChanged(_partitionedProducerId.Value, state, _partitionIndex.Value));
+            if (IsSubProducer())
+                _processManager.Register(new PartitionedSubProducerStateChanged(_partitionedProducerId!.Value, state));
         }
     }
 }

@@ -44,7 +44,7 @@ namespace DotPulsar.Tests.Internal
             {
                 var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
                 var correlationId = Guid.NewGuid();
-                var process = new ProducerProcess(correlationId, stateManager, establishNewChannel, processManager, partitionedProducerGuid, i);
+                var process = new ProducerProcess(correlationId, stateManager, establishNewChannel, processManager, partitionedProducerGuid);
                 producerGuids[i] = correlationId;
                 producersGroup[i] = producer;
                 processManager.Add(process);
@@ -53,9 +53,17 @@ namespace DotPulsar.Tests.Internal
             var partitionedStateManager =
                 new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
 
-            var producerProcess = new ProducerProcess(partitionedProducerGuid, partitionedStateManager, null, new ProcessManager(connectionPool), null, null, true,
-                producersGroup.Count);
+            var producerProcess = new ProducerProcess(partitionedProducerGuid, partitionedStateManager, null, new ProcessManager(connectionPool));
             processManager.Add(producerProcess);
+            processManager.Register(new UpdatePartitions(partitionedProducerGuid, (uint) producersGroup.Count));
+
+            // Test initial channel
+            processManager.Register(new ChannelDisconnected(producerGuids[0]));
+            Assert.Equal(ProducerState.Disconnected, partitionedStateManager.CurrentState);
+            processManager.Register(new ChannelDisconnected(producerGuids[1]));
+            Assert.Equal(ProducerState.Disconnected, partitionedStateManager.CurrentState);
+            processManager.Register(new ChannelDisconnected(producerGuids[2]));
+            Assert.Equal(ProducerState.Disconnected, partitionedStateManager.CurrentState);
 
             // Test connect
             Assert.Equal(ProducerState.Disconnected, partitionedStateManager.CurrentState);
@@ -89,15 +97,16 @@ namespace DotPulsar.Tests.Internal
 
             var guid = Guid.NewGuid();
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var process = new ProducerProcess(guid, stateManager, null, new ProcessManager(connectionPool), null, null, true);
+            var process = new ProducerProcess(guid, stateManager, null, new ProcessManager(connectionPool));
             processManager.Add(process);
+            processManager.Register(new UpdatePartitions(guid, 1));
 
             Assert.Equal(ProducerState.Disconnected, stateManager.CurrentState);
-            processManager.Register(new PartitionedSubProducerStateChanged(guid, ProducerState.Connected, 0));
+            processManager.Register(new PartitionedSubProducerStateChanged(guid, ProducerState.Connected));
             Assert.Equal(ProducerState.Connected, stateManager.CurrentState);
             processManager.Register(new UpdatePartitions(guid, 2));
             Assert.Equal(ProducerState.PartiallyConnected, stateManager.CurrentState);
-            processManager.Register(new PartitionedSubProducerStateChanged(guid, ProducerState.Connected, 1));
+            processManager.Register(new PartitionedSubProducerStateChanged(guid, ProducerState.Connected));
             Assert.Equal(ProducerState.Connected, stateManager.CurrentState);
 
             return Task.CompletedTask;
