@@ -25,7 +25,7 @@ namespace DotPulsar.Internal
         private readonly IStateManager<ProducerState> _stateManager;
         private readonly IEstablishNewChannel? _producer;
 
-        // The following variables are only used when the producer is PartitionedProducer.
+        // The following variables are only used when this is the process for parent producer.
         private readonly IRegisterEvent _processManager;
         private int _partitionsCount;
         private int _connectedProducersCount;
@@ -70,6 +70,8 @@ namespace DotPulsar.Internal
                             Interlocked.Increment(ref _connectedProducersCount);
                             break;
                         case ProducerState.Disconnected:
+                            // When the sub producer is initialized, the Disconnected event will be triggered.
+                            // So we need to first subtract from _initialProducersCount.
                             if (_initialProducersCount == 0)
                                 Interlocked.Decrement(ref _connectedProducersCount);
                             else
@@ -104,7 +106,7 @@ namespace DotPulsar.Internal
             if (_stateManager.IsFinalState())
                 return;
 
-            if (!IsSubProducer()) // partitioned producer
+            if (!IsSubProducer()) // parent producer process
             {
                 if (_connectedProducersCount <= 0)
                     _stateManager.SetState(ProducerState.Disconnected);

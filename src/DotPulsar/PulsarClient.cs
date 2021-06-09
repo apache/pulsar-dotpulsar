@@ -79,16 +79,11 @@ namespace DotPulsar
         {
             ThrowIfDisposed();
 
-            return NewPartitionedProducer(options);
-        }
-
-        private IProducer<TMessage> NewPartitionedProducer<TMessage>(ProducerOptions<TMessage> options)
-        {
             var correlationId = Guid.NewGuid();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
 
-            var producer = new PartitionedProducer<TMessage>(correlationId, ServiceUrl, options.Topic, _processManager, executor, stateManager, options, this);
+            var producer = new Producer<TMessage>(correlationId, ServiceUrl, options.Topic, _processManager, executor, stateManager, options, this);
 
             if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
@@ -101,7 +96,6 @@ namespace DotPulsar
         /// Create a producer internally.
         /// This method is used to create internal producers for partitioned producer.
         /// </summary>
-        /// <exception cref="CompressionException"></exception>
         internal SubProducer<TMessage> NewSubProducer<TMessage>(string topic, ProducerOptions<TMessage> options, IExecute executor, Guid partitionedProducerGuid,
             uint? partitionIndex = null)
         {

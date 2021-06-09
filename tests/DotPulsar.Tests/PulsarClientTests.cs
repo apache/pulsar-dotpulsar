@@ -68,7 +68,7 @@ namespace DotPulsar.Tests
             //Assert
             Assert.NotNull(saveGetPartitions);
             Assert.Equal(saveGetPartitions?.Topic, topicName);
-            Assert.IsType<PartitionedProducer<string>>(producer);
+            Assert.IsType<Producer<string>>(producer);
         }
     }
 }
