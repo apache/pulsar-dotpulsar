@@ -25,8 +25,8 @@ namespace DotPulsar.Schemas
     /// </summary>
     public sealed class BooleanSchema : ISchema<bool>
     {
-        private readonly static ReadOnlySequence<byte> _true;
-        private readonly static ReadOnlySequence<byte> _false;
+        private static readonly ReadOnlySequence<byte> _true;
+        private static readonly ReadOnlySequence<byte> _false;
 
         static BooleanSchema()
         {

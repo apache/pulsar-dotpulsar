@@ -22,30 +22,22 @@ on:
   pull_request:
     branches:
       - master
+  push:
+    branches:
+      - master
 
 jobs:
-
   unit-tests:
-    name:
     runs-on: ubuntu-latest
     timeout-minutes: 120
-
     steps:
       - name: checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
+        uses: actions/checkout@main
 
-      - name: Setup dotnet 2
+      - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '2.2.x'
-
-      - name: Setup dotnet 3
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '3.1.x'
+          dotnet-version: '5.0.x'
 
       - name: run unit tests
         run: dotnet test ./tests/DotPulsar.Tests/DotPulsar.Tests.csproj --logger "trx;verbosity=detailed"
