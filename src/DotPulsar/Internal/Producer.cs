@@ -9,7 +9,7 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class PartitionedProducer<TMessage> : IProducer<TMessage>
+    public sealed class Producer<TMessage> : IProducer<TMessage>
     {
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
@@ -25,7 +25,7 @@
         public Uri ServiceUrl { get; }
         public string Topic { get; }
 
-        public PartitionedProducer(
+        public Producer(
             Guid correlationId,
             Uri serviceUrl,
             string topic,
