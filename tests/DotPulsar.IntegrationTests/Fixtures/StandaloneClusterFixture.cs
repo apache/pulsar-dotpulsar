@@ -12,25 +12,30 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.IntegrationTests.Services
+namespace DotPulsar.IntegrationTests.Fixtures
 {
     using Abstraction;
+    using Services;
+    using System.Threading.Tasks;
+    using Xunit;
 
-    public static class ServiceFactory
+    public class StandaloneClusterFixture : IAsyncLifetime
     {
-        private const string PulsarDeploymentType = "pulsar.deployment.type";
-        private const string ContainerDeployment = "container";
-
-        public static IPulsarService CreatePulsarService()
+        public IPulsarService? PulsarService
         {
-            var deploymentType = System.Environment.GetEnvironmentVariable(PulsarDeploymentType);
+            private set;
+            get;
+        }
+        public async Task InitializeAsync()
+        {
+            PulsarService = ServiceFactory.CreatePulsarService();
+            await PulsarService.InitializeAsync();
+        }
 
-            if (deploymentType == ContainerDeployment)
-            {
-                return new StandaloneContainerService();
-            }
-
-            return new StandaloneExternalService();
+        public async Task DisposeAsync()
+        {
+            if (PulsarService != null)
+                await PulsarService.DisposeAsync();
         }
     }
 }

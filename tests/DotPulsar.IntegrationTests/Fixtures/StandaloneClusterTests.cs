@@ -12,16 +12,10 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.IntegrationTests.Services
+namespace DotPulsar.IntegrationTests.Fixtures
 {
-    using System;
+    using Xunit;
 
-    public sealed class StandaloneExternalService : PulsarServiceBase
-    {
-        public override Uri GetBrokerUri()
-            => new ("pulsar://localhost:6650");
-
-        public override Uri GetWebServiceUri()
-            => new("http://localhost:8080");
-    }
+    [CollectionDefinition(nameof(StandaloneClusterTest))]
+    public class StandaloneClusterTest : ICollectionFixture<StandaloneClusterFixture> { }
 }
