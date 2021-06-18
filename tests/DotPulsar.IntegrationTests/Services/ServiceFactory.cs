@@ -18,7 +18,7 @@ namespace DotPulsar.IntegrationTests.Services
 
     public static class ServiceFactory
     {
-        private const string PulsarDeploymentType = "pulsar.deployment.type";
+        private const string PulsarDeploymentType = "PULSAR_DEPLOYMENT_TYPE";
         private const string ContainerDeployment = "container";
 
         public static IPulsarService CreatePulsarService()

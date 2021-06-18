@@ -24,4 +24,10 @@
       <ProjectReference Include="..\..\src\DotPulsar\DotPulsar.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="docker-compose-standalone-tests.yml">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
