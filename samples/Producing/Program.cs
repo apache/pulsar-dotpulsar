@@ -71,6 +71,7 @@ namespace Producing
             {
                 ProducerState.Connected => "is connected",
                 ProducerState.Disconnected => "is disconnected",
+                ProducerState.PartiallyConnected => "has partially connected",
                 ProducerState.Closed => "has closed",
                 ProducerState.Faulted => "has faulted",
                 _ => $"has an unknown state '{stateChanged.ProducerState}'"

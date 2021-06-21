@@ -22,7 +22,6 @@ namespace DotPulsar.Tests.Internal
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.Threading.Tasks;
     using Xunit;
 
     public class PartitionedProducerProcessTests
@@ -53,7 +52,7 @@ namespace DotPulsar.Tests.Internal
             var partitionedStateManager =
                 new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
 
-            var producerProcess = new ProducerProcess(partitionedProducerGuid, partitionedStateManager, null, new ProcessManager(connectionPool));
+            var producerProcess = new ProducerProcess(partitionedProducerGuid, partitionedStateManager, establishNewChannel, new ProcessManager(connectionPool));
             processManager.Add(producerProcess);
             processManager.Register(new UpdatePartitions(partitionedProducerGuid, (uint) producersGroup.Count));
 
@@ -92,10 +91,11 @@ namespace DotPulsar.Tests.Internal
         {
             var connectionPool = Substitute.For<IConnectionPool>();
             var processManager = new ProcessManager(connectionPool);
+            var establishNewChannel = Substitute.For<IEstablishNewChannel>();
 
             var guid = Guid.NewGuid();
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var process = new ProducerProcess(guid, stateManager, null, new ProcessManager(connectionPool));
+            var process = new ProducerProcess(guid, stateManager, establishNewChannel, new ProcessManager(connectionPool));
             processManager.Add(process);
             processManager.Register(new UpdatePartitions(guid, 1));
 
