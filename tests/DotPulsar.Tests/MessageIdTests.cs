@@ -139,7 +139,7 @@ namespace DotPulsar.Tests
             MessageId m2 = null;
 
             (m1 == m2).Should().BeTrue();
-            (m1 == null).Should().BeTrue();
+            (m1 is null).Should().BeTrue();
             (m1 != m2).Should().BeFalse();
         }
 
@@ -149,7 +149,7 @@ namespace DotPulsar.Tests
             var m1 = new MessageId(1, 2, 3, 4);
             MessageId m2 = null;
 
-            (m1 == null).Should().BeFalse();
+            (m1 is null).Should().BeFalse();
             (m1 == m2).Should().BeFalse();
             m1.Equals(m2).Should().BeFalse();
             (m1 != m2).Should().BeTrue();

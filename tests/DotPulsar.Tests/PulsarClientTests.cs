@@ -19,6 +19,7 @@ namespace DotPulsar.Tests
     using DotPulsar.Internal.Abstractions;
     using DotPulsar.Internal.PulsarApi;
     using Extensions;
+    using FluentAssertions;
     using NSubstitute;
     using System;
     using System.Threading;
@@ -29,47 +30,40 @@ namespace DotPulsar.Tests
     public class PulsarClientTests
     {
         [Fact]
-        public async Task GetPartitionedProducer_GivenPartitionedTopic_ShouldReturnPartitionProducer()
+        public async Task NewProducer_GivenPartitionedTopic_ShouldReturnPartitionProducer()
         {
             //Arrange
-            var topicName = "persistent://public/default/test-topic";
-            uint expectedPartitions = 3;
+            const string topicName = "persistent://public/default/test-topic";
+            const uint expectedPartitions = 3;
+
+            CommandPartitionedTopicMetadata? saveGetPartitions = null;  // use saveGetPartitions to assert CommandPartitionedTopicMetadata.
 
             var connection = Substitute.For<IConnection>();
-
-            // use saveGetPartitions to assert CommandPartitionedTopicMetadata.
-            CommandPartitionedTopicMetadata? saveGetPartitions = null;
-
             connection.Send(Arg.Any<CommandPartitionedTopicMetadata>(), Arg.Any<CancellationToken>())
-                .Returns(new BaseCommand()
+                .Returns(new BaseCommand
                 {
                     CommandType = BaseCommand.Type.PartitionedMetadataResponse,
-                    PartitionMetadataResponse = new CommandPartitionedTopicMetadataResponse()
+                    PartitionMetadataResponse = new CommandPartitionedTopicMetadataResponse
                     {
-                        Response = CommandPartitionedTopicMetadataResponse.LookupType.Success, Partitions = expectedPartitions
+                        Response = CommandPartitionedTopicMetadataResponse.LookupType.Success,
+                        Partitions = expectedPartitions
                     }
                 })
-                .AndDoes(info =>
-                {
-                    saveGetPartitions = (CommandPartitionedTopicMetadata) info[0];
-                });
+                .AndDoes(info => saveGetPartitions = (CommandPartitionedTopicMetadata) info[0]);
 
             var connectionPool = Substitute.For<IConnectionPool>();
+            connectionPool.FindConnectionForTopic(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(connection);
 
-            connectionPool.FindConnectionForTopic(Arg.Any<string>(), Arg.Any<CancellationToken>())
-                .Returns(connection);
-
-            var client = PulsarClientFactory.CreatePulsarClient(connectionPool, new ProcessManager(connectionPool), Substitute.For<IHandleException>(), new Uri
-                ("pusarl://localhost:6650/"));
+            var client = PulsarClientFactory.CreatePulsarClient(connectionPool, new ProcessManager(connectionPool), Substitute.For<IHandleException>(), new Uri("pusarl://localhost:6650/"));
 
             //Act
             await using var producer = client.NewProducer(Schema.String).Topic(topicName).Create();
             await ((IEstablishNewChannel) producer).EstablishNewChannel(new CancellationTokenSource(TimeSpan.FromSeconds(10)).Token);
 
             //Assert
-            Assert.NotNull(saveGetPartitions);
-            Assert.Equal(saveGetPartitions?.Topic, topicName);
-            Assert.IsType<Producer<string>>(producer);
+            saveGetPartitions.Should().NotBeNull();
+            saveGetPartitions!.Topic.Should().Be(topicName);
+            producer.Should().BeOfType<Producer<string>>();
         }
     }
 }

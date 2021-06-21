@@ -49,8 +49,7 @@ namespace DotPulsar.Tests.Internal
                 processManager.Add(process);
             }
 
-            var partitionedStateManager =
-                new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+            var partitionedStateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
 
             var producerProcess = new ProducerProcess(partitionedProducerGuid, partitionedStateManager, establishNewChannel, new ProcessManager(connectionPool));
             processManager.Add(producerProcess);
