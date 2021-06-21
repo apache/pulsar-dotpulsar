@@ -50,7 +50,7 @@ namespace Producing
         private static async Task ProduceMessages(IProducer<string> producer, CancellationToken cancellationToken)
         {
             var delay = TimeSpan.FromSeconds(5);
-            await producer.StateChangedTo(ProducerState.Connected, cancellationToken: cancellationToken).ConfigureAwait(false);
+
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
@@ -71,7 +71,6 @@ namespace Producing
             {
                 ProducerState.Connected => "is connected",
                 ProducerState.Disconnected => "is disconnected",
-                ProducerState.PartiallyConnected => "has partially connected",
                 ProducerState.Closed => "has closed",
                 ProducerState.Faulted => "has faulted",
                 _ => $"has an unknown state '{stateChanged.ProducerState}'"

@@ -23,7 +23,7 @@ namespace DotPulsar.Internal
     public sealed class ProducerProcess : Process
     {
         private readonly IStateManager<ProducerState> _stateManager;
-        private readonly IEstablishNewChannel? _producer;
+        private readonly IEstablishNewChannel _producer;
 
         // The following variables are only used when this is the process for parent producer.
         private readonly IRegisterEvent _processManager;
@@ -37,7 +37,7 @@ namespace DotPulsar.Internal
         public ProducerProcess(
             Guid correlationId,
             IStateManager<ProducerState> stateManager,
-            IEstablishNewChannel? producer,
+            IEstablishNewChannel producer,
             IRegisterEvent processManager,
             Guid? partitionedProducerId = null) : base(correlationId)
         {
@@ -52,8 +52,7 @@ namespace DotPulsar.Internal
             SetState(ProducerState.Closed);
             CancellationTokenSource.Cancel();
 
-            if (_producer != null)
-                await _producer.DisposeAsync().ConfigureAwait(false);
+            await _producer.DisposeAsync().ConfigureAwait(false);
         }
 
         protected override void HandleExtend(IEvent e)
@@ -128,9 +127,7 @@ namespace DotPulsar.Internal
                 case ChannelState.ClosedByServer:
                 case ChannelState.Disconnected:
                     SetState(ProducerState.Disconnected);
-
-                    if (_producer != null)
-                        _ = _producer.EstablishNewChannel(CancellationTokenSource.Token);
+                    _ = _producer.EstablishNewChannel(CancellationTokenSource.Token);
                     return;
                 case ChannelState.Connected:
                     SetState(ProducerState.Connected);

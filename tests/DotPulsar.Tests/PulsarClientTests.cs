@@ -64,6 +64,7 @@ namespace DotPulsar.Tests
 
             //Act
             await using var producer = client.NewProducer(Schema.String).Topic(topicName).Create();
+            await ((IEstablishNewChannel) producer).EstablishNewChannel(new CancellationTokenSource(TimeSpan.FromSeconds(10)).Token);
 
             //Assert
             Assert.NotNull(saveGetPartitions);

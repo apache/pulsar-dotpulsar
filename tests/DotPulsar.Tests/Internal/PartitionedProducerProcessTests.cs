@@ -28,7 +28,7 @@ namespace DotPulsar.Tests.Internal
     public class PartitionedProducerProcessTests
     {
         [Fact]
-        public Task TestPartitionedProducerStateManage_WhenSubProducersStateChange_ThenPartitionedProducerStateChangeCorrectly()
+        public void TestPartitionedProducerStateManage_WhenSubProducersStateChange_ThenPartitionedProducerStateChangeCorrectly()
         {
             var connectionPool = Substitute.For<IConnectionPool>();
             var establishNewChannel = Substitute.For<IEstablishNewChannel>();
@@ -85,12 +85,10 @@ namespace DotPulsar.Tests.Internal
             // Test fault
             processManager.Register(new ExecutorFaulted(producerGuids[1]));
             Assert.Equal(ProducerState.Faulted, partitionedStateManager.CurrentState);
-
-            return Task.CompletedTask;
         }
 
         [Fact]
-        public Task TestUpdatePartitions_WhenIncreasePartitions_ThenPartitionedProducerStateChangeCorrectly()
+        public void TestUpdatePartitions_WhenIncreasePartitions_ThenPartitionedProducerStateChangeCorrectly()
         {
             var connectionPool = Substitute.For<IConnectionPool>();
             var processManager = new ProcessManager(connectionPool);
@@ -108,8 +106,6 @@ namespace DotPulsar.Tests.Internal
             Assert.Equal(ProducerState.PartiallyConnected, stateManager.CurrentState);
             processManager.Register(new PartitionedSubProducerStateChanged(guid, ProducerState.Connected));
             Assert.Equal(ProducerState.Connected, stateManager.CurrentState);
-
-            return Task.CompletedTask;
         }
     }
 }
