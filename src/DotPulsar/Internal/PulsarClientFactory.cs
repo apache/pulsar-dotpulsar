@@ -21,8 +21,6 @@ namespace DotPulsar.Internal
     public sealed class PulsarClientFactory
     {
         public static PulsarClient CreatePulsarClient(IConnectionPool connectionPool, ProcessManager processManager, IHandleException exceptionHandler, Uri serviceUrl)
-        {
-            return new PulsarClient(connectionPool, processManager, exceptionHandler, serviceUrl);
-        }
+            => new(connectionPool, processManager, exceptionHandler, serviceUrl);
     }
 }

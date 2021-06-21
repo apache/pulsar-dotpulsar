@@ -105,9 +105,7 @@ namespace DotPulsar
             ICompressorFactory? compressorFactory = null;
 
             if (partitionIndex.HasValue)
-            {
                 topic = $"{topic}-partition-{partitionIndex}";
-            }
 
             if (options.CompressionType != CompressionType.None)
             {

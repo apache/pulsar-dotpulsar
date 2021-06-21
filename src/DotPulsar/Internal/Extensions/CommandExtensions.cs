@@ -192,7 +192,7 @@ namespace DotPulsar.Internal.Extensions
             };
 
         public static BaseCommand AsBaseCommand(this CommandPartitionedTopicMetadata command)
-            => new BaseCommand
+            => new()
             {
                 CommandType = BaseCommand.Type.PartitionedMetadata, PartitionMetadata = command
             };

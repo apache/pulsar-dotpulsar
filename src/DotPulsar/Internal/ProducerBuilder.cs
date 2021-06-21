@@ -85,7 +85,8 @@ namespace DotPulsar.Internal
                 StateChangedHandler = _stateChangedHandler
             };
 
-            if (_messageRouter != null) options.MessageRouter = _messageRouter;
+            if (_messageRouter is not null)
+                options.MessageRouter = _messageRouter;
 
             return _pulsarClient.CreateProducer<TMessage>(options);
         }

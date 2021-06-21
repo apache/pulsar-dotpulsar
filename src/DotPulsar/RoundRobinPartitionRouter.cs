@@ -16,7 +16,6 @@ namespace DotPulsar
 {
     using Abstractions;
     using HashDepot;
-    using System.Text;
     using System.Threading;
 
     /// <summary>
@@ -31,14 +30,13 @@ namespace DotPulsar
         private int _partitionIndex = -1;
 
         /// <summary>
-        /// Choose a partition in round robin routig mode
+        /// Choose a partition in round robin routing mode
         /// </summary>
         public int ChoosePartition(MessageMetadata? messageMetadata, int partitionsCount)
         {
-            if (messageMetadata != null && !string.IsNullOrEmpty(messageMetadata.Key))
-            {
-                return (int) MurmurHash3.Hash32(Encoding.UTF8.GetBytes(messageMetadata.Key ?? string.Empty), 0) % partitionsCount;
-            }
+            var keyBytes = messageMetadata?.KeyBytes;
+            if (keyBytes is not null)
+                return (int) MurmurHash3.Hash32(keyBytes, 0) % partitionsCount;
 
             return Interlocked.Increment(ref _partitionIndex) % partitionsCount;
         }

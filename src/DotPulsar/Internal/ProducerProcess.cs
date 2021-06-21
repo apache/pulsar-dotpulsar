@@ -79,8 +79,6 @@ namespace DotPulsar.Internal
                         case ProducerState.Faulted:
                             _stateManager.SetState(ProducerState.Faulted);
                             break;
-                        case ProducerState.PartiallyConnected: break;
-                        default: throw new ArgumentOutOfRangeException();
                     }
 
                     break;

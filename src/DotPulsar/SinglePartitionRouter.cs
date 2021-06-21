@@ -17,7 +17,6 @@ namespace DotPulsar
     using Abstractions;
     using HashDepot;
     using System;
-    using System.Text;
 
     /// <summary>
     /// If no key is provided, the producer will randomly pick one single partition and publish all the messages
@@ -38,13 +37,11 @@ namespace DotPulsar
         /// </summary>
         public int ChoosePartition(MessageMetadata? messageMetadata, int partitionsCount)
         {
-            if (messageMetadata != null && !string.IsNullOrEmpty(messageMetadata.Key))
-            {
-                return (int) MurmurHash3.Hash32(Encoding.UTF8.GetBytes(messageMetadata.Key ?? string.Empty), 0) % partitionsCount;
-            }
-
+            var keyBytes = messageMetadata?.KeyBytes;
+            if (keyBytes is not null)
+                return (int) MurmurHash3.Hash32(keyBytes, 0) % partitionsCount;
+            
             _partitionIndex ??= new Random().Next(0, partitionsCount);
-
             return _partitionIndex.Value;
         }
     }

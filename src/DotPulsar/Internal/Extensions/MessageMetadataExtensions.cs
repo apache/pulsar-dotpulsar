@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal.Extensions
 {
     using System;
+    using System.Text;
     using Metadata = PulsarApi.MessageMetadata;
 
     public static class MessageMetadataExtensions
@@ -47,7 +48,15 @@ namespace DotPulsar.Internal.Extensions
 
         // Key
         public static byte[]? GetKeyAsBytes(this Metadata metadata)
-            => metadata.PartitionKeyB64Encoded ? Convert.FromBase64String(metadata.PartitionKey) : null;
+        {
+            if (metadata.PartitionKey is null)
+                return null;
+
+            if (metadata.PartitionKeyB64Encoded)
+                return Convert.FromBase64String(metadata.PartitionKey);
+
+            return Encoding.UTF8.GetBytes(metadata.PartitionKey);
+        }
 
         public static void SetKey(this Metadata metadata, string? key)
         {
