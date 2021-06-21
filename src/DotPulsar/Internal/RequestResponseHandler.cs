@@ -39,6 +39,7 @@ namespace DotPulsar.Internal
             _getResponseIdentifier.Set(BaseCommand.Type.CloseConsumer, cmd => StandardRequest.WithConsumerId(cmd.CloseConsumer.RequestId, cmd.CloseConsumer.ConsumerId));
             _getResponseIdentifier.Set(BaseCommand.Type.CloseProducer, cmd => StandardRequest.WithProducerId(cmd.CloseProducer.RequestId, cmd.CloseProducer.ProducerId));
             _getResponseIdentifier.Set(BaseCommand.Type.LookupResponse, cmd => StandardRequest.WithRequestId(cmd.LookupTopicResponse.RequestId));
+            _getResponseIdentifier.Set(BaseCommand.Type.PartitionedMetadataResponse, cmd => StandardRequest.WithRequestId(cmd.PartitionMetadataResponse.RequestId));
             _getResponseIdentifier.Set(BaseCommand.Type.GetLastMessageIdResponse, cmd => StandardRequest.WithRequestId(cmd.GetLastMessageIdResponse.RequestId));
             _getResponseIdentifier.Set(BaseCommand.Type.GetOrCreateSchemaResponse, cmd => StandardRequest.WithRequestId(cmd.GetOrCreateSchemaResponse.RequestId));
             _getResponseIdentifier.Set(BaseCommand.Type.Success, cmd => StandardRequest.WithRequestId(cmd.Success.RequestId));
@@ -100,6 +101,12 @@ namespace DotPulsar.Internal
             => _requests.CreateTask(new ConnectRequest());
 
         public Task<BaseCommand> Outgoing(CommandLookupTopic command)
+        {
+            command.RequestId = _requestId.FetchNext();
+            return _requests.CreateTask(StandardRequest.WithRequestId(command.RequestId));
+        }
+
+        public Task<BaseCommand> Outgoing(CommandPartitionedTopicMetadata command)
         {
             command.RequestId = _requestId.FetchNext();
             return _requests.CreateTask(StandardRequest.WithRequestId(command.RequestId));

@@ -46,6 +46,9 @@ namespace DotPulsar.Internal.Extensions
         public static void Throw(this CommandGetOrCreateSchemaResponse command)
             => Throw(command.ErrorCode, command.ErrorMessage);
 
+        public static void Throw(this CommandPartitionedTopicMetadataResponse command)
+            => Throw(command.Error, command.Message);
+
         private static void Throw(ServerError error, string message)
             => throw (error switch
             {
@@ -186,6 +189,12 @@ namespace DotPulsar.Internal.Extensions
             {
                 CommandType = BaseCommand.Type.GetOrCreateSchema,
                 GetOrCreateSchema = command
+            };
+
+        public static BaseCommand AsBaseCommand(this CommandPartitionedTopicMetadata command)
+            => new BaseCommand
+            {
+                CommandType = BaseCommand.Type.PartitionedMetadata, PartitionMetadata = command
             };
     }
 }

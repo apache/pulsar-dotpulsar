@@ -40,6 +40,7 @@ namespace DotPulsar
             InitialSequenceId = DefaultInitialSequenceId;
             Topic = topic;
             Schema = schema;
+            MessageRouter = new RoundRobinPartitionRouter();
         }
 
         /// <summary>
@@ -71,5 +72,10 @@ namespace DotPulsar
         /// Set the topic for this producer. This is required.
         /// </summary>
         public string Topic { get; set; }
+
+        /// <summary>
+        /// Set the message router. The default router is Round Robin partition router.
+        /// </summary>
+        public IMessageRouter MessageRouter { get; set; }
     }
 }

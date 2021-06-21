@@ -12,36 +12,16 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar.Abstractions
 {
     /// <summary>
-    /// The possible states a producer can be in.
+    /// A message routing abstraction
     /// </summary>
-    public enum ProducerState : byte
+    public interface IMessageRouter
     {
         /// <summary>
-        /// The producer is closed. This is a final state.
+        /// Choose a partition.
         /// </summary>
-        Closed,
-
-        /// <summary>
-        /// The producer is connected.
-        /// </summary>
-        Connected,
-
-        /// <summary>
-        /// The producer is disconnected.
-        /// </summary>
-        Disconnected,
-
-        /// <summary>
-        /// The producer is faulted. This is a final state.
-        /// </summary>
-        Faulted,
-
-        /// <summary>
-        /// Some of the sub-producers are disconnected.
-        /// </summary>
-        PartiallyConnected
+        int ChoosePartition(MessageMetadata? messageMetadata, int partitionsCount);
     }
 }
