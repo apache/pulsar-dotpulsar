@@ -89,6 +89,7 @@ namespace DotPulsar
                 _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
             var process = new ProducerProcess(correlationId, stateManager, producer, _processManager);
             _processManager.Add(process);
+            process.Start();
             return producer;
         }
 

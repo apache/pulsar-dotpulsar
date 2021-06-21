@@ -113,6 +113,9 @@ namespace DotPulsar.Internal
                     _stateManager.SetState(ProducerState.Connected);
                 else
                     _stateManager.SetState(ProducerState.PartiallyConnected);
+
+                if (_partitionsCount == 0)
+                    _ = _producer.EstablishNewChannel(CancellationTokenSource.Token);
                 return;
             }
 
