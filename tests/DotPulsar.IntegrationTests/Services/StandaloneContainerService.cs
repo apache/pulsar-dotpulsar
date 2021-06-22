@@ -30,10 +30,7 @@ namespace DotPulsar.IntegrationTests.Services
 
             var waitTries = 10;
 
-            using var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = true
-            };
+            using var handler = new HttpClientHandler { AllowAutoRedirect = true };
 
             using var client = new HttpClient(handler);
 
@@ -65,17 +62,14 @@ namespace DotPulsar.IntegrationTests.Services
 
         private static void RunProcess(string name, string arguments)
         {
-            var processStartInfo = new ProcessStartInfo
-            {
-                FileName = name,
-                Arguments = arguments
-            };
+            var processStartInfo = new ProcessStartInfo { FileName = name, Arguments = arguments };
 
             processStartInfo.Environment["TAG"] = "test";
             processStartInfo.Environment["CONFIGURATION"] = "Debug";
             processStartInfo.Environment["COMPUTERNAME"] = Environment.MachineName;
 
             var process = Process.Start(processStartInfo);
+
             if (process is null)
                 throw new Exception("Process.Start returned null");
 
@@ -89,6 +83,6 @@ namespace DotPulsar.IntegrationTests.Services
             => new("pulsar://localhost:54545");
 
         public override Uri GetWebServiceUri()
-            => new ("http://localhost:54546");
+            => new("http://localhost:54546");
     }
 }

@@ -18,6 +18,7 @@ namespace DotPulsar.IntegrationTests
     using Abstractions;
     using Extensions;
     using Fixtures;
+    using FluentAssertions;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -30,24 +31,22 @@ namespace DotPulsar.IntegrationTests
     public class ProducerTests
     {
         private readonly ITestOutputHelper _testOutputHelper;
-        private readonly StandaloneClusterFixture _standaloneClusterFixture;
         private readonly IPulsarService _pulsarService;
 
         public ProducerTests(ITestOutputHelper outputHelper, StandaloneClusterFixture fixture)
         {
             _testOutputHelper = outputHelper;
-            _standaloneClusterFixture = fixture;
             Debug.Assert(fixture.PulsarService != null, "fixture.PulsarService != null");
             _pulsarService = fixture.PulsarService;
         }
 
         [Fact]
-        public async void SimpleProduceConsume_WhenSendingMessagesFromProducer_ThenReceiveMessagesFromConsumer()
+        public async void SimpleProduceConsume_WhenSendingMessagesToProducer_ThenReceiveMessagesFromConsumer()
         {
             //Arrange
             await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
             string topicName = $"simple-produce-consume{Guid.NewGuid():N}";
-            string content = "test-message";
+            const string content = "test-message";
 
             //Act
             await using var producer = client.NewProducer(Schema.String)
@@ -59,11 +58,12 @@ namespace DotPulsar.IntegrationTests
                 .SubscriptionName("test-sub")
                 .InitialPosition(SubscriptionInitialPosition.Earliest)
                 .Create();
-            await producer.StateChangedTo(ProducerState.Connected);
+
             await producer.Send(content);
+            _testOutputHelper.WriteLine($"Sent a message: {content}");
 
             //Assert
-            Assert.Equal(content, (await consumer.Receive()).Value());
+            (await consumer.Receive()).Value().Should().Be(content);
         }
 
         [Fact]
@@ -72,11 +72,11 @@ namespace DotPulsar.IntegrationTests
             //Arrange
             await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
             string topicName = $"single-partitioned-{Guid.NewGuid():N}";
-            string content = "test-message";
-            var partitions = 3;
+            const string content = "test-message";
+            const int partitions = 3;
             var consumers = new List<IConsumer<string>>();
 
-            await _pulsarService.CreatePartitionedProducer($"persistent/public/default/{topicName}", partitions);
+            await _pulsarService.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
 
             //Act
             await using var producer = client.NewProducer(Schema.String)
@@ -92,11 +92,11 @@ namespace DotPulsar.IntegrationTests
                     .Create());
             }
 
-            await producer.StateChangedTo(ProducerState.Connected);
             await producer.Send(content);
+            _testOutputHelper.WriteLine($"Sent a message: {content}");
 
             //Assert
-            Assert.Equal(content, (await Task.WhenAny(consumers.Select(c => c.Receive().AsTask()).ToList())).Result.Value());
+            (await Task.WhenAny(consumers.Select(c => c.Receive().AsTask()).ToList())).Result.Value().Should().Be(content);
         }
 
         [Fact]
@@ -105,11 +105,11 @@ namespace DotPulsar.IntegrationTests
             //Arrange
             await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
             string topicName = $"round-robin-partitioned-{Guid.NewGuid():N}";
-            string content = "test-message";
-            var partitions = 3;
+            const string content = "test-message";
+            const int partitions = 3;
             var consumers = new List<IConsumer<string>>();
 
-            await _pulsarService.CreatePartitionedProducer($"persistent/public/default/{topicName}", partitions);
+            await _pulsarService.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
 
             //Act
             await using var producer = client.NewProducer(Schema.String)
@@ -125,12 +125,13 @@ namespace DotPulsar.IntegrationTests
                     .InitialPosition(SubscriptionInitialPosition.Earliest)
                     .Create());
                 await producer.Send($"{content}-{i}");
+                _testOutputHelper.WriteLine($"Sent a message to consumer [{i}]");
             }
 
             //Assert
             for (var i = 0; i < partitions; ++i)
             {
-                Assert.Equal($"{content}-{i}", (await consumers[i].Receive()).Value());
+                (await consumers[i].Receive()).Value().Should().Be($"{content}-{i}");
             }
         }
     }

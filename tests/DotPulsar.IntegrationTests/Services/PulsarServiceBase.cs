@@ -48,7 +48,7 @@ namespace DotPulsar.IntegrationTests.Services
         public virtual Uri GetWebServiceUri()
             => throw new NotImplementedException();
 
-        public async Task<HttpResponseMessage?> CreatePartitionedProducer(string restTopic, int numPartitions)
+        public async Task<HttpResponseMessage?> CreatePartitionedTopic(string restTopic, int numPartitions)
         {
             var content = new StringContent(numPartitions.ToString(), Encoding.UTF8, "application/json");
             return await _adminClient.PutAsync($"{GetWebServiceUri()}admin/v2/{restTopic}/partitions", content, _cts.Token).ConfigureAwait(false);

@@ -28,10 +28,17 @@ namespace DotPulsar.IntegrationTests.Abstraction
         /// Get broker binary protocol uri
         /// </summary>
         Uri GetBrokerUri();
+
         /// <summary>
         /// Get broker rest uri
         /// </summary>
         Uri GetWebServiceUri();
-        Task<HttpResponseMessage?> CreatePartitionedProducer(string restTopic, int numPartitions);
+
+        /// <summary>
+        /// Create a partitioned topic
+        /// The format of the restTopic must be `{schema}/{tenant}/{namespace}/{topicName}`
+        /// For example, `persistent/public/default/test-topic`
+        /// </summary>
+        Task<HttpResponseMessage?> CreatePartitionedTopic(string restTopic, int numPartitions);
     }
 }

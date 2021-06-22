@@ -21,11 +21,8 @@ namespace DotPulsar.IntegrationTests.Fixtures
 
     public class StandaloneClusterFixture : IAsyncLifetime
     {
-        public IPulsarService? PulsarService
-        {
-            private set;
-            get;
-        }
+        public IPulsarService? PulsarService { private set; get; }
+
         public async Task InitializeAsync()
         {
             PulsarService = ServiceFactory.CreatePulsarService();
