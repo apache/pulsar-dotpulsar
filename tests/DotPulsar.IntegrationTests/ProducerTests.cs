@@ -41,7 +41,7 @@ namespace DotPulsar.IntegrationTests
         }
 
         [Fact]
-        public async void SimpleProduceConsume_WhenSendingMessagesToProducer_ThenReceiveMessagesFromConsumer()
+        public async Task SimpleProduceConsume_WhenSendingMessagesToProducer_ThenReceiveMessagesFromConsumer()
         {
             //Arrange
             await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
@@ -67,7 +67,7 @@ namespace DotPulsar.IntegrationTests
         }
 
         [Fact]
-        public async void SinglePartition_WhenSendMessages_ThenGetMessagesFromSinglePartition()
+        public async Task SinglePartition_WhenSendMessages_ThenGetMessagesFromSinglePartition()
         {
             //Arrange
             await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
@@ -100,7 +100,7 @@ namespace DotPulsar.IntegrationTests
         }
 
         [Fact]
-        public async void RoundRobinPartition_WhenSendMessages_ThenGetMessagesFromPartitionsInOrder()
+        public async Task RoundRobinPartition_WhenSendMessages_ThenGetMessagesFromPartitionsInOrder()
         {
             //Arrange
             await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
