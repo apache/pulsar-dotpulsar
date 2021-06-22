@@ -18,14 +18,14 @@ namespace DotPulsar.IntegrationTests.Services
 
     public static class ServiceFactory
     {
-        private const string PulsarDeploymentType = "PULSAR_DEPLOYMENT_TYPE";
-        private const string ContainerDeployment = "container";
+        private const string _pulsarDeploymentType = "PULSAR_DEPLOYMENT_TYPE";
+        private const string _containerDeployment = "container";
 
         public static IPulsarService CreatePulsarService()
         {
-            var deploymentType = System.Environment.GetEnvironmentVariable(PulsarDeploymentType);
+            var deploymentType = System.Environment.GetEnvironmentVariable(_pulsarDeploymentType);
 
-            if (deploymentType == ContainerDeployment)
+            if (deploymentType == _containerDeployment)
             {
                 return new StandaloneContainerService();
             }
