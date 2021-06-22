@@ -51,6 +51,7 @@ namespace DotPulsar.Internal
                 AsyncLockDisposedException _ => FaultAction.Retry,
                 PulsarStreamDisposedException _ => FaultAction.Retry,
                 AsyncQueueDisposedException _ => FaultAction.Retry,
+                LookupNotReadyException _ => FaultAction.Retry,
                 OperationCanceledException _ => cancellationToken.IsCancellationRequested ? FaultAction.Rethrow : FaultAction.Retry,
                 DotPulsarException _ => FaultAction.Rethrow,
                 SocketException socketException => socketException.SocketErrorCode switch
