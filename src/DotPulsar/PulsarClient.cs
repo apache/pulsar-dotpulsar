@@ -20,7 +20,6 @@ namespace DotPulsar
     using Exceptions;
     using Internal;
     using Internal.Abstractions;
-    using Internal.Extensions;
     using System;
     using System.Linq;
     using System.Threading;
@@ -58,20 +57,6 @@ namespace DotPulsar
         public static IPulsarClientBuilder Builder()
             => new PulsarClientBuilder();
 
-        internal async Task<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken)
-        {
-            var connection = await _connectionPool.FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
-            var commandPartitionedMetadata = new CommandPartitionedTopicMetadata() { Topic = topic };
-            var response = await connection.Send(commandPartitionedMetadata, cancellationToken).ConfigureAwait(false);
-
-            response.Expect(BaseCommand.Type.PartitionedMetadataResponse);
-
-            if (response.PartitionMetadataResponse.Response == CommandPartitionedTopicMetadataResponse.LookupType.Failed)
-                response.PartitionMetadataResponse.Throw();
-
-            return response.PartitionMetadataResponse.Partitions;
-        }
-
         /// <summary>
         /// Create a producer.
         /// </summary>
@@ -79,34 +64,7 @@ namespace DotPulsar
         {
             ThrowIfDisposed();
 
-            var correlationId = Guid.NewGuid();
-            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-
-            var producer = new Producer<TMessage>(correlationId, ServiceUrl, options.Topic, _processManager, executor, stateManager, options, this);
-
-            if (options.StateChangedHandler is not null)
-                _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
-            var process = new ProducerProcess(correlationId, stateManager, producer, _processManager);
-            _processManager.Add(process);
-            process.Start();
-            return producer;
-        }
-
-        /// <summary>
-        /// Create a producer internally.
-        /// This method is used to create internal producers for partitioned producer.
-        /// </summary>
-        internal SubProducer<TMessage> NewSubProducer<TMessage>(string topic, ProducerOptions<TMessage> options, IExecute executor, Guid partitionedProducerGuid,
-            uint? partitionIndex = null)
-        {
-            ThrowIfDisposed();
-
             ICompressorFactory? compressorFactory = null;
-
-            if (partitionIndex.HasValue)
-                topic = $"{topic}-partition-{partitionIndex}";
-
             if (options.CompressionType != CompressionType.None)
             {
                 var compressionType = (Internal.PulsarApi.CompressionType) options.CompressionType;
@@ -116,22 +74,11 @@ namespace DotPulsar
                     throw new CompressionException($"Support for {compressionType} compression was not found");
             }
 
-            var correlationId = Guid.NewGuid();
+            var producer = new Producer<TMessage>(ServiceUrl, options, _processManager, _exceptionHandler, _connectionPool, compressorFactory);
 
-            var producerName = options.ProducerName;
-            var schema = options.Schema;
-            var initialSequenceId = options.InitialSequenceId;
-
-            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, schema.SchemaInfo, compressorFactory);
-            var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
-            var initialChannel = new NotReadyChannel<TMessage>();
-            var producer = new SubProducer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
-
-            if (options.StateChangedHandler is not null && !partitionIndex.HasValue) // the StateChangeHandler of the sub producers in partitioned producers should be disabled.
+            if (options.StateChangedHandler is not null)
                 _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
-            var process = new ProducerProcess(correlationId, stateManager, producer, _processManager, partitionedProducerGuid);
-            _processManager.Add(process);
-            process.Start();
+
             return producer;
         }
 

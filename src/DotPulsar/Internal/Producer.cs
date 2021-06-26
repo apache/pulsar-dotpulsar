@@ -16,76 +16,150 @@ namespace DotPulsar.Internal
 {
     using Abstractions;
     using DotPulsar.Abstractions;
-    using Events;
-    using Exceptions;
+    using DotPulsar.Extensions;
+    using DotPulsar.Internal.Extensions;
+    using DotPulsar.Internal.PulsarApi;
     using System;
     using System.Collections.Concurrent;
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class Producer<TMessage> : IEstablishNewChannel, IProducer<TMessage>
+    public sealed class Producer<TMessage> : IProducer<TMessage>
     {
-        private readonly Guid _correlationId;
-        private readonly IRegisterEvent _eventRegister;
-        private readonly IExecute _executor;
-        private readonly IStateChanged<ProducerState> _state;
-        private readonly PulsarClient _pulsarClient;
+        private readonly StateManager<ProducerState> _state;
+        private readonly IConnectionPool _connectionPool;
+        private readonly IHandleException _exceptionHandler;
+        private readonly ICompressorFactory? _compressorFactory;
         private readonly ProducerOptions<TMessage> _options;
+        private readonly ProcessManager _processManager;
         private readonly ConcurrentDictionary<int, IProducer<TMessage>> _producers;
         private readonly IMessageRouter _messageRouter;
-        private readonly CancellationTokenSource _cts = new();
-        private int _producersCount;
+        private readonly CancellationTokenSource _cts;
         private int _isDisposed;
+        private int _producerCount;
+
         public Uri ServiceUrl { get; }
         public string Topic { get; }
 
         public Producer(
-            Guid correlationId,
             Uri serviceUrl,
-            string topic,
-            IRegisterEvent registerEvent,
-            IExecute executor,
-            IStateChanged<ProducerState> state,
             ProducerOptions<TMessage> options,
-            PulsarClient pulsarClient
-        )
+            ProcessManager processManager,
+            IHandleException exceptionHandler,
+            IConnectionPool connectionPool,
+            ICompressorFactory? compressorFactory)
         {
-            _correlationId = correlationId;
+            _state = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
             ServiceUrl = serviceUrl;
-            Topic = topic;
-            _eventRegister = registerEvent;
-            _executor = executor;
-            _state = state;
+            Topic = options.Topic;
             _isDisposed = 0;
             _options = options;
-            _pulsarClient = pulsarClient;
+            _exceptionHandler = exceptionHandler;
+            _connectionPool = connectionPool;
+            _compressorFactory = compressorFactory;
+            _processManager = processManager;
             _messageRouter = options.MessageRouter;
-
-            _producers = new ConcurrentDictionary<int, IProducer<TMessage>>(1, 31);
+            _cts = new CancellationTokenSource();
+            _producers = new ConcurrentDictionary<int, IProducer<TMessage>>();
+            _ = Monitor();
         }
 
-        private void CreateSubProducers(int startIndex, int count)
+        private async Task Monitor()
         {
-            if (count == 0)
-            {
-                var producer = _pulsarClient.NewSubProducer(Topic, _options, _executor, _correlationId);
-                _producers[0] = producer;
-                return;
-            }
+            await Task.Yield();
 
-            for (var i = startIndex; i < count; ++i)
+            try
             {
-                var producer = _pulsarClient.NewSubProducer(Topic, _options, _executor, _correlationId, (uint) i);
-                _producers[i] = producer;
+                var numberOfPartitions = await GetNumberOfPartitions(Topic, _cts.Token).ConfigureAwait(false);
+                var isPartitionedTopic = numberOfPartitions != 0;
+                var monitoringTasks = new Task<ProducerStateChanged>[isPartitionedTopic ? numberOfPartitions : 1];
+
+                var topic = Topic;
+
+                for (var partition = 0; partition < numberOfPartitions; ++partition)
+                {
+                    if (isPartitionedTopic)
+                        topic = $"{Topic}-partition-{partition}";
+
+                    var producer = CreateSubProducer(topic);
+                    _ = _producers.TryAdd(partition, producer);
+                    monitoringTasks[partition] = producer.StateChangedFrom(ProducerState.Disconnected, _cts.Token).AsTask();
+                }
+
+                Interlocked.Exchange(ref _producerCount, monitoringTasks.Length);
+
+                var connectedProducers = 0;
+
+                while (true)
+                {
+                    await Task.WhenAny(monitoringTasks).ConfigureAwait(false);
+
+                    for (var i = 0; i < monitoringTasks.Length; ++i)
+                    {
+                        var task = monitoringTasks[i];
+                        if (!task.IsCompleted)
+                            continue;
+
+                        var state = task.Result.ProducerState;
+                        switch (state)
+                        {
+                            case ProducerState.Connected:
+                                ++connectedProducers;
+                                break;
+                            case ProducerState.Disconnected:
+                                --connectedProducers;
+                                break;
+                            case ProducerState.Faulted:
+                                throw new Exception("SubProducer faulted");
+                        }
+
+                        monitoringTasks[i] = task.Result.Producer.StateChangedFrom(state, _cts.Token).AsTask();
+                    }
+
+                    if (connectedProducers == 0)
+                        _state.SetState(ProducerState.Disconnected);
+                    else if (connectedProducers == numberOfPartitions)
+                        _state.SetState(ProducerState.Connected);
+                    else
+                        _state.SetState(ProducerState.PartiallyConnected);
+                }
+            }
+            catch
+            {
+                if (!_cts.IsCancellationRequested)
+                    _state.SetState(ProducerState.Faulted);
             }
         }
 
-        private async void UpdatePartitions(CancellationToken cancellationToken)
+        private SubProducer<TMessage> CreateSubProducer(string topic)
         {
-            var partitionsCount = (int) await _pulsarClient.GetNumberOfPartitions(Topic, cancellationToken).ConfigureAwait(false);
-            _eventRegister.Register(new UpdatePartitions(_correlationId, (uint)partitionsCount));
-            CreateSubProducers(_producers.Count, partitionsCount);
-            _producersCount = partitionsCount;
+            var correlationId = Guid.NewGuid();
+            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
+            var producerName = _options.ProducerName;
+            var schema = _options.Schema;
+            var initialSequenceId = _options.InitialSequenceId;
+            var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, schema.SchemaInfo, _compressorFactory);
+            var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+            var initialChannel = new NotReadyChannel<TMessage>();
+            var producer = new SubProducer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
+            var process = new ProducerProcess(correlationId, stateManager, producer);
+            _processManager.Add(process);
+            process.Start();
+            return producer;
+        }
+
+        private async Task<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken)
+        {
+            var connection = await _connectionPool.FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
+            var commandPartitionedMetadata = new CommandPartitionedTopicMetadata { Topic = topic };
+            var response = await connection.Send(commandPartitionedMetadata, cancellationToken).ConfigureAwait(false);
+
+            response.Expect(BaseCommand.Type.PartitionedMetadataResponse);
+
+            if (response.PartitionMetadataResponse.Response == CommandPartitionedTopicMetadataResponse.LookupType.Failed)
+                response.PartitionMetadataResponse.Throw();
+
+            return response.PartitionMetadataResponse.Partitions;
         }
 
         public bool IsFinalState()
@@ -94,10 +168,10 @@ namespace DotPulsar.Internal
         public bool IsFinalState(ProducerState state)
             => _state.IsFinalState(state);
 
-        public async ValueTask<ProducerState> OnStateChangeTo(ProducerState state, CancellationToken cancellationToken = default)
+        public async ValueTask<ProducerState> OnStateChangeTo(ProducerState state, CancellationToken cancellationToken)
             => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask<ProducerState> OnStateChangeFrom(ProducerState state, CancellationToken cancellationToken = default)
+        public async ValueTask<ProducerState> OnStateChangeFrom(ProducerState state, CancellationToken cancellationToken)
             => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 
         public async ValueTask DisposeAsync()
@@ -113,27 +187,21 @@ namespace DotPulsar.Internal
                 await producer.DisposeAsync().ConfigureAwait(false);
             }
 
-            _eventRegister.Register(new ProducerDisposed(_correlationId));
+            _state.SetState(ProducerState.Closed);
         }
 
-        public async Task EstablishNewChannel(CancellationToken cancellationToken)
+        private async ValueTask<int> ChoosePartitions(DotPulsar.MessageMetadata? metadata, CancellationToken cancellationToken)
         {
-            await _executor.Execute(() => UpdatePartitions(cancellationToken), cancellationToken).ConfigureAwait(false);
+            if (_producerCount == 0)
+                await _state.StateChangedFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
+
+            return _messageRouter.ChoosePartition(metadata, _producerCount);
         }
 
-        private int ChoosePartitions(MessageMetadata? metadata)
-        {
-            if (_producers.IsEmpty)
-            {
-                throw new LookupNotReadyException();
-            }
-            return _producersCount == 0 ? 0 : _messageRouter.ChoosePartition(metadata, _producersCount);
-        }
+        public async ValueTask<MessageId> Send(TMessage message, CancellationToken cancellationToken)
+            => await _producers[await ChoosePartitions(null, cancellationToken).ConfigureAwait(false)].Send(message, cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask<MessageId> Send(TMessage message, CancellationToken cancellationToken = default)
-            => await _executor.Execute(() => _producers[ChoosePartitions(null)].Send(message, cancellationToken), cancellationToken).ConfigureAwait(false);
-
-        public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default)
-            => await _executor.Execute(() => _producers[ChoosePartitions(metadata)].Send(message, cancellationToken), cancellationToken).ConfigureAwait(false);
+        public async ValueTask<MessageId> Send(DotPulsar.MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
+            => await _producers[await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false)].Send(message, cancellationToken).ConfigureAwait(false);
     }
 }
