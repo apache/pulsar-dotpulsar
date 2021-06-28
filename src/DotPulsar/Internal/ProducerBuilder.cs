@@ -88,7 +88,7 @@ namespace DotPulsar.Internal
             if (_messageRouter is not null)
                 options.MessageRouter = _messageRouter;
 
-            return _pulsarClient.CreateProducer<TMessage>(options);
+            return _pulsarClient.CreateProducer(options);
         }
     }
 }

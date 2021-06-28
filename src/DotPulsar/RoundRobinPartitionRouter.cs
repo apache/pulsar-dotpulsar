@@ -19,15 +19,21 @@ namespace DotPulsar
     using System.Threading;
 
     /// <summary>
-    /// Round robin partition messages router
-    /// If no key is provided, the producer will publish messages across all partitions in round-robin fashion
-    /// to achieve maximum throughput. While if a key is specified on the message, the partitioned producer will
-    /// hash the key and assign message to a particular partition.
-    /// This is the default mode.
+    /// The round robin partition messages router, which is the default router.
+    /// If a key is provided, the producer will hash the key and publish the message to a particular partition.
+    /// If a key is not provided, the producer will publish messages across all partitions in a round-robin fashion to achieve maximum throughput.
     /// </summary>
     public sealed class RoundRobinPartitionRouter : IMessageRouter
     {
-        private int _partitionIndex = -1;
+        private int _partitionIndex;
+
+        /// <summary>
+        /// Initializes a new instance of the round robin partition router
+        /// </summary>
+        public RoundRobinPartitionRouter()
+        {
+            _partitionIndex = -1;
+        }
 
         /// <summary>
         /// Choose a partition in round robin routing mode

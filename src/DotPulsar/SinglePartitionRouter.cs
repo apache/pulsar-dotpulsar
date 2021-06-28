@@ -19,15 +19,26 @@ namespace DotPulsar
     using System;
 
     /// <summary>
-    /// If no key is provided, the producer will randomly pick one single partition and publish all the messages
-    /// into that partition. While if a key is specified on the message, the partitioned producer will hash the
-    /// key and assign message to a particular partition.
+    /// The single partition messages router.
+    /// If a key is provided, the producer will hash the key and publish the message to a particular partition.
+    /// If a key is not provided, the producer will randomly pick one single partition and publish all messages to that partition.
     /// </summary>
     public sealed class SinglePartitionRouter : IMessageRouter
     {
-        private int? _partitionIndex;
+        private int _partitionIndex;
 
-        internal SinglePartitionRouter(int? partitionIndex = null)
+        /// <summary>
+        /// Initializes a new instance of the single partition router that will randomly select a partition
+        /// </summary>
+        public SinglePartitionRouter()
+        {
+            _partitionIndex = -1;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the single partition router that will publish all messages to the given partition
+        /// </summary>
+        public SinglePartitionRouter(int partitionIndex)
         {
             _partitionIndex = partitionIndex;
         }
@@ -41,8 +52,10 @@ namespace DotPulsar
             if (keyBytes is not null)
                 return (int) MurmurHash3.Hash32(keyBytes, 0) % partitionsCount;
             
-            _partitionIndex ??= new Random().Next(0, partitionsCount);
-            return _partitionIndex.Value;
+            if (_partitionIndex == -1)
+                _partitionIndex = new Random().Next(0, partitionsCount);
+
+            return _partitionIndex;
         }
     }
 }

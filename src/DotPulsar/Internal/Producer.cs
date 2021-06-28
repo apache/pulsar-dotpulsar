@@ -214,6 +214,9 @@ namespace DotPulsar.Internal
                     throw _throw;
             }
 
+            if (_producerCount == 1)
+                return 0;
+
             return _messageRouter.ChoosePartition(metadata, _producerCount);
         }
 
