@@ -152,7 +152,7 @@ namespace DotPulsar.Internal
         private void ThrowIfDisposed()
         {
             if (_isDisposed != 0)
-                throw new ProducerDisposedException(GetType().FullName!);
+                throw new ProducerDisposedException(typeof(Producer<TMessage>).FullName!);
         }
     }
 }
