@@ -45,6 +45,11 @@ namespace DotPulsar.Abstractions
         IProducerBuilder<TMessage> Topic(string topic);
 
         /// <summary>
+        /// Set the message router for this producer. The default is RoundRobinPartitionRouter.
+        /// </summary>
+        IProducerBuilder<TMessage> MessageRouter(IMessageRouter messageRouter);
+
+        /// <summary>
         /// Create the producer.
         /// </summary>
         IProducer<TMessage> Create();
