@@ -147,13 +147,13 @@ namespace DotPulsar.Internal
         private SubProducer<TMessage> CreateSubProducer(string topic)
         {
             var correlationId = Guid.NewGuid();
-            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var producerName = _options.ProducerName;
             var schema = _options.Schema;
             var initialSequenceId = _options.InitialSequenceId;
             var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, schema.SchemaInfo, _compressorFactory);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
             var initialChannel = new NotReadyChannel<TMessage>();
+            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
             var producer = new SubProducer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
             var process = new ProducerProcess(correlationId, stateManager, producer);
             _processManager.Add(process);

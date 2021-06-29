@@ -52,6 +52,7 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 - [X] Producer send with custom metadata
 - [X] Producer send with event time, sequence id, and delayed message delivery
 - [X] Producer send with key and ordering key
+- [X] Producer for partitioned topics
 - [X] Consumer subscription with initial position and priority level
 - [X] Consumer subscription types exclusive, shared, failover, and key shared
 - [X] Consumer receive and single + cumulative acknowledge

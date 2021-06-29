@@ -4,11 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2021-06-29
+
+### Added
+
+- The producer now supports partitioned topics
+- The IMessageRouter interface with the RoundRobinPartitionRouter (default) and SinglePartitionRouter implementations
+- The producer builder accepts a custom implementation of IMessageRouter
 
 ### Changed
 
-- The KeyBytes property on MessageMetadata returned null if the key was set via a string. Now it will return string keys as UTF8 bytes.
+- The producer state can now be 'PartiallyConnected'
+- The KeyBytes property on MessageMetadata returned null if the key was set via a string. Now it will return string keys as UTF8 bytes
+
+### Fixed
+
+- Autogenerate a consumer and reader name when it's not explicitly set by the user
 
 ## [1.0.2] - 2021-04-30
 
