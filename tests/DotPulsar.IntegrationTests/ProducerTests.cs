@@ -74,14 +74,22 @@ namespace DotPulsar.IntegrationTests
             string topicName = $"single-partitioned-{Guid.NewGuid():N}";
             const string content = "test-message";
             const int partitions = 3;
+            const int msgCount = 3;
             var consumers = new List<IConsumer<string>>();
 
             await _pulsarService.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
 
             //Act
-            await using var producer = client.NewProducer(Schema.String)
-                .Topic(topicName)
-                .Create();
+            for (var i = 0; i < partitions; ++i)
+            {
+                await using var producer = client.NewProducer(Schema.String)
+                    .Topic(topicName)
+                    .MessageRouter(new SinglePartitionRouter(i))
+                    .Create();
+
+                for (var msgIndex = 0; msgIndex < msgCount; ++msgIndex)
+                    await producer.Send($"{content}-{i}-{msgIndex}");
+            }
 
             for (var i = 0; i < partitions; ++i)
             {
@@ -92,11 +100,13 @@ namespace DotPulsar.IntegrationTests
                     .Create());
             }
 
-            await producer.Send(content);
+            var msg = await consumers[1].GetLastMessageId();
             _testOutputHelper.WriteLine($"Sent a message: {content}");
 
             //Assert
-            (await Task.WhenAny(consumers.Select(c => c.Receive().AsTask()).ToList())).Result.Value().Should().Be(content);
+            for (var i = 0; i < partitions; ++i)
+            for (var msgIndex = 0; msgIndex < msgCount; ++msgIndex)
+                (await consumers[i].Receive()).Value().Should().Be($"{content}-{i}-{msgIndex}");
         }
 
         [Fact]
