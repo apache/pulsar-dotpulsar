@@ -22,7 +22,6 @@ namespace DotPulsar.IntegrationTests
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Linq;
     using System.Threading.Tasks;
     using Xunit;
     using Xunit.Abstractions;
@@ -88,7 +87,10 @@ namespace DotPulsar.IntegrationTests
                     .Create();
 
                 for (var msgIndex = 0; msgIndex < msgCount; ++msgIndex)
+                {
                     await producer.Send($"{content}-{i}-{msgIndex}");
+                    _testOutputHelper.WriteLine($"Sent a message: {content}-{i}-{msgIndex}");
+                }
             }
 
             for (var i = 0; i < partitions; ++i)
@@ -101,7 +103,6 @@ namespace DotPulsar.IntegrationTests
             }
 
             var msg = await consumers[1].GetLastMessageId();
-            _testOutputHelper.WriteLine($"Sent a message: {content}");
 
             //Assert
             for (var i = 0; i < partitions; ++i)
