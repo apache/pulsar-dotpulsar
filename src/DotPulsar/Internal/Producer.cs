@@ -228,7 +228,7 @@ namespace DotPulsar.Internal
 
         public async ValueTask<MessageId> Send(DotPulsar.MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
         {
-            var partition = await ChoosePartitions(null, cancellationToken).ConfigureAwait(false);
+            var partition = await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false);
             return await _producers[partition].Send(metadata, message, cancellationToken).ConfigureAwait(false);
         }
 
