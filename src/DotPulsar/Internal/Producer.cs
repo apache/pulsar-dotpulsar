@@ -221,10 +221,16 @@ namespace DotPulsar.Internal
         }
 
         public async ValueTask<MessageId> Send(TMessage message, CancellationToken cancellationToken)
-            => await _producers[await ChoosePartitions(null, cancellationToken).ConfigureAwait(false)].Send(message, cancellationToken).ConfigureAwait(false);
+        {
+            var partition = await ChoosePartitions(null, cancellationToken).ConfigureAwait(false);
+            return await _producers[partition].Send(message, cancellationToken).ConfigureAwait(false);
+        }
 
         public async ValueTask<MessageId> Send(DotPulsar.MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
-            => await _producers[await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false)].Send(message, cancellationToken).ConfigureAwait(false);
+        {
+            var partition = await ChoosePartitions(null, cancellationToken).ConfigureAwait(false);
+            return await _producers[partition].Send(metadata, message, cancellationToken).ConfigureAwait(false);
+        }
 
         private void ThrowIfDisposed()
         {
