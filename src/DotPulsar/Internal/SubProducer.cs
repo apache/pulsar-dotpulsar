@@ -16,10 +16,8 @@ namespace DotPulsar.Internal
 {
     using Abstractions;
     using DotPulsar.Abstractions;
-    using DotPulsar.Exceptions;
     using DotPulsar.Internal.Extensions;
     using Events;
-    using Microsoft.Extensions.ObjectPool;
     using System;
     using System.Buffers;
     using System.Threading;
@@ -27,7 +25,6 @@ namespace DotPulsar.Internal
 
     public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMessage>
     {
-        private readonly ObjectPool<PulsarApi.MessageMetadata> _messageMetadataPool;
         private readonly Guid _correlationId;
         private readonly IRegisterEvent _eventRegister;
         private IProducerChannel _channel;
@@ -35,7 +32,6 @@ namespace DotPulsar.Internal
         private readonly IStateChanged<ProducerState> _state;
         private readonly IProducerChannelFactory _factory;
         private readonly ISchema<TMessage> _schema;
-        private readonly SequenceId _sequenceId;
         private int _isDisposed;
 
         public Uri ServiceUrl { get; }
@@ -45,7 +41,6 @@ namespace DotPulsar.Internal
             Guid correlationId,
             Uri serviceUrl,
             string topic,
-            ulong initialSequenceId,
             IRegisterEvent registerEvent,
             IProducerChannel initialChannel,
             IExecute executor,
@@ -53,12 +48,9 @@ namespace DotPulsar.Internal
             IProducerChannelFactory factory,
             ISchema<TMessage> schema)
         {
-            var messageMetadataPolicy = new DefaultPooledObjectPolicy<PulsarApi.MessageMetadata>();
-            _messageMetadataPool = new DefaultObjectPool<PulsarApi.MessageMetadata>(messageMetadataPolicy);
             _correlationId = correlationId;
             ServiceUrl = serviceUrl;
             Topic = topic;
-            _sequenceId = new SequenceId(initialSequenceId);
             _eventRegister = registerEvent;
             _channel = initialChannel;
             _executor = executor;
@@ -91,48 +83,14 @@ namespace DotPulsar.Internal
             await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
             await _channel.DisposeAsync().ConfigureAwait(false);
         }
-        public async ValueTask<MessageId> Send(TMessage message, CancellationToken cancellationToken)
-            => await Send(_schema.Encode(message), cancellationToken).ConfigureAwait(false);
 
         public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
-            => await Send(metadata, _schema.Encode(message), cancellationToken).ConfigureAwait(false);
+            => await _executor.Execute(() => InternalSend(metadata.Metadata, _schema.Encode(message), cancellationToken), cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask<MessageId> Send(ReadOnlySequence<byte> data, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
+        public async ValueTask<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
+            => await _executor.Execute(() => InternalSend(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
 
-            var metadata = _messageMetadataPool.Get();
-            try
-            {
-                metadata.SequenceId = _sequenceId.FetchNext();
-                return await _executor.Execute(() => Send(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                _messageMetadataPool.Return(metadata);
-            }
-        }
-
-        public async ValueTask<MessageId> Send(MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            var autoAssignSequenceId = metadata.SequenceId == 0;
-            if (autoAssignSequenceId)
-                metadata.SequenceId = _sequenceId.FetchNext();
-
-            try
-            {
-                return await _executor.Execute(() => Send(metadata.Metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                if (autoAssignSequenceId)
-                    metadata.SequenceId = 0;
-            }
-        }
-
-        private async ValueTask<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
+        private async ValueTask<MessageId> InternalSend(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         {
             var response = await _channel.Send(metadata, data, cancellationToken).ConfigureAwait(false);
             return response.MessageId.ToMessageId();
@@ -147,12 +105,6 @@ namespace DotPulsar.Internal
 
             if (oldChannel is not null)
                 await oldChannel.DisposeAsync().ConfigureAwait(false);
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (_isDisposed != 0)
-                throw new ProducerDisposedException(typeof(Producer<TMessage>).FullName!);
         }
     }
 }

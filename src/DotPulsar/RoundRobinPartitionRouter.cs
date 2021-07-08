@@ -38,9 +38,9 @@ namespace DotPulsar
         /// <summary>
         /// Choose a partition in round robin routing mode
         /// </summary>
-        public int ChoosePartition(MessageMetadata? messageMetadata, int numberOfPartitions)
+        public int ChoosePartition(MessageMetadata messageMetadata, int numberOfPartitions)
         {
-            var keyBytes = messageMetadata?.KeyBytes;
+            var keyBytes = messageMetadata.KeyBytes;
             if (keyBytes is not null)
                 return (int) MurmurHash3.Hash32(keyBytes, 0) % numberOfPartitions;
 
