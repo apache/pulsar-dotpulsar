@@ -63,6 +63,11 @@ namespace DotPulsar.Internal
                 Topic = options.Topic,
                 Type = (CommandSubscribe.SubType) options.SubscriptionType
             };
+
+            if (options.SubscriptionType == SubscriptionType.KeyShared && options.KeySharedPolicy != null)
+            {
+                _subscribe.KeySharedMeta = new KeySharedMeta { allowOutOfOrderDelivery = options.KeySharedPolicy.AllowOutOfOrderDelivery, KeySharedMode = KeySharedMode.AutoSplit };
+            }
         }
 
         public void UpdateMessagePrefetchCount(uint messagePrefetchCount)
