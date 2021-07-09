@@ -47,6 +47,11 @@ namespace DotPulsar
         public static readonly SubscriptionType DefaultSubscriptionType = SubscriptionType.Exclusive;
 
         /// <summary>
+        /// Default policy is null (do not send policy information to the server)
+        /// </summary>
+        public static readonly KeySharedPolicy? DefaultKeySharedPolicy = null;
+
+        /// <summary>
         /// Whether to auto subscribe to new partitions.
         /// </summary>
         public const bool DefaultAutoUpdatePartitions = true;
@@ -68,6 +73,7 @@ namespace DotPulsar
             MessagePrefetchCount = DefaultMessagePrefetchCount;
             ReadCompacted = DefaultReadCompacted;
             SubscriptionType = DefaultSubscriptionType;
+            KeySharedPolicy = DefaultKeySharedPolicy;
             SubscriptionName = subscriptionName;
             AutoUpdatePartitions = DefaultAutoUpdatePartitions;
             AutoUpdatePartitionsInterval = DefaultAutoUpdatePartitionsInterval;
@@ -124,6 +130,11 @@ namespace DotPulsar
         /// Set the subscription type for this consumer. The default is 'Exclusive'.
         /// </summary>
         public SubscriptionType SubscriptionType { get; set; }
+
+        /// <summary>
+        /// Key shared subscription policy. Default is null.
+        /// </summary>
+        public KeySharedPolicy? KeySharedPolicy { get; set; }
 
         /// <summary>
         /// Set the topic for this consumer. This is required.

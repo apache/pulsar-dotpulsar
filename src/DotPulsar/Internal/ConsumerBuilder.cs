@@ -28,6 +28,7 @@ namespace DotPulsar.Internal
         private bool _readCompacted;
         private string? _subscriptionName;
         private SubscriptionType _subscriptionType;
+        private KeySharedPolicy? _keySharedPolicy;
         private string? _topic;
         private bool _autoUpdatePartitions;
         private int _autoUpdatePartitionsInterval;
@@ -41,6 +42,7 @@ namespace DotPulsar.Internal
             _messagePrefetchCount = ConsumerOptions.DefaultMessagePrefetchCount;
             _readCompacted = ConsumerOptions.DefaultReadCompacted;
             _subscriptionType = ConsumerOptions.DefaultSubscriptionType;
+            _keySharedPolicy = ConsumerOptions.DefaultKeySharedPolicy;
             _autoUpdatePartitions = ConsumerOptions.DefaultAutoUpdatePartitions;
             _autoUpdatePartitionsInterval = ConsumerOptions.DefaultAutoUpdatePartitionsInterval;
             _negativeAcknowledgeRedeliveryDelay = ConsumerOptions.DefaultNegativeAcknowledgeRedeliveryDelay;
@@ -88,6 +90,12 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IConsumerBuilder KeySharedPolicy(KeySharedPolicy? keySharedPolicy)
+        {
+            _keySharedPolicy = keySharedPolicy;
+            return this;
+        }
+
         public IConsumerBuilder Topic(string topic)
         {
             _topic = topic;
@@ -120,6 +128,9 @@ namespace DotPulsar.Internal
             if (string.IsNullOrEmpty(_topic))
                 throw new ConfigurationException("Topic may not be null or empty");
 
+            if (_subscriptionType != DotPulsar.SubscriptionType.KeyShared && _keySharedPolicy != null)
+                throw new ConfigurationException("Key shared policy must be provided for key shared subscriptions only, otherwise it must be null");
+
             var options = new ConsumerOptions(_subscriptionName!, _topic!)
             {
                 ConsumerName = _consumerName,
@@ -128,6 +139,7 @@ namespace DotPulsar.Internal
                 PriorityLevel = _priorityLevel,
                 ReadCompacted = _readCompacted,
                 SubscriptionType = _subscriptionType,
+                KeySharedPolicy = _keySharedPolicy,
                 AutoUpdatePartitions = _autoUpdatePartitions,
                 AutoUpdatePartitionsInterval = _autoUpdatePartitionsInterval,
                 NegativeAcknowledgeRedeliveryDelay = _negativeAcknowledgeRedeliveryDelay,

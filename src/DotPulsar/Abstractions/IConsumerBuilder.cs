@@ -57,6 +57,12 @@ namespace DotPulsar.Abstractions
         IConsumerBuilder SubscriptionType(SubscriptionType type);
 
         /// <summary>
+        /// Set KeyShared subscription policy for consumer (can only be specified if subscription type is KeyShared).
+        /// By default, KeyShared subscription use auto split hash range to maintain consumers, and allowOutOfOrderDelivery is false.
+        /// </summary>
+        IConsumerBuilder KeySharedPolicy(KeySharedPolicy? keySharedPolicy);
+
+        /// <summary>
         /// Set the topic for this consumer. This is required.
         /// </summary>
         IConsumerBuilder Topic(string topic);
