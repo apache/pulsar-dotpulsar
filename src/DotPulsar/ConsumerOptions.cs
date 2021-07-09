@@ -90,6 +90,7 @@ namespace DotPulsar
             PriorityLevel = options.PriorityLevel;
             ReadCompacted = options.ReadCompacted;
             SubscriptionType = options.SubscriptionType;
+            KeySharedPolicy = options.KeySharedPolicy;
             SubscriptionName = options.SubscriptionName;
             AutoUpdatePartitions = options.AutoUpdatePartitions;
             AutoUpdatePartitionsInterval = options.AutoUpdatePartitionsInterval;
