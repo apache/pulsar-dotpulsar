@@ -16,6 +16,7 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
+    using System;
 
     public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
     {
@@ -28,6 +29,8 @@ namespace DotPulsar.Internal
         private bool _readCompacted;
         private string? _subscriptionName;
         private SubscriptionType _subscriptionType;
+        private TimeSpan _ackTimeout;
+        private TimeSpan _nackRedeliveryDelay;
         private string? _topic;
         private IHandleStateChanged<ConsumerStateChanged>? _stateChangedHandler;
 
@@ -90,6 +93,18 @@ namespace DotPulsar.Internal
             return this;
         }
 
+        public IConsumerBuilder<TMessage> AcknowledgementTimeout(TimeSpan timeout)
+        {
+            _ackTimeout = timeout;
+            return this;
+        }
+
+        public IConsumerBuilder<TMessage> NegativeAcknowledgementRedeliveryDelay(TimeSpan timeout)
+        {
+            _nackRedeliveryDelay = timeout;
+            return this;
+        }
+
         public IConsumerBuilder<TMessage> Topic(string topic)
         {
             _topic = topic;
@@ -112,10 +127,14 @@ namespace DotPulsar.Internal
                 PriorityLevel = _priorityLevel,
                 ReadCompacted = _readCompacted,
                 StateChangedHandler = _stateChangedHandler,
-                SubscriptionType = _subscriptionType
+                SubscriptionType = _subscriptionType,
+                AcknowledgementTimeout = _ackTimeout,
+                NegativeAcknowledgementRedeliveryDelay = _nackRedeliveryDelay
             };
 
             return _pulsarClient.CreateConsumer(options);
         }
+
+
     }
 }

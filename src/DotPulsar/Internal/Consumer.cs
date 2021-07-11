@@ -106,14 +106,18 @@ namespace DotPulsar.Internal
         public async ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken)
             => await Acknowledge(messageId, CommandAck.AckType.Cumulative, cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken)
+
+        public async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageIdData> messageIds, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
             var command = new CommandRedeliverUnacknowledgedMessages();
-            command.MessageIds.AddRange(messageIds.Select(messageId => messageId.ToMessageIdData()));
+            command.MessageIds.AddRange(messageIds);
             await _executor.Execute(() => RedeliverUnacknowledgedMessages(command, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
+
+        public async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken)
+            => await RedeliverUnacknowledgedMessages(messageIds.Select(m => m.ToMessageIdData()), cancellationToken).ConfigureAwait(false);
 
         public async ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken)
             => await RedeliverUnacknowledgedMessages(Enumerable.Empty<MessageId>(), cancellationToken).ConfigureAwait(false);
@@ -126,8 +130,11 @@ namespace DotPulsar.Internal
             await _executor.Execute(() => Unsubscribe(unsubscribe, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
+        public void NegativeAcknowledge(MessageId messageId) =>
+            _channel.NegativeAcknowledge(messageId.ToMessageIdData());
+
         private async ValueTask Unsubscribe(CommandUnsubscribe command, CancellationToken cancellationToken)
-            =>await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+            => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
         public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
         {

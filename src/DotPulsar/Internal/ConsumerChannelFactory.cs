@@ -28,9 +28,10 @@ namespace DotPulsar.Internal
         private readonly IConnectionPool _connectionPool;
         private readonly CommandSubscribe _subscribe;
         private readonly uint _messagePrefetchCount;
-        private readonly BatchHandler<TMessage> _batchHandler;
+        private readonly IBatchHandler<TMessage> _batchHandler;
         private readonly IMessageFactory<TMessage> _messageFactory;
         private readonly IEnumerable<IDecompressorFactory> _decompressorFactories;
+        private readonly IMessageTracker _tracker;
 
         public ConsumerChannelFactory(
             Guid correlationId,
@@ -38,9 +39,10 @@ namespace DotPulsar.Internal
             IConnectionPool connectionPool,
             CommandSubscribe subscribe,
             uint messagePrefetchCount,
-            BatchHandler<TMessage> batchHandler,
+            IBatchHandler<TMessage> batchHandler,
             IMessageFactory<TMessage> messageFactory,
-            IEnumerable<IDecompressorFactory> decompressorFactories)
+            IEnumerable<IDecompressorFactory> decompressorFactories,
+            IMessageTracker tracker)
         {
             _correlationId = correlationId;
             _eventRegister = eventRegister;
@@ -50,15 +52,17 @@ namespace DotPulsar.Internal
             _batchHandler = batchHandler;
             _messageFactory = messageFactory;
             _decompressorFactories = decompressorFactories;
+            _tracker = tracker;
         }
 
         public async Task<IConsumerChannel<TMessage>> Create(CancellationToken cancellationToken)
         {
             var connection = await _connectionPool.FindConnectionForTopic(_subscribe.Topic, cancellationToken).ConfigureAwait(false);
             var messageQueue = new AsyncQueue<MessagePackage>();
+            var consumerMessageQueue = new MessageQueue(messageQueue, _tracker);
             var channel = new Channel(_correlationId, _eventRegister, messageQueue);
             var response = await connection.Send(_subscribe, channel, cancellationToken).ConfigureAwait(false);
-            return new ConsumerChannel<TMessage>(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler, _messageFactory, _decompressorFactories);
+            return new ConsumerChannel<TMessage>(response.ConsumerId, _messagePrefetchCount, consumerMessageQueue, connection, _batchHandler, _messageFactory, _decompressorFactories);
         }
     }
 }

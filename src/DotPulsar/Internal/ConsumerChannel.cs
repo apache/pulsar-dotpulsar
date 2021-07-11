@@ -27,9 +27,9 @@ namespace DotPulsar.Internal
     public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
     {
         private readonly ulong _id;
-        private readonly AsyncQueue<MessagePackage> _queue;
+        private readonly IMessageQueue _queue;
         private readonly IConnection _connection;
-        private readonly BatchHandler<TMessage> _batchHandler;
+        private readonly IBatchHandler<TMessage> _batchHandler;
         private readonly CommandFlow _cachedCommandFlow;
         private readonly IMessageFactory<TMessage> _messageFactory;
         private readonly IDecompress?[] _decompressors;
@@ -40,9 +40,9 @@ namespace DotPulsar.Internal
         public ConsumerChannel(
             ulong id,
             uint messagePrefetchCount,
-            AsyncQueue<MessagePackage> queue,
+            IMessageQueue queue,
             IConnection connection,
-            BatchHandler<TMessage> batchHandler,
+            IBatchHandler<TMessage> batchHandler,
             IMessageFactory<TMessage> messageFactory,
             IEnumerable<IDecompressorFactory> decompressorFactories)
         {
@@ -152,6 +152,9 @@ namespace DotPulsar.Internal
             }
 
             command.ConsumerId = _id;
+
+            _queue.Acknowledge(messageId);
+
             await _connection.Send(command, cancellationToken).ConfigureAwait(false);
         }
 
@@ -234,5 +237,8 @@ namespace DotPulsar.Internal
                 // Ignore
             }
         }
+
+        public void NegativeAcknowledge(MessageIdData messageIdData) =>
+            _queue.NegativeAcknowledge(messageIdData);
     }
 }

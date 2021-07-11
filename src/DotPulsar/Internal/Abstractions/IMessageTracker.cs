@@ -20,16 +20,14 @@ namespace DotPulsar.Internal.Abstractions
     using System.Threading;
     using System.Threading.Tasks;
 
-
-    public interface IConsumerChannel<TMessage> : IAsyncDisposable
+    public interface IMessageTracker : IDisposable
     {
-        Task Send(CommandAck command, CancellationToken cancellationToken);
-        Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken);
-        Task Send(CommandUnsubscribe command, CancellationToken cancellationToken);
-        Task Send(CommandSeek command, CancellationToken cancellationToken);
-        Task<MessageId> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
-        ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken);
-        ValueTask ClosedByClient(CancellationToken cancellationToken);
-        void NegativeAcknowledge(MessageIdData messageIdData);
+        Task Start(IConsumer consumer, CancellationToken cancellationToken = default);
+
+        void Track(MessageIdData messageId);
+
+        void Acknowledge(MessageIdData messageId);
+
+        void NegativeAcknowledge(MessageIdData messageId);
     }
 }

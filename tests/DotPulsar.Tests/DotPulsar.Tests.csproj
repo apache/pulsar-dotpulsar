@@ -18,10 +18,16 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="AutoFixture" Version="4.17.0" />
+    <PackageReference Include="AutoFixture.AutoNSubstitute" Version="4.17.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotPulsar\DotPulsar.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="AutoFixture" />
+    <None Remove="AutoFixture.AutoNSubstitute" />
+  </ItemGroup>
 </Project>

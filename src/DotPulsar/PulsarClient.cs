@@ -105,7 +105,8 @@ namespace DotPulsar
             var messageFactory = new MessageFactory<TMessage>(options.Schema);
             var batchHandler = new BatchHandler<TMessage>(true, messageFactory);
             var decompressorFactories = CompressionFactories.DecompressorFactories();
-            var factory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decompressorFactories);
+            var messageTracker = CreateMessageTracker(options.AcknowledgementTimeout, options.NegativeAcknowledgementRedeliveryDelay);
+            var factory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decompressorFactories, messageTracker);
             var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
             var initialChannel = new NotReadyChannel<TMessage>();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
@@ -115,6 +116,7 @@ namespace DotPulsar
             var process = new ConsumerProcess(correlationId, stateManager, consumer, options.SubscriptionType == SubscriptionType.Failover);
             _processManager.Add(process);
             process.Start();
+            messageTracker.Start(consumer);
             return consumer;
         }
 
@@ -140,7 +142,8 @@ namespace DotPulsar
             var messageFactory = new MessageFactory<TMessage>(options.Schema);
             var batchHandler = new BatchHandler<TMessage>(false, messageFactory);
             var decompressorFactories = CompressionFactories.DecompressorFactories();
-            var factory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decompressorFactories);
+            var messageTracker = new InactiveMessageTracker();
+            var factory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decompressorFactories, messageTracker);
             var stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
             var initialChannel = new NotReadyChannel<TMessage>();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
@@ -172,5 +175,17 @@ namespace DotPulsar
             if (_isDisposed != 0)
                 throw new PulsarClientDisposedException();
         }
+
+        private IMessageTracker CreateMessageTracker(TimeSpan acknowledgementTimeout, TimeSpan negativeAcknowledgementRedeliveryDelay) =>
+            acknowledgementTimeout == default && negativeAcknowledgementRedeliveryDelay == default
+                ? new InactiveMessageTracker()
+                : new MessageTracker(
+                    TimeSpan.FromMilliseconds(10),
+                    acknowledgementTimeout == default
+                        ? new InactiveUnackedMessageState()
+                        : new UnackedMessageState(acknowledgementTimeout),
+                    negativeAcknowledgementRedeliveryDelay == default
+                        ? new InactiveNegativeackedMessageState()
+                        : new NegativeackedMessageState(negativeAcknowledgementRedeliveryDelay));
     }
 }

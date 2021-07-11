@@ -52,6 +52,9 @@ namespace DotPulsar.Internal
         public Task<MessageId> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
             => throw GetException();
 
+        public void NegativeAcknowledge(MessageIdData messageIdData)
+            => throw GetException();
+
         private static Exception GetException()
             => new ChannelNotReadyException();
     }
