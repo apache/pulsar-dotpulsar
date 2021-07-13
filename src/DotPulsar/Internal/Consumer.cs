@@ -351,6 +351,7 @@ namespace DotPulsar.Internal
                     consumer.Seek(messageId, cancellationToken).AsTask()
                 );
                 await Task.WhenAll(tasks.ToArray()).ConfigureAwait(false);
+                _messagesQueue = new ConcurrentQueue<IMessage<TMessage>>();
             }, cancellationToken).ConfigureAwait(false);
         }
 
@@ -366,6 +367,7 @@ namespace DotPulsar.Internal
                     consumer.Seek(publishTime, cancellationToken).AsTask()
                 );
                 await Task.WhenAll(tasks.ToArray()).ConfigureAwait(false);
+                _messagesQueue = new ConcurrentQueue<IMessage<TMessage>>();
             }, cancellationToken).ConfigureAwait(false);
         }
 
