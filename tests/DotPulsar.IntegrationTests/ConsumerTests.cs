@@ -173,7 +173,7 @@ namespace DotPulsar.IntegrationTests
         }
 
         [Fact]
-        public async void ConsumerUnsubscribe_WhenUnsubscribe_ThenConsumerIsInFinalState()
+        public async void ConsumerUnsubscribe_WhenUnsubscribe_ThenConsumerIsUnsubscribed()
         {
             //Arrange
             await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
