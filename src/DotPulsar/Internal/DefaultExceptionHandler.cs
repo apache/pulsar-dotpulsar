@@ -47,6 +47,7 @@ namespace DotPulsar.Internal
                 ServiceNotReadyException _ => FaultAction.Retry,
                 MetadataException _ => FaultAction.Retry,
                 ConsumerNotFoundException _ => FaultAction.Retry,
+                ConsumerNotActiveException _ => FaultAction.Retry,
                 ConnectionDisposedException _ => FaultAction.Retry,
                 AsyncLockDisposedException _ => FaultAction.Retry,
                 PulsarStreamDisposedException _ => FaultAction.Retry,

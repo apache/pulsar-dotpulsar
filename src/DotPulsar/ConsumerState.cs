@@ -52,6 +52,11 @@ namespace DotPulsar
         /// <summary>
         /// The consumer has unsubscribed. This is a final state.
         /// </summary>
-        Unsubscribed
+        Unsubscribed,
+
+        /// <summary>
+        /// Some of the sub-consumers are active.
+        /// </summary>
+        PartiallyActive
     }
 }
