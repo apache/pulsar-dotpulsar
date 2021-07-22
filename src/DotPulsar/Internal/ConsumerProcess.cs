@@ -86,6 +86,9 @@ namespace DotPulsar.Internal
         {
             try
             {
+                // SetChannel currently disposes of the existing channel, which sends a CloseConsumer message to the broker.
+                // Replace the old channel with the not ready channel first in case the broker assigns us the same consumer ID.
+                await _consumer.SetChannel(new NotReadyChannel()).ConfigureAwait(false);
                 var channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
                 await _consumer.SetChannel(channel).ConfigureAwait(false);
             }
