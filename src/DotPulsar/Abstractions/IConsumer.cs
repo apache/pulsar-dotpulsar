@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Abstractions
 {
+    using DotPulsar.Internal.PulsarApi;
     using System;
     using System.Collections.Generic;
     using System.Threading;
@@ -60,8 +61,19 @@ namespace DotPulsar.Abstractions
         ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Redeliver the pending messages that were pushed to this consumer that are not yet acknowledged.
+        /// </summary>
+        ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageIdData> messageIds, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Redeliver all pending messages that were pushed to this consumer that are not yet acknowledged.
         /// </summary>
         ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Acknowledge the failure to consume a single message using the MessageId.
+        /// When a message is "negatively acked" it will be marked for redelivery after some fixed delay.
+        /// </summary>
+        void NegativeAcknowledge(MessageId messageId);
     }
 }

@@ -22,7 +22,7 @@ namespace DotPulsar.Internal
     using System.Collections;
     using System.Collections.Generic;
 
-    public sealed class BatchHandler<TMessage>
+    public sealed class BatchHandler<TMessage> : IBatchHandler<TMessage>
     {
         private readonly object _lock;
         private readonly bool _trackBatches;

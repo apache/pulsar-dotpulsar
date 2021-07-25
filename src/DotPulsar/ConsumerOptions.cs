@@ -15,6 +15,7 @@
 namespace DotPulsar
 {
     using DotPulsar.Abstractions;
+    using System;
 
     /// <summary>
     /// The consumer building options.
@@ -110,5 +111,16 @@ namespace DotPulsar
         /// Set the topic for this consumer. This is required.
         /// </summary>
         public string Topic { get; set; }
+
+        /// <summary>
+        /// Delay to wait before redelivering messages that failed to be processed.
+        /// When an application uses IConsumer.NegativeAcknowledge(Message), failed messages are redelivered after a fixed timeout.
+        /// </summary>
+        public TimeSpan NegativeAcknowledgementRedeliveryDelay { get; set; }
+
+        /// <summary>
+        /// Timeout of unacked messages
+        /// </summary>
+        public TimeSpan AcknowledgementTimeout { get; set; }
     }
 }

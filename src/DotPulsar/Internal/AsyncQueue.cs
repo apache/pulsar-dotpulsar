@@ -16,12 +16,11 @@ namespace DotPulsar.Internal
 {
     using Abstractions;
     using Exceptions;
-    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
+    public sealed class AsyncQueue<T> : IAsyncQueue<T>
     {
         private readonly object _lock;
         private readonly Queue<T> _queue;

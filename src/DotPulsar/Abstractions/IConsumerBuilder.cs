@@ -14,6 +14,8 @@
 
 namespace DotPulsar.Abstractions
 {
+    using System;
+
     /// <summary>
     /// A consumer building abstraction.
     /// </summary>
@@ -58,6 +60,17 @@ namespace DotPulsar.Abstractions
         /// Set the subscription type for this consumer. The default is 'Exclusive'.
         /// </summary>
         IConsumerBuilder<TMessage> SubscriptionType(SubscriptionType type);
+
+        /// <summary>
+        /// Timeout of unacked messages
+        /// </summary>
+        IConsumerBuilder<TMessage> AcknowledgementTimeout(TimeSpan timeout);
+
+        /// <summary>
+        /// Delay to wait before redelivering messages that failed to be processed.
+        /// When an application uses IConsumer.NegativeAcknowledge(Message), failed messages are redelivered after a fixed timeout.
+        /// </summary>
+        IConsumerBuilder<TMessage> NegativeAcknowledgementRedeliveryDelay(TimeSpan timeout);
 
         /// <summary>
         /// Set the topic for this consumer. This is required.
