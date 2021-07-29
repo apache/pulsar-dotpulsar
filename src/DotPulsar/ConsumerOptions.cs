@@ -95,6 +95,14 @@ namespace DotPulsar
             AutoUpdatePartitions = options.AutoUpdatePartitions;
             AutoUpdatePartitionsInterval = options.AutoUpdatePartitionsInterval;
             NegativeAcknowledgeRedeliveryDelay = options.NegativeAcknowledgeRedeliveryDelay;
+
+            // Carry consumerName across partitions unless the subscription type is Failover, because Failover sorts by
+            // consumer name to determine the active consumer for a partition.  In the case where this is not desired,
+            // the caller should probably connect a consumer with a set name to each partition manually.
+            if (options.SubscriptionType != SubscriptionType.Failover)
+            {
+                ConsumerName = options.ConsumerName;
+            }
         }
 
         /// <summary>

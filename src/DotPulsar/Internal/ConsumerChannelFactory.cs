@@ -55,7 +55,7 @@ namespace DotPulsar.Internal
 
             _subscribe = new CommandSubscribe
             {
-                ConsumerName = options.ConsumerName,
+                ConsumerName = options.ConsumerName ?? GenerateRandomConsumerName(),
                 InitialPosition = (CommandSubscribe.InitialPositionType) options.InitialPosition,
                 PriorityLevel = options.PriorityLevel,
                 ReadCompacted = options.ReadCompacted,
@@ -67,6 +67,23 @@ namespace DotPulsar.Internal
             if (options.SubscriptionType == SubscriptionType.KeyShared && options.KeySharedPolicy != null)
             {
                 _subscribe.KeySharedMeta = new KeySharedMeta { allowOutOfOrderDelivery = options.KeySharedPolicy.AllowOutOfOrderDelivery, KeySharedMode = KeySharedMode.AutoSplit };
+            }
+        }
+
+        private static string GenerateRandomConsumerName()
+        {
+            try
+            {
+                using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+                {
+                    var bytes = new byte[4];
+                    rng.GetBytes(bytes);
+                    return BitConverter.ToString(bytes).Replace("-", String.Empty);
+                }
+            }
+            catch
+            {
+                return "";
             }
         }
 
