@@ -83,7 +83,7 @@ namespace DotPulsar.Internal
             }
             catch
             {
-                return "";
+                return String.Empty;
             }
         }
 
