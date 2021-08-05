@@ -67,7 +67,7 @@ namespace DotPulsar.Internal
                 case ChannelState.ClosedByServer:
                 case ChannelState.Disconnected:
                     _stateManager.SetState(ConsumerState.Disconnected);
-                    SetupChannel();
+                    SetupChannel(ChannelState == ChannelState.ClosedByServer);
                     return;
                 case ChannelState.Connected:
                     if (!_isFailoverSubscription)
@@ -82,15 +82,14 @@ namespace DotPulsar.Internal
             }
         }
 
-        private async void SetupChannel()
+        private async void SetupChannel(bool wasClosedByServer)
         {
             try
             {
-                // SetChannel currently disposes of the existing channel, which sends a CloseConsumer message to the broker.
-                // Replace the old channel with the not ready channel first in case the broker assigns us the same consumer ID.
-                await _consumer.SetChannel(new NotReadyChannel()).ConfigureAwait(false);
+                // Replace the old channel with the NotReadyChannel while we try to (re)connect a new one
+                await _consumer.SetChannel(new NotReadyChannel(), wasClosedByServer).ConfigureAwait(false);
                 var channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
-                await _consumer.SetChannel(channel).ConfigureAwait(false);
+                await _consumer.SetChannel(channel, false).ConfigureAwait(false);
             }
             catch
             {

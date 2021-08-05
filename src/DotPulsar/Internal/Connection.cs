@@ -250,12 +250,12 @@ namespace DotPulsar.Internal
                         switch (command.CommandType)
                         {
                             case BaseCommand.Type.Message:
-                                _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
                                 _logger.Trace(nameof(Connection), nameof(ProcessIncommingFrames), "Received Message command from {0} for consumer {1}, MessageId {2}:{3}", Id, command.Message.ConsumerId, command.Message.MessageId.LedgerId, command.Message.MessageId.EntryId);
+                                _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
                                 break;
                             case BaseCommand.Type.CloseConsumer:
-                                _channelManager.Incoming(command.CloseConsumer);
                                 _logger.Debug(nameof(Connection), nameof(ProcessIncommingFrames), "Received CloseConsumer command from broker on {0} for consumer {1}", Id, command.CloseConsumer.ConsumerId);
+                                _channelManager.Incoming(command.CloseConsumer);
                                 break;
                             case BaseCommand.Type.ActiveConsumerChange:
                                 _channelManager.Incoming(command.ActiveConsumerChange);
@@ -264,8 +264,8 @@ namespace DotPulsar.Internal
                                 _channelManager.Incoming(command.ReachedEndOfTopic);
                                 break;
                             case BaseCommand.Type.CloseProducer:
-                                _channelManager.Incoming(command.CloseProducer);
                                 _logger.Debug(nameof(Connection), nameof(ProcessIncommingFrames), "Received CloseProducer command from broker on {0} for producer {1}", Id, command.CloseProducer.ProducerId);
+                                _channelManager.Incoming(command.CloseProducer);
                                 // We need to fault all outstanding sends for this producer now also, or else they will hang forever
                                 FaultAllOutstandingSendsForProducer(command.CloseProducer.ProducerId, new ServiceNotReadyException("Broker has closed the producer."));
                                 break;

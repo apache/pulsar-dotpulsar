@@ -66,6 +66,11 @@ namespace DotPulsar.Internal
             // no-op
         }
 
+        public void ClosedByServer()
+        {
+            // no-op
+        }
+
         private static Exception GetException()
             => new ChannelNotReadyException();
     }

@@ -192,7 +192,7 @@ namespace DotPulsar.Internal
             }, cancellationToken).ConfigureAwait(false);
         }
 
-        internal async ValueTask SetChannel(IConsumerChannel channel)
+        internal async ValueTask SetChannel(IConsumerChannel channel, bool wasClosedByServer)
         {
             if (_isDisposed != 0)
             {
@@ -200,11 +200,14 @@ namespace DotPulsar.Internal
                 return;
             }
 
-            var oldChannel = _channel;
-            _channel = channel;
+            var oldChannel = Interlocked.Exchange(ref _channel, channel);
 
             if (oldChannel is not null)
+            {
+                if (wasClosedByServer)
+                    oldChannel.ClosedByServer();
                 await oldChannel.DisposeAsync().ConfigureAwait(false);
+            }
         }
 
         internal void UpdateMessagePrefetchCount(uint messagePrefetchCount, CancellationToken cancellationToken)
