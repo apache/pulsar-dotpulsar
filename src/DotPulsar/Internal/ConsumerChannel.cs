@@ -36,6 +36,7 @@ namespace DotPulsar.Internal
         private readonly AsyncLock _lock;
         private uint _sendWhenZero;
         private bool _firstFlow;
+        private bool _wasClosedByServer;
 
         private readonly TimeSpan _negativeAcknowledgeRedeliveryDelay;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
@@ -66,6 +67,7 @@ namespace DotPulsar.Internal
 
             _sendWhenZero = 0;
             _firstFlow = true;
+            _wasClosedByServer = false;
 
             if (_negativeAcknowledgeRedeliveryDelay > TimeSpan.Zero)
             {
@@ -178,8 +180,12 @@ namespace DotPulsar.Internal
                 _cancellationTokenSource.Dispose();
                 _queue.Dispose();
                 await _lock.DisposeAsync();
-                var closeConsumer = new CommandCloseConsumer { ConsumerId = _id };
-                await _connection.Send(closeConsumer, CancellationToken.None).ConfigureAwait(false);
+                // Only send the CloseConsumer command if we were not already closed by the server
+                if (!_wasClosedByServer)
+                {
+                    var closeConsumer = new CommandCloseConsumer { ConsumerId = _id };
+                    await _connection.Send(closeConsumer, CancellationToken.None).ConfigureAwait(false);
+                }
             }
             catch
             {
@@ -323,6 +329,11 @@ namespace DotPulsar.Internal
             var redeliverUnacknowledgedMessages = new CommandRedeliverUnacknowledgedMessages();
             redeliverUnacknowledgedMessages.MessageIds.AddRange(messageIds.Select(m => m.Data).ToList());
             await Send(redeliverUnacknowledgedMessages, cancellationToken);
+        }
+
+        public void ClosedByServer()
+        {
+            _wasClosedByServer = true;
         }
     }
 }
