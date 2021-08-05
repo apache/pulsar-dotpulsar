@@ -24,6 +24,7 @@ namespace DotPulsar.Internal
         private readonly IConsumerChannelFactory _factory;
         private readonly Consumer _consumer;
         private readonly bool _isFailoverSubscription;
+        private readonly AsyncLock _locker;
 
         public ConsumerProcess(
             Guid correlationId,
@@ -36,6 +37,7 @@ namespace DotPulsar.Internal
             _factory = factory;
             _consumer = consumer;
             _isFailoverSubscription = isFailoverSubscription;
+            _locker = new AsyncLock();
         }
 
         public override async ValueTask DisposeAsync()
@@ -43,6 +45,7 @@ namespace DotPulsar.Internal
             _stateManager.SetState(ConsumerState.Closed);
             CancellationTokenSource.Cancel();
             await _consumer.DisposeAsync().ConfigureAwait(false);
+            await _locker.DisposeAsync();
         }
 
         protected override void CalculateState()
@@ -86,10 +89,13 @@ namespace DotPulsar.Internal
         {
             try
             {
-                // Replace the old channel with the NotReadyChannel while we try to (re)connect a new one
-                await _consumer.SetChannel(new NotReadyChannel(), wasClosedByServer).ConfigureAwait(false);
-                var channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
-                await _consumer.SetChannel(channel, false).ConfigureAwait(false);
+                using (await _locker.Lock(CancellationTokenSource.Token))
+                {
+                    // Replace the old channel with the NotReadyChannel while we try to (re)connect a new one
+                    await _consumer.SetChannel(new NotReadyChannel(), wasClosedByServer).ConfigureAwait(false);
+                    var channel = await _factory.Create(CancellationTokenSource.Token).ConfigureAwait(false);
+                    await _consumer.SetChannel(channel, false).ConfigureAwait(false);
+                }
             }
             catch
             {
