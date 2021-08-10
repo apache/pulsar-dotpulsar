@@ -27,14 +27,16 @@ namespace DotPulsar.Internal
         private readonly AsyncLock _lock;
         private readonly ChannelManager _channelManager;
         private readonly PingPongHandler _pingPongHandler;
+        private readonly Watchdog _watchdog;
         private readonly IPulsarStream _stream;
         private int _isDisposed;
 
-        public Connection(IPulsarStream stream)
+        public Connection(IPulsarStream stream, Watchdog watchdog)
         {
             _lock = new AsyncLock();
             _channelManager = new ChannelManager();
             _pingPongHandler = new PingPongHandler(this);
+            _watchdog = watchdog;
             _stream = stream;
         }
 
@@ -273,8 +275,11 @@ namespace DotPulsar.Internal
 
             try
             {
-                await foreach (var frame in _stream.Frames())
+                _watchdog.Enable();
+                await foreach (var frame in _stream.Frames(_watchdog.CancellationToken))
                 {
+                    _watchdog.GotMessage();
+
                     var commandSize = frame.ReadUInt32(0, true);
                     var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
 
@@ -296,6 +301,10 @@ namespace DotPulsar.Internal
             {
                 // ignored
             }
+            finally
+            {
+                _watchdog.Disable();
+            }
         }
 
         public async ValueTask DisposeAsync()
@@ -306,6 +315,7 @@ namespace DotPulsar.Internal
             await _lock.DisposeAsync().ConfigureAwait(false);
             _channelManager.Dispose();
             await _stream.DisposeAsync().ConfigureAwait(false);
+            _watchdog.Dispose();
         }
 
         private void ThrowIfDisposed()

@@ -53,6 +53,11 @@ namespace DotPulsar.Abstractions
         IPulsarClientBuilder RetryInterval(TimeSpan interval);
 
         /// <summary>
+        /// Set a timeout for the watchdog to reconnect if no messages are received. The default disabled (using Timeout.InfiniteTimespan).
+        /// </summary>
+        public IPulsarClientBuilder UseWatchdog(TimeSpan timeout);
+
+        /// <summary>
         /// The service URL for the Pulsar cluster. The default is "pulsar://localhost:6650".
         /// </summary>
         IPulsarClientBuilder ServiceUrl(Uri uri);

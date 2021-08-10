@@ -21,6 +21,7 @@ namespace DotPulsar.Internal
     using System.Collections.Generic;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
+    using System.Threading;
 
     public sealed class PulsarClientBuilder : IPulsarClientBuilder
     {
@@ -29,6 +30,7 @@ namespace DotPulsar.Internal
         private EncryptionPolicy? _encryptionPolicy;
         private string? _listenerName;
         private TimeSpan _retryInterval;
+        private TimeSpan _watchdogTimeout;
         private Uri _serviceUrl;
         private X509Certificate2? _trustedCertificateAuthority;
         private readonly X509Certificate2Collection _clientCertificates;
@@ -46,6 +48,7 @@ namespace DotPulsar.Internal
 
             _exceptionHandlers = new List<IHandleException>();
             _retryInterval = TimeSpan.FromSeconds(3);
+            _watchdogTimeout = Timeout.InfiniteTimeSpan;
             _serviceUrl = new Uri($"{Constants.PulsarScheme}://localhost:{Constants.DefaultPulsarPort}");
             _clientCertificates = new X509Certificate2Collection();
             _verifyCertificateAuthority = true;
@@ -88,6 +91,12 @@ namespace DotPulsar.Internal
         public IPulsarClientBuilder RetryInterval(TimeSpan interval)
         {
             _retryInterval = interval;
+            return this;
+        }
+
+        public IPulsarClientBuilder UseWatchdog(TimeSpan timeout)
+        {
+            _watchdogTimeout = timeout;
             return this;
         }
 
@@ -146,7 +155,7 @@ namespace DotPulsar.Internal
 
 
             var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
-            var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName);
+            var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _watchdogTimeout, _listenerName);
             var processManager = new ProcessManager(connectionPool);
             var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
             var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);
