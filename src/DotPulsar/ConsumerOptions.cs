@@ -14,7 +14,10 @@
 
 namespace DotPulsar
 {
-    using DotPulsar.Abstractions;
+    using Abstractions;
+    using Internal;
+    using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// The consumer building options.
@@ -47,9 +50,24 @@ namespace DotPulsar
         public static readonly SubscriptionType DefaultSubscriptionType = SubscriptionType.Exclusive;
 
         /// <summary>
+        /// The default RegexSubscriptionMode value.
+        /// </summary>
+        public static readonly RegexSubscriptionMode DefaultRegexSubscriptionMode = RegexSubscriptionMode.AllTopics;
+
+        /// <summary>
+        /// The default AutoUpdatePartitions value.
+        /// </summary>
+        public static readonly bool DefaultAutoUpdatePartitions = false;
+
+        /// <summary>
+        /// The default AutoUpdatePartitionsInterval value.
+        /// </summary>
+        public static readonly TimeSpan DefaultAutoUpdatePartitionsInterval = TimeSpan.FromMinutes(1);
+
+        /// <summary>
         /// Initializes a new instance using the specified subscription name and topic.
         /// </summary>
-        public ConsumerOptions(string subscriptionName, string topic, ISchema<TMessage> schema)
+        public ConsumerOptions(string subscriptionName, ISet<string> topicNames, ISchema<TMessage> schema)
         {
             InitialPosition = DefaultInitialPosition;
             PriorityLevel = DefaultPriorityLevel;
@@ -57,8 +75,10 @@ namespace DotPulsar
             ReadCompacted = DefaultReadCompacted;
             SubscriptionType = DefaultSubscriptionType;
             SubscriptionName = subscriptionName;
-            Topic = topic;
+            TopicNames = topicNames;
             Schema = schema;
+            AutoUpdatePartitions = DefaultAutoUpdatePartitions;
+            AutoUpdatePartitionsInterval = DefaultAutoUpdatePartitionsInterval;
         }
 
         /// <summary>
@@ -107,8 +127,29 @@ namespace DotPulsar
         public SubscriptionType SubscriptionType { get; set; }
 
         /// <summary>
-        /// Set the topic for this consumer. This is required.
+        /// Set the topic names for this consumer.
         /// </summary>
-        public string Topic { get; set; }
-    }
+        public ISet<string> TopicNames { get; set; }
+
+        /// <summary>
+        /// Set the topic pattern for this consumer.
+        /// </summary>
+        public string? TopicsPattern { get; set; }
+
+        /// <summary>
+        /// The subscription mode for TopicsPattern.
+        /// </summary>
+        public RegexSubscriptionMode RegexSubscriptionMode { get; set; }
+
+        /// <summary>
+        /// Controls whether the consumers automatically update partition data.
+        /// </summary>
+        public bool AutoUpdatePartitions { get; set; }
+
+        /// <summary>
+        /// Set the interval of updating partitions, the default is 1 minute.
+        /// This only works when autoUpdatePartitions is true.
+        /// </summary>
+        public TimeSpan AutoUpdatePartitionsInterval { get; set; }
+    };
 }

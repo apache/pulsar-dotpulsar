@@ -25,6 +25,6 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Get the MessageId of the last message on the topic.
         /// </summary>
-        ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default);
+        ValueTask<IMessageId> GetLastMessageId(CancellationToken cancellationToken = default);
     }
 }

@@ -16,7 +16,6 @@
 
 namespace DotPulsar.Tests
 {
-    using DotPulsar;
     using FluentAssertions;
     using Xunit;
 
@@ -25,8 +24,8 @@ namespace DotPulsar.Tests
         [Fact]
         public void CompareTo_GivenTheSameValues_ShouldBeEqual()
         {
-            var m1 = new MessageId(1, 2, 3, 4);
-            var m2 = new MessageId(1, 2, 3, 4);
+            var m1 = new MessageId(1, 2, 3, 4, "");
+            var m2 = new MessageId(1, 2, 3, 4, "");
 
             m1.CompareTo(m2).Should().Be(0);
             (m1 < m2).Should().BeFalse();
@@ -50,7 +49,7 @@ namespace DotPulsar.Tests
         [Fact]
         public void CompareTo_GivenOneNull_ShouldFollowNull()
         {
-            var m1 = new MessageId(1, 2, 3, 4);
+            var m1 = new MessageId(1, 2, 3, 4, "");
             MessageId m2 = null;
 
             m1.CompareTo(m2).Should().BePositive();
@@ -70,10 +69,11 @@ namespace DotPulsar.Tests
         [InlineData(1, 3, 3, 4)] // EntryId is greater
         [InlineData(1, 2, 4, 4)] // Partition is greater
         [InlineData(1, 2, 3, 5)] // BatchIndex is greater
-        public void CompareTo_GivenCurrentFollowsArgument_ShouldReturnPositive(ulong ledgerId, ulong entryId, int partition, int batchIndex)
+        public void CompareTo_GivenCurrentFollowsArgument_ShouldReturnPositive(ulong ledgerId, ulong entryId,
+            int partition, int batchIndex)
         {
-            var m1 = new MessageId(ledgerId, entryId, partition, batchIndex);
-            var m2 = new MessageId(1, 2, 3, 4);
+            var m1 = new MessageId(ledgerId, entryId, partition, batchIndex, "");
+            var m2 = new MessageId(1, 2, 3, 4, "");
 
             m1.CompareTo(m2).Should().BePositive();
             (m1 > m2).Should().BeTrue();
@@ -85,10 +85,11 @@ namespace DotPulsar.Tests
         [InlineData(1, 1, 3, 4)] // EntryId is less
         [InlineData(1, 2, 2, 4)] // Partition is less
         [InlineData(1, 2, 3, 3)] // BatchIndex is less
-        public void CompareTo_GivenCurrentPrecedesArgument_ShouldReturnNegative(ulong ledgerId, ulong entryId, int partition, int batchIndex)
+        public void CompareTo_GivenCurrentPrecedesArgument_ShouldReturnNegative(ulong ledgerId, ulong entryId,
+            int partition, int batchIndex)
         {
-            var m1 = new MessageId(ledgerId, entryId, partition, batchIndex);
-            var m2 = new MessageId(1, 2, 3, 4);
+            var m1 = new MessageId(ledgerId, entryId, partition, batchIndex, "");
+            var m2 = new MessageId(1, 2, 3, 4, "");
 
             m1.CompareTo(m2).Should().BeNegative();
             (m1 < m2).Should().BeTrue();
@@ -98,7 +99,7 @@ namespace DotPulsar.Tests
         [Fact]
         public void Equals_GivenTheSameObject_ShouldBeEqual()
         {
-            var m1 = new MessageId(1, 2, 3, 4);
+            var m1 = new MessageId(1, 2, 3, 4, "");
             var m2 = m1;
 
             m1.Equals(m2).Should().BeTrue();
@@ -109,8 +110,8 @@ namespace DotPulsar.Tests
         [Fact]
         public void Equals_GivenTheSameValues_ShouldBeEqual()
         {
-            var m1 = new MessageId(1, 2, 3, 4);
-            var m2 = new MessageId(1, 2, 3, 4);
+            var m1 = new MessageId(1, 2, 3, 4, "");
+            var m2 = new MessageId(1, 2, 3, 4, "");
 
             m1.Equals(m2).Should().BeTrue();
             (m1 == m2).Should().BeTrue();
@@ -122,11 +123,11 @@ namespace DotPulsar.Tests
         [InlineData(1, 0, 3, 4)] // EntryId not the same
         [InlineData(1, 2, 0, 4)] // Partition not the same
         [InlineData(1, 2, 3, 0)] // BatchIndex not the same
-        public void Equals_GivenDifferentValues_ShouldNotBeEqual(ulong ledgerId, ulong entryId, int partition, int batchIndex)
+        public void Equals_GivenDifferentValues_ShouldNotBeEqual(ulong ledgerId, ulong entryId, int partition,
+            int batchIndex)
         {
-            var m1 = new MessageId(ledgerId, entryId, partition, batchIndex);
-            var m2 = new MessageId(1, 2, 3, 4);
-
+            var m1 = new MessageId(ledgerId, entryId, partition, batchIndex, "");
+            var m2 = new MessageId(1, 2, 3, 4, "");
             m1.Equals(m2).Should().BeFalse();
             (m1 == m2).Should().BeFalse();
             (m1 != m2).Should().BeTrue();
@@ -146,7 +147,7 @@ namespace DotPulsar.Tests
         [Fact]
         public void Equals_GivenOneNull_ShouldNotBeEqual()
         {
-            var m1 = new MessageId(1, 2, 3, 4);
+            var m1 = new MessageId(1, 2, 3, 4, "");
             MessageId m2 = null;
 
             (m1 is null).Should().BeFalse();

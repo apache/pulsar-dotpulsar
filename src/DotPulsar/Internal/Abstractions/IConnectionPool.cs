@@ -21,5 +21,6 @@ namespace DotPulsar.Internal.Abstractions
     public interface IConnectionPool : IAsyncDisposable
     {
         ValueTask<IConnection> FindConnectionForTopic(string topic, CancellationToken cancellationToken = default);
+        ValueTask<IConnection> GetConnection(Uri serviceUrl, CancellationToken cancellationToken = default);
     }
 }

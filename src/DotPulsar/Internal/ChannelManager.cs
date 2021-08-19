@@ -163,6 +163,9 @@ namespace DotPulsar.Internal
         public Task<BaseCommand> Outgoing(CommandPartitionedTopicMetadata command)
             => _requestResponseHandler.Outgoing(command);
 
+        public Task<BaseCommand> Outgoing(CommandGetTopicsOfNamespace command)
+            => _requestResponseHandler.Outgoing(command);
+
         public Task<BaseCommand> Outgoing(CommandSeek command)
         {
             using (TakeConsumerSenderLock(command.ConsumerId))
@@ -239,6 +242,7 @@ namespace DotPulsar.Internal
         private IDisposable TakeConsumerSenderLock(ulong consumerId)
         {
             var channel = _consumerChannels[consumerId];
+
             if (channel is null)
                 throw new OperationCanceledException();
 

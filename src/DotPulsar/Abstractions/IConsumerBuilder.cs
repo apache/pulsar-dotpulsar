@@ -14,6 +14,10 @@
 
 namespace DotPulsar.Abstractions
 {
+    using Internal;
+    using System;
+    using System.Collections.Generic;
+
     /// <summary>
     /// A consumer building abstraction.
     /// </summary>
@@ -68,5 +72,33 @@ namespace DotPulsar.Abstractions
         /// Create the consumer.
         /// </summary>
         IConsumer<TMessage> Create();
+
+        /// <summary>
+        /// Specify a list of topics that this consumer will subscribe on.
+        /// </summary>
+        /// <param name="topicNames">a list of topic that the consumer will subscribe on</param>
+        IConsumerBuilder<TMessage> Topics(IEnumerable<string> topicNames);
+
+        /// <summary>
+        /// Specify a pattern for topics that this consumer will subscribe on.
+        /// </summary>
+        /// <param name="topicsPattern">a regular expression to select a list of topics to subscribe to</param>
+        IConsumerBuilder<TMessage> TopicsPattern(string topicsPattern);
+
+        /// <summary>
+        /// The subscription mode for TopicsPattern.
+        /// </summary>
+        IConsumerBuilder<TMessage> RegexSubscriptionMode(RegexSubscriptionMode mode);
+
+        /// <summary>
+        /// Controls whether the consumers automatically update partition data, the default is false.
+        /// </summary>
+        IConsumerBuilder<TMessage> AutoUpdatePartitions(bool enabled);
+
+        /// <summary>
+        /// Set the interval of updating partitions, the default is 1 minute.
+        /// This only works when autoUpdatePartitions is true.
+        /// </summary>
+        IConsumerBuilder<TMessage> AutoUpdatePartitionsInterval(TimeSpan timeSpan);
     }
 }

@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Abstractions
 {
+    using Internal;
     using System;
     using System.Collections.Generic;
     using System.Threading;
@@ -27,12 +28,12 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Acknowledge the consumption of a single message using the MessageId.
         /// </summary>
-        ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken = default);
+        ValueTask Acknowledge(IMessageId messageId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Acknowledge the consumption of all the messages in the topic up to and including the provided MessageId.
         /// </summary>
-        ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken = default);
+        ValueTask AcknowledgeCumulative(IMessageId messageId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// The consumer's service url.
@@ -50,6 +51,37 @@ namespace DotPulsar.Abstractions
         string Topic { get; }
 
         /// <summary>
+        /// The consumer's topic list.
+        /// </summary>
+        ISet<string>? TopicNames { get; }
+
+        /// <summary>
+        /// The consumer's topic pattern.
+        /// </summary>
+        string? TopicsPattern { get; }
+
+        /// <summary>
+        /// The consumer's topic partition number.
+        /// </summary>
+        uint NumberOfPartitions { get; }
+
+        /// <summary>
+        /// Controls whether the consumers automatically update partition data.
+        /// </summary>
+        bool AutoUpdatePartitions { get; }
+
+        /// <summary>
+        /// Set the interval of updating partitions, the default is 1 minute.
+        /// This only works when autoUpdatePartitions is true.
+        /// </summary>
+        TimeSpan AutoUpdatePartitionsInterval { get; }
+
+        /// <summary>
+        /// The subscription mode for TopicsPattern.
+        /// </summary>
+        RegexSubscriptionMode RegexSubscriptionMode { get; }
+
+        /// <summary>
         /// Unsubscribe the consumer.
         /// </summary>
         ValueTask Unsubscribe(CancellationToken cancellationToken = default);
@@ -57,7 +89,7 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Redeliver the pending messages that were pushed to this consumer that are not yet acknowledged.
         /// </summary>
-        ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken = default);
+        ValueTask RedeliverUnacknowledgedMessages(IEnumerable<IMessageId> messageIds, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Redeliver all pending messages that were pushed to this consumer that are not yet acknowledged.

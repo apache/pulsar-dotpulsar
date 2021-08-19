@@ -53,6 +53,11 @@ namespace DotPulsar.Internal
             }
         }
 
+        public int Count
+        {
+            get { return _queue.Count; }
+        }
+
         public ValueTask<T> Dequeue(CancellationToken cancellationToken = default)
         {
             LinkedListNode<CancelableCompletionSource<T>>? node = null;

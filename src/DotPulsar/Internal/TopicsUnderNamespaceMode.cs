@@ -14,13 +14,10 @@
 
 namespace DotPulsar.Internal.Abstractions
 {
-    using DotPulsar.Abstractions;
-    using PulsarApi;
-    using System.Buffers;
-
-    public interface IMessageFactory<TValue>
+    public enum GetTopicsUnderNamespaceMode
     {
-        IMessage<TValue> Create(string topic, MessageId messageId, uint redeliveryCount, ReadOnlySequence<byte> data, MessageMetadata metadata,
-            SingleMessageMetadata? singleMetadata = null);
+        PERSISTENT,
+        NON_PERSISTENT,
+        ALL
     }
 }

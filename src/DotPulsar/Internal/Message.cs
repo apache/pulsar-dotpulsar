@@ -24,6 +24,7 @@ namespace DotPulsar.Internal
         private readonly ISchema<TValue> _schema;
 
         internal Message(
+            string topic,
             MessageId messageId,
             ReadOnlySequence<byte> data,
             string producerName,
@@ -38,6 +39,7 @@ namespace DotPulsar.Internal
             byte[]? schemaVersion,
             ISchema<TValue> schema)
         {
+            Topic = topic;
             MessageId = messageId;
             Data = data;
             ProducerName = producerName;
@@ -94,5 +96,7 @@ namespace DotPulsar.Internal
         public IReadOnlyDictionary<string, string> Properties { get; }
 
         public TValue Value() => _schema.Decode(Data);
+
+        public string Topic { get; }
     }
 }

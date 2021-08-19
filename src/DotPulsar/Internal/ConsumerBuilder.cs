@@ -16,6 +16,9 @@ namespace DotPulsar.Internal
 {
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
     public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
     {
@@ -28,8 +31,12 @@ namespace DotPulsar.Internal
         private bool _readCompacted;
         private string? _subscriptionName;
         private SubscriptionType _subscriptionType;
-        private string? _topic;
         private IHandleStateChanged<ConsumerStateChanged>? _stateChangedHandler;
+        private readonly ISet<string> _topicNames;
+        private string? _topicsPattern;
+        private RegexSubscriptionMode _regexSubscriptionMode;
+        private bool _autoUpdatePartitions;
+        private TimeSpan _autoUpdatePartitionsInterval;
 
         public ConsumerBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
         {
@@ -40,6 +47,10 @@ namespace DotPulsar.Internal
             _messagePrefetchCount = ConsumerOptions<TMessage>.DefaultMessagePrefetchCount;
             _readCompacted = ConsumerOptions<TMessage>.DefaultReadCompacted;
             _subscriptionType = ConsumerOptions<TMessage>.DefaultSubscriptionType;
+            _regexSubscriptionMode = ConsumerOptions<TMessage>.DefaultRegexSubscriptionMode;
+            _autoUpdatePartitions = ConsumerOptions<TMessage>.DefaultAutoUpdatePartitions;
+            _autoUpdatePartitionsInterval = ConsumerOptions<TMessage>.DefaultAutoUpdatePartitionsInterval;
+            _topicNames = new HashSet<string>();
         }
 
         public IConsumerBuilder<TMessage> ConsumerName(string name)
@@ -92,7 +103,7 @@ namespace DotPulsar.Internal
 
         public IConsumerBuilder<TMessage> Topic(string topic)
         {
-            _topic = topic;
+            _topicNames.Add(topic);
             return this;
         }
 
@@ -101,10 +112,12 @@ namespace DotPulsar.Internal
             if (string.IsNullOrEmpty(_subscriptionName))
                 throw new ConfigurationException("SubscriptionName may not be null or empty");
 
-            if (string.IsNullOrEmpty(_topic))
-                throw new ConfigurationException("Topic may not be null or empty");
+            if (_topicNames.Count == 0 && _topicsPattern == null)
+            {
+                throw new ConfigurationException("Topic name must be provided");
+            }
 
-            var options = new ConsumerOptions<TMessage>(_subscriptionName!, _topic!, _schema)
+            var options = new ConsumerOptions<TMessage>(_subscriptionName!, _topicNames, _schema)
             {
                 ConsumerName = _consumerName,
                 InitialPosition = _initialPosition,
@@ -112,10 +125,59 @@ namespace DotPulsar.Internal
                 PriorityLevel = _priorityLevel,
                 ReadCompacted = _readCompacted,
                 StateChangedHandler = _stateChangedHandler,
-                SubscriptionType = _subscriptionType
+                SubscriptionType = _subscriptionType,
+                TopicsPattern = _topicsPattern,
+                RegexSubscriptionMode = _regexSubscriptionMode,
+                AutoUpdatePartitions = _autoUpdatePartitions,
+                AutoUpdatePartitionsInterval = _autoUpdatePartitionsInterval,
             };
 
             return _pulsarClient.CreateConsumer(options);
+        }
+
+        public IConsumerBuilder<TMessage> Topics(IEnumerable<string> topicNames)
+        {
+            var enumerable = topicNames.ToList();
+
+            if (enumerable.Count == 0)
+            {
+                throw new ConfigurationException("topicNames cannot be null or empty");
+            }
+
+            foreach (var topicName in enumerable)
+            {
+                _topicNames.Add(topicName);
+            }
+
+            return this;
+        }
+
+        public IConsumerBuilder<TMessage> TopicsPattern(string topicsPattern)
+        {
+            _topicsPattern = topicsPattern ?? throw new ConfigurationException("topicsPattern cannot be null");
+
+            return this;
+        }
+
+        public IConsumerBuilder<TMessage> RegexSubscriptionMode(RegexSubscriptionMode mode)
+        {
+            _regexSubscriptionMode = mode;
+
+            return this;
+        }
+
+        public IConsumerBuilder<TMessage> AutoUpdatePartitions(bool enabled)
+        {
+            _autoUpdatePartitions = enabled;
+
+            return this;
+        }
+
+        public IConsumerBuilder<TMessage> AutoUpdatePartitionsInterval(TimeSpan timeSpan)
+        {
+            _autoUpdatePartitionsInterval = timeSpan;
+
+            return this;
         }
     }
 }

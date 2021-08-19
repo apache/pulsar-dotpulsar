@@ -135,9 +135,9 @@ namespace DotPulsar.Internal
             }
         }
 
-        private ValueTask<Connection> GetConnection(Uri serviceUrl, CancellationToken cancellationToken)
+        public async ValueTask<IConnection> GetConnection(Uri serviceUrl, CancellationToken cancellationToken)
         {
-            return GetConnection(new PulsarUrl(serviceUrl,serviceUrl), cancellationToken);
+            return await GetConnection(new PulsarUrl(serviceUrl, serviceUrl), cancellationToken).ConfigureAwait(false);
         }
 
         private async ValueTask<Connection> GetConnection(PulsarUrl url, CancellationToken cancellationToken)
@@ -204,9 +204,11 @@ namespace DotPulsar.Internal
                     using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
                     {
                         var serviceUrls = _connections.Keys;
+
                         foreach (var serviceUrl in serviceUrls)
                         {
                             var connection = _connections[serviceUrl];
+
                             if (connection is null)
                                 continue;
 

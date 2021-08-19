@@ -14,8 +14,8 @@
 
 namespace DotPulsar.Extensions
 {
-    using DotPulsar.Abstractions;
-    using DotPulsar.Internal;
+    using Abstractions;
+    using Internal;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -99,7 +99,7 @@ namespace DotPulsar.Extensions
 
                 activity?.Dispose();
 
-                await consumer.Acknowledge(message.MessageId, cancellationToken).ConfigureAwait(false);
+                await consumer.Acknowledge(message, cancellationToken).ConfigureAwait(false);
             }
         }
 

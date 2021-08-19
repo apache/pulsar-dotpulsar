@@ -71,7 +71,7 @@ namespace DotPulsar.Internal
             _firstFlow = true;
         }
 
-        public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
+        public async ValueTask<IMessage<TMessage>> Receive(string topic, CancellationToken cancellationToken)
         {
             using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
@@ -86,6 +86,12 @@ namespace DotPulsar.Internal
 
                     if (message is not null)
                         return message;
+
+                    // Avoid waiting until an empty queue.
+                    if (_queue.Count == 0)
+                    {
+                        return null;
+                    }
 
                     var messagePackage = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);
 
@@ -132,7 +138,7 @@ namespace DotPulsar.Internal
                         }
                     }
 
-                    return _messageFactory.Create(messageId.ToMessageId(), redeliveryCount, data, metadata);
+                    return _messageFactory.Create(topic, messageId.ToMessageId(topic), redeliveryCount, data, metadata);
                 }
             }
         }
@@ -176,12 +182,12 @@ namespace DotPulsar.Internal
             _batchHandler.Clear();
         }
 
-        public async Task<MessageId> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
+        public async Task<MessageId> Send(string topic, CommandGetLastMessageId command, CancellationToken cancellationToken)
         {
             command.ConsumerId = _id;
             var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.GetLastMessageIdResponse);
-            return response.GetLastMessageIdResponse.LastMessageId.ToMessageId();
+            return response.GetLastMessageIdResponse.LastMessageId.ToMessageId(topic);
         }
 
         public async ValueTask DisposeAsync()

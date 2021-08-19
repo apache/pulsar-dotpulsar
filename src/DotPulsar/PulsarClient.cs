@@ -15,11 +15,11 @@
 namespace DotPulsar
 {
     using Abstractions;
-    using DotPulsar.Internal.Compression;
-    using DotPulsar.Internal.PulsarApi;
     using Exceptions;
     using Internal;
     using Internal.Abstractions;
+    using Internal.Compression;
+    using Internal.PulsarApi;
     using System;
     using System.Linq;
     using System.Threading;
@@ -117,7 +117,7 @@ namespace DotPulsar
             };
             var messagePrefetchCount = options.MessagePrefetchCount;
             var messageFactory = new MessageFactory<TMessage>(options.Schema);
-            var batchHandler = new BatchHandler<TMessage>(false, messageFactory);
+            var batchHandler = new BatchHandler<TMessage>(options.Topic, false, messageFactory);
             var decompressorFactories = CompressionFactories.DecompressorFactories();
             var factory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decompressorFactories);
             var stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);

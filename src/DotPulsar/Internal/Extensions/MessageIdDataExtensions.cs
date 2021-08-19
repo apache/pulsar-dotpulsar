@@ -14,19 +14,23 @@
 
 namespace DotPulsar.Internal.Extensions
 {
-    using DotPulsar.Internal.PulsarApi;
+    using DotPulsar.Abstractions;
+    using PulsarApi;
+    using System;
 
     public static class MessageIdDataExtensions
     {
-        public static MessageId ToMessageId(this MessageIdData messageIdData)
-            => new(messageIdData.LedgerId, messageIdData.EntryId, messageIdData.Partition, messageIdData.BatchIndex);
+        public static MessageId ToMessageId(this MessageIdData messageIdData, string topic)
+            => new(messageIdData.LedgerId, messageIdData.EntryId, messageIdData.Partition, messageIdData.BatchIndex, topic);
 
-        public static void MapFrom(this MessageIdData destination, MessageId source)
+        public static void MapFrom(this MessageIdData destination, IMessageId source)
         {
-            destination.LedgerId = source.LedgerId;
-            destination.EntryId = source.EntryId;
-            destination.Partition = source.Partition;
-            destination.BatchIndex = source.BatchIndex;
+            if (source is not MessageId messageId)
+                throw new ArgumentException($"source should be {nameof(MessageId)} instance");
+            destination.LedgerId = messageId.LedgerId;
+            destination.EntryId = messageId.EntryId;
+            destination.Partition = messageId.Partition;
+            destination.BatchIndex = messageId.BatchIndex;
         }
     }
 }

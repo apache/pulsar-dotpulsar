@@ -42,7 +42,7 @@ jobs:
       - name: run integration tests
         run: |
           export PULSAR_DEPLOYMENT_TYPE=container
-          dotnet test ./tests/DotPulsar.IntegrationTests/DotPulsar.IntegrationTests.csproj --logger "trx;verbosity=detailed"
+          dotnet test ./tests/DotPulsar.IntegrationTests/DotPulsar.IntegrationTests.csproj --logger "console;verbosity=detailed"
 
       - name: package artifacts
         if: failure()

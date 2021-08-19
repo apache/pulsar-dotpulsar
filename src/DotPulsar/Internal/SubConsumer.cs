@@ -17,8 +17,8 @@ namespace DotPulsar.Internal
     using Abstractions;
     using DotPulsar.Abstractions;
     using DotPulsar.Exceptions;
-    using DotPulsar.Internal.Extensions;
     using Events;
+    using Extensions;
     using Microsoft.Extensions.ObjectPool;
     using PulsarApi;
     using System;
@@ -41,6 +41,13 @@ namespace DotPulsar.Internal
         public Uri ServiceUrl { get; }
         public string SubscriptionName { get; }
         public string Topic { get; }
+
+        public ISet<string>? TopicNames { get; }
+        public string? TopicsPattern { get; }
+        public RegexSubscriptionMode RegexSubscriptionMode { get; }
+        public uint NumberOfPartitions { get; }
+        public bool AutoUpdatePartitions { get; }
+        public TimeSpan AutoUpdatePartitionsInterval { get; }
 
         public SubConsumer(
             Guid correlationId,
@@ -94,19 +101,19 @@ namespace DotPulsar.Internal
         {
             ThrowIfDisposed();
 
-            return await _executor.Execute(() => ReceiveMessage(cancellationToken), cancellationToken).ConfigureAwait(false);
+            return await _executor.Execute(() => ReceiveMessage(Topic, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
-        private async ValueTask<IMessage<TMessage>> ReceiveMessage(CancellationToken cancellationToken)
-            => await _channel.Receive(cancellationToken).ConfigureAwait(false);
+        private async ValueTask<IMessage<TMessage>> ReceiveMessage(string topic, CancellationToken cancellationToken)
+            => await _channel.Receive(topic, cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken)
+        public async ValueTask Acknowledge(IMessageId messageId, CancellationToken cancellationToken)
             => await Acknowledge(messageId, CommandAck.AckType.Individual, cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken)
+        public async ValueTask AcknowledgeCumulative(IMessageId messageId, CancellationToken cancellationToken)
             => await Acknowledge(messageId, CommandAck.AckType.Cumulative, cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken)
+        public async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<IMessageId> messageIds, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -116,7 +123,7 @@ namespace DotPulsar.Internal
         }
 
         public async ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken)
-            => await RedeliverUnacknowledgedMessages(Enumerable.Empty<MessageId>(), cancellationToken).ConfigureAwait(false);
+            => await RedeliverUnacknowledgedMessages(Enumerable.Empty<IMessageId>(), cancellationToken).ConfigureAwait(false);
 
         public async ValueTask Unsubscribe(CancellationToken cancellationToken)
         {
@@ -127,7 +134,7 @@ namespace DotPulsar.Internal
         }
 
         private async ValueTask Unsubscribe(CommandUnsubscribe command, CancellationToken cancellationToken)
-            =>await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+            => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
         public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
         {
@@ -145,7 +152,7 @@ namespace DotPulsar.Internal
             await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
-        public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken)
+        public async ValueTask<IMessageId> GetLastMessageId(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -153,20 +160,24 @@ namespace DotPulsar.Internal
             return await _executor.Execute(() => GetLastMessageId(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
-        private async ValueTask<MessageId> GetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
-            => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+        private async ValueTask<IMessageId> GetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
+            => await _channel.Send(Topic, command, cancellationToken).ConfigureAwait(false);
 
         private async Task Seek(CommandSeek command, CancellationToken cancellationToken)
             => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
-        private async ValueTask Acknowledge(MessageId messageId, CommandAck.AckType ackType, CancellationToken cancellationToken)
+        private async ValueTask Acknowledge(IMessageId messageId, CommandAck.AckType ackType, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
             var commandAck = _commandAckPool.Get();
             commandAck.Type = ackType;
             if (commandAck.MessageIds.Count == 0)
-                commandAck.MessageIds.Add(messageId.ToMessageIdData());
+            {
+                if (messageId is not MessageId result)
+                    throw new ArgumentException($"messageId should be {nameof(MessageId)} instance");
+                commandAck.MessageIds.Add(result.ToMessageIdData());
+            }
             else
                 commandAck.MessageIds[0].MapFrom(messageId);
 

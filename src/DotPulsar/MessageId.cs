@@ -14,19 +14,20 @@
 
 namespace DotPulsar
 {
-    using DotPulsar.Internal.Extensions;
+    using Abstractions;
+    using Internal.Extensions;
     using Internal.PulsarApi;
     using System;
 
     /// <summary>
     /// Unique identifier of a single message.
     /// </summary>
-    public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
+    public sealed class MessageId : IMessageId, IEquatable<MessageId>
     {
         static MessageId()
         {
-            Earliest = new MessageId(ulong.MaxValue, ulong.MaxValue, -1, -1);
-            Latest = new MessageId(long.MaxValue, long.MaxValue, -1, -1);
+            Earliest = new MessageId(ulong.MaxValue, ulong.MaxValue, -1, -1, "");
+            Latest = new MessageId(long.MaxValue, long.MaxValue, -1, -1, "");
         }
 
         /// <summary>
@@ -42,12 +43,13 @@ namespace DotPulsar
         /// <summary>
         /// Initializes a new instance using the specified ledgerId, entryId, partition and batchIndex.
         /// </summary>
-        public MessageId(ulong ledgerId, ulong entryId, int partition, int batchIndex)
+        public MessageId(ulong ledgerId, ulong entryId, int partition, int batchIndex, string topic)
         {
             LedgerId = ledgerId;
             EntryId = entryId;
             Partition = partition;
             BatchIndex = batchIndex;
+            Topic = topic;
         }
 
         /// <summary>
@@ -70,20 +72,35 @@ namespace DotPulsar
         /// </summary>
         public int BatchIndex { get; }
 
-        public int CompareTo(MessageId? other)
+        /// <summary>
+        /// The id of the topic.
+        /// </summary>
+        public string Topic { get; }
+
+        public int CompareTo(object? i)
         {
-            if (other is null)
+            if (i is null)
                 return 1;
 
-            var result = LedgerId.CompareTo(other.LedgerId);
+            if (i.GetType() != GetType())
+            {
+                throw new Exception("expected MessageId object. Got instance of " + i.GetType());
+            }
+
+            var other = i as MessageId;
+
+            var result = LedgerId.CompareTo(other!.LedgerId);
+
             if (result != 0)
                 return result;
 
             result = EntryId.CompareTo(other.EntryId);
+
             if (result != 0)
                 return result;
 
             result = Partition.CompareTo(other.Partition);
+
             if (result != 0)
                 return result;
 
@@ -120,7 +137,7 @@ namespace DotPulsar
         public override string ToString()
             => $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}";
 
-        internal MessageIdData ToMessageIdData()
+        public MessageIdData ToMessageIdData()
         {
             var messageIdData = new MessageIdData();
             messageIdData.MapFrom(this);

@@ -122,5 +122,10 @@ namespace DotPulsar.Abstractions
         /// The properties of the message.
         /// </summary>
         public IReadOnlyDictionary<string, string> Properties { get; }
+
+        /// <summary>
+        /// The topic of the message.
+        /// </summary>
+        public string Topic { get; }
     }
 }
