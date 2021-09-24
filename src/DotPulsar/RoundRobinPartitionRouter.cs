@@ -38,10 +38,10 @@ namespace DotPulsar
         /// <summary>
         /// Choose a partition in round robin routing mode
         /// </summary>
-        public int ChoosePartition(MessageMetadata? messageMetadata, int numberOfPartitions)
+        public int ChoosePartition(MessageMetadata messageMetadata, int numberOfPartitions)
         {
-            var keyBytes = messageMetadata?.KeyBytes;
-            if (keyBytes is not null)
+            var keyBytes = messageMetadata.KeyBytes;
+            if (keyBytes is not null && keyBytes.Length > 0)
                 return (int) MurmurHash3.Hash32(keyBytes, 0) % numberOfPartitions;
 
             return Interlocked.Increment(ref _partitionIndex) % numberOfPartitions;

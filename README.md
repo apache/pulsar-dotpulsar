@@ -14,6 +14,7 @@ Have a look at the [changelog](CHANGELOG.md).
 
 Let's take a look at a "Hello world" example, where we first produce a message and then consume it.
 
+First, we need a Pulsar setup. Have a look [here](https://pulsar.apache.org/docs/en/standalone-docker/) to see how to setup a local standalone Pulsar instance.
 Install the NuGet package [DotPulsar](https://www.nuget.org/packages/DotPulsar/) and copy/paste the code below (you will be needing using declarations for 'DotPulsar' and 'DotPulsar.Extensions').
 
 ```csharp

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -69,30 +69,16 @@ namespace DotPulsar.IntegrationTests
         public async Task SinglePartition_WhenSendMessages_ThenGetMessagesFromSinglePartition()
         {
             //Arrange
-            await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
-            string topicName = $"single-partitioned-{Guid.NewGuid():N}";
+            var serviceUrl = _pulsarService.GetBrokerUri();
             const string content = "test-message";
             const int partitions = 3;
             const int msgCount = 3;
-            var consumers = new List<IConsumer<string>>();
-
+            var topicName = $"single-partitioned-{Guid.NewGuid():N}";
             await _pulsarService.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
+            await using var client = PulsarClient.Builder().ServiceUrl(serviceUrl).Build();
 
             //Act
-            for (var i = 0; i < partitions; ++i)
-            {
-                await using var producer = client.NewProducer(Schema.String)
-                    .Topic(topicName)
-                    .MessageRouter(new SinglePartitionRouter(i))
-                    .Create();
-
-                for (var msgIndex = 0; msgIndex < msgCount; ++msgIndex)
-                {
-                    await producer.Send($"{content}-{i}-{msgIndex}");
-                    _testOutputHelper.WriteLine($"Sent a message: {content}-{i}-{msgIndex}");
-                }
-            }
-
+            var consumers = new List<IConsumer<string>>();
             for (var i = 0; i < partitions; ++i)
             {
                 consumers.Add(client.NewConsumer(Schema.String)
@@ -102,12 +88,32 @@ namespace DotPulsar.IntegrationTests
                     .Create());
             }
 
-            var msg = await consumers[1].GetLastMessageId();
+            for (var i = 0; i < partitions; ++i)
+            {
+                await using var producer = client.NewProducer(Schema.String)
+                    .Topic(topicName)
+                    .MessageRouter(new SinglePartitionRouter(i))
+                    .Create();
+
+                for (var msgIndex = 0; msgIndex < msgCount; ++msgIndex)
+                {
+                    var message = $"{content}-{i}-{msgIndex}";
+                    _ = await producer.Send(message);
+                    _testOutputHelper.WriteLine($"Sent a message: {message}");
+                }
+            }
 
             //Assert
             for (var i = 0; i < partitions; ++i)
-            for (var msgIndex = 0; msgIndex < msgCount; ++msgIndex)
-                (await consumers[i].Receive()).Value().Should().Be($"{content}-{i}-{msgIndex}");
+            {
+                var consumer = consumers[i];
+
+                for (var msgIndex = 0; msgIndex < msgCount; ++msgIndex)
+                {
+                    var message = await consumer.Receive();
+                    message.Value().Should().Be($"{content}-{i}-{msgIndex}");
+                }
+            }
         }
 
         [Fact]

@@ -36,7 +36,7 @@ namespace DotPulsar.Tests.Internal
             var actual = builder.Build().ToArray();
 
             //Assert
-            var expected = Enumerable.Range(0, 10).ToArray();
+            var expected = CreateRange(0, 10);
             actual.Should().Equal(expected);
         }
 
@@ -57,7 +57,7 @@ namespace DotPulsar.Tests.Internal
             var actual = builder.Build().ToArray();
 
             //Assert
-            var expected = Enumerable.Range(0, 10).ToArray();
+            var expected = CreateRange(0, 10);
             actual.Should().Equal(expected);
         }
 
@@ -75,7 +75,7 @@ namespace DotPulsar.Tests.Internal
             var actual = builder.Build().ToArray();
 
             //Assert
-            var expected = Enumerable.Range(0, 10).ToArray();
+            var expected = CreateRange(0, 10);
             actual.Should().Equal(expected);
         }
 
@@ -96,7 +96,7 @@ namespace DotPulsar.Tests.Internal
             var actual = builder.Build().ToArray();
 
             //Assert
-            var expected = Enumerable.Range(0, 10).ToArray();
+            var expected = CreateRange(0, 10);
             actual.Should().Equal(expected);
         }
 
@@ -114,9 +114,19 @@ namespace DotPulsar.Tests.Internal
             var actual2 = builder.Build().ToArray();
 
             //Assert
-            var expected = Enumerable.Range(0, 4).ToArray();
+            var expected = CreateRange(0, 4);
             actual1.Should().Equal(expected);
             actual2.Should().Equal(expected);
+        }
+
+        private static byte[] CreateRange(int start, int count)
+        {
+            var bytes = new byte[count];
+
+            for (var i = 0; i < count; ++i)
+                bytes[i] = System.Convert.ToByte(start + i);
+
+            return bytes;
         }
     }
 }

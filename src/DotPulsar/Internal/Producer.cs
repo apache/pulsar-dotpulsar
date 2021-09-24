@@ -19,21 +19,24 @@ namespace DotPulsar.Internal
     using DotPulsar.Exceptions;
     using DotPulsar.Extensions;
     using DotPulsar.Internal.Extensions;
-    using DotPulsar.Internal.PulsarApi;
     using System;
     using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
     public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     {
+        private readonly string _operationName;
+        private readonly KeyValuePair<string, object?>[] _tags;
+        private readonly SequenceId _sequenceId;
         private readonly StateManager<ProducerState> _state;
         private readonly IConnectionPool _connectionPool;
         private readonly IHandleException _exceptionHandler;
         private readonly ICompressorFactory? _compressorFactory;
         private readonly ProducerOptions<TMessage> _options;
         private readonly ProcessManager _processManager;
-        private readonly ConcurrentDictionary<int, IProducer<TMessage>> _producers;
+        private readonly ConcurrentDictionary<int, SubProducer<TMessage>> _producers;
         private readonly IMessageRouter _messageRouter;
         private readonly CancellationTokenSource _cts;
         private readonly IExecute _executor;
@@ -52,6 +55,15 @@ namespace DotPulsar.Internal
             IConnectionPool connectionPool,
             ICompressorFactory? compressorFactory)
         {
+            _operationName = $"{options.Topic} send";
+            _tags = new KeyValuePair<string, object?>[]
+            {
+                new KeyValuePair<string, object?>("messaging.destination", options.Topic),
+                new KeyValuePair<string, object?>("messaging.destination_kind", "topic"),
+                new KeyValuePair<string, object?>("messaging.system", "pulsar"),
+                new KeyValuePair<string, object?>("messaging.url", serviceUrl),
+            };
+            _sequenceId = new SequenceId(options.InitialSequenceId);
             _state = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
             ServiceUrl = serviceUrl;
             Topic = options.Topic;
@@ -64,7 +76,7 @@ namespace DotPulsar.Internal
             _messageRouter = options.MessageRouter;
             _cts = new CancellationTokenSource();
             _executor = new Executor(Guid.Empty, this, _exceptionHandler);
-            _producers = new ConcurrentDictionary<int, IProducer<TMessage>>();
+            _producers = new ConcurrentDictionary<int, SubProducer<TMessage>>();
             _ = Setup();
         }
 
@@ -149,12 +161,11 @@ namespace DotPulsar.Internal
             var correlationId = Guid.NewGuid();
             var producerName = _options.ProducerName;
             var schema = _options.Schema;
-            var initialSequenceId = _options.InitialSequenceId;
             var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, schema.SchemaInfo, _compressorFactory);
             var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
             var initialChannel = new NotReadyChannel<TMessage>();
             var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var producer = new SubProducer<TMessage>(correlationId, ServiceUrl, topic, initialSequenceId, _processManager, initialChannel, executor, stateManager, factory, schema);
+            var producer = new SubProducer<TMessage>(correlationId, ServiceUrl, topic, _processManager, initialChannel, executor, stateManager, factory, schema);
             var process = new ProducerProcess(correlationId, stateManager, producer);
             _processManager.Add(process);
             process.Start();
@@ -164,12 +175,12 @@ namespace DotPulsar.Internal
         private async Task<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken)
         {
             var connection = await _connectionPool.FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
-            var commandPartitionedMetadata = new CommandPartitionedTopicMetadata { Topic = topic };
+            var commandPartitionedMetadata = new PulsarApi.CommandPartitionedTopicMetadata { Topic = topic };
             var response = await connection.Send(commandPartitionedMetadata, cancellationToken).ConfigureAwait(false);
 
-            response.Expect(BaseCommand.Type.PartitionedMetadataResponse);
+            response.Expect(PulsarApi.BaseCommand.Type.PartitionedMetadataResponse);
 
-            if (response.PartitionMetadataResponse.Response == CommandPartitionedTopicMetadataResponse.LookupType.Failed)
+            if (response.PartitionMetadataResponse.Response == PulsarApi.CommandPartitionedTopicMetadataResponse.LookupType.Failed)
                 response.PartitionMetadataResponse.Throw();
 
             return response.PartitionMetadataResponse.Partitions;
@@ -203,10 +214,8 @@ namespace DotPulsar.Internal
             }
         }
 
-        private async ValueTask<int> ChoosePartitions(DotPulsar.MessageMetadata? metadata, CancellationToken cancellationToken)
+        private async ValueTask<int> ChoosePartitions(MessageMetadata metadata, CancellationToken cancellationToken)
         {
-            ThrowIfDisposed();
-
             if (_producerCount == 0)
             {
                 _ = await _state.StateChangedFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
@@ -220,11 +229,47 @@ namespace DotPulsar.Internal
             return _messageRouter.ChoosePartition(metadata, _producerCount);
         }
 
-        public async ValueTask<MessageId> Send(TMessage message, CancellationToken cancellationToken)
-            => await _producers[await ChoosePartitions(null, cancellationToken).ConfigureAwait(false)].Send(message, cancellationToken).ConfigureAwait(false);
+        public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
 
-        public async ValueTask<MessageId> Send(DotPulsar.MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
-            => await _producers[await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false)].Send(message, cancellationToken).ConfigureAwait(false);
+            var autoAssignSequenceId = metadata.SequenceId == 0;
+            if (autoAssignSequenceId)
+                metadata.SequenceId = _sequenceId.FetchNext();
+
+            var activity = DotPulsarActivitySource.StartProducerActivity(metadata, _operationName, _tags);
+
+            try
+            {
+                var partition = await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false);
+                var producer = _producers[partition];
+                var data = _options.Schema.Encode(message);
+                var messageId = await producer.Send(metadata.Metadata, data, cancellationToken).ConfigureAwait(false);
+
+                if (activity is not null && activity.IsAllDataRequested)
+                {
+                    activity.SetMessageId(messageId);
+                    activity.SetPayloadSize(data.Length);
+                    activity.SetStatusCode("OK");
+                }
+
+                return messageId;
+            }
+            catch (Exception exception)
+            {
+                if (activity is not null && activity.IsAllDataRequested)
+                    activity.AddException(exception);
+
+                throw;
+            }
+            finally
+            {
+                activity?.Dispose();
+
+                if (autoAssignSequenceId)
+                    metadata.SequenceId = 0;
+            }
+        }
 
         private void ThrowIfDisposed()
         {

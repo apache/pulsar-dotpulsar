@@ -23,11 +23,6 @@ namespace DotPulsar.Abstractions
     public interface ISend<TMessage>
     {
         /// <summary>
-        /// Sends a message.
-        /// </summary>
-        ValueTask<MessageId> Send(TMessage message, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Sends a message with metadata.
         /// </summary>
         ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default);

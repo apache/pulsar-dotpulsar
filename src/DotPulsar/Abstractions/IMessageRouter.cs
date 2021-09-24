@@ -22,6 +22,6 @@ namespace DotPulsar.Abstractions
         /// <summary>
         /// Choose a partition.
         /// </summary>
-        int ChoosePartition(MessageMetadata? messageMetadata, int numberOfPartitions);
+        int ChoosePartition(MessageMetadata messageMetadata, int numberOfPartitions);
     }
 }
