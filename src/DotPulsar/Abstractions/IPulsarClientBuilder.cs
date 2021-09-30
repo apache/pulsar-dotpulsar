@@ -43,6 +43,11 @@ namespace DotPulsar.Abstractions
         IPulsarClientBuilder ExceptionHandler(IHandleException exceptionHandler);
 
         /// <summary>
+        /// The time to wait before sending a 'ping' if there has been no activity on the connection. The default is 30 seconds.
+        /// </summary>
+        IPulsarClientBuilder KeepAliveInterval(TimeSpan interval);
+
+        /// <summary>
         /// Set the listener name. This is optional.
         /// </summary>
         IPulsarClientBuilder ListenerName(string listenerName);

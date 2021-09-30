@@ -27,6 +27,7 @@ namespace DotPulsar.Internal
         private readonly CommandConnect _commandConnect;
         private readonly List<IHandleException> _exceptionHandlers;
         private EncryptionPolicy? _encryptionPolicy;
+        private TimeSpan _keepAliveInterval;
         private string? _listenerName;
         private TimeSpan _retryInterval;
         private Uri _serviceUrl;
@@ -45,6 +46,7 @@ namespace DotPulsar.Internal
             };
 
             _exceptionHandlers = new List<IHandleException>();
+            _keepAliveInterval = TimeSpan.FromSeconds(30);
             _retryInterval = TimeSpan.FromSeconds(3);
             _serviceUrl = new Uri($"{Constants.PulsarScheme}://localhost:{Constants.DefaultPulsarPort}");
             _clientCertificates = new X509Certificate2Collection();
@@ -76,6 +78,12 @@ namespace DotPulsar.Internal
         public IPulsarClientBuilder ExceptionHandler(IHandleException exceptionHandler)
         {
             _exceptionHandlers.Add(exceptionHandler);
+            return this;
+        }
+
+        public IPulsarClientBuilder KeepAliveInterval(TimeSpan interval)
+        {
+            _keepAliveInterval = interval;
             return this;
         }
 
@@ -146,7 +154,7 @@ namespace DotPulsar.Internal
 
 
             var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
-            var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName);
+            var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName, _keepAliveInterval);
             var processManager = new ProcessManager(connectionPool);
             var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
             var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);

@@ -18,6 +18,7 @@ namespace DotPulsar.Internal
     using Exceptions;
     using Extensions;
     using PulsarApi;
+    using System;
     using System.Buffers;
     using System.Threading;
     using System.Threading.Tasks;
@@ -30,11 +31,11 @@ namespace DotPulsar.Internal
         private readonly IPulsarStream _stream;
         private int _isDisposed;
 
-        public Connection(IPulsarStream stream)
+        public Connection(IPulsarStream stream, TimeSpan keepAliveInterval)
         {
             _lock = new AsyncLock();
             _channelManager = new ChannelManager();
-            _pingPongHandler = new PingPongHandler(this);
+            _pingPongHandler = new PingPongHandler(this, keepAliveInterval);
             _stream = stream;
         }
 
@@ -278,18 +279,13 @@ namespace DotPulsar.Internal
                     var commandSize = frame.ReadUInt32(0, true);
                     var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
 
-                    switch (command.CommandType)
-                    {
-                        case BaseCommand.Type.Message:
-                            _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
-                            break;
-                        case BaseCommand.Type.Ping:
-                            _pingPongHandler.GotPing();
-                            break;
-                        default:
-                            _channelManager.Incoming(command);
-                            break;
-                    }
+                    if (_pingPongHandler.Incoming(command.CommandType))
+                        continue;
+
+                    if (command.CommandType == BaseCommand.Type.Message)
+                        _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
+                    else
+                        _channelManager.Incoming(command);
                 }
             }
             catch
@@ -303,6 +299,7 @@ namespace DotPulsar.Internal
             if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
                 return;
 
+            await _pingPongHandler.DisposeAsync().ConfigureAwait(false);
             await _lock.DisposeAsync().ConfigureAwait(false);
             _channelManager.Dispose();
             await _stream.DisposeAsync().ConfigureAwait(false);

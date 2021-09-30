@@ -35,6 +35,7 @@ namespace DotPulsar.Internal
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _closeInactiveConnections;
         private readonly string? _listenerName;
+        private readonly TimeSpan _keepAliveInterval;
 
         public ConnectionPool(
             CommandConnect commandConnect,
@@ -42,7 +43,8 @@ namespace DotPulsar.Internal
             Connector connector,
             EncryptionPolicy encryptionPolicy,
             TimeSpan closeInactiveConnectionsInterval,
-            string? listenerName)
+            string? listenerName,
+            TimeSpan keepAliveInterval)
         {
             _lock = new AsyncLock();
             _commandConnect = commandConnect;
@@ -53,6 +55,7 @@ namespace DotPulsar.Internal
             _connections = new ConcurrentDictionary<PulsarUrl, Connection>();
             _cancellationTokenSource = new CancellationTokenSource();
             _closeInactiveConnections = CloseInactiveConnections(closeInactiveConnectionsInterval, _cancellationTokenSource.Token);
+            _keepAliveInterval = keepAliveInterval;
         }
 
         public async ValueTask DisposeAsync()
@@ -154,7 +157,7 @@ namespace DotPulsar.Internal
         private async Task<Connection> EstablishNewConnection(PulsarUrl url, CancellationToken cancellationToken)
         {
             var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
-            var connection = new Connection(new PulsarStream(stream));
+            var connection = new Connection(new PulsarStream(stream), _keepAliveInterval);
             DotPulsarEventSource.Log.ConnectionCreated();
             _connections[url] = connection;
             _ = connection.ProcessIncommingFrames().ContinueWith(t => DisposeConnection(url));

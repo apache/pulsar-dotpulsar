@@ -16,21 +16,73 @@ namespace DotPulsar.Internal
 {
     using Abstractions;
     using PulsarApi;
+    using System;
+    using System.Diagnostics;
+    using System.Threading;
     using System.Threading.Tasks;
 
-    public sealed class PingPongHandler
+    public sealed class PingPongHandler : IAsyncDisposable
     {
         private readonly IConnection _connection;
+        private readonly TimeSpan _keepAliveInterval;
+        private readonly Timer _timer;
+        private readonly CommandPing _ping;
         private readonly CommandPong _pong;
+        private long _lastCommand;
 
-        public PingPongHandler(IConnection connection)
+        public PingPongHandler(IConnection connection, TimeSpan keepAliveInterval)
         {
             _connection = connection;
+            _keepAliveInterval = keepAliveInterval;
+            _timer = new Timer(Watch);
+            _timer.Change(_keepAliveInterval, TimeSpan.Zero);
+            _ping = new CommandPing();
             _pong = new CommandPong();
+            _lastCommand = Stopwatch.GetTimestamp();
         }
 
-        public void GotPing()
-            => Task.Factory.StartNew(() => SendPong());
+        public bool Incoming(BaseCommand.Type commandType)
+        {
+            Interlocked.Exchange(ref _lastCommand, Stopwatch.GetTimestamp());
+
+            if (commandType == BaseCommand.Type.Ping)
+            {
+                Task.Factory.StartNew(() => SendPong());
+                return true;
+            }
+
+            return commandType == BaseCommand.Type.Pong;
+        }
+
+        private void Watch(object? state)
+        {
+            try
+            {
+                var lastCommand = Interlocked.Read(ref _lastCommand);
+                var now = Stopwatch.GetTimestamp();
+                var elapsed = TimeSpan.FromSeconds((now - lastCommand) / Stopwatch.Frequency);
+                if (elapsed >= _keepAliveInterval)
+                {
+                    Task.Factory.StartNew(() => SendPing());
+                    _timer.Change(_keepAliveInterval, TimeSpan.Zero);
+                }
+                else
+                    _timer.Change(_keepAliveInterval.Subtract(elapsed), TimeSpan.Zero);
+            }
+            catch
+            {
+                // Ignore
+            }
+        }
+
+        private async Task SendPing()
+        {
+            try
+            {
+                await _connection.Send(_ping, default).ConfigureAwait(false);
+            }
+            catch { }
+        }
 
         private async Task SendPong()
         {
@@ -40,5 +92,18 @@ namespace DotPulsar.Internal
             }
             catch { }
         }
+
+#if NETSTANDARD2_0
+        public ValueTask DisposeAsync()
+        {
+            _timer.Dispose();
+            return new ValueTask();
+        }
+#else
+        public async ValueTask DisposeAsync()
+        {
+            await _timer.DisposeAsync().ConfigureAwait(false);
+        }
+#endif
     }
 }
