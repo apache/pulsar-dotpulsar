@@ -12,22 +12,21 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using PulsarApi;
+using System.Buffers;
+
+public readonly struct MessagePackage
 {
-    using PulsarApi;
-    using System.Buffers;
-
-    public readonly struct MessagePackage
+    public MessagePackage(MessageIdData messageId, uint redeliveryCount, ReadOnlySequence<byte> data)
     {
-        public MessagePackage(MessageIdData messageId, uint redeliveryCount, ReadOnlySequence<byte> data)
-        {
-            MessageId = messageId;
-            RedeliveryCount = redeliveryCount;
-            Data = data;
-        }
-
-        public MessageIdData MessageId { get; }
-        public uint RedeliveryCount { get; }
-        public ReadOnlySequence<byte> Data { get; }
+        MessageId = messageId;
+        RedeliveryCount = redeliveryCount;
+        Data = data;
     }
+
+    public MessageIdData MessageId { get; }
+    public uint RedeliveryCount { get; }
+    public ReadOnlySequence<byte> Data { get; }
 }

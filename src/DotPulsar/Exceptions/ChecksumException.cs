@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class ChecksumException : DotPulsarException
 {
-    public sealed class ChecksumException : DotPulsarException
-    {
-        public ChecksumException(string message) : base(message) { }
-    }
+    public ChecksumException(string message) : base(message) { }
 }

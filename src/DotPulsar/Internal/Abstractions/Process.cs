@@ -12,67 +12,66 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Internal.Abstractions;
+
+using Events;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public abstract class Process : IProcess
 {
-    using Events;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+    protected readonly CancellationTokenSource CancellationTokenSource;
+    protected ChannelState ChannelState;
+    protected ExecutorState ExecutorState;
 
-    public abstract class Process : IProcess
+    protected Process(Guid correlationId)
     {
-        protected readonly CancellationTokenSource CancellationTokenSource;
-        protected ChannelState ChannelState;
-        protected ExecutorState ExecutorState;
-
-        protected Process(Guid correlationId)
-        {
-            CancellationTokenSource = new CancellationTokenSource();
-            ChannelState = ChannelState.Disconnected;
-            ExecutorState = ExecutorState.Ok;
-            CorrelationId = correlationId;
-        }
-
-        public Guid CorrelationId { get; }
-
-        public void Start()
-            => CalculateState();
-
-        public abstract ValueTask DisposeAsync();
-
-        public void Handle(IEvent e)
-        {
-            switch (e)
-            {
-                case ExecutorFaulted _:
-                    ExecutorState = ExecutorState.Faulted;
-                    break;
-                case ChannelActivated _:
-                    ChannelState = ChannelState.Active;
-                    break;
-                case ChannelClosedByServer _:
-                    ChannelState = ChannelState.ClosedByServer;
-                    break;
-                case ChannelConnected _:
-                    ChannelState = ChannelState.Connected;
-                    break;
-                case ChannelDeactivated _:
-                    ChannelState = ChannelState.Inactive;
-                    break;
-                case ChannelDisconnected _:
-                    ChannelState = ChannelState.Disconnected;
-                    break;
-                case ChannelReachedEndOfTopic _:
-                    ChannelState = ChannelState.ReachedEndOfTopic;
-                    break;
-                case ChannelUnsubscribed _:
-                    ChannelState = ChannelState.Unsubscribed;
-                    break;
-            }
-
-            CalculateState();
-        }
-
-        protected abstract void CalculateState();
+        CancellationTokenSource = new CancellationTokenSource();
+        ChannelState = ChannelState.Disconnected;
+        ExecutorState = ExecutorState.Ok;
+        CorrelationId = correlationId;
     }
+
+    public Guid CorrelationId { get; }
+
+    public void Start()
+        => CalculateState();
+
+    public abstract ValueTask DisposeAsync();
+
+    public void Handle(IEvent e)
+    {
+        switch (e)
+        {
+            case ExecutorFaulted _:
+                ExecutorState = ExecutorState.Faulted;
+                break;
+            case ChannelActivated _:
+                ChannelState = ChannelState.Active;
+                break;
+            case ChannelClosedByServer _:
+                ChannelState = ChannelState.ClosedByServer;
+                break;
+            case ChannelConnected _:
+                ChannelState = ChannelState.Connected;
+                break;
+            case ChannelDeactivated _:
+                ChannelState = ChannelState.Inactive;
+                break;
+            case ChannelDisconnected _:
+                ChannelState = ChannelState.Disconnected;
+                break;
+            case ChannelReachedEndOfTopic _:
+                ChannelState = ChannelState.ReachedEndOfTopic;
+                break;
+            case ChannelUnsubscribed _:
+                ChannelState = ChannelState.Unsubscribed;
+                break;
+        }
+
+        CalculateState();
+    }
+
+    protected abstract void CalculateState();
 }

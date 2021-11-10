@@ -12,27 +12,26 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Schemas
+namespace DotPulsar.Schemas;
+
+using DotPulsar.Abstractions;
+using System;
+using System.Buffers;
+using System.Collections.Immutable;
+
+/// <summary>
+/// Schema definition for raw messages using ReadOnlySequence of bytes.
+/// </summary>
+public sealed class ByteSequenceSchema : ISchema<ReadOnlySequence<byte>>
 {
-    using DotPulsar.Abstractions;
-    using System;
-    using System.Buffers;
-    using System.Collections.Immutable;
+    public ByteSequenceSchema()
+        => SchemaInfo = new SchemaInfo("Bytes", Array.Empty<byte>(), SchemaType.None, ImmutableDictionary<string, string>.Empty);
 
-    /// <summary>
-    /// Schema definition for raw messages using ReadOnlySequence of bytes.
-    /// </summary>
-    public sealed class ByteSequenceSchema : ISchema<ReadOnlySequence<byte>>
-    {
-        public ByteSequenceSchema()
-            => SchemaInfo = new SchemaInfo("Bytes", Array.Empty<byte>(), SchemaType.None, ImmutableDictionary<string, string>.Empty);
+    public SchemaInfo SchemaInfo { get; }
 
-        public SchemaInfo SchemaInfo { get; }
+    public ReadOnlySequence<byte> Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null)
+        => bytes;
 
-        public ReadOnlySequence<byte> Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null)
-            => bytes;
-
-        public ReadOnlySequence<byte> Encode(ReadOnlySequence<byte> message)
-            => message;
-    }
+    public ReadOnlySequence<byte> Encode(ReadOnlySequence<byte> message)
+        => message;
 }

@@ -12,19 +12,18 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+public sealed class RequestId
 {
-    public sealed class RequestId
-    {
-        private ulong _current;
+    private ulong _current;
 
-        public RequestId()
-            => _current = 0;
+    public RequestId()
+        => _current = 0;
 
-        public bool IsPastInitialId()
-            => _current != 0;
+    public bool IsPastInitialId()
+        => _current != 0;
 
-        public ulong FetchNext()
-            => _current++;
-    }
+    public ulong FetchNext()
+        => _current++;
 }

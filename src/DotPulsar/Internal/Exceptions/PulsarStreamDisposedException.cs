@@ -12,12 +12,11 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Exceptions
-{
-    using System;
+namespace DotPulsar.Internal.Exceptions;
 
-    public sealed class PulsarStreamDisposedException : ObjectDisposedException
-    {
-        public PulsarStreamDisposedException() : base(typeof(PulsarStream).FullName) { }
-    }
+using System;
+
+public sealed class PulsarStreamDisposedException : ObjectDisposedException
+{
+    public PulsarStreamDisposedException() : base(typeof(PulsarStream).FullName) { }
 }

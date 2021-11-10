@@ -12,12 +12,11 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
-{
-    using System;
+namespace DotPulsar.Exceptions;
 
-    public sealed class ProducerDisposedException : ObjectDisposedException
-    {
-        public ProducerDisposedException(string objectName) : base(objectName) { }
-    }
+using System;
+
+public sealed class ProducerDisposedException : ObjectDisposedException
+{
+    public ProducerDisposedException(string objectName) : base(objectName) { }
 }

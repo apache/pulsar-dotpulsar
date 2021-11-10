@@ -12,52 +12,51 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Abstractions;
+
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// A state change monitoring abstraction.
+/// </summary>
+public interface IState<TState> where TState : notnull
 {
-    using System.Threading;
-    using System.Threading.Tasks;
+    /// <summary>
+    /// Ask whether the current state is final, meaning that it will never change.
+    /// </summary>
+    /// <returns>
+    /// True if it's final and False if it's not.
+    /// </returns>
+    bool IsFinalState();
 
     /// <summary>
-    /// A state change monitoring abstraction.
+    /// Ask whether the provided state is final, meaning that it will never change.
     /// </summary>
-    public interface IState<TState> where TState : notnull
-    {
-        /// <summary>
-        /// Ask whether the current state is final, meaning that it will never change.
-        /// </summary>
-        /// <returns>
-        /// True if it's final and False if it's not.
-        /// </returns>
-        bool IsFinalState();
+    /// <returns>
+    /// True if it's final and False if it's not.
+    /// </returns>
+    bool IsFinalState(TState state);
 
-        /// <summary>
-        /// Ask whether the provided state is final, meaning that it will never change.
-        /// </summary>
-        /// <returns>
-        /// True if it's final and False if it's not.
-        /// </returns>
-        bool IsFinalState(TState state);
+    /// <summary>
+    /// Wait for the state to change to a specific state.
+    /// </summary>
+    /// <returns>
+    /// The current state.
+    /// </returns>
+    /// <remarks>
+    /// If the state change to a final state, then all awaiting tasks will complete.
+    /// </remarks>
+    ValueTask<TState> OnStateChangeTo(TState state, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Wait for the state to change to a specific state.
-        /// </summary>
-        /// <returns>
-        /// The current state.
-        /// </returns>
-        /// <remarks>
-        /// If the state change to a final state, then all awaiting tasks will complete.
-        /// </remarks>
-        ValueTask<TState> OnStateChangeTo(TState state, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Wait for the state to change from a specific state.
-        /// </summary>
-        /// <returns>
-        /// The current state.
-        /// </returns>
-        /// <remarks>
-        /// If the state change to a final state, then all awaiting tasks will complete.
-        /// </remarks>
-        ValueTask<TState> OnStateChangeFrom(TState state, CancellationToken cancellationToken = default);
-    }
+    /// <summary>
+    /// Wait for the state to change from a specific state.
+    /// </summary>
+    /// <returns>
+    /// The current state.
+    /// </returns>
+    /// <remarks>
+    /// If the state change to a final state, then all awaiting tasks will complete.
+    /// </remarks>
+    ValueTask<TState> OnStateChangeFrom(TState state, CancellationToken cancellationToken = default);
 }

@@ -12,41 +12,40 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Extensions
+namespace DotPulsar.Extensions;
+
+using DotPulsar.Abstractions;
+using DotPulsar.Internal;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// Extensions for IConsumerBuilder.
+/// </summary>
+public static class ConsumerBuilderExtensions
 {
-    using DotPulsar.Abstractions;
-    using DotPulsar.Internal;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+    /// <summary>
+    /// Register a state changed handler.
+    /// </summary>
+    public static IConsumerBuilder<TMessage> StateChangedHandler<TMessage>(
+        this IConsumerBuilder<TMessage> builder,
+        Action<ConsumerStateChanged, CancellationToken> handler,
+        CancellationToken cancellationToken = default)
+    {
+        builder.StateChangedHandler(new ActionStateChangedHandler<ConsumerStateChanged>(handler, cancellationToken));
+        return builder;
+    }
 
     /// <summary>
-    /// Extensions for IConsumerBuilder.
+    /// Register a state changed handler.
     /// </summary>
-    public static class ConsumerBuilderExtensions
+    public static IConsumerBuilder<TMessage> StateChangedHandler<TMessage>(
+        this IConsumerBuilder<TMessage> builder,
+        Func<ConsumerStateChanged, CancellationToken, ValueTask> handler,
+        CancellationToken cancellationToken = default)
     {
-        /// <summary>
-        /// Register a state changed handler.
-        /// </summary>
-        public static IConsumerBuilder<TMessage> StateChangedHandler<TMessage>(
-            this IConsumerBuilder<TMessage> builder,
-            Action<ConsumerStateChanged, CancellationToken> handler,
-            CancellationToken cancellationToken = default)
-        {
-            builder.StateChangedHandler(new ActionStateChangedHandler<ConsumerStateChanged>(handler, cancellationToken));
-            return builder;
-        }
-
-        /// <summary>
-        /// Register a state changed handler.
-        /// </summary>
-        public static IConsumerBuilder<TMessage> StateChangedHandler<TMessage>(
-            this IConsumerBuilder<TMessage> builder,
-            Func<ConsumerStateChanged, CancellationToken, ValueTask> handler,
-            CancellationToken cancellationToken = default)
-        {
-            builder.StateChangedHandler(new FuncStateChangedHandler<ConsumerStateChanged>(handler, cancellationToken));
-            return builder;
-        }
+        builder.StateChangedHandler(new FuncStateChangedHandler<ConsumerStateChanged>(handler, cancellationToken));
+        return builder;
     }
 }

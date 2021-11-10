@@ -12,94 +12,93 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.StressTests
+namespace DotPulsar.StressTests;
+
+using DotPulsar.Abstractions;
+using DotPulsar.Extensions;
+using Fixtures;
+using FluentAssertions;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+using Xunit.Abstractions;
+
+[Collection(nameof(StandaloneClusterTest))]
+public class ConsumerTests
 {
-    using DotPulsar.Abstractions;
-    using DotPulsar.Extensions;
-    using Fixtures;
-    using FluentAssertions;
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Xunit;
-    using Xunit.Abstractions;
+    private readonly ITestOutputHelper _output;
 
-    [Collection(nameof(StandaloneClusterTest))]
-    public class ConsumerTests
+    public ConsumerTests(ITestOutputHelper output)
+        => _output = output;
+
+    [Theory]
+    [InlineData(10000)]
+    public async Task Messages_GivenTopicWithMessages_ShouldConsumeAll(int numberOfMessages)
     {
-        private readonly ITestOutputHelper _output;
+        //Arrange
+        var testRunId = Guid.NewGuid().ToString("N");
 
-        public ConsumerTests(ITestOutputHelper output)
-            => _output = output;
+        var topic = $"persistent://public/default/consumer-tests-{testRunId}";
 
-        [Theory]
-        [InlineData(10000)]
-        public async Task Messages_GivenTopicWithMessages_ShouldConsumeAll(int numberOfMessages)
+        await using var client = PulsarClient.Builder()
+            .ExceptionHandler(new XunitExceptionHandler(_output))
+            .ServiceUrl(new Uri("pulsar://localhost:54545"))
+            .Build();
+
+        await using var consumer = client.NewConsumer(Schema.ByteArray)
+            .ConsumerName($"consumer-{testRunId}")
+            .InitialPosition(SubscriptionInitialPosition.Earliest)
+            .SubscriptionName($"subscription-{testRunId}")
+            .Topic(topic)
+            .Create();
+
+        await using var producer = client.NewProducer(Schema.ByteArray)
+            .ProducerName($"producer-{testRunId}")
+            .Topic(topic)
+            .Create();
+
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+
+        //Act
+        var produced = await ProduceMessages(producer, numberOfMessages, cts.Token);
+        var consumed = await ConsumeMessages(consumer, numberOfMessages, cts.Token);
+
+        //Assert
+        consumed.Should().BeEquivalentTo(produced);
+    }
+
+    private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<byte[]> producer, int numberOfMessages, CancellationToken ct)
+    {
+        var messageIds = new MessageId[numberOfMessages];
+
+        for (var i = 0; i < numberOfMessages; ++i)
         {
-            //Arrange
-            var testRunId = Guid.NewGuid().ToString("N");
-
-            var topic = $"persistent://public/default/consumer-tests-{testRunId}";
-
-            await using var client = PulsarClient.Builder()
-                .ExceptionHandler(new XunitExceptionHandler(_output))
-                .ServiceUrl(new Uri("pulsar://localhost:54545"))
-                .Build();
-
-            await using var consumer = client.NewConsumer(Schema.ByteArray)
-                .ConsumerName($"consumer-{testRunId}")
-                .InitialPosition(SubscriptionInitialPosition.Earliest)
-                .SubscriptionName($"subscription-{testRunId}")
-                .Topic(topic)
-                .Create();
-
-            await using var producer = client.NewProducer(Schema.ByteArray)
-                .ProducerName($"producer-{testRunId}")
-                .Topic(topic)
-                .Create();
-
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-
-            //Act
-            var produced = await ProduceMessages(producer, numberOfMessages, cts.Token);
-            var consumed = await ConsumeMessages(consumer, numberOfMessages, cts.Token);
-
-            //Assert
-            consumed.Should().BeEquivalentTo(produced);
+            var data = Encoding.UTF8.GetBytes($"Sent #{i} at {DateTimeOffset.UtcNow:s}");
+            messageIds[i] = await producer.Send(data, ct);
         }
 
-        private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<byte[]> producer, int numberOfMessages, CancellationToken ct)
+        return messageIds;
+    }
+
+    private static async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer<byte[]> consumer, int numberOfMessages, CancellationToken ct)
+    {
+        var messageIds = new List<MessageId>(numberOfMessages);
+
+        await foreach (var message in consumer.Messages(ct))
         {
-            var messageIds = new MessageId[numberOfMessages];
+            messageIds.Add(message.MessageId);
 
-            for (var i = 0; i < numberOfMessages; ++i)
-            {
-                var data = Encoding.UTF8.GetBytes($"Sent #{i} at {DateTimeOffset.UtcNow:s}");
-                messageIds[i] = await producer.Send(data, ct);
-            }
+            if (messageIds.Count != numberOfMessages)
+                continue;
 
-            return messageIds;
+            await consumer.AcknowledgeCumulative(message, ct);
+
+            break;
         }
 
-        private static async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer<byte[]> consumer, int numberOfMessages, CancellationToken ct)
-        {
-            var messageIds = new List<MessageId>(numberOfMessages);
-
-            await foreach (var message in consumer.Messages(ct))
-            {
-                messageIds.Add(message.MessageId);
-
-                if (messageIds.Count != numberOfMessages)
-                    continue;
-
-                await consumer.AcknowledgeCumulative(message, ct);
-
-                break;
-            }
-
-            return messageIds;
-        }
+        return messageIds;
     }
 }

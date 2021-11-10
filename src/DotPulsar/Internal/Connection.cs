@@ -12,303 +12,302 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using Abstractions;
+using Exceptions;
+using Extensions;
+using PulsarApi;
+using System;
+using System.Buffers;
+using System.Threading;
+using System.Threading.Tasks;
+
+public sealed class Connection : IConnection
 {
-    using Abstractions;
-    using Exceptions;
-    using Extensions;
-    using PulsarApi;
-    using System;
-    using System.Buffers;
-    using System.Threading;
-    using System.Threading.Tasks;
+    private readonly AsyncLock _lock;
+    private readonly ChannelManager _channelManager;
+    private readonly PingPongHandler _pingPongHandler;
+    private readonly IPulsarStream _stream;
+    private int _isDisposed;
 
-    public sealed class Connection : IConnection
+    public Connection(IPulsarStream stream, TimeSpan keepAliveInterval)
     {
-        private readonly AsyncLock _lock;
-        private readonly ChannelManager _channelManager;
-        private readonly PingPongHandler _pingPongHandler;
-        private readonly IPulsarStream _stream;
-        private int _isDisposed;
+        _lock = new AsyncLock();
+        _channelManager = new ChannelManager();
+        _pingPongHandler = new PingPongHandler(this, keepAliveInterval);
+        _stream = stream;
+    }
 
-        public Connection(IPulsarStream stream, TimeSpan keepAliveInterval)
+    public async ValueTask<bool> HasChannels(CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
         {
-            _lock = new AsyncLock();
-            _channelManager = new ChannelManager();
-            _pingPongHandler = new PingPongHandler(this, keepAliveInterval);
-            _stream = stream;
+            return _channelManager.HasChannels();
+        }
+    }
+
+    public async Task<ProducerResponse> Send(CommandProducer command, IChannel channel, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<ProducerResponse>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command, channel);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
         }
 
-        public async ValueTask<bool> HasChannels(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
+        return await responseTask.ConfigureAwait(false);
+    }
 
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+    public async Task<SubscribeResponse> Send(CommandSubscribe command, IChannel channel, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<SubscribeResponse>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command, channel);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
+    public Task Send(CommandPing command, CancellationToken cancellationToken)
+        => Send(command.AsBaseCommand(), cancellationToken);
+
+    public Task Send(CommandPong command, CancellationToken cancellationToken)
+        => Send(command.AsBaseCommand(), cancellationToken);
+
+    public Task Send(CommandAck command, CancellationToken cancellationToken)
+        => Send(command.AsBaseCommand(), cancellationToken);
+
+    public Task Send(CommandFlow command, CancellationToken cancellationToken)
+        => Send(command.AsBaseCommand(), cancellationToken);
+
+    public Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken)
+        => Send(command.AsBaseCommand(), cancellationToken);
+
+    public async Task<BaseCommand> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<BaseCommand>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
+    public async Task<BaseCommand> Send(CommandConnect command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<BaseCommand>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
+    public async Task<BaseCommand> Send(CommandLookupTopic command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<BaseCommand>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
+    public async Task<BaseCommand> Send(CommandSeek command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<BaseCommand>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
+    public async Task<BaseCommand> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<BaseCommand>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
+    public async Task<BaseCommand> Send(CommandCloseProducer command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<BaseCommand>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
+    public async Task<BaseCommand> Send(CommandCloseConsumer command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<BaseCommand>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
+    public async Task<BaseCommand> Send(SendPackage command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<BaseCommand>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command.Command!);
+            var sequence = Serializer.Serialize(command.Command!.AsBaseCommand(), command.Metadata!, command.Payload);
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
+    public async Task<BaseCommand> Send(CommandGetOrCreateSchema command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<BaseCommand>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
+    public async Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<BaseCommand>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
+    private async Task Send(BaseCommand command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        var sequence = Serializer.Serialize(command);
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+    }
+
+    public async Task ProcessIncommingFrames()
+    {
+        await Task.Yield();
+
+        try
+        {
+            await foreach (var frame in _stream.Frames())
             {
-                return _channelManager.HasChannels();
+                var commandSize = frame.ReadUInt32(0, true);
+                var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
+
+                if (_pingPongHandler.Incoming(command.CommandType))
+                    continue;
+
+                if (command.CommandType == BaseCommand.Type.Message)
+                    _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
+                else
+                    _channelManager.Incoming(command);
             }
         }
-
-        public async Task<ProducerResponse> Send(CommandProducer command, IChannel channel, CancellationToken cancellationToken)
+        catch
         {
-            ThrowIfDisposed();
-
-            Task<ProducerResponse>? responseTask;
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command, channel);
-                var sequence = Serializer.Serialize(command.AsBaseCommand());
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
+            // ignored
         }
+    }
 
-        public async Task<SubscribeResponse> Send(CommandSubscribe command, IChannel channel, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
+            return;
 
-            Task<SubscribeResponse>? responseTask;
+        await _pingPongHandler.DisposeAsync().ConfigureAwait(false);
+        await _lock.DisposeAsync().ConfigureAwait(false);
+        _channelManager.Dispose();
+        await _stream.DisposeAsync().ConfigureAwait(false);
+    }
 
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command, channel);
-                var sequence = Serializer.Serialize(command.AsBaseCommand());
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
-        }
-
-        public Task Send(CommandPing command, CancellationToken cancellationToken)
-            => Send(command.AsBaseCommand(), cancellationToken);
-
-        public Task Send(CommandPong command, CancellationToken cancellationToken)
-            => Send(command.AsBaseCommand(), cancellationToken);
-
-        public Task Send(CommandAck command, CancellationToken cancellationToken)
-            => Send(command.AsBaseCommand(), cancellationToken);
-
-        public Task Send(CommandFlow command, CancellationToken cancellationToken)
-            => Send(command.AsBaseCommand(), cancellationToken);
-
-        public Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken)
-            => Send(command.AsBaseCommand(), cancellationToken);
-
-        public async Task<BaseCommand> Send(CommandUnsubscribe command, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            Task<BaseCommand>? responseTask;
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command);
-                var sequence = Serializer.Serialize(command.AsBaseCommand());
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
-        }
-
-        public async Task<BaseCommand> Send(CommandConnect command, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            Task<BaseCommand>? responseTask;
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command);
-                var sequence = Serializer.Serialize(command.AsBaseCommand());
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
-        }
-
-        public async Task<BaseCommand> Send(CommandLookupTopic command, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            Task<BaseCommand>? responseTask;
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command);
-                var sequence = Serializer.Serialize(command.AsBaseCommand());
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
-        }
-
-        public async Task<BaseCommand> Send(CommandSeek command, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            Task<BaseCommand>? responseTask;
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command);
-                var sequence = Serializer.Serialize(command.AsBaseCommand());
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
-        }
-
-        public async Task<BaseCommand> Send(CommandGetLastMessageId command, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            Task<BaseCommand>? responseTask;
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command);
-                var sequence = Serializer.Serialize(command.AsBaseCommand());
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
-        }
-
-        public async Task<BaseCommand> Send(CommandCloseProducer command, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            Task<BaseCommand>? responseTask;
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command);
-                var sequence = Serializer.Serialize(command.AsBaseCommand());
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
-        }
-
-        public async Task<BaseCommand> Send(CommandCloseConsumer command, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            Task<BaseCommand>? responseTask;
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command);
-                var sequence = Serializer.Serialize(command.AsBaseCommand());
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
-        }
-
-        public async Task<BaseCommand> Send(SendPackage command, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            Task<BaseCommand>? responseTask;
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command.Command!);
-                var sequence = Serializer.Serialize(command.Command!.AsBaseCommand(), command.Metadata!, command.Payload);
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
-        }
-
-        public async Task<BaseCommand> Send(CommandGetOrCreateSchema command, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            Task<BaseCommand>? responseTask;
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command);
-                var sequence = Serializer.Serialize(command.AsBaseCommand());
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
-        }
-
-        public async Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            Task<BaseCommand>? responseTask;
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                responseTask = _channelManager.Outgoing(command);
-                var sequence = Serializer.Serialize(command.AsBaseCommand());
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-
-            return await responseTask.ConfigureAwait(false);
-        }
-
-        private async Task Send(BaseCommand command, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            var sequence = Serializer.Serialize(command);
-
-            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-            {
-                await _stream.Send(sequence).ConfigureAwait(false);
-            }
-        }
-
-        public async Task ProcessIncommingFrames()
-        {
-            await Task.Yield();
-
-            try
-            {
-                await foreach (var frame in _stream.Frames())
-                {
-                    var commandSize = frame.ReadUInt32(0, true);
-                    var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
-
-                    if (_pingPongHandler.Incoming(command.CommandType))
-                        continue;
-
-                    if (command.CommandType == BaseCommand.Type.Message)
-                        _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
-                    else
-                        _channelManager.Incoming(command);
-                }
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
-                return;
-
-            await _pingPongHandler.DisposeAsync().ConfigureAwait(false);
-            await _lock.DisposeAsync().ConfigureAwait(false);
-            _channelManager.Dispose();
-            await _stream.DisposeAsync().ConfigureAwait(false);
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (_isDisposed != 0)
-                throw new ConnectionDisposedException();
-        }
+    private void ThrowIfDisposed()
+    {
+        if (_isDisposed != 0)
+            throw new ConnectionDisposedException();
     }
 }

@@ -12,24 +12,23 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Internal.Abstractions;
+
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public interface IExecute
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+    ValueTask Execute(Action action, CancellationToken cancellationToken = default);
 
-    public interface IExecute
-    {
-        ValueTask Execute(Action action, CancellationToken cancellationToken = default);
+    ValueTask Execute(Func<Task> func, CancellationToken cancellationToken = default);
 
-        ValueTask Execute(Func<Task> func, CancellationToken cancellationToken = default);
+    ValueTask Execute(Func<ValueTask> func, CancellationToken cancellationToken = default);
 
-        ValueTask Execute(Func<ValueTask> func, CancellationToken cancellationToken = default);
+    ValueTask<TResult> Execute<TResult>(Func<TResult> func, CancellationToken cancellationToken = default);
 
-        ValueTask<TResult> Execute<TResult>(Func<TResult> func, CancellationToken cancellationToken = default);
+    ValueTask<TResult> Execute<TResult>(Func<Task<TResult>> func, CancellationToken cancellationToken = default);
 
-        ValueTask<TResult> Execute<TResult>(Func<Task<TResult>> func, CancellationToken cancellationToken = default);
-
-        ValueTask<TResult> Execute<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken = default);
-    }
+    ValueTask<TResult> Execute<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken = default);
 }

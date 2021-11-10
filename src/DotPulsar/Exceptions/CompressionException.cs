@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class CompressionException : DotPulsarException
 {
-    public sealed class CompressionException : DotPulsarException
-    {
-        public CompressionException(string message) : base(message) { }
-    }
+    public CompressionException(string message) : base(message) { }
 }

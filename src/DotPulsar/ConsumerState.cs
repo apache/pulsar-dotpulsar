@@ -12,46 +12,45 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+/// <summary>
+/// The possible states a consumer can be in.
+/// </summary>
+public enum ConsumerState : byte
 {
     /// <summary>
-    /// The possible states a consumer can be in.
+    /// The consumer is connected and active. The subscription type is 'Failover' and this consumer is the active consumer.
     /// </summary>
-    public enum ConsumerState : byte
-    {
-        /// <summary>
-        /// The consumer is connected and active. The subscription type is 'Failover' and this consumer is the active consumer.
-        /// </summary>
-        Active,
+    Active,
 
-        /// <summary>
-        /// The consumer is closed. This is a final state.
-        /// </summary>
-        Closed,
+    /// <summary>
+    /// The consumer is closed. This is a final state.
+    /// </summary>
+    Closed,
 
-        /// <summary>
-        /// The consumer is disconnected.
-        /// </summary>
-        Disconnected,
+    /// <summary>
+    /// The consumer is disconnected.
+    /// </summary>
+    Disconnected,
 
-        /// <summary>
-        /// The consumer is faulted. This is a final state.
-        /// </summary>
-        Faulted,
+    /// <summary>
+    /// The consumer is faulted. This is a final state.
+    /// </summary>
+    Faulted,
 
-        /// <summary>
-        /// The consumer is connected and inactive. The subscription type is 'Failover' and this consumer is not the active consumer.
-        /// </summary>
-        Inactive,
+    /// <summary>
+    /// The consumer is connected and inactive. The subscription type is 'Failover' and this consumer is not the active consumer.
+    /// </summary>
+    Inactive,
 
-        /// <summary>
-        /// The consumer has reached the end of the topic. This is a final state.
-        /// </summary>
-        ReachedEndOfTopic,
+    /// <summary>
+    /// The consumer has reached the end of the topic. This is a final state.
+    /// </summary>
+    ReachedEndOfTopic,
 
-        /// <summary>
-        /// The consumer has unsubscribed. This is a final state.
-        /// </summary>
-        Unsubscribed
-    }
+    /// <summary>
+    /// The consumer has unsubscribed. This is a final state.
+    /// </summary>
+    Unsubscribed
 }

@@ -12,21 +12,20 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Extensions
+namespace DotPulsar.Internal.Extensions;
+
+using DotPulsar.Internal.PulsarApi;
+
+public static class MessageIdDataExtensions
 {
-    using DotPulsar.Internal.PulsarApi;
+    public static MessageId ToMessageId(this MessageIdData messageIdData)
+        => new(messageIdData.LedgerId, messageIdData.EntryId, messageIdData.Partition, messageIdData.BatchIndex);
 
-    public static class MessageIdDataExtensions
+    public static void MapFrom(this MessageIdData destination, MessageId source)
     {
-        public static MessageId ToMessageId(this MessageIdData messageIdData)
-            => new(messageIdData.LedgerId, messageIdData.EntryId, messageIdData.Partition, messageIdData.BatchIndex);
-
-        public static void MapFrom(this MessageIdData destination, MessageId source)
-        {
-            destination.LedgerId = source.LedgerId;
-            destination.EntryId = source.EntryId;
-            destination.Partition = source.Partition;
-            destination.BatchIndex = source.BatchIndex;
-        }
+        destination.LedgerId = source.LedgerId;
+        destination.EntryId = source.EntryId;
+        destination.Partition = source.Partition;
+        destination.BatchIndex = source.BatchIndex;
     }
 }

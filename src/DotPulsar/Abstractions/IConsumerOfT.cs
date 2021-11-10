@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
-{
-    /// <summary>
-    /// A generic consumer abstraction.
-    /// </summary>
-    public interface IConsumer<TMessage> : IConsumer, IReceive<IMessage<TMessage>> { }
-}
+namespace DotPulsar.Abstractions;
+
+/// <summary>
+/// A generic consumer abstraction.
+/// </summary>
+public interface IConsumer<TMessage> : IConsumer, IReceive<IMessage<TMessage>> { }

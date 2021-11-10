@@ -12,29 +12,28 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+using Abstractions;
+
+/// <summary>
+/// Representation of a reader state change.
+/// </summary>
+public sealed class ReaderStateChanged
 {
-    using Abstractions;
+    internal ReaderStateChanged(IReader reader, ReaderState readerState)
+    {
+        Reader = reader;
+        ReaderState = readerState;
+    }
 
     /// <summary>
-    /// Representation of a reader state change.
+    /// The reader that changed state.
     /// </summary>
-    public sealed class ReaderStateChanged
-    {
-        internal ReaderStateChanged(IReader reader, ReaderState readerState)
-        {
-            Reader = reader;
-            ReaderState = readerState;
-        }
+    public IReader Reader { get; }
 
-        /// <summary>
-        /// The reader that changed state.
-        /// </summary>
-        public IReader Reader { get; }
-
-        /// <summary>
-        /// The state that it changed to.
-        /// </summary>
-        public ReaderState ReaderState { get; }
-    }
+    /// <summary>
+    /// The state that it changed to.
+    /// </summary>
+    public ReaderState ReaderState { get; }
 }

@@ -12,16 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Events
+namespace DotPulsar.Internal.Events;
+
+using Abstractions;
+using System;
+
+public sealed class ChannelReachedEndOfTopic : IEvent
 {
-    using Abstractions;
-    using System;
+    public ChannelReachedEndOfTopic(Guid correlationId)
+        => CorrelationId = correlationId;
 
-    public sealed class ChannelReachedEndOfTopic : IEvent
-    {
-        public ChannelReachedEndOfTopic(Guid correlationId)
-            => CorrelationId = correlationId;
-
-        public Guid CorrelationId { get; }
-    }
+    public Guid CorrelationId { get; }
 }

@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class TopicNotFoundException : DotPulsarException
 {
-    public sealed class TopicNotFoundException : DotPulsarException
-    {
-        public TopicNotFoundException(string message) : base(message) { }
-    }
+    public TopicNotFoundException(string message) : base(message) { }
 }

@@ -12,42 +12,41 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Schemas
+namespace DotPulsar.Schemas;
+
+using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
+using System;
+using System.Buffers;
+using System.Collections.Immutable;
+
+/// <summary>
+/// Schema definition for Boolean messages.
+/// </summary>
+public sealed class BooleanSchema : ISchema<bool>
 {
-    using DotPulsar.Abstractions;
-    using DotPulsar.Exceptions;
-    using System;
-    using System.Buffers;
-    using System.Collections.Immutable;
+    private static readonly ReadOnlySequence<byte> _true;
+    private static readonly ReadOnlySequence<byte> _false;
 
-    /// <summary>
-    /// Schema definition for Boolean messages.
-    /// </summary>
-    public sealed class BooleanSchema : ISchema<bool>
+    static BooleanSchema()
     {
-        private static readonly ReadOnlySequence<byte> _true;
-        private static readonly ReadOnlySequence<byte> _false;
-
-        static BooleanSchema()
-        {
-            _true = new ReadOnlySequence<byte>(new byte[] { 1 });
-            _false = new ReadOnlySequence<byte>(new byte[] { 0 });
-        }
-
-        public BooleanSchema()
-            => SchemaInfo = new SchemaInfo("Boolean", Array.Empty<byte>(), SchemaType.Boolean, ImmutableDictionary<string, string>.Empty);
-
-        public SchemaInfo SchemaInfo { get; }
-
-        public bool Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null)
-        {
-            if (bytes.Length != 1)
-                throw new SchemaSerializationException($"{nameof(BooleanSchema)} expected to decode 1 byte, but received {bytes} bytes");
-
-            return bytes.First.Span[0] != 0;
-        }
-
-        public ReadOnlySequence<byte> Encode(bool message)
-            => message ? _true : _false;
+        _true = new ReadOnlySequence<byte>(new byte[] { 1 });
+        _false = new ReadOnlySequence<byte>(new byte[] { 0 });
     }
+
+    public BooleanSchema()
+        => SchemaInfo = new SchemaInfo("Boolean", Array.Empty<byte>(), SchemaType.Boolean, ImmutableDictionary<string, string>.Empty);
+
+    public SchemaInfo SchemaInfo { get; }
+
+    public bool Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null)
+    {
+        if (bytes.Length != 1)
+            throw new SchemaSerializationException($"{nameof(BooleanSchema)} expected to decode 1 byte, but received {bytes} bytes");
+
+        return bytes.First.Span[0] != 0;
+    }
+
+    public ReadOnlySequence<byte> Encode(bool message)
+        => message ? _true : _false;
 }

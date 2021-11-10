@@ -12,22 +12,21 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
-{
-    using DotPulsar.Abstractions;
-    using PulsarApi;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+namespace DotPulsar.Internal.Abstractions;
 
-    public interface IConsumerChannel<TMessage> : IAsyncDisposable
-    {
-        Task Send(CommandAck command, CancellationToken cancellationToken);
-        Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken);
-        Task Send(CommandUnsubscribe command, CancellationToken cancellationToken);
-        Task Send(CommandSeek command, CancellationToken cancellationToken);
-        Task<MessageId> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
-        ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken);
-        ValueTask ClosedByClient(CancellationToken cancellationToken);
-    }
+using DotPulsar.Abstractions;
+using PulsarApi;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public interface IConsumerChannel<TMessage> : IAsyncDisposable
+{
+    Task Send(CommandAck command, CancellationToken cancellationToken);
+    Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken);
+    Task Send(CommandUnsubscribe command, CancellationToken cancellationToken);
+    Task Send(CommandSeek command, CancellationToken cancellationToken);
+    Task<MessageId> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
+    ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken);
+    ValueTask ClosedByClient(CancellationToken cancellationToken);
 }

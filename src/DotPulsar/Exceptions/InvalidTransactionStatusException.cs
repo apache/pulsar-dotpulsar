@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+using System;
+
+public sealed class InvalidTransactionStatusException : DotPulsarException
 {
-    using System;
+    public InvalidTransactionStatusException(string message) : base(message) { }
 
-    public sealed class InvalidTransactionStatusException : DotPulsarException
-    {
-        public InvalidTransactionStatusException(string message) : base(message) { }
-
-        public InvalidTransactionStatusException(string message, Exception innerException) : base(message, innerException) { }
-    }
+    public InvalidTransactionStatusException(string message, Exception innerException) : base(message, innerException) { }
 }

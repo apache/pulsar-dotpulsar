@@ -12,246 +12,245 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using Abstractions;
+using Extensions;
+using PulsarApi;
+using System;
+using System.Buffers;
+using System.Threading.Tasks;
+
+public sealed class ChannelManager : IDisposable
 {
-    using Abstractions;
-    using Extensions;
-    using PulsarApi;
-    using System;
-    using System.Buffers;
-    using System.Threading.Tasks;
+    private readonly RequestResponseHandler _requestResponseHandler;
+    private readonly IdLookup<IChannel> _consumerChannels;
+    private readonly IdLookup<IChannel> _producerChannels;
+    private readonly EnumLookup<BaseCommand.Type, Action<BaseCommand>> _incoming;
 
-    public sealed class ChannelManager : IDisposable
+    public ChannelManager()
     {
-        private readonly RequestResponseHandler _requestResponseHandler;
-        private readonly IdLookup<IChannel> _consumerChannels;
-        private readonly IdLookup<IChannel> _producerChannels;
-        private readonly EnumLookup<BaseCommand.Type, Action<BaseCommand>> _incoming;
+        _requestResponseHandler = new RequestResponseHandler();
+        _consumerChannels = new IdLookup<IChannel>();
+        _producerChannels = new IdLookup<IChannel>();
+        _incoming = new EnumLookup<BaseCommand.Type, Action<BaseCommand>>(cmd => _requestResponseHandler.Incoming(cmd));
+        _incoming.Set(BaseCommand.Type.CloseConsumer, cmd => Incoming(cmd.CloseConsumer));
+        _incoming.Set(BaseCommand.Type.CloseProducer, cmd => Incoming(cmd.CloseProducer));
+        _incoming.Set(BaseCommand.Type.ActiveConsumerChange, cmd => Incoming(cmd.ActiveConsumerChange));
+        _incoming.Set(BaseCommand.Type.ReachedEndOfTopic, cmd => Incoming(cmd.ReachedEndOfTopic));
+    }
 
-        public ChannelManager()
+    public bool HasChannels()
+        => !_consumerChannels.IsEmpty() || !_producerChannels.IsEmpty();
+
+    public Task<ProducerResponse> Outgoing(CommandProducer command, IChannel channel)
+    {
+        var producerId = _producerChannels.Add(channel);
+        command.ProducerId = producerId;
+        var response = _requestResponseHandler.Outgoing(command);
+
+        return response.ContinueWith(result =>
         {
-            _requestResponseHandler = new RequestResponseHandler();
-            _consumerChannels = new IdLookup<IChannel>();
-            _producerChannels = new IdLookup<IChannel>();
-            _incoming = new EnumLookup<BaseCommand.Type, Action<BaseCommand>>(cmd => _requestResponseHandler.Incoming(cmd));
-            _incoming.Set(BaseCommand.Type.CloseConsumer, cmd => Incoming(cmd.CloseConsumer));
-            _incoming.Set(BaseCommand.Type.CloseProducer, cmd => Incoming(cmd.CloseProducer));
-            _incoming.Set(BaseCommand.Type.ActiveConsumerChange, cmd => Incoming(cmd.ActiveConsumerChange));
-            _incoming.Set(BaseCommand.Type.ReachedEndOfTopic, cmd => Incoming(cmd.ReachedEndOfTopic));
-        }
-
-        public bool HasChannels()
-            => !_consumerChannels.IsEmpty() || !_producerChannels.IsEmpty();
-
-        public Task<ProducerResponse> Outgoing(CommandProducer command, IChannel channel)
-        {
-            var producerId = _producerChannels.Add(channel);
-            command.ProducerId = producerId;
-            var response = _requestResponseHandler.Outgoing(command);
-
-            return response.ContinueWith(result =>
+            if (result.Result.CommandType == BaseCommand.Type.Error)
             {
-                if (result.Result.CommandType == BaseCommand.Type.Error)
-                {
-                    _ = _producerChannels.Remove(producerId);
-                    result.Result.Error.Throw();
-                }
-
-                channel.Connected();
-
-                return new ProducerResponse(producerId, result.Result.ProducerSuccess.ProducerName);
-            }, TaskContinuationOptions.OnlyOnRanToCompletion);
-        }
-
-        public Task<SubscribeResponse> Outgoing(CommandSubscribe command, IChannel channel)
-        {
-            var consumerId = _consumerChannels.Add(channel);
-            command.ConsumerId = consumerId;
-            var response = _requestResponseHandler.Outgoing(command);
-
-            return response.ContinueWith(result =>
-            {
-                if (result.Result.CommandType == BaseCommand.Type.Error)
-                {
-                    _ = _consumerChannels.Remove(consumerId);
-                    result.Result.Error.Throw();
-                }
-
-                channel.Connected();
-
-                return new SubscribeResponse(consumerId);
-            }, TaskContinuationOptions.OnlyOnRanToCompletion);
-        }
-
-        public Task<BaseCommand> Outgoing(CommandCloseConsumer command)
-        {
-            var consumerId = command.ConsumerId;
-
-            Task<BaseCommand> response;
-
-            using (TakeConsumerSenderLock(consumerId))
-            {
-                response = _requestResponseHandler.Outgoing(command);
+                _ = _producerChannels.Remove(producerId);
+                result.Result.Error.Throw();
             }
 
-            _ = response.ContinueWith(result =>
-            {
-                if (result.Result.CommandType == BaseCommand.Type.Success)
-                    _ = _consumerChannels.Remove(consumerId);
-            }, TaskContinuationOptions.OnlyOnRanToCompletion);
+            channel.Connected();
 
-            return response;
-        }
+            return new ProducerResponse(producerId, result.Result.ProducerSuccess.ProducerName);
+        }, TaskContinuationOptions.OnlyOnRanToCompletion);
+    }
 
-        public Task<BaseCommand> Outgoing(CommandCloseProducer command)
+    public Task<SubscribeResponse> Outgoing(CommandSubscribe command, IChannel channel)
+    {
+        var consumerId = _consumerChannels.Add(channel);
+        command.ConsumerId = consumerId;
+        var response = _requestResponseHandler.Outgoing(command);
+
+        return response.ContinueWith(result =>
         {
-            var producerId = command.ProducerId;
-
-            Task<BaseCommand> response;
-
-            using (TakeProducerSenderLock(producerId))
+            if (result.Result.CommandType == BaseCommand.Type.Error)
             {
-                response = _requestResponseHandler.Outgoing(command);
+                _ = _consumerChannels.Remove(consumerId);
+                result.Result.Error.Throw();
             }
 
-            _ = response.ContinueWith(result =>
-            {
-                if (result.Result.CommandType == BaseCommand.Type.Success)
-                    _ = _producerChannels.Remove(producerId);
-            }, TaskContinuationOptions.OnlyOnRanToCompletion);
+            channel.Connected();
 
-            return response;
-        }
+            return new SubscribeResponse(consumerId);
+        }, TaskContinuationOptions.OnlyOnRanToCompletion);
+    }
 
-        public Task<BaseCommand> Outgoing(CommandUnsubscribe command)
+    public Task<BaseCommand> Outgoing(CommandCloseConsumer command)
+    {
+        var consumerId = command.ConsumerId;
+
+        Task<BaseCommand> response;
+
+        using (TakeConsumerSenderLock(consumerId))
         {
-            var consumerId = command.ConsumerId;
-
-            Task<BaseCommand> response;
-
-            using (TakeConsumerSenderLock(consumerId))
-            {
-                response = _requestResponseHandler.Outgoing(command);
-            }
-
-            _ = response.ContinueWith(result =>
-            {
-                if (result.Result.CommandType == BaseCommand.Type.Success)
-                    _consumerChannels.Remove(consumerId)?.Unsubscribed();
-            }, TaskContinuationOptions.OnlyOnRanToCompletion);
-
-            return response;
+            response = _requestResponseHandler.Outgoing(command);
         }
 
-        public Task<BaseCommand> Outgoing(CommandSend command)
+        _ = response.ContinueWith(result =>
         {
-            using (TakeProducerSenderLock(command.ProducerId))
-            {
-                return _requestResponseHandler.Outgoing(command);
-            }
-        }
+            if (result.Result.CommandType == BaseCommand.Type.Success)
+                _ = _consumerChannels.Remove(consumerId);
+        }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
-        public Task<BaseCommand> Outgoing(CommandGetOrCreateSchema command)
-            => _requestResponseHandler.Outgoing(command);
+        return response;
+    }
 
-        public Task<BaseCommand> Outgoing(CommandConnect command)
-            => _requestResponseHandler.Outgoing(command);
+    public Task<BaseCommand> Outgoing(CommandCloseProducer command)
+    {
+        var producerId = command.ProducerId;
 
-        public Task<BaseCommand> Outgoing(CommandLookupTopic command)
-            => _requestResponseHandler.Outgoing(command);
+        Task<BaseCommand> response;
 
-        public Task<BaseCommand> Outgoing(CommandPartitionedTopicMetadata command)
-            => _requestResponseHandler.Outgoing(command);
-
-        public Task<BaseCommand> Outgoing(CommandSeek command)
+        using (TakeProducerSenderLock(producerId))
         {
-            using (TakeConsumerSenderLock(command.ConsumerId))
-            {
-                return _requestResponseHandler.Outgoing(command);
-            }
+            response = _requestResponseHandler.Outgoing(command);
         }
 
-        public Task<BaseCommand> Outgoing(CommandGetLastMessageId command)
+        _ = response.ContinueWith(result =>
         {
-            using (TakeConsumerSenderLock(command.ConsumerId))
-            {
-                return _requestResponseHandler.Outgoing(command);
-            }
-        }
+            if (result.Result.CommandType == BaseCommand.Type.Success)
+                _ = _producerChannels.Remove(producerId);
+        }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
-        public void Incoming(BaseCommand command)
-            => _incoming.Get(command.CommandType)(command);
+        return response;
+    }
 
-        public void Incoming(CommandMessage command, ReadOnlySequence<byte> data)
-            => _consumerChannels[command.ConsumerId]?.Received(new MessagePackage(command.MessageId, command.RedeliveryCount, data));
+    public Task<BaseCommand> Outgoing(CommandUnsubscribe command)
+    {
+        var consumerId = command.ConsumerId;
 
-        public void Dispose()
+        Task<BaseCommand> response;
+
+        using (TakeConsumerSenderLock(consumerId))
         {
-            _requestResponseHandler.Dispose();
-
-            foreach (var channel in _consumerChannels.RemoveAll())
-                channel.Disconnected();
-
-            foreach (var channel in _producerChannels.RemoveAll())
-                channel.Disconnected();
+            response = _requestResponseHandler.Outgoing(command);
         }
 
-        private void Incoming(CommandReachedEndOfTopic command)
-            => _consumerChannels[command.ConsumerId]?.ReachedEndOfTopic();
-
-        private void Incoming(CommandCloseConsumer command)
+        _ = response.ContinueWith(result =>
         {
-            var channel = _consumerChannels[command.ConsumerId];
+            if (result.Result.CommandType == BaseCommand.Type.Success)
+                _consumerChannels.Remove(consumerId)?.Unsubscribed();
+        }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
-            if (channel is null)
-                return;
+        return response;
+    }
 
-            _ = _consumerChannels.Remove(command.ConsumerId);
-            _requestResponseHandler.Incoming(command);
-            channel.ClosedByServer();
-        }
-
-        private void Incoming(CommandCloseProducer command)
+    public Task<BaseCommand> Outgoing(CommandSend command)
+    {
+        using (TakeProducerSenderLock(command.ProducerId))
         {
-            var channel = _producerChannels[command.ProducerId];
-
-            if (channel is null)
-                return;
-
-            _ = _producerChannels.Remove(command.ProducerId);
-            _requestResponseHandler.Incoming(command);
-            channel.ClosedByServer();
+            return _requestResponseHandler.Outgoing(command);
         }
+    }
 
-        private void Incoming(CommandActiveConsumerChange command)
+    public Task<BaseCommand> Outgoing(CommandGetOrCreateSchema command)
+        => _requestResponseHandler.Outgoing(command);
+
+    public Task<BaseCommand> Outgoing(CommandConnect command)
+        => _requestResponseHandler.Outgoing(command);
+
+    public Task<BaseCommand> Outgoing(CommandLookupTopic command)
+        => _requestResponseHandler.Outgoing(command);
+
+    public Task<BaseCommand> Outgoing(CommandPartitionedTopicMetadata command)
+        => _requestResponseHandler.Outgoing(command);
+
+    public Task<BaseCommand> Outgoing(CommandSeek command)
+    {
+        using (TakeConsumerSenderLock(command.ConsumerId))
         {
-            var channel = _consumerChannels[command.ConsumerId];
-
-            if (channel is null)
-                return;
-
-            if (command.IsActive)
-                channel.Activated();
-            else
-                channel.Deactivated();
+            return _requestResponseHandler.Outgoing(command);
         }
+    }
 
-        private IDisposable TakeConsumerSenderLock(ulong consumerId)
+    public Task<BaseCommand> Outgoing(CommandGetLastMessageId command)
+    {
+        using (TakeConsumerSenderLock(command.ConsumerId))
         {
-            var channel = _consumerChannels[consumerId];
-            if (channel is null)
-                throw new OperationCanceledException();
-
-            return channel.SenderLock();
+            return _requestResponseHandler.Outgoing(command);
         }
+    }
 
-        private IDisposable TakeProducerSenderLock(ulong producerId)
-        {
-            var channel = _producerChannels[producerId];
-            if (channel is null)
-                throw new OperationCanceledException();
+    public void Incoming(BaseCommand command)
+        => _incoming.Get(command.CommandType)(command);
 
-            return channel.SenderLock();
-        }
+    public void Incoming(CommandMessage command, ReadOnlySequence<byte> data)
+        => _consumerChannels[command.ConsumerId]?.Received(new MessagePackage(command.MessageId, command.RedeliveryCount, data));
+
+    public void Dispose()
+    {
+        _requestResponseHandler.Dispose();
+
+        foreach (var channel in _consumerChannels.RemoveAll())
+            channel.Disconnected();
+
+        foreach (var channel in _producerChannels.RemoveAll())
+            channel.Disconnected();
+    }
+
+    private void Incoming(CommandReachedEndOfTopic command)
+        => _consumerChannels[command.ConsumerId]?.ReachedEndOfTopic();
+
+    private void Incoming(CommandCloseConsumer command)
+    {
+        var channel = _consumerChannels[command.ConsumerId];
+
+        if (channel is null)
+            return;
+
+        _ = _consumerChannels.Remove(command.ConsumerId);
+        _requestResponseHandler.Incoming(command);
+        channel.ClosedByServer();
+    }
+
+    private void Incoming(CommandCloseProducer command)
+    {
+        var channel = _producerChannels[command.ProducerId];
+
+        if (channel is null)
+            return;
+
+        _ = _producerChannels.Remove(command.ProducerId);
+        _requestResponseHandler.Incoming(command);
+        channel.ClosedByServer();
+    }
+
+    private void Incoming(CommandActiveConsumerChange command)
+    {
+        var channel = _consumerChannels[command.ConsumerId];
+
+        if (channel is null)
+            return;
+
+        if (command.IsActive)
+            channel.Activated();
+        else
+            channel.Deactivated();
+    }
+
+    private IDisposable TakeConsumerSenderLock(ulong consumerId)
+    {
+        var channel = _consumerChannels[consumerId];
+        if (channel is null)
+            throw new OperationCanceledException();
+
+        return channel.SenderLock();
+    }
+
+    private IDisposable TakeProducerSenderLock(ulong producerId)
+    {
+        var channel = _producerChannels[producerId];
+        if (channel is null)
+            throw new OperationCanceledException();
+
+        return channel.SenderLock();
     }
 }

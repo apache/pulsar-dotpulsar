@@ -12,87 +12,86 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using DotPulsar.Abstractions;
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+
+public sealed class Message<TValue> : IMessage<TValue>
 {
-    using DotPulsar.Abstractions;
-    using System;
-    using System.Buffers;
-    using System.Collections.Generic;
+    private readonly ISchema<TValue> _schema;
 
-    public sealed class Message<TValue> : IMessage<TValue>
+    internal Message(
+        MessageId messageId,
+        ReadOnlySequence<byte> data,
+        string producerName,
+        ulong sequenceId,
+        uint redeliveryCount,
+        ulong eventTime,
+        ulong publishTime,
+        IReadOnlyDictionary<string, string> properties,
+        bool hasBase64EncodedKey,
+        string? key,
+        byte[]? orderingKey,
+        byte[]? schemaVersion,
+        ISchema<TValue> schema)
     {
-        private readonly ISchema<TValue> _schema;
-
-        internal Message(
-            MessageId messageId,
-            ReadOnlySequence<byte> data,
-            string producerName,
-            ulong sequenceId,
-            uint redeliveryCount,
-            ulong eventTime,
-            ulong publishTime,
-            IReadOnlyDictionary<string, string> properties,
-            bool hasBase64EncodedKey,
-            string? key,
-            byte[]? orderingKey,
-            byte[]? schemaVersion,
-            ISchema<TValue> schema)
-        {
-            MessageId = messageId;
-            Data = data;
-            ProducerName = producerName;
-            SequenceId = sequenceId;
-            RedeliveryCount = redeliveryCount;
-            EventTime = eventTime;
-            PublishTime = publishTime;
-            Properties = properties;
-            HasBase64EncodedKey = hasBase64EncodedKey;
-            Key = key;
-            OrderingKey = orderingKey;
-            SchemaVersion = schemaVersion;
-            _schema = schema;
-        }
-
-        public MessageId MessageId { get; }
-
-        public ReadOnlySequence<byte> Data { get; }
-
-        public string ProducerName { get; }
-
-        public byte[]? SchemaVersion { get; }
-
-        public ulong SequenceId { get; }
-
-        public uint RedeliveryCount { get; }
-
-        public bool HasEventTime => EventTime != 0;
-
-        public ulong EventTime { get; }
-
-        public DateTime EventTimeAsDateTime => EventTimeAsDateTimeOffset.UtcDateTime;
-
-        public DateTimeOffset EventTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) EventTime);
-
-        public bool HasBase64EncodedKey { get; }
-
-        public bool HasKey => Key is not null;
-
-        public string? Key { get; }
-
-        public byte[]? KeyBytes => Key is not null ? Convert.FromBase64String(Key) : null;
-
-        public bool HasOrderingKey => OrderingKey is not null;
-
-        public byte[]? OrderingKey { get; }
-
-        public ulong PublishTime { get; }
-
-        public DateTime PublishTimeAsDateTime => PublishTimeAsDateTimeOffset.UtcDateTime;
-
-        public DateTimeOffset PublishTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) PublishTime);
-
-        public IReadOnlyDictionary<string, string> Properties { get; }
-
-        public TValue Value() => _schema.Decode(Data);
+        MessageId = messageId;
+        Data = data;
+        ProducerName = producerName;
+        SequenceId = sequenceId;
+        RedeliveryCount = redeliveryCount;
+        EventTime = eventTime;
+        PublishTime = publishTime;
+        Properties = properties;
+        HasBase64EncodedKey = hasBase64EncodedKey;
+        Key = key;
+        OrderingKey = orderingKey;
+        SchemaVersion = schemaVersion;
+        _schema = schema;
     }
+
+    public MessageId MessageId { get; }
+
+    public ReadOnlySequence<byte> Data { get; }
+
+    public string ProducerName { get; }
+
+    public byte[]? SchemaVersion { get; }
+
+    public ulong SequenceId { get; }
+
+    public uint RedeliveryCount { get; }
+
+    public bool HasEventTime => EventTime != 0;
+
+    public ulong EventTime { get; }
+
+    public DateTime EventTimeAsDateTime => EventTimeAsDateTimeOffset.UtcDateTime;
+
+    public DateTimeOffset EventTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) EventTime);
+
+    public bool HasBase64EncodedKey { get; }
+
+    public bool HasKey => Key is not null;
+
+    public string? Key { get; }
+
+    public byte[]? KeyBytes => Key is not null ? Convert.FromBase64String(Key) : null;
+
+    public bool HasOrderingKey => OrderingKey is not null;
+
+    public byte[]? OrderingKey { get; }
+
+    public ulong PublishTime { get; }
+
+    public DateTime PublishTimeAsDateTime => PublishTimeAsDateTimeOffset.UtcDateTime;
+
+    public DateTimeOffset PublishTimeAsDateTimeOffset => DateTimeOffset.FromUnixTimeMilliseconds((long) PublishTime);
+
+    public IReadOnlyDictionary<string, string> Properties { get; }
+
+    public TValue Value() => _schema.Decode(Data);
 }

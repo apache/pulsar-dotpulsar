@@ -12,33 +12,32 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Abstractions;
+
+using System;
+
+/// <summary>
+/// A pulsar client abstraction.
+/// </summary>
+public interface IPulsarClient : IAsyncDisposable
 {
-    using System;
+    /// <summary>
+    /// Create a producer.
+    /// </summary>
+    IProducer<TMessage> CreateProducer<TMessage>(ProducerOptions<TMessage> options);
 
     /// <summary>
-    /// A pulsar client abstraction.
+    /// Create a consumer.
     /// </summary>
-    public interface IPulsarClient : IAsyncDisposable
-    {
-        /// <summary>
-        /// Create a producer.
-        /// </summary>
-        IProducer<TMessage> CreateProducer<TMessage>(ProducerOptions<TMessage> options);
+    IConsumer<TMessage> CreateConsumer<TMessage>(ConsumerOptions<TMessage> options);
 
-        /// <summary>
-        /// Create a consumer.
-        /// </summary>
-        IConsumer<TMessage> CreateConsumer<TMessage>(ConsumerOptions<TMessage> options);
+    /// <summary>
+    /// Create a reader.
+    /// </summary>
+    IReader<TMessage> CreateReader<TMessage>(ReaderOptions<TMessage> options);
 
-        /// <summary>
-        /// Create a reader.
-        /// </summary>
-        IReader<TMessage> CreateReader<TMessage>(ReaderOptions<TMessage> options);
-
-        /// <summary>
-        /// The client's service url.
-        /// </summary>
-        public Uri ServiceUrl { get; }
-    }
+    /// <summary>
+    /// The client's service url.
+    /// </summary>
+    public Uri ServiceUrl { get; }
 }

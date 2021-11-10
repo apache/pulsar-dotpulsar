@@ -12,19 +12,18 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
-{
-    using System.Threading;
-    using System.Threading.Tasks;
+namespace DotPulsar.Abstractions;
 
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// An abstraction for sending a message.
+/// </summary>
+public interface ISend<TMessage>
+{
     /// <summary>
-    /// An abstraction for sending a message.
+    /// Sends a message with metadata.
     /// </summary>
-    public interface ISend<TMessage>
-    {
-        /// <summary>
-        /// Sends a message with metadata.
-        /// </summary>
-        ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default);
-    }
+    ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default);
 }

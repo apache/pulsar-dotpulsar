@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
-{
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+namespace DotPulsar.Internal.Abstractions;
 
-    public interface IEstablishNewChannel : IAsyncDisposable
-    {
-        Task EstablishNewChannel(CancellationToken cancellationToken);
-    }
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public interface IEstablishNewChannel : IAsyncDisposable
+{
+    Task EstablishNewChannel(CancellationToken cancellationToken);
 }

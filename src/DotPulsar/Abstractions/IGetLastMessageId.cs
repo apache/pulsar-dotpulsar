@@ -12,19 +12,18 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
-{
-    using System.Threading;
-    using System.Threading.Tasks;
+namespace DotPulsar.Abstractions;
 
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// An abstraction for getting the last message id.
+/// </summary>
+public interface IGetLastMessageId
+{
     /// <summary>
-    /// An abstraction for getting the last message id.
+    /// Get the MessageId of the last message on the topic.
     /// </summary>
-    public interface IGetLastMessageId
-    {
-        /// <summary>
-        /// Get the MessageId of the last message on the topic.
-        /// </summary>
-        ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default);
-    }
+    ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default);
 }

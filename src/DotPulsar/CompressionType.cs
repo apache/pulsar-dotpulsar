@@ -12,36 +12,35 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+/// <summary>
+/// The compression types that can be set on a producer.
+/// </summary>
+public enum CompressionType : byte
 {
     /// <summary>
-    /// The compression types that can be set on a producer.
+    /// No compression.
     /// </summary>
-    public enum CompressionType : byte
-    {
-        /// <summary>
-        /// No compression.
-        /// </summary>
-        None = 0,
+    None = 0,
 
-        /// <summary>
-        /// Compress with LZ4.
-        /// </summary>
-        Lz4 = 1,
+    /// <summary>
+    /// Compress with LZ4.
+    /// </summary>
+    Lz4 = 1,
 
-        /// <summary>
-        /// Compress with zlib.
-        /// </summary>
-        Zlib = 2,
+    /// <summary>
+    /// Compress with zlib.
+    /// </summary>
+    Zlib = 2,
 
-        /// <summary>
-        /// Compress with zstd.
-        /// </summary>
-        Zstd = 3,
+    /// <summary>
+    /// Compress with zstd.
+    /// </summary>
+    Zstd = 3,
 
-        /// <summary>
-        /// Compress with Snappy.
-        /// </summary>
-        Snappy = 4
-    }
+    /// <summary>
+    /// Compress with Snappy.
+    /// </summary>
+    Snappy = 4
 }

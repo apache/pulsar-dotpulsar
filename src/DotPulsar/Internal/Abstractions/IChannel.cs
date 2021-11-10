@@ -12,20 +12,19 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
-{
-    using System;
+namespace DotPulsar.Internal.Abstractions;
 
-    public interface IChannel
-    {
-        void Received(MessagePackage message);
-        void Activated();
-        void ClosedByServer();
-        void Connected();
-        void Deactivated();
-        void Disconnected();
-        void ReachedEndOfTopic();
-        void Unsubscribed();
-        IDisposable SenderLock();
-    }
+using System;
+
+public interface IChannel
+{
+    void Received(MessagePackage message);
+    void Activated();
+    void ClosedByServer();
+    void Connected();
+    void Deactivated();
+    void Disconnected();
+    void ReachedEndOfTopic();
+    void Unsubscribed();
+    IDisposable SenderLock();
 }

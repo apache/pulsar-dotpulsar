@@ -12,47 +12,46 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Schemas
+namespace DotPulsar.Schemas;
+
+using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
+using System;
+using System.Buffers;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Runtime.InteropServices;
+
+/// <summary>
+/// Schema definition for Long (int64) messages.
+/// </summary>
+public sealed class LongSchema : ISchema<long>
 {
-    using DotPulsar.Abstractions;
-    using DotPulsar.Exceptions;
-    using System;
-    using System.Buffers;
-    using System.Collections.Immutable;
-    using System.Linq;
-    using System.Runtime.InteropServices;
+    public LongSchema()
+        => SchemaInfo = new SchemaInfo("INT64", Array.Empty<byte>(), SchemaType.Int64, ImmutableDictionary<string, string>.Empty);
 
-    /// <summary>
-    /// Schema definition for Long (int64) messages.
-    /// </summary>
-    public sealed class LongSchema : ISchema<long>
+    public SchemaInfo SchemaInfo { get; }
+
+    public long Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null)
     {
-        public LongSchema()
-            => SchemaInfo = new SchemaInfo("INT64", Array.Empty<byte>(), SchemaType.Int64, ImmutableDictionary<string, string>.Empty);
+        if (bytes.Length != 8)
+            throw new SchemaSerializationException($"{nameof(LongSchema)} expected to decode 8 bytes, but received {bytes} bytes");
 
-        public SchemaInfo SchemaInfo { get; }
+        var array = bytes.ToArray();
 
-        public long Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null)
-        {
-            if (bytes.Length != 8)
-                throw new SchemaSerializationException($"{nameof(LongSchema)} expected to decode 8 bytes, but received {bytes} bytes");
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(array);
 
-            var array = bytes.ToArray();
+        return MemoryMarshal.Read<long>(array);
+    }
 
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(array);
+    public ReadOnlySequence<byte> Encode(long message)
+    {
+        var array = BitConverter.GetBytes(message);
 
-            return MemoryMarshal.Read<long>(array);
-        }
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(array);
 
-        public ReadOnlySequence<byte> Encode(long message)
-        {
-            var array = BitConverter.GetBytes(message);
-
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(array);
-
-            return new(array);
-        }
+        return new(array);
     }
 }

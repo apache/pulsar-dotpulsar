@@ -12,13 +12,12 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
-{
-    using DotPulsar.Internal.PulsarApi;
+namespace DotPulsar.Internal.Abstractions;
 
-    public interface IDecompressorFactory
-    {
-        CompressionType CompressionType { get; }
-        IDecompress Create();
-    }
+using DotPulsar.Internal.PulsarApi;
+
+public interface IDecompressorFactory
+{
+    CompressionType CompressionType { get; }
+    IDecompress Create();
 }

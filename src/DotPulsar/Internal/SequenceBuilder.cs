@@ -12,91 +12,90 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Linq;
+
+public sealed class SequenceBuilder<T> where T : notnull
 {
-    using System;
-    using System.Buffers;
-    using System.Collections.Generic;
-    using System.Linq;
+    private readonly LinkedList<ReadOnlyMemory<T>> _elements;
 
-    public sealed class SequenceBuilder<T> where T : notnull
+    public SequenceBuilder()
+        => _elements = new LinkedList<ReadOnlyMemory<T>>();
+
+    public SequenceBuilder<T> Prepend(ReadOnlyMemory<T> memory)
     {
-        private readonly LinkedList<ReadOnlyMemory<T>> _elements;
+        _elements.AddFirst(memory);
+        return this;
+    }
 
-        public SequenceBuilder()
-            => _elements = new LinkedList<ReadOnlyMemory<T>>();
+    public SequenceBuilder<T> Prepend(ReadOnlySequence<T> sequence)
+    {
+        LinkedListNode<ReadOnlyMemory<T>>? index = null;
 
-        public SequenceBuilder<T> Prepend(ReadOnlyMemory<T> memory)
+        foreach (var memory in sequence)
         {
-            _elements.AddFirst(memory);
-            return this;
+            index = index is null
+                ? _elements.AddFirst(memory)
+                : _elements.AddAfter(index, memory);
         }
 
-        public SequenceBuilder<T> Prepend(ReadOnlySequence<T> sequence)
-        {
-            LinkedListNode<ReadOnlyMemory<T>>? index = null;
+        return this;
+    }
 
-            foreach (var memory in sequence)
-            {
-                index = index is null
-                    ? _elements.AddFirst(memory)
-                    : _elements.AddAfter(index, memory);
-            }
+    public SequenceBuilder<T> Append(ReadOnlyMemory<T> memory)
+    {
+        _elements.AddLast(memory);
+        return this;
+    }
 
-            return this;
-        }
-
-        public SequenceBuilder<T> Append(ReadOnlyMemory<T> memory)
-        {
+    public SequenceBuilder<T> Append(ReadOnlySequence<T> sequence)
+    {
+        foreach (var memory in sequence)
             _elements.AddLast(memory);
-            return this;
-        }
 
-        public SequenceBuilder<T> Append(ReadOnlySequence<T> sequence)
+        return this;
+    }
+
+    public long Length => _elements.Sum(e => e.Length);
+
+    public ReadOnlySequence<T> Build()
+    {
+        var node = _elements.First;
+        if (node is null)
+            return ReadOnlySequence<T>.Empty;
+
+        var current = new Segment(node.Value);
+        var start = current;
+
+        while (true)
         {
-            foreach (var memory in sequence)
-                _elements.AddLast(memory);
-
-            return this;
-        }
-
-        public long Length => _elements.Sum(e => e.Length);
-
-        public ReadOnlySequence<T> Build()
-        {
-            var node = _elements.First;
+            node = node.Next;
             if (node is null)
-                return ReadOnlySequence<T>.Empty;
+                break;
 
-            var current = new Segment(node.Value);
-            var start = current;
-
-            while (true)
-            {
-                node = node.Next;
-                if (node is null)
-                    break;
-
-                current = current.CreateNext(node.Value);
-            }
-
-            return new ReadOnlySequence<T>(start, 0, current, current.Memory.Length);
+            current = current.CreateNext(node.Value);
         }
 
-        private sealed class Segment : ReadOnlySequenceSegment<T>
-        {
-            public Segment(ReadOnlyMemory<T> memory, long runningIndex = 0)
-            {
-                Memory = memory;
-                RunningIndex = runningIndex;
-            }
+        return new ReadOnlySequence<T>(start, 0, current, current.Memory.Length);
+    }
 
-            public Segment CreateNext(ReadOnlyMemory<T> memory)
-            {
-                var segment = new Segment(memory, RunningIndex + Memory.Length);
-                Next = segment;
-                return segment;
-            }
+    private sealed class Segment : ReadOnlySequenceSegment<T>
+    {
+        public Segment(ReadOnlyMemory<T> memory, long runningIndex = 0)
+        {
+            Memory = memory;
+            RunningIndex = runningIndex;
+        }
+
+        public Segment CreateNext(ReadOnlyMemory<T> memory)
+        {
+            var segment = new Segment(memory, RunningIndex + Memory.Length);
+            Next = segment;
+            return segment;
         }
     }
 }

@@ -12,71 +12,70 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using Abstractions;
+using System;
+using System.Threading.Tasks;
+
+public sealed class ConsumerProcess : Process
 {
-    using Abstractions;
-    using System;
-    using System.Threading.Tasks;
+    private readonly IStateManager<ConsumerState> _stateManager;
+    private readonly IEstablishNewChannel _consumer;
+    private readonly bool _isFailoverSubscription;
 
-    public sealed class ConsumerProcess : Process
+    public ConsumerProcess(
+        Guid correlationId,
+        IStateManager<ConsumerState> stateManager,
+        IEstablishNewChannel consumer,
+        bool isFailoverSubscription) : base(correlationId)
     {
-        private readonly IStateManager<ConsumerState> _stateManager;
-        private readonly IEstablishNewChannel _consumer;
-        private readonly bool _isFailoverSubscription;
+        _stateManager = stateManager;
+        _consumer = consumer;
+        _isFailoverSubscription = isFailoverSubscription;
+    }
 
-        public ConsumerProcess(
-            Guid correlationId,
-            IStateManager<ConsumerState> stateManager,
-            IEstablishNewChannel consumer,
-            bool isFailoverSubscription) : base(correlationId)
+    public override async ValueTask DisposeAsync()
+    {
+        _stateManager.SetState(ConsumerState.Closed);
+        CancellationTokenSource.Cancel();
+        await _consumer.DisposeAsync().ConfigureAwait(false);
+    }
+
+    protected override void CalculateState()
+    {
+        if (_stateManager.IsFinalState())
+            return;
+
+        if (ExecutorState == ExecutorState.Faulted)
         {
-            _stateManager = stateManager;
-            _consumer = consumer;
-            _isFailoverSubscription = isFailoverSubscription;
+            _stateManager.SetState(ConsumerState.Faulted);
+            return;
         }
 
-        public override async ValueTask DisposeAsync()
+        switch (ChannelState)
         {
-            _stateManager.SetState(ConsumerState.Closed);
-            CancellationTokenSource.Cancel();
-            await _consumer.DisposeAsync().ConfigureAwait(false);
-        }
-
-        protected override void CalculateState()
-        {
-            if (_stateManager.IsFinalState())
+            case ChannelState.Active:
+                _stateManager.SetState(ConsumerState.Active);
                 return;
-
-            if (ExecutorState == ExecutorState.Faulted)
-            {
-                _stateManager.SetState(ConsumerState.Faulted);
+            case ChannelState.Inactive:
+                _stateManager.SetState(ConsumerState.Inactive);
                 return;
-            }
-
-            switch (ChannelState)
-            {
-                case ChannelState.Active:
+            case ChannelState.ClosedByServer:
+            case ChannelState.Disconnected:
+                _stateManager.SetState(ConsumerState.Disconnected);
+                _ = _consumer.EstablishNewChannel(CancellationTokenSource.Token);
+                return;
+            case ChannelState.Connected:
+                if (!_isFailoverSubscription)
                     _stateManager.SetState(ConsumerState.Active);
-                    return;
-                case ChannelState.Inactive:
-                    _stateManager.SetState(ConsumerState.Inactive);
-                    return;
-                case ChannelState.ClosedByServer:
-                case ChannelState.Disconnected:
-                    _stateManager.SetState(ConsumerState.Disconnected);
-                    _ = _consumer.EstablishNewChannel(CancellationTokenSource.Token);
-                    return;
-                case ChannelState.Connected:
-                    if (!_isFailoverSubscription)
-                        _stateManager.SetState(ConsumerState.Active);
-                    return;
-                case ChannelState.ReachedEndOfTopic:
-                    _stateManager.SetState(ConsumerState.ReachedEndOfTopic);
-                    return;
-                case ChannelState.Unsubscribed:
-                    _stateManager.SetState(ConsumerState.Unsubscribed);
-                    return;
-            }
+                return;
+            case ChannelState.ReachedEndOfTopic:
+                _stateManager.SetState(ConsumerState.ReachedEndOfTopic);
+                return;
+            case ChannelState.Unsubscribed:
+                _stateManager.SetState(ConsumerState.Unsubscribed);
+                return;
         }
     }
 }

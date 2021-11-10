@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
-{
-    using DotPulsar.Abstractions;
-    using DotPulsar.Internal.PulsarApi;
-    using System.Buffers;
+namespace DotPulsar.Internal.Abstractions;
 
-    public interface IMessageFactory<TValue>
-    {
-        IMessage<TValue> Create(MessageId messageId, uint redeliveryCount, ReadOnlySequence<byte> data, MessageMetadata metadata, SingleMessageMetadata? singleMetadata = null);
-    }
+using DotPulsar.Abstractions;
+using DotPulsar.Internal.PulsarApi;
+using System.Buffers;
+
+public interface IMessageFactory<TValue>
+{
+    IMessage<TValue> Create(MessageId messageId, uint redeliveryCount, ReadOnlySequence<byte> data, MessageMetadata metadata, SingleMessageMetadata? singleMetadata = null);
 }

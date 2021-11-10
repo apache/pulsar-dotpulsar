@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Internal.Abstractions;
+
+public interface IEnqueue<T>
 {
-    public interface IEnqueue<T>
-    {
-        void Enqueue(T item);
-    }
+    void Enqueue(T item);
 }

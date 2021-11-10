@@ -12,73 +12,72 @@
  * limitations under the License.
  */
 
-namespace Producing
+namespace Producing;
+
+using DotPulsar;
+using DotPulsar.Abstractions;
+using DotPulsar.Extensions;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+internal static class Program
 {
-    using DotPulsar;
-    using DotPulsar.Abstractions;
-    using DotPulsar.Extensions;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    internal static class Program
+    private static async Task Main()
     {
-        private static async Task Main()
+        const string myTopic = "persistent://public/default/mytopic";
+
+        var cts = new CancellationTokenSource();
+
+        Console.CancelKeyPress += (sender, args) =>
         {
-            const string myTopic = "persistent://public/default/mytopic";
+            cts.Cancel();
+            args.Cancel = true;
+        };
 
-            var cts = new CancellationTokenSource();
+        await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
-            Console.CancelKeyPress += (sender, args) =>
-            {
-                cts.Cancel();
-                args.Cancel = true;
-            };
+        await using var producer = client.NewProducer(Schema.String)
+            .StateChangedHandler(Monitor)
+            .Topic(myTopic)
+            .Create();
 
-            await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
+        Console.WriteLine("Press Ctrl+C to exit");
 
-            await using var producer = client.NewProducer(Schema.String)
-                .StateChangedHandler(Monitor)
-                .Topic(myTopic)
-                .Create();
+        await ProduceMessages(producer, cts.Token);
+    }
 
-            Console.WriteLine("Press Ctrl+C to exit");
+    private static async Task ProduceMessages(IProducer<string> producer, CancellationToken cancellationToken)
+    {
+        var delay = TimeSpan.FromSeconds(5);
 
-            await ProduceMessages(producer, cts.Token);
-        }
-
-        private static async Task ProduceMessages(IProducer<string> producer, CancellationToken cancellationToken)
+        try
         {
-            var delay = TimeSpan.FromSeconds(5);
-
-            try
+            while (!cancellationToken.IsCancellationRequested)
             {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    var data = DateTime.UtcNow.ToLongTimeString();
-                    _ = await producer.Send(data, cancellationToken);
-                    Console.WriteLine("Sent: " + data);
-                    await Task.Delay(delay, cancellationToken);
-                }
+                var data = DateTime.UtcNow.ToLongTimeString();
+                _ = await producer.Send(data, cancellationToken);
+                Console.WriteLine("Sent: " + data);
+                await Task.Delay(delay, cancellationToken);
             }
-            catch (OperationCanceledException) // If not using the cancellationToken, then just dispose the producer and catch ObjectDisposedException instead
-            { }
         }
+        catch (OperationCanceledException) // If not using the cancellationToken, then just dispose the producer and catch ObjectDisposedException instead
+        { }
+    }
 
-        private static void Monitor(ProducerStateChanged stateChanged, CancellationToken cancellationToken)
+    private static void Monitor(ProducerStateChanged stateChanged, CancellationToken cancellationToken)
+    {
+        var stateMessage = stateChanged.ProducerState switch
         {
-            var stateMessage = stateChanged.ProducerState switch
-            {
-                ProducerState.Connected => "is connected",
-                ProducerState.Disconnected => "is disconnected",
-                ProducerState.PartiallyConnected => "is partially connected",
-                ProducerState.Closed => "has closed",
-                ProducerState.Faulted => "has faulted",
-                _ => $"has an unknown state '{stateChanged.ProducerState}'"
-            };
+            ProducerState.Connected => "is connected",
+            ProducerState.Disconnected => "is disconnected",
+            ProducerState.PartiallyConnected => "is partially connected",
+            ProducerState.Closed => "has closed",
+            ProducerState.Faulted => "has faulted",
+            _ => $"has an unknown state '{stateChanged.ProducerState}'"
+        };
 
-            var topic = stateChanged.Producer.Topic;
-            Console.WriteLine($"The producer for topic '{topic}' " + stateMessage);
-        }
+        var topic = stateChanged.Producer.Topic;
+        Console.WriteLine($"The producer for topic '{topic}' " + stateMessage);
     }
 }

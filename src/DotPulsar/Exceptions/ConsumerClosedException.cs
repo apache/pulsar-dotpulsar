@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class ConsumerClosedException : DotPulsarException
 {
-    public sealed class ConsumerClosedException : DotPulsarException
-    {
-        public ConsumerClosedException() : base("Consumer has closed") { }
-    }
+    public ConsumerClosedException() : base("Consumer has closed") { }
 }

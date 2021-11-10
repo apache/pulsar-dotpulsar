@@ -12,41 +12,40 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Extensions
+namespace DotPulsar.Extensions;
+
+using DotPulsar.Abstractions;
+using DotPulsar.Internal;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// Extensions for IReaderBuilder.
+/// </summary>
+public static class ReaderBuilderExtensions
 {
-    using DotPulsar.Abstractions;
-    using DotPulsar.Internal;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+    /// <summary>
+    /// Register a state changed handler.
+    /// </summary>
+    public static IReaderBuilder<TMessage> StateChangedHandler<TMessage>(
+        this IReaderBuilder<TMessage> builder,
+        Action<ReaderStateChanged, CancellationToken> handler,
+        CancellationToken cancellationToken = default)
+    {
+        builder.StateChangedHandler(new ActionStateChangedHandler<ReaderStateChanged>(handler, cancellationToken));
+        return builder;
+    }
 
     /// <summary>
-    /// Extensions for IReaderBuilder.
+    /// Register a state changed handler.
     /// </summary>
-    public static class ReaderBuilderExtensions
+    public static IReaderBuilder<TMessage> StateChangedHandler<TMessage>(
+        this IReaderBuilder<TMessage> builder,
+        Func<ReaderStateChanged, CancellationToken, ValueTask> handler,
+        CancellationToken cancellationToken = default)
     {
-        /// <summary>
-        /// Register a state changed handler.
-        /// </summary>
-        public static IReaderBuilder<TMessage> StateChangedHandler<TMessage>(
-            this IReaderBuilder<TMessage> builder,
-            Action<ReaderStateChanged, CancellationToken> handler,
-            CancellationToken cancellationToken = default)
-        {
-            builder.StateChangedHandler(new ActionStateChangedHandler<ReaderStateChanged>(handler, cancellationToken));
-            return builder;
-        }
-
-        /// <summary>
-        /// Register a state changed handler.
-        /// </summary>
-        public static IReaderBuilder<TMessage> StateChangedHandler<TMessage>(
-            this IReaderBuilder<TMessage> builder,
-            Func<ReaderStateChanged, CancellationToken, ValueTask> handler,
-            CancellationToken cancellationToken = default)
-        {
-            builder.StateChangedHandler(new FuncStateChangedHandler<ReaderStateChanged>(handler, cancellationToken));
-            return builder;
-        }
+        builder.StateChangedHandler(new FuncStateChangedHandler<ReaderStateChanged>(handler, cancellationToken));
+        return builder;
     }
 }

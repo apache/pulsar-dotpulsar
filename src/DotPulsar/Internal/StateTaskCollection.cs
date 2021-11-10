@@ -12,86 +12,85 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+public sealed class StateTaskCollection<TState> where TState : notnull
 {
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
+    private readonly object _lock;
+    private readonly LinkedList<StateTask<TState>> _awaiters;
 
-    public sealed class StateTaskCollection<TState> where TState : notnull
+    public StateTaskCollection()
     {
-        private readonly object _lock;
-        private readonly LinkedList<StateTask<TState>> _awaiters;
+        _lock = new object();
+        _awaiters = new LinkedList<StateTask<TState>>();
+    }
 
-        public StateTaskCollection()
+    public Task<TState> CreateTaskFor(TState state, StateChanged changed, CancellationToken cancellationToken)
+    {
+        LinkedListNode<StateTask<TState>> node;
+
+        lock (_lock)
         {
-            _lock = new object();
-            _awaiters = new LinkedList<StateTask<TState>>();
+            node = _awaiters.AddFirst(new StateTask<TState>(state, changed));
         }
 
-        public Task<TState> CreateTaskFor(TState state, StateChanged changed, CancellationToken cancellationToken)
+        node.Value.CancelableCompletionSource.SetupCancellation(() => TaskWasCanceled(node), cancellationToken);
+
+        return node.Value.CancelableCompletionSource.Task;
+    }
+
+    public void CompleteTasksAwaiting(TState state)
+    {
+        lock (_lock)
         {
-            LinkedListNode<StateTask<TState>> node;
+            var awaiter = _awaiters.First;
 
-            lock (_lock)
+            while (awaiter is not null)
             {
-                node = _awaiters.AddFirst(new StateTask<TState>(state, changed));
-            }
+                var next = awaiter.Next;
 
-            node.Value.CancelableCompletionSource.SetupCancellation(() => TaskWasCanceled(node), cancellationToken);
-
-            return node.Value.CancelableCompletionSource.Task;
-        }
-
-        public void CompleteTasksAwaiting(TState state)
-        {
-            lock (_lock)
-            {
-                var awaiter = _awaiters.First;
-
-                while (awaiter is not null)
+                if (awaiter.Value.IsAwaiting(state))
                 {
-                    var next = awaiter.Next;
-
-                    if (awaiter.Value.IsAwaiting(state))
-                    {
-                        _awaiters.Remove(awaiter);
-                        awaiter.Value.CancelableCompletionSource.SetResult(state);
-                        awaiter.Value.CancelableCompletionSource.Dispose();
-                    }
-
-                    awaiter = next;
+                    _awaiters.Remove(awaiter);
+                    awaiter.Value.CancelableCompletionSource.SetResult(state);
+                    awaiter.Value.CancelableCompletionSource.Dispose();
                 }
+
+                awaiter = next;
             }
         }
+    }
 
-        public void CompleteAllTasks(TState state)
+    public void CompleteAllTasks(TState state)
+    {
+        lock (_lock)
         {
-            lock (_lock)
+            foreach (var awaiter in _awaiters)
             {
-                foreach (var awaiter in _awaiters)
-                {
-                    awaiter.CancelableCompletionSource.SetResult(state);
-                    awaiter.CancelableCompletionSource.Dispose();
-                }
-
-                _awaiters.Clear();
+                awaiter.CancelableCompletionSource.SetResult(state);
+                awaiter.CancelableCompletionSource.Dispose();
             }
-        }
 
-        private void TaskWasCanceled(LinkedListNode<StateTask<TState>> node)
+            _awaiters.Clear();
+        }
+    }
+
+    private void TaskWasCanceled(LinkedListNode<StateTask<TState>> node)
+    {
+        lock (_lock)
         {
-            lock (_lock)
+            try
             {
-                try
-                {
-                    _awaiters.Remove(node);
-                    node.Value.Dispose();
-                }
-                catch
-                {
-                    // Ignore
-                }
+                _awaiters.Remove(node);
+                node.Value.Dispose();
+            }
+            catch
+            {
+                // Ignore
             }
         }
     }

@@ -12,79 +12,78 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Abstractions;
+
+using System;
+using System.Security.Cryptography.X509Certificates;
+
+/// <summary>
+/// A pulsar client building abstraction.
+/// </summary>
+public interface IPulsarClientBuilder
 {
-    using System;
-    using System.Security.Cryptography.X509Certificates;
+    /// <summary>
+    /// Authenticate using a client certificate. This is optional.
+    /// </summary>
+    IPulsarClientBuilder AuthenticateUsingClientCertificate(X509Certificate2 clientCertificate);
 
     /// <summary>
-    /// A pulsar client building abstraction.
+    /// Authenticate using a (JSON Web) token. This is optional.
     /// </summary>
-    public interface IPulsarClientBuilder
-    {
-        /// <summary>
-        /// Authenticate using a client certificate. This is optional.
-        /// </summary>
-        IPulsarClientBuilder AuthenticateUsingClientCertificate(X509Certificate2 clientCertificate);
+    IPulsarClientBuilder AuthenticateUsingToken(string token);
 
-        /// <summary>
-        /// Authenticate using a (JSON Web) token. This is optional.
-        /// </summary>
-        IPulsarClientBuilder AuthenticateUsingToken(string token);
+    /// <summary>
+    /// Set connection encryption policy. The default is 'EnforceUnencrypted' if the ServiceUrl scheme is 'pulsar' and 'EnforceEncrypted' if it's 'pulsar+ssl'.
+    /// </summary>
+    IPulsarClientBuilder ConnectionSecurity(EncryptionPolicy encryptionPolicy);
 
-        /// <summary>
-        /// Set connection encryption policy. The default is 'EnforceUnencrypted' if the ServiceUrl scheme is 'pulsar' and 'EnforceEncrypted' if it's 'pulsar+ssl'.
-        /// </summary>
-        IPulsarClientBuilder ConnectionSecurity(EncryptionPolicy encryptionPolicy);
+    /// <summary>
+    /// Register a custom exception handler that will be invoked before the default exception handler.
+    /// </summary>
+    IPulsarClientBuilder ExceptionHandler(IHandleException exceptionHandler);
 
-        /// <summary>
-        /// Register a custom exception handler that will be invoked before the default exception handler.
-        /// </summary>
-        IPulsarClientBuilder ExceptionHandler(IHandleException exceptionHandler);
+    /// <summary>
+    /// The time to wait before sending a 'ping' if there has been no activity on the connection. The default is 30 seconds.
+    /// </summary>
+    IPulsarClientBuilder KeepAliveInterval(TimeSpan interval);
 
-        /// <summary>
-        /// The time to wait before sending a 'ping' if there has been no activity on the connection. The default is 30 seconds.
-        /// </summary>
-        IPulsarClientBuilder KeepAliveInterval(TimeSpan interval);
+    /// <summary>
+    /// Set the listener name. This is optional.
+    /// </summary>
+    IPulsarClientBuilder ListenerName(string listenerName);
 
-        /// <summary>
-        /// Set the listener name. This is optional.
-        /// </summary>
-        IPulsarClientBuilder ListenerName(string listenerName);
+    /// <summary>
+    /// The time to wait before retrying an operation or a reconnect. The default is 3 seconds.
+    /// </summary>
+    IPulsarClientBuilder RetryInterval(TimeSpan interval);
 
-        /// <summary>
-        /// The time to wait before retrying an operation or a reconnect. The default is 3 seconds.
-        /// </summary>
-        IPulsarClientBuilder RetryInterval(TimeSpan interval);
+    /// <summary>
+    /// The service URL for the Pulsar cluster. The default is "pulsar://localhost:6650".
+    /// </summary>
+    IPulsarClientBuilder ServiceUrl(Uri uri);
 
-        /// <summary>
-        /// The service URL for the Pulsar cluster. The default is "pulsar://localhost:6650".
-        /// </summary>
-        IPulsarClientBuilder ServiceUrl(Uri uri);
+    /// <summary>
+    /// Add a trusted certificate authority. This is optional.
+    /// </summary>
+    IPulsarClientBuilder TrustedCertificateAuthority(X509Certificate2 trustedCertificateAuthority);
 
-        /// <summary>
-        /// Add a trusted certificate authority. This is optional.
-        /// </summary>
-        IPulsarClientBuilder TrustedCertificateAuthority(X509Certificate2 trustedCertificateAuthority);
+    /// <summary>
+    /// Verify the certificate authority. The default is 'true'.
+    /// </summary>
+    IPulsarClientBuilder VerifyCertificateAuthority(bool verifyCertificateAuthority);
 
-        /// <summary>
-        /// Verify the certificate authority. The default is 'true'.
-        /// </summary>
-        IPulsarClientBuilder VerifyCertificateAuthority(bool verifyCertificateAuthority);
+    /// <summary>
+    /// Verify the certificate name with the hostname. The default is 'false'.
+    /// </summary>
+    IPulsarClientBuilder VerifyCertificateName(bool verifyCertificateName);
 
-        /// <summary>
-        /// Verify the certificate name with the hostname. The default is 'false'.
-        /// </summary>
-        IPulsarClientBuilder VerifyCertificateName(bool verifyCertificateName);
+    /// <summary>
+    /// The time to wait before checking for inactive connections that can be closed. The default is 60 seconds.
+    /// </summary>
+    IPulsarClientBuilder CloseInactiveConnectionsInterval(TimeSpan interval);
 
-        /// <summary>
-        /// The time to wait before checking for inactive connections that can be closed. The default is 60 seconds.
-        /// </summary>
-        IPulsarClientBuilder CloseInactiveConnectionsInterval(TimeSpan interval);
-
-        /// <summary>
-        /// Create the client.
-        /// </summary>
-        IPulsarClient Build();
-    }
+    /// <summary>
+    /// Create the client.
+    /// </summary>
+    IPulsarClient Build();
 }

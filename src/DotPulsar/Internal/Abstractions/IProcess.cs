@@ -12,15 +12,14 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Internal.Abstractions;
+
+using System;
+
+public interface IProcess : IAsyncDisposable
 {
-    using System;
+    Guid CorrelationId { get; }
 
-    public interface IProcess : IAsyncDisposable
-    {
-        Guid CorrelationId { get; }
-
-        void Start();
-        void Handle(IEvent @event);
-    }
+    void Start();
+    void Handle(IEvent @event);
 }

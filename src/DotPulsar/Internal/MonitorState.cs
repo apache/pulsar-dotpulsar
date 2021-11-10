@@ -12,74 +12,73 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using DotPulsar.Abstractions;
+using DotPulsar.Extensions;
+using System.Threading.Tasks;
+
+public static class StateMonitor
 {
-    using DotPulsar.Abstractions;
-    using DotPulsar.Extensions;
-    using System.Threading.Tasks;
-
-    public static class StateMonitor
+    public static async Task MonitorProducer(IProducer producer, IHandleStateChanged<ProducerStateChanged> handler)
     {
-        public static async Task MonitorProducer(IProducer producer, IHandleStateChanged<ProducerStateChanged> handler)
+        await Task.Yield();
+
+        var state = ProducerState.Disconnected;
+
+        while (!producer.IsFinalState(state))
         {
-            await Task.Yield();
-
-            var state = ProducerState.Disconnected;
-
-            while (!producer.IsFinalState(state))
+            var stateChanged = await producer.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
+            state = stateChanged.ProducerState;
+            try
             {
-                var stateChanged = await producer.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
-                state = stateChanged.ProducerState;
-                try
-                {
-                    await handler.OnStateChanged(stateChanged, handler.CancellationToken).ConfigureAwait(false);
-                }
-                catch
-                {
-                    // Ignore
-                }
+                await handler.OnStateChanged(stateChanged, handler.CancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignore
             }
         }
+    }
 
-        public static async Task MonitorConsumer(IConsumer consumer, IHandleStateChanged<ConsumerStateChanged> handler)
+    public static async Task MonitorConsumer(IConsumer consumer, IHandleStateChanged<ConsumerStateChanged> handler)
+    {
+        await Task.Yield();
+
+        var state = ConsumerState.Disconnected;
+
+        while (!consumer.IsFinalState(state))
         {
-            await Task.Yield();
-
-            var state = ConsumerState.Disconnected;
-
-            while (!consumer.IsFinalState(state))
+            var stateChanged = await consumer.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
+            state = stateChanged.ConsumerState;
+            try
             {
-                var stateChanged = await consumer.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
-                state = stateChanged.ConsumerState;
-                try
-                {
-                    await handler.OnStateChanged(stateChanged, handler.CancellationToken).ConfigureAwait(false);
-                }
-                catch
-                {
-                    // Ignore
-                }
+                await handler.OnStateChanged(stateChanged, handler.CancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignore
             }
         }
+    }
 
-        public static async Task MonitorReader(IReader reader, IHandleStateChanged<ReaderStateChanged> handler)
+    public static async Task MonitorReader(IReader reader, IHandleStateChanged<ReaderStateChanged> handler)
+    {
+        await Task.Yield();
+
+        var state = ReaderState.Disconnected;
+
+        while (!reader.IsFinalState(state))
         {
-            await Task.Yield();
-
-            var state = ReaderState.Disconnected;
-
-            while (!reader.IsFinalState(state))
+            var stateChanged = await reader.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
+            state = stateChanged.ReaderState;
+            try
             {
-                var stateChanged = await reader.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
-                state = stateChanged.ReaderState;
-                try
-                {
-                    await handler.OnStateChanged(stateChanged, handler.CancellationToken).ConfigureAwait(false);
-                }
-                catch
-                {
-                    // Ignore
-                }
+                await handler.OnStateChanged(stateChanged, handler.CancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignore
             }
         }
     }

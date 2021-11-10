@@ -12,24 +12,23 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Abstractions;
+
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// An abstraction for seeking.
+/// </summary>
+public interface ISeek
 {
-    using System.Threading;
-    using System.Threading.Tasks;
+    /// <summary>
+    /// Reset the cursor associated with the consumer or reader to a specific MessageId.
+    /// </summary>
+    ValueTask Seek(MessageId messageId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// An abstraction for seeking.
+    /// Reset the cursor associated with the consumer or reader to a specific message publish time using unix time in milliseconds.
     /// </summary>
-    public interface ISeek
-    {
-        /// <summary>
-        /// Reset the cursor associated with the consumer or reader to a specific MessageId.
-        /// </summary>
-        ValueTask Seek(MessageId messageId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Reset the cursor associated with the consumer or reader to a specific message publish time using unix time in milliseconds.
-        /// </summary>
-        ValueTask Seek(ulong publishTime, CancellationToken cancellationToken = default);
-    }
+    ValueTask Seek(ulong publishTime, CancellationToken cancellationToken = default);
 }

@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class SubscriptionNotFoundException : DotPulsarException
 {
-    public sealed class SubscriptionNotFoundException : DotPulsarException
-    {
-        public SubscriptionNotFoundException(string message) : base(message) { }
-    }
+    public SubscriptionNotFoundException(string message) : base(message) { }
 }

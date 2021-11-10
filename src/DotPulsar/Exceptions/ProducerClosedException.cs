@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class ProducerClosedException : DotPulsarException
 {
-    public sealed class ProducerClosedException : DotPulsarException
-    {
-        public ProducerClosedException() : base("Producer has closed") { }
-    }
+    public ProducerClosedException() : base("Producer has closed") { }
 }

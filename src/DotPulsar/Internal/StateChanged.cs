@@ -12,11 +12,10 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+public enum StateChanged : byte
 {
-    public enum StateChanged : byte
-    {
-        To,
-        From
-    }
+    To,
+    From
 }

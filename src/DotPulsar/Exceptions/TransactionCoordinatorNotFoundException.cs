@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+using System;
+
+public sealed class TransactionCoordinatorNotFoundException : DotPulsarException
 {
-    using System;
+    public TransactionCoordinatorNotFoundException(string message) : base(message) { }
 
-    public sealed class TransactionCoordinatorNotFoundException : DotPulsarException
-    {
-        public TransactionCoordinatorNotFoundException(string message) : base(message) { }
-
-        public TransactionCoordinatorNotFoundException(string message, Exception innerException) : base(message, innerException) { }
-    }
+    public TransactionCoordinatorNotFoundException(string message, Exception innerException) : base(message, innerException) { }
 }

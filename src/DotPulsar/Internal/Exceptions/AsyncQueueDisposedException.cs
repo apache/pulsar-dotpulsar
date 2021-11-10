@@ -12,12 +12,11 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Exceptions
-{
-    using System;
+namespace DotPulsar.Internal.Exceptions;
 
-    public sealed class AsyncQueueDisposedException : ObjectDisposedException
-    {
-        public AsyncQueueDisposedException() : base(typeof(AsyncQueue<>).FullName) { }
-    }
+using System;
+
+public sealed class AsyncQueueDisposedException : ObjectDisposedException
+{
+    public AsyncQueueDisposedException() : base(typeof(AsyncQueue<>).FullName) { }
 }

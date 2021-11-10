@@ -12,29 +12,28 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+using Abstractions;
+
+/// <summary>
+/// Representation of a producer state change.
+/// </summary>
+public sealed class ProducerStateChanged
 {
-    using Abstractions;
+    internal ProducerStateChanged(IProducer producer, ProducerState producerState)
+    {
+        Producer = producer;
+        ProducerState = producerState;
+    }
 
     /// <summary>
-    /// Representation of a producer state change.
+    /// The producer that changed state.
     /// </summary>
-    public sealed class ProducerStateChanged
-    {
-        internal ProducerStateChanged(IProducer producer, ProducerState producerState)
-        {
-            Producer = producer;
-            ProducerState = producerState;
-        }
+    public IProducer Producer { get; }
 
-        /// <summary>
-        /// The producer that changed state.
-        /// </summary>
-        public IProducer Producer { get; }
-
-        /// <summary>
-        /// The state that it changed to.
-        /// </summary>
-        public ProducerState ProducerState { get; }
-    }
+    /// <summary>
+    /// The state that it changed to.
+    /// </summary>
+    public ProducerState ProducerState { get; }
 }

@@ -12,19 +12,18 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
-{
-    using System.Threading;
-    using System.Threading.Tasks;
+namespace DotPulsar.Abstractions;
 
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// An abstraction for receiving a single message.
+/// </summary>
+public interface IReceive<TMessage>
+{
     /// <summary>
-    /// An abstraction for receiving a single message.
+    /// Receive a single message.
     /// </summary>
-    public interface IReceive<TMessage>
-    {
-        /// <summary>
-        /// Receive a single message.
-        /// </summary>
-        ValueTask<TMessage> Receive(CancellationToken cancellationToken = default);
-    }
+    ValueTask<TMessage> Receive(CancellationToken cancellationToken = default);
 }

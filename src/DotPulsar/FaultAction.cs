@@ -12,26 +12,25 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+/// <summary>
+/// Actions to take when an exception has been caught while executing an operation.
+/// </summary>
+public enum FaultAction : byte
 {
     /// <summary>
-    /// Actions to take when an exception has been caught while executing an operation.
+    /// Rethrow the exception.
     /// </summary>
-    public enum FaultAction : byte
-    {
-        /// <summary>
-        /// Rethrow the exception.
-        /// </summary>
-        Rethrow,
+    Rethrow,
 
-        /// <summary>
-        /// Throw the exception from the ExceptionContext.
-        /// </summary>
-        ThrowException,
+    /// <summary>
+    /// Throw the exception from the ExceptionContext.
+    /// </summary>
+    ThrowException,
 
-        /// <summary>
-        /// Retry the operation.
-        /// </summary>
-        Retry
-    }
+    /// <summary>
+    /// Retry the operation.
+    /// </summary>
+    Retry
 }

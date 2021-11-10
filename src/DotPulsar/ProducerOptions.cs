@@ -12,70 +12,69 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+using DotPulsar.Abstractions;
+
+/// <summary>
+/// The producer building options.
+/// </summary>
+public sealed class ProducerOptions<TMessage>
 {
-    using DotPulsar.Abstractions;
+    /// <summary>
+    /// The default compression type.
+    /// </summary>
+    public static readonly CompressionType DefaultCompressionType = CompressionType.None;
 
     /// <summary>
-    /// The producer building options.
+    /// The default initial sequence id.
     /// </summary>
-    public sealed class ProducerOptions<TMessage>
+    public static readonly ulong DefaultInitialSequenceId = 0;
+
+    /// <summary>
+    /// Initializes a new instance using the specified topic.
+    /// </summary>
+    public ProducerOptions(string topic, ISchema<TMessage> schema)
     {
-        /// <summary>
-        /// The default compression type.
-        /// </summary>
-        public static readonly CompressionType DefaultCompressionType = CompressionType.None;
-
-        /// <summary>
-        /// The default initial sequence id.
-        /// </summary>
-        public static readonly ulong DefaultInitialSequenceId = 0;
-
-        /// <summary>
-        /// Initializes a new instance using the specified topic.
-        /// </summary>
-        public ProducerOptions(string topic, ISchema<TMessage> schema)
-        {
-            CompressionType = DefaultCompressionType;
-            InitialSequenceId = DefaultInitialSequenceId;
-            Topic = topic;
-            Schema = schema;
-            MessageRouter = new RoundRobinPartitionRouter();
-        }
-
-        /// <summary>
-        /// Set the compression type. The default is 'None'.
-        /// </summary>
-        public CompressionType CompressionType { get; set; }
-
-        /// <summary>
-        /// Set the initial sequence id. The default is 0.
-        /// </summary>
-        public ulong InitialSequenceId { get; set; }
-
-        /// <summary>
-        /// Set the producer name. This is optional.
-        /// </summary>
-        public string? ProducerName { get; set; }
-
-        /// <summary>
-        /// Set the schema. This is required.
-        /// </summary>
-        public ISchema<TMessage> Schema { get; set; }
-
-        /// <summary>
-        /// Register a state changed handler. This is optional.
-        /// </summary>
-        public IHandleStateChanged<ProducerStateChanged>? StateChangedHandler { get; set; }
-
-        /// <summary>
-        /// Set the topic for this producer. This is required.
-        /// </summary>
-        public string Topic { get; set; }
-
-        /// <summary>
-        /// Set the message router. The default router is the Round Robin partition router.
-        /// </summary>
-        public IMessageRouter MessageRouter { get; set; }
+        CompressionType = DefaultCompressionType;
+        InitialSequenceId = DefaultInitialSequenceId;
+        Topic = topic;
+        Schema = schema;
+        MessageRouter = new RoundRobinPartitionRouter();
     }
+
+    /// <summary>
+    /// Set the compression type. The default is 'None'.
+    /// </summary>
+    public CompressionType CompressionType { get; set; }
+
+    /// <summary>
+    /// Set the initial sequence id. The default is 0.
+    /// </summary>
+    public ulong InitialSequenceId { get; set; }
+
+    /// <summary>
+    /// Set the producer name. This is optional.
+    /// </summary>
+    public string? ProducerName { get; set; }
+
+    /// <summary>
+    /// Set the schema. This is required.
+    /// </summary>
+    public ISchema<TMessage> Schema { get; set; }
+
+    /// <summary>
+    /// Register a state changed handler. This is optional.
+    /// </summary>
+    public IHandleStateChanged<ProducerStateChanged>? StateChangedHandler { get; set; }
+
+    /// <summary>
+    /// Set the topic for this producer. This is required.
+    /// </summary>
+    public string Topic { get; set; }
+
+    /// <summary>
+    /// Set the message router. The default router is the Round Robin partition router.
+    /// </summary>
+    public IMessageRouter MessageRouter { get; set; }
 }

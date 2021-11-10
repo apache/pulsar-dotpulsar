@@ -12,13 +12,12 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
-{
-    public sealed class SubscribeResponse
-    {
-        public SubscribeResponse(ulong consumerId)
-            => ConsumerId = consumerId;
+namespace DotPulsar.Internal;
 
-        public ulong ConsumerId { get; }
-    }
+public sealed class SubscribeResponse
+{
+    public SubscribeResponse(ulong consumerId)
+        => ConsumerId = consumerId;
+
+    public ulong ConsumerId { get; }
 }

@@ -12,36 +12,35 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.StressTests
+namespace DotPulsar.StressTests;
+
+using Abstractions;
+using Internal;
+using System;
+using System.Threading.Tasks;
+using Xunit.Abstractions;
+
+internal class XunitExceptionHandler : IHandleException
 {
-    using Abstractions;
-    using Internal;
-    using System;
-    using System.Threading.Tasks;
-    using Xunit.Abstractions;
+    private readonly ITestOutputHelper _output;
+    private readonly IHandleException _exceptionHandler;
 
-    internal class XunitExceptionHandler : IHandleException
+    public XunitExceptionHandler(ITestOutputHelper output, IHandleException exceptionHandler)
     {
-        private readonly ITestOutputHelper _output;
-        private readonly IHandleException _exceptionHandler;
+        _output = output;
+        _exceptionHandler = exceptionHandler;
+    }
 
-        public XunitExceptionHandler(ITestOutputHelper output, IHandleException exceptionHandler)
-        {
-            _output = output;
-            _exceptionHandler = exceptionHandler;
-        }
+    public XunitExceptionHandler(ITestOutputHelper output) : this(output, new DefaultExceptionHandler(TimeSpan.FromSeconds(3))) { }
 
-        public XunitExceptionHandler(ITestOutputHelper output) : this(output, new DefaultExceptionHandler(TimeSpan.FromSeconds(3))) { }
+    public async ValueTask OnException(ExceptionContext exceptionContext)
+    {
+        await _exceptionHandler.OnException(exceptionContext).ConfigureAwait(false);
 
-        public async ValueTask OnException(ExceptionContext exceptionContext)
-        {
-            await _exceptionHandler.OnException(exceptionContext).ConfigureAwait(false);
-
-            if (!exceptionContext.ExceptionHandled)
-                _output.WriteLine(
-                    $"{exceptionContext.Exception.GetType().Name} " +
-                    $"{exceptionContext.Exception.Message}{Environment.NewLine}" +
-                    $"{exceptionContext.Exception.StackTrace}");
-        }
+        if (!exceptionContext.ExceptionHandled)
+            _output.WriteLine(
+                $"{exceptionContext.Exception.GetType().Name} " +
+                $"{exceptionContext.Exception.Message}{Environment.NewLine}" +
+                $"{exceptionContext.Exception.StackTrace}");
     }
 }

@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
-{
-    /// <summary>
-    /// A generic reader abstraction.
-    /// </summary>
-    public interface IReader<TMessage> : IReader, IReceive<IMessage<TMessage>> { }
-}
+namespace DotPulsar.Abstractions;
+
+/// <summary>
+/// A generic reader abstraction.
+/// </summary>
+public interface IReader<TMessage> : IReader, IReceive<IMessage<TMessage>> { }

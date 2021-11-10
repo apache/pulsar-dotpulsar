@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class SchemaSerializationException : DotPulsarException
 {
-    public sealed class SchemaSerializationException : DotPulsarException
-    {
-        public SchemaSerializationException(string message) : base(message) { }
-    }
+    public SchemaSerializationException(string message) : base(message) { }
 }

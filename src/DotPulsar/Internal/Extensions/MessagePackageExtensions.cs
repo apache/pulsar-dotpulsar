@@ -12,29 +12,28 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Extensions
+namespace DotPulsar.Internal.Extensions;
+
+using PulsarApi;
+using System.Buffers;
+
+public static class MessagePackageExtensions
 {
-    using PulsarApi;
-    using System.Buffers;
+    public static uint GetMetadataSize(this MessagePackage package)
+        => package.Data.ReadUInt32(Constants.MetadataSizeOffset, true);
 
-    public static class MessagePackageExtensions
-    {
-        public static uint GetMetadataSize(this MessagePackage package)
-            => package.Data.ReadUInt32(Constants.MetadataSizeOffset, true);
+    public static MessageMetadata ExtractMetadata(this MessagePackage package, uint metadataSize)
+        => Serializer.Deserialize<MessageMetadata>(package.Data.Slice(Constants.MetadataOffset, metadataSize));
 
-        public static MessageMetadata ExtractMetadata(this MessagePackage package, uint metadataSize)
-            => Serializer.Deserialize<MessageMetadata>(package.Data.Slice(Constants.MetadataOffset, metadataSize));
+    public static ReadOnlySequence<byte> ExtractData(this MessagePackage package, uint metadataSize)
+        => package.Data.Slice(Constants.MetadataOffset + metadataSize);
 
-        public static ReadOnlySequence<byte> ExtractData(this MessagePackage package, uint metadataSize)
-            => package.Data.Slice(Constants.MetadataOffset + metadataSize);
+    public static bool ValidateMagicNumberAndChecksum(this MessagePackage package)
+        => StartsWithMagicNumber(package.Data) && HasValidChecksum(package.Data);
 
-        public static bool ValidateMagicNumberAndChecksum(this MessagePackage package)
-            => StartsWithMagicNumber(package.Data) && HasValidChecksum(package.Data);
+    private static bool StartsWithMagicNumber(ReadOnlySequence<byte> input)
+        => input.StartsWith(Constants.MagicNumber);
 
-        private static bool StartsWithMagicNumber(ReadOnlySequence<byte> input)
-            => input.StartsWith(Constants.MagicNumber);
-
-        private static bool HasValidChecksum(ReadOnlySequence<byte> input)
-            => input.ReadUInt32(Constants.MagicNumber.Length, true) == Crc32C.Calculate(input.Slice(Constants.MetadataSizeOffset));
-    }
+    private static bool HasValidChecksum(ReadOnlySequence<byte> input)
+        => input.ReadUInt32(Constants.MagicNumber.Length, true) == Crc32C.Calculate(input.Slice(Constants.MetadataSizeOffset));
 }

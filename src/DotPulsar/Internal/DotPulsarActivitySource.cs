@@ -12,72 +12,71 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using DotPulsar.Abstractions;
+using System.Collections.Generic;
+using System.Diagnostics;
+
+public static class DotPulsarActivitySource
 {
-    using DotPulsar.Abstractions;
-    using System.Collections.Generic;
-    using System.Diagnostics;
+    private const string _traceParent = "traceparent";
+    private const string _traceState = "tracestate";
 
-    public static class DotPulsarActivitySource
+    static DotPulsarActivitySource()
     {
-        private const string _traceParent = "traceparent";
-        private const string _traceState = "tracestate";
+        ActivitySource = new ActivitySource(Constants.ClientName, Constants.ClientVersion);
+    }
 
-        static DotPulsarActivitySource()
+    public static ActivitySource ActivitySource { get; }
+
+    public static Activity? StartConsumerActivity(IMessage message, string operationName, KeyValuePair<string, object?>[] tags)
+    {
+        if (!ActivitySource.HasListeners())
+            return null;
+
+        var properties = message.Properties;
+
+        if (properties.TryGetValue(_traceParent, out var traceparent))
         {
-            ActivitySource = new ActivitySource(Constants.ClientName, Constants.ClientVersion);
+            var tracestate = properties.ContainsKey(_traceState) ? properties[_traceState] : null;
+            if (ActivityContext.TryParse(traceparent, tracestate, out var activityContext))
+                return ActivitySource.StartActivity(operationName, ActivityKind.Consumer, activityContext, tags);
         }
 
-        public static ActivitySource ActivitySource { get; }
+        var activity = ActivitySource.StartActivity(operationName, ActivityKind.Consumer);
 
-        public static Activity? StartConsumerActivity(IMessage message, string operationName, KeyValuePair<string, object?>[] tags)
+        if (activity is not null && activity.IsAllDataRequested)
         {
-            if (!ActivitySource.HasListeners())
-                return null;
-
-            var properties = message.Properties;
-
-            if (properties.TryGetValue(_traceParent, out var traceparent))
+            for (var i = 0; i < tags.Length; ++i)
             {
-                var tracestate = properties.ContainsKey(_traceState) ? properties[_traceState] : null;
-                if (ActivityContext.TryParse(traceparent, tracestate, out var activityContext))
-                    return ActivitySource.StartActivity(operationName, ActivityKind.Consumer, activityContext, tags);
+                var tag = tags[i];
+                activity.SetTag(tag.Key, tag.Value);
             }
-
-            var activity = ActivitySource.StartActivity(operationName, ActivityKind.Consumer);
-
-            if (activity is not null && activity.IsAllDataRequested)
-            {
-                for (var i = 0; i < tags.Length; ++i)
-                {
-                    var tag = tags[i];
-                    activity.SetTag(tag.Key, tag.Value);
-                }
-            }
-
-            return activity;
         }
 
-        public static Activity? StartProducerActivity(MessageMetadata metadata, string operationName, KeyValuePair<string, object?>[] tags)
+        return activity;
+    }
+
+    public static Activity? StartProducerActivity(MessageMetadata metadata, string operationName, KeyValuePair<string, object?>[] tags)
+    {
+        if (!ActivitySource.HasListeners())
+            return null;
+
+        var activity = ActivitySource.StartActivity(operationName, ActivityKind.Producer);
+
+        if (activity is not null && activity.IsAllDataRequested)
         {
-            if (!ActivitySource.HasListeners())
-                return null;
+            metadata[_traceParent] = activity.TraceId.ToHexString();
+            metadata[_traceState] = activity.TraceStateString;
 
-            var activity = ActivitySource.StartActivity(operationName, ActivityKind.Producer);
-
-            if (activity is not null && activity.IsAllDataRequested)
+            for (var i = 0; i < tags.Length; ++i)
             {
-                metadata[_traceParent] = activity.TraceId.ToHexString();
-                metadata[_traceState] = activity.TraceStateString;
-
-                for (var i = 0; i < tags.Length; ++i)
-                {
-                    var tag = tags[i];
-                    activity.SetTag(tag.Key, tag.Value);
-                }
+                var tag = tags[i];
+                activity.SetTag(tag.Key, tag.Value);
             }
-
-            return activity;
         }
+
+        return activity;
     }
 }

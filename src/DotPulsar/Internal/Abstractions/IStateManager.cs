@@ -12,11 +12,10 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Internal.Abstractions;
+
+public interface IStateManager<TState> : IStateChanged<TState> where TState : notnull
 {
-    public interface IStateManager<TState> : IStateChanged<TState> where TState : notnull
-    {
-        TState CurrentState { get; }
-        TState SetState(TState state);
-    }
+    TState CurrentState { get; }
+    TState SetState(TState state);
 }

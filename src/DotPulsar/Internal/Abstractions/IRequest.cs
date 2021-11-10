@@ -12,15 +12,14 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
-{
-    using DotPulsar.Internal.PulsarApi;
-    using System;
+namespace DotPulsar.Internal.Abstractions;
 
-    public interface IRequest : IEquatable<IRequest>
-    {
-        bool SenderIsProducer(ulong producerId);
-        bool SenderIsConsumer(ulong consumerId);
-        bool IsCommandType(BaseCommand.Type commandType);
-    }
+using DotPulsar.Internal.PulsarApi;
+using System;
+
+public interface IRequest : IEquatable<IRequest>
+{
+    bool SenderIsProducer(ulong producerId);
+    bool SenderIsConsumer(ulong consumerId);
+    bool IsCommandType(BaseCommand.Type commandType);
 }

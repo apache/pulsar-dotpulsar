@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.StressTests.Fixtures
-{
-    using Xunit;
+namespace DotPulsar.StressTests.Fixtures;
 
-    [CollectionDefinition(nameof(StandaloneClusterTest))]
-    public class StandaloneClusterTest : ICollectionFixture<StandaloneClusterFixture> { }
-}
+using Xunit;
+
+[CollectionDefinition(nameof(StandaloneClusterTest))]
+public class StandaloneClusterTest : ICollectionFixture<StandaloneClusterFixture> { }

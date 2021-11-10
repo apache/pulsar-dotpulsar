@@ -12,29 +12,28 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using DotPulsar.Abstractions;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public sealed class ActionStateChangedHandler<TStateChanged> : IHandleStateChanged<TStateChanged>
 {
-    using DotPulsar.Abstractions;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+    private readonly Action<TStateChanged, CancellationToken> _stateChangedHandler;
 
-    public sealed class ActionStateChangedHandler<TStateChanged> : IHandleStateChanged<TStateChanged>
+    public ActionStateChangedHandler(Action<TStateChanged, CancellationToken> stateChangedHandler, CancellationToken cancellationToken)
     {
-        private readonly Action<TStateChanged, CancellationToken> _stateChangedHandler;
+        _stateChangedHandler = stateChangedHandler;
+        CancellationToken = cancellationToken;
+    }
 
-        public ActionStateChangedHandler(Action<TStateChanged, CancellationToken> stateChangedHandler, CancellationToken cancellationToken)
-        {
-            _stateChangedHandler = stateChangedHandler;
-            CancellationToken = cancellationToken;
-        }
+    public CancellationToken CancellationToken { get; }
 
-        public CancellationToken CancellationToken { get; }
-
-        public ValueTask OnStateChanged(TStateChanged stateChanged, CancellationToken cancellationToken)
-        {
-            _stateChangedHandler(stateChanged, CancellationToken);
-            return new ValueTask();
-        }
+    public ValueTask OnStateChanged(TStateChanged stateChanged, CancellationToken cancellationToken)
+    {
+        _stateChangedHandler(stateChanged, CancellationToken);
+        return new ValueTask();
     }
 }

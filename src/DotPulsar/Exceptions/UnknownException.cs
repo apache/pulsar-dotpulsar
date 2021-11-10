@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class UnknownException : DotPulsarException
 {
-    public sealed class UnknownException : DotPulsarException
-    {
-        public UnknownException(string message) : base(message) { }
-    }
+    public UnknownException(string message) : base(message) { }
 }

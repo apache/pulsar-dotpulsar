@@ -12,51 +12,50 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.StressTests
+namespace DotPulsar.StressTests;
+
+using Extensions;
+using Fixtures;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+using Xunit.Abstractions;
+
+[Collection(nameof(StandaloneClusterTest))]
+public class ConnectionTests
 {
-    using Extensions;
-    using Fixtures;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Xunit;
-    using Xunit.Abstractions;
+    private readonly ITestOutputHelper _output;
 
-    [Collection(nameof(StandaloneClusterTest))]
-    public class ConnectionTests
+    public ConnectionTests(ITestOutputHelper output)
+        => _output = output;
+
+    [Theory]
+    [InlineData("pulsar://localhost:54545")] // test that we can connect directly to a broker
+    [InlineData("pulsar://localhost:6666")] // test that we can connect through a reverse proxy (NOT a pulsar proxy)
+    public async Task ConnectionHandshake_GivenValidServiceUrls_ShouldEstablishConnection(string serviceUrl)
     {
-        private readonly ITestOutputHelper _output;
+        //Arrange
+        var testRunId = Guid.NewGuid().ToString("N");
 
-        public ConnectionTests(ITestOutputHelper output)
-            => _output = output;
+        var topic = $"persistent://public/default/consumer-tests-{testRunId}";
 
-        [Theory]
-        [InlineData("pulsar://localhost:54545")] // test that we can connect directly to a broker
-        [InlineData("pulsar://localhost:6666")] // test that we can connect through a reverse proxy (NOT a pulsar proxy)
-        public async Task ConnectionHandshake_GivenValidServiceUrls_ShouldEstablishConnection(string serviceUrl)
-        {
-            //Arrange
-            var testRunId = Guid.NewGuid().ToString("N");
+        var builder = PulsarClient.Builder()
+            .ExceptionHandler(new XunitExceptionHandler(_output));
 
-            var topic = $"persistent://public/default/consumer-tests-{testRunId}";
+        if (!string.IsNullOrEmpty(serviceUrl))
+            builder.ServiceUrl(new Uri(serviceUrl));
 
-            var builder = PulsarClient.Builder()
-                .ExceptionHandler(new XunitExceptionHandler(_output));
+        await using var client = builder.Build();
 
-            if (!string.IsNullOrEmpty(serviceUrl))
-                builder.ServiceUrl(new Uri(serviceUrl));
+        await using var producer = client.NewProducer(Schema.ByteArray)
+            .ProducerName($"producer-{testRunId}")
+            .Topic(topic)
+            .Create();
 
-            await using var client = builder.Build();
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
-            await using var producer = client.NewProducer(Schema.ByteArray)
-                .ProducerName($"producer-{testRunId}")
-                .Topic(topic)
-                .Create();
-
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-
-            //Act & Assert
-            await producer.StateChangedTo(ProducerState.Connected, cts.Token);
-        }
+        //Act & Assert
+        await producer.StateChangedTo(ProducerState.Connected, cts.Token);
     }
 }

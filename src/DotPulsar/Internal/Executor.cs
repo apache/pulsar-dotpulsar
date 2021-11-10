@@ -12,154 +12,153 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using Abstractions;
+using DotPulsar.Abstractions;
+using Events;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public sealed class Executor : IExecute
 {
-    using Abstractions;
-    using DotPulsar.Abstractions;
-    using Events;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+    private readonly Guid _correlationId;
+    private readonly IRegisterEvent _eventRegister;
+    private readonly IHandleException _exceptionHandler;
 
-    public sealed class Executor : IExecute
+    public Executor(Guid correlationId, IRegisterEvent eventRegister, IHandleException exceptionHandler)
     {
-        private readonly Guid _correlationId;
-        private readonly IRegisterEvent _eventRegister;
-        private readonly IHandleException _exceptionHandler;
+        _correlationId = correlationId;
+        _eventRegister = eventRegister;
+        _exceptionHandler = exceptionHandler;
+    }
 
-        public Executor(Guid correlationId, IRegisterEvent eventRegister, IHandleException exceptionHandler)
+    public async ValueTask Execute(Action action, CancellationToken cancellationToken)
+    {
+        while (true)
         {
-            _correlationId = correlationId;
-            _eventRegister = eventRegister;
-            _exceptionHandler = exceptionHandler;
-        }
-
-        public async ValueTask Execute(Action action, CancellationToken cancellationToken)
-        {
-            while (true)
+            try
             {
-                try
-                {
-                    action();
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                        throw;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
+                action();
+                return;
             }
-        }
-
-        public async ValueTask Execute(Func<Task> func, CancellationToken cancellationToken)
-        {
-            while (true)
+            catch (Exception ex)
             {
-                try
-                {
-                    await func().ConfigureAwait(false);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                        throw;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
+                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    throw;
             }
-        }
 
-        public async ValueTask Execute(Func<ValueTask> func, CancellationToken cancellationToken)
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+    }
+
+    public async ValueTask Execute(Func<Task> func, CancellationToken cancellationToken)
+    {
+        while (true)
         {
-            while (true)
+            try
             {
-                try
-                {
-                    await func().ConfigureAwait(false);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                        throw;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
+                await func().ConfigureAwait(false);
+                return;
             }
-        }
-
-        public async ValueTask<TResult> Execute<TResult>(Func<TResult> func, CancellationToken cancellationToken)
-        {
-            while (true)
+            catch (Exception ex)
             {
-                try
-                {
-                    return func();
-                }
-                catch (Exception ex)
-                {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                        throw;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
+                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    throw;
             }
-        }
 
-        public async ValueTask<TResult> Execute<TResult>(Func<Task<TResult>> func, CancellationToken cancellationToken)
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+    }
+
+    public async ValueTask Execute(Func<ValueTask> func, CancellationToken cancellationToken)
+    {
+        while (true)
         {
-            while (true)
+            try
             {
-                try
-                {
-                    return await func().ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                        throw;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
+                await func().ConfigureAwait(false);
+                return;
             }
-        }
-
-        public async ValueTask<TResult> Execute<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken)
-        {
-            while (true)
+            catch (Exception ex)
             {
-                try
-                {
-                    return await func().ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                        throw;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
+                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    throw;
             }
-        }
 
-        private async ValueTask<bool> Handle(Exception exception, CancellationToken cancellationToken)
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+    }
+
+    public async ValueTask<TResult> Execute<TResult>(Func<TResult> func, CancellationToken cancellationToken)
+    {
+        while (true)
         {
-            if (cancellationToken.IsCancellationRequested)
-                return true;
+            try
+            {
+                return func();
+            }
+            catch (Exception ex)
+            {
+                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    throw;
+            }
 
-            var context = new ExceptionContext(exception, cancellationToken);
-
-            await _exceptionHandler.OnException(context).ConfigureAwait(false);
-
-            if (context.Result != FaultAction.Retry)
-                _eventRegister.Register(new ExecutorFaulted(_correlationId));
-
-            return context.Result == FaultAction.ThrowException
-                ? throw context.Exception
-                : context.Result == FaultAction.Rethrow;
+            cancellationToken.ThrowIfCancellationRequested();
         }
+    }
+
+    public async ValueTask<TResult> Execute<TResult>(Func<Task<TResult>> func, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            try
+            {
+                return await func().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    throw;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+    }
+
+    public async ValueTask<TResult> Execute<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            try
+            {
+                return await func().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                    throw;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+    }
+
+    private async ValueTask<bool> Handle(Exception exception, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+            return true;
+
+        var context = new ExceptionContext(exception, cancellationToken);
+
+        await _exceptionHandler.OnException(context).ConfigureAwait(false);
+
+        if (context.Result != FaultAction.Retry)
+            _eventRegister.Register(new ExecutorFaulted(_correlationId));
+
+        return context.Result == FaultAction.ThrowException
+            ? throw context.Exception
+            : context.Result == FaultAction.Rethrow;
     }
 }

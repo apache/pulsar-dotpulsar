@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class ReaderClosedException : DotPulsarException
 {
-    public sealed class ReaderClosedException : DotPulsarException
-    {
-        public ReaderClosedException() : base("Reader has closed") { }
-    }
+    public ReaderClosedException() : base("Reader has closed") { }
 }

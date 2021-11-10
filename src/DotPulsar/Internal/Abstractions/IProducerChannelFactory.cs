@@ -12,13 +12,12 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
-{
-    using System.Threading;
-    using System.Threading.Tasks;
+namespace DotPulsar.Internal.Abstractions;
 
-    public interface IProducerChannelFactory
-    {
-        Task<IProducerChannel> Create(CancellationToken cancellationToken = default);
-    }
+using System.Threading;
+using System.Threading.Tasks;
+
+public interface IProducerChannelFactory
+{
+    Task<IProducerChannel> Create(CancellationToken cancellationToken = default);
 }

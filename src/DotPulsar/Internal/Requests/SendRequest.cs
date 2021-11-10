@@ -12,46 +12,45 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Requests
+namespace DotPulsar.Internal.Requests;
+
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.PulsarApi;
+using System;
+using System.Diagnostics.CodeAnalysis;
+
+public struct SendRequest : IRequest
 {
-    using DotPulsar.Internal.Abstractions;
-    using DotPulsar.Internal.PulsarApi;
-    using System;
-    using System.Diagnostics.CodeAnalysis;
+    private readonly ulong _producerId;
+    private readonly ulong _sequenceId;
 
-    public struct SendRequest : IRequest
+    public SendRequest(ulong producerId, ulong sequenceId)
     {
-        private readonly ulong _producerId;
-        private readonly ulong _sequenceId;
+        _producerId = producerId;
+        _sequenceId = sequenceId;
+    }
 
-        public SendRequest(ulong producerId, ulong sequenceId)
-        {
-            _producerId = producerId;
-            _sequenceId = sequenceId;
-        }
+    public bool SenderIsConsumer(ulong consumerId)
+        => false;
 
-        public bool SenderIsConsumer(ulong consumerId)
-            => false;
+    public bool SenderIsProducer(ulong producerId)
+        => _producerId == producerId;
 
-        public bool SenderIsProducer(ulong producerId)
-            => _producerId == producerId;
-
-        public bool IsCommandType(BaseCommand.Type commandType)
-            => commandType == BaseCommand.Type.Send;
+    public bool IsCommandType(BaseCommand.Type commandType)
+        => commandType == BaseCommand.Type.Send;
 
 #if NETSTANDARD2_0
-        public bool Equals(IRequest other)
+    public bool Equals(IRequest other)
 #else
         public bool Equals([AllowNull] IRequest other)
 #endif
-        {
-            if (other is SendRequest request)
-                return _producerId.Equals(request._producerId) && _sequenceId.Equals(request._sequenceId);
+    {
+        if (other is SendRequest request)
+            return _producerId.Equals(request._producerId) && _sequenceId.Equals(request._sequenceId);
 
-            return false;
-        }
-
-        public override int GetHashCode()
-            => HashCode.Combine(_producerId, _sequenceId);
+        return false;
     }
+
+    public override int GetHashCode()
+        => HashCode.Combine(_producerId, _sequenceId);
 }

@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+using System;
+
+public sealed class TransactionConflictException : DotPulsarException
 {
-    using System;
+    public TransactionConflictException(string message) : base(message) { }
 
-    public sealed class TransactionConflictException : DotPulsarException
-    {
-        public TransactionConflictException(string message) : base(message) { }
-
-        public TransactionConflictException(string message, Exception innerException) : base(message, innerException) { }
-    }
+    public TransactionConflictException(string message, Exception innerException) : base(message, innerException) { }
 }

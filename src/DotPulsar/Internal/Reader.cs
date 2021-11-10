@@ -12,130 +12,129 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using Abstractions;
+using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
+using DotPulsar.Internal.PulsarApi;
+using Events;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public sealed class Reader<TMessage> : IEstablishNewChannel, IReader<TMessage>
 {
-    using Abstractions;
-    using DotPulsar.Abstractions;
-    using DotPulsar.Exceptions;
-    using DotPulsar.Internal.PulsarApi;
-    using Events;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+    private readonly Guid _correlationId;
+    private readonly IRegisterEvent _eventRegister;
+    private IConsumerChannel<TMessage> _channel;
+    private readonly IExecute _executor;
+    private readonly IStateChanged<ReaderState> _state;
+    private readonly IConsumerChannelFactory<TMessage> _factory;
+    private int _isDisposed;
 
-    public sealed class Reader<TMessage> : IEstablishNewChannel, IReader<TMessage>
+    public Uri ServiceUrl { get; }
+    public string Topic { get; }
+
+    public Reader(
+        Guid correlationId,
+        Uri serviceUrl,
+        string topic,
+        IRegisterEvent eventRegister,
+        IConsumerChannel<TMessage> initialChannel,
+        IExecute executor,
+        IStateChanged<ReaderState> state,
+        IConsumerChannelFactory<TMessage> factory)
     {
-        private readonly Guid _correlationId;
-        private readonly IRegisterEvent _eventRegister;
-        private IConsumerChannel<TMessage> _channel;
-        private readonly IExecute _executor;
-        private readonly IStateChanged<ReaderState> _state;
-        private readonly IConsumerChannelFactory<TMessage> _factory;
-        private int _isDisposed;
+        _correlationId = correlationId;
+        ServiceUrl = serviceUrl;
+        Topic = topic;
+        _eventRegister = eventRegister;
+        _channel = initialChannel;
+        _executor = executor;
+        _state = state;
+        _factory = factory;
+        _isDisposed = 0;
 
-        public Uri ServiceUrl { get; }
-        public string Topic { get; }
+        _eventRegister.Register(new ReaderCreated(_correlationId));
+    }
 
-        public Reader(
-            Guid correlationId,
-            Uri serviceUrl,
-            string topic,
-            IRegisterEvent eventRegister,
-            IConsumerChannel<TMessage> initialChannel,
-            IExecute executor,
-            IStateChanged<ReaderState> state,
-            IConsumerChannelFactory<TMessage> factory)
-        {
-            _correlationId = correlationId;
-            ServiceUrl = serviceUrl;
-            Topic = topic;
-            _eventRegister = eventRegister;
-            _channel = initialChannel;
-            _executor = executor;
-            _state = state;
-            _factory = factory;
-            _isDisposed = 0;
+    public async ValueTask<ReaderState> OnStateChangeTo(ReaderState state, CancellationToken cancellationToken)
+        => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
 
-            _eventRegister.Register(new ReaderCreated(_correlationId));
-        }
+    public async ValueTask<ReaderState> OnStateChangeFrom(ReaderState state, CancellationToken cancellationToken)
+        => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask<ReaderState> OnStateChangeTo(ReaderState state, CancellationToken cancellationToken)
-            => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
+    public bool IsFinalState()
+        => _state.IsFinalState();
 
-        public async ValueTask<ReaderState> OnStateChangeFrom(ReaderState state, CancellationToken cancellationToken)
-            => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
+    public bool IsFinalState(ReaderState state)
+        => _state.IsFinalState(state);
 
-        public bool IsFinalState()
-            => _state.IsFinalState();
+    public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
 
-        public bool IsFinalState(ReaderState state)
-            => _state.IsFinalState(state);
+        var getLastMessageId = new CommandGetLastMessageId();
+        return await _executor.Execute(() => GetLastMessageId(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
+    }
 
-        public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
+    private async ValueTask<MessageId> GetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
+        => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
-            var getLastMessageId = new CommandGetLastMessageId();
-            return await _executor.Execute(() => GetLastMessageId(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
-        }
+    public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
 
-        private async ValueTask<MessageId> GetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
-            => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+        return await _executor.Execute(() => ReceiveMessage(cancellationToken), cancellationToken).ConfigureAwait(false);
+    }
 
-        public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
+    private async ValueTask<IMessage<TMessage>> ReceiveMessage(CancellationToken cancellationToken)
+        => await _channel.Receive(cancellationToken).ConfigureAwait(false);
 
-            return await _executor.Execute(() => ReceiveMessage(cancellationToken), cancellationToken).ConfigureAwait(false);
-        }
+    public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
 
-        private async ValueTask<IMessage<TMessage>> ReceiveMessage(CancellationToken cancellationToken)
-            => await _channel.Receive(cancellationToken).ConfigureAwait(false);
+        var seek = new CommandSeek { MessageId = messageId.ToMessageIdData() };
+        await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+    }
 
-        public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
+    public async ValueTask Seek(ulong publishTime, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
 
-            var seek = new CommandSeek { MessageId = messageId.ToMessageIdData() };
-            await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
-        }
+        var seek = new CommandSeek { MessagePublishTime = publishTime };
+        await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+    }
 
-        public async ValueTask Seek(ulong publishTime, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
+            return;
 
-            var seek = new CommandSeek { MessagePublishTime = publishTime };
-            await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
-        }
+        _eventRegister.Register(new ReaderDisposed(_correlationId));
+        await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
+        await _channel.DisposeAsync().ConfigureAwait(false);
+    }
 
-        public async ValueTask DisposeAsync()
-        {
-            if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
-                return;
+    private async Task Seek(CommandSeek command, CancellationToken cancellationToken)
+        => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
-            _eventRegister.Register(new ReaderDisposed(_correlationId));
-            await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
-            await _channel.DisposeAsync().ConfigureAwait(false);
-        }
+    public async Task EstablishNewChannel(CancellationToken cancellationToken)
+    {
+        var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
 
-        private async Task Seek(CommandSeek command, CancellationToken cancellationToken)
-            => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+        var oldChannel = _channel;
+        _channel = channel;
 
-        public async Task EstablishNewChannel(CancellationToken cancellationToken)
-        {
-            var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
+        if (oldChannel is not null)
+            await oldChannel.DisposeAsync().ConfigureAwait(false);
+    }
 
-            var oldChannel = _channel;
-            _channel = channel;
-
-            if (oldChannel is not null)
-                await oldChannel.DisposeAsync().ConfigureAwait(false);
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (_isDisposed != 0)
-                throw new ReaderDisposedException(GetType().FullName!);
-        }
+    private void ThrowIfDisposed()
+    {
+        if (_isDisposed != 0)
+            throw new ReaderDisposedException(GetType().FullName!);
     }
 }

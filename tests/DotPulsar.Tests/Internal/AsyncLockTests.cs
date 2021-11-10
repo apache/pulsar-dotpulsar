@@ -12,141 +12,140 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Tests.Internal
+namespace DotPulsar.Tests.Internal;
+
+using DotPulsar.Internal;
+using DotPulsar.Internal.Exceptions;
+using FluentAssertions;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+
+public class AsyncLockTests
 {
-    using DotPulsar.Internal;
-    using DotPulsar.Internal.Exceptions;
-    using FluentAssertions;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Xunit;
-
-    public class AsyncLockTests
+    [Fact]
+    public async Task Lock_GivenLockIsFree_ShouldReturnCompletedTask()
     {
-        [Fact]
-        public async Task Lock_GivenLockIsFree_ShouldReturnCompletedTask()
-        {
-            //Arrange
-            var sut = new AsyncLock();
+        //Arrange
+        var sut = new AsyncLock();
 
-            //Act
-            var actual = sut.Lock(CancellationToken.None);
+        //Act
+        var actual = sut.Lock(CancellationToken.None);
 
-            //Assert
-            actual.IsCompleted.Should().BeTrue();
+        //Assert
+        actual.IsCompleted.Should().BeTrue();
 
-            //Annihilate 
-            actual.Result.Dispose();
-            await sut.DisposeAsync().ConfigureAwait(false);
-        }
+        //Annihilate 
+        actual.Result.Dispose();
+        await sut.DisposeAsync().ConfigureAwait(false);
+    }
 
-        [Fact]
-        public async Task Lock_GivenLockIsTaken_ShouldReturnIncompletedTask()
-        {
-            //Arrange
-            var sut = new AsyncLock();
-            var alreadyTaken = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
+    [Fact]
+    public async Task Lock_GivenLockIsTaken_ShouldReturnIncompletedTask()
+    {
+        //Arrange
+        var sut = new AsyncLock();
+        var alreadyTaken = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
 
-            //Act
-            var actual = sut.Lock(CancellationToken.None);
+        //Act
+        var actual = sut.Lock(CancellationToken.None);
 
-            //Assert
-            actual.IsCompleted.Should().BeFalse();
+        //Assert
+        actual.IsCompleted.Should().BeFalse();
 
-            //Annihilate
-            alreadyTaken.Dispose();
-            actual.Result.Dispose();
-            await sut.DisposeAsync().ConfigureAwait(false);
-        }
+        //Annihilate
+        alreadyTaken.Dispose();
+        actual.Result.Dispose();
+        await sut.DisposeAsync().ConfigureAwait(false);
+    }
 
-        [Fact]
-        public async Task Lock_GivenLockIsDisposed_ShouldThrowAsyncLockDisposedException()
-        {
-            //Arrange
-            var sut = new AsyncLock();
-            await sut.DisposeAsync().ConfigureAwait(false);
+    [Fact]
+    public async Task Lock_GivenLockIsDisposed_ShouldThrowAsyncLockDisposedException()
+    {
+        //Arrange
+        var sut = new AsyncLock();
+        await sut.DisposeAsync().ConfigureAwait(false);
 
-            //Act
-            var exception = await Record.ExceptionAsync(() => sut.Lock(CancellationToken.None)).ConfigureAwait(false);
+        //Act
+        var exception = await Record.ExceptionAsync(() => sut.Lock(CancellationToken.None)).ConfigureAwait(false);
 
-            //Assert
-            exception.Should().BeOfType<AsyncLockDisposedException>();
-        }
+        //Assert
+        exception.Should().BeOfType<AsyncLockDisposedException>();
+    }
 
-        [Fact]
-        public async Task Lock_GivenLockIsDisposedWhileAwaitingLock_ShouldThrowTaskCanceledException()
-        {
-            //Arrange
-            var sut = new AsyncLock();
-            var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
-            var awaiting = sut.Lock(CancellationToken.None);
-            _ = Task.Run(async () => await sut.DisposeAsync().ConfigureAwait(false));
+    [Fact]
+    public async Task Lock_GivenLockIsDisposedWhileAwaitingLock_ShouldThrowTaskCanceledException()
+    {
+        //Arrange
+        var sut = new AsyncLock();
+        var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
+        var awaiting = sut.Lock(CancellationToken.None);
+        _ = Task.Run(async () => await sut.DisposeAsync().ConfigureAwait(false));
 
-            //Act
-            var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
+        //Act
+        var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
 
-            //Assert
-            exception.Should().BeOfType<TaskCanceledException>();
+        //Assert
+        exception.Should().BeOfType<TaskCanceledException>();
 
-            //Annihilate
-            await sut.DisposeAsync().ConfigureAwait(false);
-            gotLock.Dispose();
-        }
+        //Annihilate
+        await sut.DisposeAsync().ConfigureAwait(false);
+        gotLock.Dispose();
+    }
 
-        [Fact]
-        public async Task Lock_GivenLockIsTakenAndCancellationTokenIsActivated_ShouldThrowTaskCanceledException()
-        {
-            //Arrange
-            var cts = new CancellationTokenSource();
-            var sut = new AsyncLock();
-            var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
-            var awaiting = sut.Lock(cts.Token);
+    [Fact]
+    public async Task Lock_GivenLockIsTakenAndCancellationTokenIsActivated_ShouldThrowTaskCanceledException()
+    {
+        //Arrange
+        var cts = new CancellationTokenSource();
+        var sut = new AsyncLock();
+        var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
+        var awaiting = sut.Lock(cts.Token);
 
-            //Act
-            cts.Cancel();
-            var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
+        //Act
+        cts.Cancel();
+        var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
 
-            //Assert
-            exception.Should().BeOfType<TaskCanceledException>();
+        //Assert
+        exception.Should().BeOfType<TaskCanceledException>();
 
-            //Annihilate
-            cts.Dispose();
-            gotLock.Dispose();
-            await sut.DisposeAsync().ConfigureAwait(false);
-        }
+        //Annihilate
+        cts.Dispose();
+        gotLock.Dispose();
+        await sut.DisposeAsync().ConfigureAwait(false);
+    }
 
-        [Fact]
-        public async Task Dispose_GivenLockIsDisposedWhileItIsTaken_ShouldNotCompleteBeforeItIsReleased()
-        {
-            //Arrange
-            var sut = new AsyncLock();
-            var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
-            var disposeTask = Task.Run(async () => await sut.DisposeAsync().ConfigureAwait(false));
-            Assert.False(disposeTask.IsCompleted);
+    [Fact]
+    public async Task Dispose_GivenLockIsDisposedWhileItIsTaken_ShouldNotCompleteBeforeItIsReleased()
+    {
+        //Arrange
+        var sut = new AsyncLock();
+        var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
+        var disposeTask = Task.Run(async () => await sut.DisposeAsync().ConfigureAwait(false));
+        Assert.False(disposeTask.IsCompleted);
 
-            //Act
-            gotLock.Dispose();
-            await disposeTask.ConfigureAwait(false);
+        //Act
+        gotLock.Dispose();
+        await disposeTask.ConfigureAwait(false);
 
-            //Assert
-            disposeTask.IsCompleted.Should().BeTrue();
+        //Assert
+        disposeTask.IsCompleted.Should().BeTrue();
 
-            //Annihilate
-            await sut.DisposeAsync().ConfigureAwait(false);
-        }
+        //Annihilate
+        await sut.DisposeAsync().ConfigureAwait(false);
+    }
 
-        [Fact]
-        public async Task Dispose_WhenCalledMultipleTimes_ShouldBeSafeToDoSo()
-        {
-            //Arrange
-            var sut = new AsyncLock();
+    [Fact]
+    public async Task Dispose_WhenCalledMultipleTimes_ShouldBeSafeToDoSo()
+    {
+        //Arrange
+        var sut = new AsyncLock();
 
-            //Act
-            await sut.DisposeAsync().ConfigureAwait(false);
-            var exception = await Record.ExceptionAsync(() => sut.DisposeAsync().AsTask()).ConfigureAwait(false); // xUnit can't record ValueTask yet
+        //Act
+        await sut.DisposeAsync().ConfigureAwait(false);
+        var exception = await Record.ExceptionAsync(() => sut.DisposeAsync().AsTask()).ConfigureAwait(false); // xUnit can't record ValueTask yet
 
-            //Assert
-            exception.Should().BeNull();
-        }
+        //Assert
+        exception.Should().BeNull();
     }
 }

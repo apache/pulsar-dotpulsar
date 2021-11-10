@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class MetadataException : DotPulsarException
 {
-    public sealed class MetadataException : DotPulsarException
-    {
-        public MetadataException(string message) : base(message) { }
-    }
+    public MetadataException(string message) : base(message) { }
 }

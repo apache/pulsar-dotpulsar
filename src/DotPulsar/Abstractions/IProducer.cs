@@ -12,23 +12,22 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Abstractions;
+
+using System;
+
+/// <summary>
+/// A producer abstraction.
+/// </summary>
+public interface IProducer : IState<ProducerState>, IAsyncDisposable
 {
-    using System;
+    /// <summary>
+    /// The producer's service url.
+    /// </summary>
+    public Uri ServiceUrl { get; }
 
     /// <summary>
-    /// A producer abstraction.
+    /// The producer's topic.
     /// </summary>
-    public interface IProducer : IState<ProducerState>, IAsyncDisposable
-    {
-        /// <summary>
-        /// The producer's service url.
-        /// </summary>
-        public Uri ServiceUrl { get; }
-
-        /// <summary>
-        /// The producer's topic.
-        /// </summary>
-        string Topic { get; }
-    }
+    string Topic { get; }
 }

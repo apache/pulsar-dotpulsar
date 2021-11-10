@@ -12,17 +12,16 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
-{
-    using PulsarApi;
-    using System;
-    using System.Buffers;
-    using System.Threading;
-    using System.Threading.Tasks;
+namespace DotPulsar.Internal.Abstractions;
 
-    public interface IProducerChannel : IAsyncDisposable
-    {
-        Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken);
-        ValueTask ClosedByClient(CancellationToken cancellationToken);
-    }
+using PulsarApi;
+using System;
+using System.Buffers;
+using System.Threading;
+using System.Threading.Tasks;
+
+public interface IProducerChannel : IAsyncDisposable
+{
+    Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken);
+    ValueTask ClosedByClient(CancellationToken cancellationToken);
 }

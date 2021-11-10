@@ -12,46 +12,45 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Abstractions;
+
+/// <summary>
+/// A producer building abstraction.
+/// </summary>
+public interface IProducerBuilder<TMessage>
 {
     /// <summary>
-    /// A producer building abstraction.
+    /// Set the compression type. The default is 'None'.
     /// </summary>
-    public interface IProducerBuilder<TMessage>
-    {
-        /// <summary>
-        /// Set the compression type. The default is 'None'.
-        /// </summary>
-        IProducerBuilder<TMessage> CompressionType(CompressionType compressionType);
+    IProducerBuilder<TMessage> CompressionType(CompressionType compressionType);
 
-        /// <summary>
-        /// Set the initial sequence id. The default is 0.
-        /// </summary>
-        IProducerBuilder<TMessage> InitialSequenceId(ulong initialSequenceId);
+    /// <summary>
+    /// Set the initial sequence id. The default is 0.
+    /// </summary>
+    IProducerBuilder<TMessage> InitialSequenceId(ulong initialSequenceId);
 
-        /// <summary>
-        /// Set the producer name. This is optional.
-        /// </summary>
-        IProducerBuilder<TMessage> ProducerName(string name);
+    /// <summary>
+    /// Set the producer name. This is optional.
+    /// </summary>
+    IProducerBuilder<TMessage> ProducerName(string name);
 
-        /// <summary>
-        /// Register a state changed handler.
-        /// </summary>
-        IProducerBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ProducerStateChanged> handler);
+    /// <summary>
+    /// Register a state changed handler.
+    /// </summary>
+    IProducerBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ProducerStateChanged> handler);
 
-        /// <summary>
-        /// Set the topic for this producer. This is required.
-        /// </summary>
-        IProducerBuilder<TMessage> Topic(string topic);
+    /// <summary>
+    /// Set the topic for this producer. This is required.
+    /// </summary>
+    IProducerBuilder<TMessage> Topic(string topic);
 
-        /// <summary>
-        /// Set the message router for this producer. The default is RoundRobinPartitionRouter.
-        /// </summary>
-        IProducerBuilder<TMessage> MessageRouter(IMessageRouter messageRouter);
+    /// <summary>
+    /// Set the message router for this producer. The default is RoundRobinPartitionRouter.
+    /// </summary>
+    IProducerBuilder<TMessage> MessageRouter(IMessageRouter messageRouter);
 
-        /// <summary>
-        /// Create the producer.
-        /// </summary>
-        IProducer<TMessage> Create();
-    }
+    /// <summary>
+    /// Create the producer.
+    /// </summary>
+    IProducer<TMessage> Create();
 }

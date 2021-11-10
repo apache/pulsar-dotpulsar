@@ -12,12 +12,11 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
-{
-    using System;
+namespace DotPulsar.Exceptions;
 
-    public sealed class ConsumerDisposedException : ObjectDisposedException
-    {
-        public ConsumerDisposedException(string objectName) : base(objectName) { }
-    }
+using System;
+
+public sealed class ConsumerDisposedException : ObjectDisposedException
+{
+    public ConsumerDisposedException(string objectName) : base(objectName) { }
 }

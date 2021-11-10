@@ -12,55 +12,54 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using Abstractions;
+using System;
+using System.Threading.Tasks;
+
+public sealed class ProducerProcess : Process
 {
-    using Abstractions;
-    using System;
-    using System.Threading.Tasks;
+    private readonly IStateManager<ProducerState> _stateManager;
+    private readonly IEstablishNewChannel _producer;
 
-    public sealed class ProducerProcess : Process
+    public ProducerProcess(
+        Guid correlationId,
+        IStateManager<ProducerState> stateManager,
+        IEstablishNewChannel producer) : base(correlationId)
     {
-        private readonly IStateManager<ProducerState> _stateManager;
-        private readonly IEstablishNewChannel _producer;
+        _stateManager = stateManager;
+        _producer = producer;
+    }
 
-        public ProducerProcess(
-            Guid correlationId,
-            IStateManager<ProducerState> stateManager,
-            IEstablishNewChannel producer) : base(correlationId)
+    public override async ValueTask DisposeAsync()
+    {
+        _stateManager.SetState(ProducerState.Closed);
+        CancellationTokenSource.Cancel();
+        await _producer.DisposeAsync().ConfigureAwait(false);
+    }
+
+    protected override void CalculateState()
+    {
+        if (_stateManager.IsFinalState())
+            return;
+
+        if (ExecutorState == ExecutorState.Faulted)
         {
-            _stateManager = stateManager;
-            _producer = producer;
+            _stateManager.SetState(ProducerState.Faulted);
+            return;
         }
 
-        public override async ValueTask DisposeAsync()
+        switch (ChannelState)
         {
-            _stateManager.SetState(ProducerState.Closed);
-            CancellationTokenSource.Cancel();
-            await _producer.DisposeAsync().ConfigureAwait(false);
-        }
-
-        protected override void CalculateState()
-        {
-            if (_stateManager.IsFinalState())
+            case ChannelState.ClosedByServer:
+            case ChannelState.Disconnected:
+                _stateManager.SetState(ProducerState.Disconnected);
+                _ = _producer.EstablishNewChannel(CancellationTokenSource.Token);
                 return;
-
-            if (ExecutorState == ExecutorState.Faulted)
-            {
-                _stateManager.SetState(ProducerState.Faulted);
+            case ChannelState.Connected:
+                _stateManager.SetState(ProducerState.Connected);
                 return;
-            }
-
-            switch (ChannelState)
-            {
-                case ChannelState.ClosedByServer:
-                case ChannelState.Disconnected:
-                    _stateManager.SetState(ProducerState.Disconnected);
-                    _ = _producer.EstablishNewChannel(CancellationTokenSource.Token);
-                    return;
-                case ChannelState.Connected:
-                    _stateManager.SetState(ProducerState.Connected);
-                    return;
-            }
         }
     }
 }

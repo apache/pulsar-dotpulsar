@@ -12,83 +12,82 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
+
+public sealed class ReaderBuilder<TMessage> : IReaderBuilder<TMessage>
 {
-    using DotPulsar.Abstractions;
-    using DotPulsar.Exceptions;
+    private readonly IPulsarClient _pulsarClient;
+    private readonly ISchema<TMessage> _schema;
+    private string? _readerName;
+    private uint _messagePrefetchCount;
+    private bool _readCompacted;
+    private MessageId? _startMessageId;
+    private string? _topic;
+    private IHandleStateChanged<ReaderStateChanged>? _stateChangedHandler;
 
-    public sealed class ReaderBuilder<TMessage> : IReaderBuilder<TMessage>
+    public ReaderBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
     {
-        private readonly IPulsarClient _pulsarClient;
-        private readonly ISchema<TMessage> _schema;
-        private string? _readerName;
-        private uint _messagePrefetchCount;
-        private bool _readCompacted;
-        private MessageId? _startMessageId;
-        private string? _topic;
-        private IHandleStateChanged<ReaderStateChanged>? _stateChangedHandler;
+        _pulsarClient = pulsarClient;
+        _schema = schema;
+        _messagePrefetchCount = ReaderOptions<TMessage>.DefaultMessagePrefetchCount;
+        _readCompacted = ReaderOptions<TMessage>.DefaultReadCompacted;
+    }
 
-        public ReaderBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
+    public IReaderBuilder<TMessage> MessagePrefetchCount(uint count)
+    {
+        _messagePrefetchCount = count;
+        return this;
+    }
+
+    public IReaderBuilder<TMessage> ReadCompacted(bool readCompacted)
+    {
+        _readCompacted = readCompacted;
+        return this;
+    }
+
+    public IReaderBuilder<TMessage> ReaderName(string name)
+    {
+        _readerName = name;
+        return this;
+    }
+
+    public IReaderBuilder<TMessage> StartMessageId(MessageId messageId)
+    {
+        _startMessageId = messageId;
+        return this;
+    }
+
+    public IReaderBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ReaderStateChanged> handler)
+    {
+        _stateChangedHandler = handler;
+        return this;
+    }
+
+    public IReaderBuilder<TMessage> Topic(string topic)
+    {
+        _topic = topic;
+        return this;
+    }
+
+    public IReader<TMessage> Create()
+    {
+        if (_startMessageId is null)
+            throw new ConfigurationException("StartMessageId may not be null");
+
+        if (string.IsNullOrEmpty(_topic))
+            throw new ConfigurationException("Topic may not be null or empty");
+
+        var options = new ReaderOptions<TMessage>(_startMessageId, _topic!, _schema)
         {
-            _pulsarClient = pulsarClient;
-            _schema = schema;
-            _messagePrefetchCount = ReaderOptions<TMessage>.DefaultMessagePrefetchCount;
-            _readCompacted = ReaderOptions<TMessage>.DefaultReadCompacted;
-        }
+            MessagePrefetchCount = _messagePrefetchCount,
+            ReadCompacted = _readCompacted,
+            ReaderName = _readerName,
+            StateChangedHandler = _stateChangedHandler
+        };
 
-        public IReaderBuilder<TMessage> MessagePrefetchCount(uint count)
-        {
-            _messagePrefetchCount = count;
-            return this;
-        }
-
-        public IReaderBuilder<TMessage> ReadCompacted(bool readCompacted)
-        {
-            _readCompacted = readCompacted;
-            return this;
-        }
-
-        public IReaderBuilder<TMessage> ReaderName(string name)
-        {
-            _readerName = name;
-            return this;
-        }
-
-        public IReaderBuilder<TMessage> StartMessageId(MessageId messageId)
-        {
-            _startMessageId = messageId;
-            return this;
-        }
-
-        public IReaderBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ReaderStateChanged> handler)
-        {
-            _stateChangedHandler = handler;
-            return this;
-        }
-
-        public IReaderBuilder<TMessage> Topic(string topic)
-        {
-            _topic = topic;
-            return this;
-        }
-
-        public IReader<TMessage> Create()
-        {
-            if (_startMessageId is null)
-                throw new ConfigurationException("StartMessageId may not be null");
-
-            if (string.IsNullOrEmpty(_topic))
-                throw new ConfigurationException("Topic may not be null or empty");
-
-            var options = new ReaderOptions<TMessage>(_startMessageId, _topic!, _schema)
-            {
-                MessagePrefetchCount = _messagePrefetchCount,
-                ReadCompacted = _readCompacted,
-                ReaderName = _readerName,
-                StateChangedHandler = _stateChangedHandler
-            };
-
-            return _pulsarClient.CreateReader(options);
-        }
+        return _pulsarClient.CreateReader(options);
     }
 }

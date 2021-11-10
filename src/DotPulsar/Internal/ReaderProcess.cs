@@ -12,58 +12,57 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using Abstractions;
+using System;
+using System.Threading.Tasks;
+
+public sealed class ReaderProcess : Process
 {
-    using Abstractions;
-    using System;
-    using System.Threading.Tasks;
+    private readonly IStateManager<ReaderState> _stateManager;
+    private readonly IEstablishNewChannel _reader;
 
-    public sealed class ReaderProcess : Process
+    public ReaderProcess(
+        Guid correlationId,
+        IStateManager<ReaderState> stateManager,
+        IEstablishNewChannel reader) : base(correlationId)
     {
-        private readonly IStateManager<ReaderState> _stateManager;
-        private readonly IEstablishNewChannel _reader;
+        _stateManager = stateManager;
+        _reader = reader;
+    }
 
-        public ReaderProcess(
-            Guid correlationId,
-            IStateManager<ReaderState> stateManager,
-            IEstablishNewChannel reader) : base(correlationId)
+    public override async ValueTask DisposeAsync()
+    {
+        _stateManager.SetState(ReaderState.Closed);
+        CancellationTokenSource.Cancel();
+        await _reader.DisposeAsync().ConfigureAwait(false);
+    }
+
+    protected override void CalculateState()
+    {
+        if (_stateManager.IsFinalState())
+            return;
+
+        if (ExecutorState == ExecutorState.Faulted)
         {
-            _stateManager = stateManager;
-            _reader = reader;
+            _stateManager.SetState(ReaderState.Faulted);
+            return;
         }
 
-        public override async ValueTask DisposeAsync()
+        switch (ChannelState)
         {
-            _stateManager.SetState(ReaderState.Closed);
-            CancellationTokenSource.Cancel();
-            await _reader.DisposeAsync().ConfigureAwait(false);
-        }
-
-        protected override void CalculateState()
-        {
-            if (_stateManager.IsFinalState())
+            case ChannelState.ClosedByServer:
+            case ChannelState.Disconnected:
+                _stateManager.SetState(ReaderState.Disconnected);
+                _ = _reader.EstablishNewChannel(CancellationTokenSource.Token);
                 return;
-
-            if (ExecutorState == ExecutorState.Faulted)
-            {
-                _stateManager.SetState(ReaderState.Faulted);
+            case ChannelState.Connected:
+                _stateManager.SetState(ReaderState.Connected);
                 return;
-            }
-
-            switch (ChannelState)
-            {
-                case ChannelState.ClosedByServer:
-                case ChannelState.Disconnected:
-                    _stateManager.SetState(ReaderState.Disconnected);
-                    _ = _reader.EstablishNewChannel(CancellationTokenSource.Token);
-                    return;
-                case ChannelState.Connected:
-                    _stateManager.SetState(ReaderState.Connected);
-                    return;
-                case ChannelState.ReachedEndOfTopic:
-                    _stateManager.SetState(ReaderState.ReachedEndOfTopic);
-                    return;
-            }
+            case ChannelState.ReachedEndOfTopic:
+                _stateManager.SetState(ReaderState.ReachedEndOfTopic);
+                return;
         }
     }
 }

@@ -12,68 +12,67 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Extensions
+namespace DotPulsar.Extensions;
+
+using Abstractions;
+using Microsoft.Extensions.ObjectPool;
+using System;
+using System.Buffers;
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// Extensions for ISend.
+/// </summary>
+public static class SendExtensions
 {
-    using Abstractions;
-    using Microsoft.Extensions.ObjectPool;
-    using System;
-    using System.Buffers;
-    using System.Threading;
-    using System.Threading.Tasks;
+    private static readonly ObjectPool<MessageMetadata> _messageMetadataPool;
+
+    static SendExtensions()
+    {
+        var messageMetadataPolicy = new DefaultPooledObjectPolicy<MessageMetadata>();
+        _messageMetadataPool = new DefaultObjectPool<MessageMetadata>(messageMetadataPolicy);
+    }
 
     /// <summary>
-    /// Extensions for ISend.
+    /// Sends a message.
     /// </summary>
-    public static class SendExtensions
+    public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, byte[] data, CancellationToken cancellationToken = default)
+        => await Send(sender, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Sends a message.
+    /// </summary>
+    public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+        => await Send(sender, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Sends a message with metadata.
+    /// </summary>
+    public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, MessageMetadata metadata, byte[] data, CancellationToken cancellationToken = default)
+        => await sender.Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Sends a message with metadata.
+    /// </summary>
+    public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+        => await sender.Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Sends a message without metadata.
+    /// </summary>
+    public static async ValueTask<MessageId> Send<TMessage>(this ISend<TMessage> sender, TMessage message, CancellationToken cancellationToken = default)
     {
-        private static readonly ObjectPool<MessageMetadata> _messageMetadataPool;
+        var metadata = _messageMetadataPool.Get();
 
-        static SendExtensions()
+        try
         {
-            var messageMetadataPolicy = new DefaultPooledObjectPolicy<MessageMetadata>();
-            _messageMetadataPool = new DefaultObjectPool<MessageMetadata>(messageMetadataPolicy);
+            return await sender.Send(metadata, message, cancellationToken).ConfigureAwait(false);
         }
-
-        /// <summary>
-        /// Sends a message.
-        /// </summary>
-        public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, byte[] data, CancellationToken cancellationToken = default)
-            => await Send(sender, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
-
-        /// <summary>
-        /// Sends a message.
-        /// </summary>
-        public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
-            => await Send(sender, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
-
-        /// <summary>
-        /// Sends a message with metadata.
-        /// </summary>
-        public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, MessageMetadata metadata, byte[] data, CancellationToken cancellationToken = default)
-            => await sender.Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
-
-        /// <summary>
-        /// Sends a message with metadata.
-        /// </summary>
-        public static async ValueTask<MessageId> Send(this ISend<ReadOnlySequence<byte>> sender, MessageMetadata metadata, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
-            => await sender.Send(metadata, new ReadOnlySequence<byte>(data), cancellationToken).ConfigureAwait(false);
-
-        /// <summary>
-        /// Sends a message without metadata.
-        /// </summary>
-        public static async ValueTask<MessageId> Send<TMessage>(this ISend<TMessage> sender, TMessage message, CancellationToken cancellationToken = default)
+        finally
         {
-            var metadata = _messageMetadataPool.Get();
-
-            try
-            {
-                return await sender.Send(metadata, message, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                metadata.Metadata.Properties.Clear();
-                _messageMetadataPool.Return(metadata);
-            }
+            metadata.Metadata.Properties.Clear();
+            _messageMetadataPool.Return(metadata);
         }
     }
 }

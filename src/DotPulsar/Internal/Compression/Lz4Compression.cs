@@ -12,193 +12,192 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Compression
+namespace DotPulsar.Internal.Compression;
+
+using DotPulsar.Exceptions;
+using DotPulsar.Internal.Abstractions;
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+public static class Lz4Compression
 {
-    using DotPulsar.Exceptions;
-    using DotPulsar.Internal.Abstractions;
-    using System;
-    using System.Buffers;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
+    public delegate int Decode(byte[] source, int sourceOffset, int sourceLength, byte[] target, int targetOffset, int targetLength);
+    public delegate int Encode(byte[] source, int sourceOffset, int sourceLength, byte[] target, int targetOffset, int targetLength, int level);
+    public delegate int MaximumOutputSize(int length);
 
-    public static class Lz4Compression
+    public static bool TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory)
     {
-        public delegate int Decode(byte[] source, int sourceOffset, int sourceLength, byte[] target, int targetOffset, int targetLength);
-        public delegate int Encode(byte[] source, int sourceOffset, int sourceLength, byte[] target, int targetOffset, int targetLength, int level);
-        public delegate int MaximumOutputSize(int length);
-
-        public static bool TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory)
+        try
         {
-            try
-            {
-                var assembly = Assembly.Load("K4os.Compression.LZ4");
+            var assembly = Assembly.Load("K4os.Compression.LZ4");
 
-                var definedTypes = assembly.DefinedTypes.ToArray();
+            var definedTypes = assembly.DefinedTypes.ToArray();
 
-                var lz4Codec = FindLZ4Codec(definedTypes);
-                var lz4Level = FindLZ4Level(definedTypes);
+            var lz4Codec = FindLZ4Codec(definedTypes);
+            var lz4Level = FindLZ4Level(definedTypes);
 
-                var methods = lz4Codec.GetMethods(BindingFlags.Public | BindingFlags.Static);
+            var methods = lz4Codec.GetMethods(BindingFlags.Public | BindingFlags.Static);
 
-                var decode = FindDecode(methods);
-                var encode = FindEncode(methods, lz4Level);
-                var maximumOutputSize = FindMaximumOutputSize(methods);
+            var decode = FindDecode(methods);
+            var encode = FindEncode(methods, lz4Level);
+            var maximumOutputSize = FindMaximumOutputSize(methods);
 
-                compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Lz4, () => new Compressor(CreateCompressor(encode, maximumOutputSize)));
-                decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Lz4, () => new Decompressor(CreateDecompressor(decode)));
-                return true;
-            }
-            catch
-            {
-                // Ignore
-            }
-
-            compressorFactory = null;
-            decompressorFactory = null;
-
-            return false;
+            compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Lz4, () => new Compressor(CreateCompressor(encode, maximumOutputSize)));
+            decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Lz4, () => new Decompressor(CreateDecompressor(decode)));
+            return true;
+        }
+        catch
+        {
+            // Ignore
         }
 
-        private static TypeInfo FindLZ4Codec(IEnumerable<TypeInfo> types)
+        compressorFactory = null;
+        decompressorFactory = null;
+
+        return false;
+    }
+
+    private static TypeInfo FindLZ4Codec(IEnumerable<TypeInfo> types)
+    {
+        const string fullName = "K4os.Compression.LZ4.LZ4Codec";
+
+        foreach (var type in types)
         {
-            const string fullName = "K4os.Compression.LZ4.LZ4Codec";
+            if (type.FullName is null || !type.FullName.Equals(fullName))
+                continue;
 
-            foreach (var type in types)
-            {
-                if (type.FullName is null || !type.FullName.Equals(fullName))
-                    continue;
+            if (type.IsPublic && type.IsClass && type.IsAbstract && type.IsSealed)
+                return type;
 
-                if (type.IsPublic && type.IsClass && type.IsAbstract && type.IsSealed)
-                    return type;
-
-                break;
-            }
-
-            throw new Exception($"{fullName} as a public and static class was not found");
+            break;
         }
 
-        private static TypeInfo FindLZ4Level(IEnumerable<TypeInfo> types)
+        throw new Exception($"{fullName} as a public and static class was not found");
+    }
+
+    private static TypeInfo FindLZ4Level(IEnumerable<TypeInfo> types)
+    {
+        const string fullName = "K4os.Compression.LZ4.LZ4Level";
+
+        foreach (var type in types)
         {
-            const string fullName = "K4os.Compression.LZ4.LZ4Level";
+            if (type.FullName is null || !type.FullName.Equals(fullName))
+                continue;
 
-            foreach (var type in types)
-            {
-                if (type.FullName is null || !type.FullName.Equals(fullName))
-                    continue;
+            if (type.IsPublic && type.IsEnum && Enum.GetUnderlyingType(type) == typeof(int))
+                return type;
 
-                if (type.IsPublic && type.IsEnum && Enum.GetUnderlyingType(type) == typeof(int))
-                    return type;
-
-                break;
-            }
-
-            throw new Exception($"{fullName} as a public enum with an int backing was not found");
+            break;
         }
 
-        private static Decode FindDecode(MethodInfo[] methods)
+        throw new Exception($"{fullName} as a public enum with an int backing was not found");
+    }
+
+    private static Decode FindDecode(MethodInfo[] methods)
+    {
+        const string name = "Decode";
+
+        foreach (var method in methods)
         {
-            const string name = "Decode";
+            if (method.Name != name || method.ReturnType != typeof(int))
+                continue;
 
-            foreach (var method in methods)
-            {
-                if (method.Name != name || method.ReturnType != typeof(int))
-                    continue;
+            var parameters = method.GetParameters();
+            if (parameters.Length != 6)
+                continue;
 
-                var parameters = method.GetParameters();
-                if (parameters.Length != 6)
-                    continue;
+            if (parameters[0].ParameterType != typeof(byte[]) ||
+                parameters[1].ParameterType != typeof(int) ||
+                parameters[2].ParameterType != typeof(int) ||
+                parameters[3].ParameterType != typeof(byte[]) ||
+                parameters[4].ParameterType != typeof(int) ||
+                parameters[5].ParameterType != typeof(int))
+                continue;
 
-                if (parameters[0].ParameterType != typeof(byte[]) ||
-                    parameters[1].ParameterType != typeof(int) ||
-                    parameters[2].ParameterType != typeof(int) ||
-                    parameters[3].ParameterType != typeof(byte[]) ||
-                    parameters[4].ParameterType != typeof(int) ||
-                    parameters[5].ParameterType != typeof(int))
-                    continue;
-
-                return (Decode) method.CreateDelegate(typeof(Decode));
-            }
-
-            throw new Exception($"A method with the name '{name}' matching the delegate was not found");
+            return (Decode) method.CreateDelegate(typeof(Decode));
         }
 
-        private static Encode FindEncode(MethodInfo[] methods, Type lz4Level)
+        throw new Exception($"A method with the name '{name}' matching the delegate was not found");
+    }
+
+    private static Encode FindEncode(MethodInfo[] methods, Type lz4Level)
+    {
+        const string name = "Encode";
+
+        foreach (var method in methods)
         {
-            const string name = "Encode";
+            if (method.Name != name || method.ReturnType != typeof(int))
+                continue;
 
-            foreach (var method in methods)
-            {
-                if (method.Name != name || method.ReturnType != typeof(int))
-                    continue;
+            var parameters = method.GetParameters();
+            if (parameters.Length != 7)
+                continue;
 
-                var parameters = method.GetParameters();
-                if (parameters.Length != 7)
-                    continue;
+            if (parameters[0].ParameterType != typeof(byte[]) ||
+                parameters[1].ParameterType != typeof(int) ||
+                parameters[2].ParameterType != typeof(int) ||
+                parameters[3].ParameterType != typeof(byte[]) ||
+                parameters[4].ParameterType != typeof(int) ||
+                parameters[5].ParameterType != typeof(int) ||
+                parameters[6].ParameterType != lz4Level)
+                continue;
 
-                if (parameters[0].ParameterType != typeof(byte[]) ||
-                    parameters[1].ParameterType != typeof(int) ||
-                    parameters[2].ParameterType != typeof(int) ||
-                    parameters[3].ParameterType != typeof(byte[]) ||
-                    parameters[4].ParameterType != typeof(int) ||
-                    parameters[5].ParameterType != typeof(int) ||
-                    parameters[6].ParameterType != lz4Level)
-                    continue;
-
-                return (Encode) method.CreateDelegate(typeof(Encode));
-            }
-
-            throw new Exception($"A method with the name '{name}' matching the delegate was not found");
+            return (Encode) method.CreateDelegate(typeof(Encode));
         }
 
-        private static MaximumOutputSize FindMaximumOutputSize(MethodInfo[] methods)
+        throw new Exception($"A method with the name '{name}' matching the delegate was not found");
+    }
+
+    private static MaximumOutputSize FindMaximumOutputSize(MethodInfo[] methods)
+    {
+        const string name = "MaximumOutputSize";
+
+        foreach (var method in methods)
         {
-            const string name = "MaximumOutputSize";
+            if (method.Name != name || method.ReturnType != typeof(int))
+                continue;
 
-            foreach (var method in methods)
-            {
-                if (method.Name != name || method.ReturnType != typeof(int))
-                    continue;
+            var parameters = method.GetParameters();
+            if (parameters.Length != 1)
+                continue;
 
-                var parameters = method.GetParameters();
-                if (parameters.Length != 1)
-                    continue;
+            if (parameters[0].ParameterType != typeof(int))
+                continue;
 
-                if (parameters[0].ParameterType != typeof(int))
-                    continue;
-
-                return (MaximumOutputSize) method.CreateDelegate(typeof(MaximumOutputSize));
-            }
-
-            throw new Exception($"A method with the name '{name}' matching the delegate was not found");
+            return (MaximumOutputSize) method.CreateDelegate(typeof(MaximumOutputSize));
         }
 
-        private static Func<ReadOnlySequence<byte>, int, ReadOnlySequence<byte>> CreateDecompressor(Decode decompress)
+        throw new Exception($"A method with the name '{name}' matching the delegate was not found");
+    }
+
+    private static Func<ReadOnlySequence<byte>, int, ReadOnlySequence<byte>> CreateDecompressor(Decode decompress)
+    {
+        return (source, size) =>
         {
-            return (source, size) =>
-            {
-                var decompressed = new byte[size];
-                var sourceBytes = source.ToArray();
-                var bytesDecompressed = decompress(sourceBytes, 0, sourceBytes.Length, decompressed, 0, decompressed.Length);
-                if (size == bytesDecompressed)
-                    return new ReadOnlySequence<byte>(decompressed);
+            var decompressed = new byte[size];
+            var sourceBytes = source.ToArray();
+            var bytesDecompressed = decompress(sourceBytes, 0, sourceBytes.Length, decompressed, 0, decompressed.Length);
+            if (size == bytesDecompressed)
+                return new ReadOnlySequence<byte>(decompressed);
 
-                throw new CompressionException($"LZ4Codec.Decode returned {bytesDecompressed} but expected {size}");
-            };
-        }
+            throw new CompressionException($"LZ4Codec.Decode returned {bytesDecompressed} but expected {size}");
+        };
+    }
 
-        private static Func<ReadOnlySequence<byte>, ReadOnlySequence<byte>> CreateCompressor(Encode compress, MaximumOutputSize maximumOutputSize)
+    private static Func<ReadOnlySequence<byte>, ReadOnlySequence<byte>> CreateCompressor(Encode compress, MaximumOutputSize maximumOutputSize)
+    {
+        return (source) =>
         {
-            return (source) =>
-            {
-                var sourceBytes = source.ToArray();
-                var compressed = new byte[maximumOutputSize(sourceBytes.Length)];
-                var bytesCompressed = compress(sourceBytes, 0, sourceBytes.Length, compressed, 0, compressed.Length, 0);
-                if (bytesCompressed == -1)
-                    throw new CompressionException($"LZ4Codec.Encode returned -1 when compressing {sourceBytes.Length} bytes");
+            var sourceBytes = source.ToArray();
+            var compressed = new byte[maximumOutputSize(sourceBytes.Length)];
+            var bytesCompressed = compress(sourceBytes, 0, sourceBytes.Length, compressed, 0, compressed.Length, 0);
+            if (bytesCompressed == -1)
+                throw new CompressionException($"LZ4Codec.Encode returned -1 when compressing {sourceBytes.Length} bytes");
 
-                return new ReadOnlySequence<byte>(compressed, 0, bytesCompressed);
-            };
-        }
+            return new ReadOnlySequence<byte>(compressed, 0, bytesCompressed);
+        };
     }
 }

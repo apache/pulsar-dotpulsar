@@ -12,31 +12,30 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Requests
+namespace DotPulsar.Internal.Requests;
+
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.PulsarApi;
+using System.Diagnostics.CodeAnalysis;
+
+public struct ConnectRequest : IRequest
 {
-    using DotPulsar.Internal.Abstractions;
-    using DotPulsar.Internal.PulsarApi;
-    using System.Diagnostics.CodeAnalysis;
+    public bool SenderIsConsumer(ulong consumerId)
+        => false;
 
-    public struct ConnectRequest : IRequest
-    {
-        public bool SenderIsConsumer(ulong consumerId)
-            => false;
+    public bool SenderIsProducer(ulong producerId)
+        => false;
 
-        public bool SenderIsProducer(ulong producerId)
-            => false;
-
-        public bool IsCommandType(BaseCommand.Type commandType)
-            => commandType == BaseCommand.Type.Connect;
+    public bool IsCommandType(BaseCommand.Type commandType)
+        => commandType == BaseCommand.Type.Connect;
 
 #if NETSTANDARD2_0
-        public bool Equals(IRequest other)
+    public bool Equals(IRequest other)
 #else
         public bool Equals([AllowNull] IRequest other)
 #endif
             => other is ConnectRequest;
 
-        public override int GetHashCode()
-            => int.MinValue;
-    }
+    public override int GetHashCode()
+        => int.MinValue;
 }

@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class ConnectionSecurityException : DotPulsarException
 {
-    public sealed class ConnectionSecurityException : DotPulsarException
-    {
-        public ConnectionSecurityException(string message) : base(message) { }
-    }
+    public ConnectionSecurityException(string message) : base(message) { }
 }

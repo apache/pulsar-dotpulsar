@@ -12,63 +12,62 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using PulsarApi;
+using System;
+using System.Buffers;
+using System.IO;
+
+public static class Serializer
 {
-    using PulsarApi;
-    using System;
-    using System.Buffers;
-    using System.IO;
+    public static T Deserialize<T>(ReadOnlySequence<byte> sequence) => ProtoBuf.Serializer.Deserialize<T>(sequence);
 
-    public static class Serializer
+    public static ReadOnlySequence<byte> Serialize(BaseCommand command)
     {
-        public static T Deserialize<T>(ReadOnlySequence<byte> sequence) => ProtoBuf.Serializer.Deserialize<T>(sequence);
+        var commandBytes = Serialize<BaseCommand>(command);
+        var commandSizeBytes = ToBigEndianBytes((uint) commandBytes.Length);
+        var totalSizeBytes = ToBigEndianBytes((uint) commandBytes.Length + 4);
 
-        public static ReadOnlySequence<byte> Serialize(BaseCommand command)
-        {
-            var commandBytes = Serialize<BaseCommand>(command);
-            var commandSizeBytes = ToBigEndianBytes((uint) commandBytes.Length);
-            var totalSizeBytes = ToBigEndianBytes((uint) commandBytes.Length + 4);
+        return new SequenceBuilder<byte>()
+            .Append(totalSizeBytes)
+            .Append(commandSizeBytes)
+            .Append(commandBytes)
+            .Build();
+    }
 
-            return new SequenceBuilder<byte>()
-                .Append(totalSizeBytes)
-                .Append(commandSizeBytes)
-                .Append(commandBytes)
-                .Build();
-        }
+    public static ReadOnlySequence<byte> Serialize(BaseCommand command, MessageMetadata metadata, ReadOnlySequence<byte> payload)
+    {
+        var commandBytes = Serialize<BaseCommand>(command);
+        var commandSizeBytes = ToBigEndianBytes((uint) commandBytes.Length);
 
-        public static ReadOnlySequence<byte> Serialize(BaseCommand command, MessageMetadata metadata, ReadOnlySequence<byte> payload)
-        {
-            var commandBytes = Serialize<BaseCommand>(command);
-            var commandSizeBytes = ToBigEndianBytes((uint) commandBytes.Length);
+        var metadataBytes = Serialize(metadata);
+        var metadataSizeBytes = ToBigEndianBytes((uint) metadataBytes.Length);
 
-            var metadataBytes = Serialize(metadata);
-            var metadataSizeBytes = ToBigEndianBytes((uint) metadataBytes.Length);
+        var sb = new SequenceBuilder<byte>().Append(metadataSizeBytes).Append(metadataBytes).Append(payload);
+        var checksum = Crc32C.Calculate(sb.Build());
 
-            var sb = new SequenceBuilder<byte>().Append(metadataSizeBytes).Append(metadataBytes).Append(payload);
-            var checksum = Crc32C.Calculate(sb.Build());
+        return sb.Prepend(ToBigEndianBytes(checksum))
+            .Prepend(Constants.MagicNumber)
+            .Prepend(commandBytes)
+            .Prepend(commandSizeBytes)
+            .Prepend(ToBigEndianBytes((uint) sb.Length))
+            .Build();
+    }
 
-            return sb.Prepend(ToBigEndianBytes(checksum))
-                .Prepend(Constants.MagicNumber)
-                .Prepend(commandBytes)
-                .Prepend(commandSizeBytes)
-                .Prepend(ToBigEndianBytes((uint) sb.Length))
-                .Build();
-        }
+    public static byte[] ToBigEndianBytes(uint integer)
+    {
+        var union = new UIntUnion(integer);
 
-        public static byte[] ToBigEndianBytes(uint integer)
-        {
-            var union = new UIntUnion(integer);
+        return BitConverter.IsLittleEndian
+            ? new[] { union.B3, union.B2, union.B1, union.B0 }
+            : new[] { union.B0, union.B1, union.B2, union.B3 };
+    }
 
-            return BitConverter.IsLittleEndian
-                ? new[] { union.B3, union.B2, union.B1, union.B0 }
-                : new[] { union.B0, union.B1, union.B2, union.B3 };
-        }
-
-        private static byte[] Serialize<T>(T item)
-        {
-            using var ms = new MemoryStream();
-            ProtoBuf.Serializer.Serialize(ms, item);
-            return ms.ToArray();
-        }
+    private static byte[] Serialize<T>(T item)
+    {
+        using var ms = new MemoryStream();
+        ProtoBuf.Serializer.Serialize(ms, item);
+        return ms.ToArray();
     }
 }

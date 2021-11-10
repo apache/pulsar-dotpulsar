@@ -12,60 +12,59 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+using System.Collections.Generic;
+using System.Linq;
+
+/// <summary>
+/// Information about the schema.
+/// </summary>
+public sealed class SchemaInfo
 {
-    using System.Collections.Generic;
-    using System.Linq;
+    internal SchemaInfo(Internal.PulsarApi.Schema schema)
+        => PulsarSchema = schema;
 
-    /// <summary>
-    /// Information about the schema.
-    /// </summary>
-    public sealed class SchemaInfo
+    public SchemaInfo(string name, byte[] data, SchemaType type, IReadOnlyDictionary<string, string> properties)
     {
-        internal SchemaInfo(Internal.PulsarApi.Schema schema)
-            => PulsarSchema = schema;
-
-        public SchemaInfo(string name, byte[] data, SchemaType type, IReadOnlyDictionary<string, string> properties)
+        PulsarSchema = new Internal.PulsarApi.Schema
         {
-            PulsarSchema = new Internal.PulsarApi.Schema
+            Name = name,
+            SchemaData = data,
+            Type = (Internal.PulsarApi.Schema.SchemaType) type,
+        };
+
+        foreach (var property in properties)
+        {
+            var keyValue = new Internal.PulsarApi.KeyValue
             {
-                Name = name,
-                SchemaData = data,
-                Type = (Internal.PulsarApi.Schema.SchemaType) type,
+                Key = property.Key,
+                Value = property.Value
             };
 
-            foreach (var property in properties)
-            {
-                var keyValue = new Internal.PulsarApi.KeyValue
-                {
-                    Key = property.Key,
-                    Value = property.Value
-                };
-
-                PulsarSchema.Properties.Add(keyValue);
-            }
+            PulsarSchema.Properties.Add(keyValue);
         }
-
-        internal Internal.PulsarApi.Schema PulsarSchema { get; }
-
-        /// <summary>
-        /// The name of the schema.
-        /// </summary>
-        public string Name => PulsarSchema.Name;
-
-        /// <summary>
-        /// The data of the schema.
-        /// </summary>
-        public byte[] Data => PulsarSchema.SchemaData;
-
-        /// <summary>
-        /// The type of the schema.
-        /// </summary>
-        public SchemaType Type => (SchemaType) PulsarSchema.Type;
-
-        /// <summary>
-        /// The properties of the schema.
-        /// </summary>
-        public IReadOnlyDictionary<string, string> Properties => PulsarSchema.Properties.ToDictionary(p => p.Key, p => p.Value);
     }
+
+    internal Internal.PulsarApi.Schema PulsarSchema { get; }
+
+    /// <summary>
+    /// The name of the schema.
+    /// </summary>
+    public string Name => PulsarSchema.Name;
+
+    /// <summary>
+    /// The data of the schema.
+    /// </summary>
+    public byte[] Data => PulsarSchema.SchemaData;
+
+    /// <summary>
+    /// The type of the schema.
+    /// </summary>
+    public SchemaType Type => (SchemaType) PulsarSchema.Type;
+
+    /// <summary>
+    /// The properties of the schema.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Properties => PulsarSchema.Properties.ToDictionary(p => p.Key, p => p.Value);
 }

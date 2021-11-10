@@ -12,29 +12,28 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Extensions
+namespace DotPulsar.Extensions;
+
+using DotPulsar.Abstractions;
+using System;
+using System.Buffers;
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// Extensions for IMessageBuilder.
+/// </summary>
+public static class MessageBuilderExtensions
 {
-    using DotPulsar.Abstractions;
-    using System;
-    using System.Buffers;
-    using System.Threading;
-    using System.Threading.Tasks;
+    /// <summary>
+    /// Sends a message.
+    /// </summary>
+    public static async ValueTask<MessageId> Send(this IMessageBuilder<ReadOnlySequence<byte>> builder, byte[] payload, CancellationToken cancellationToken = default)
+        => await builder.Send(new ReadOnlySequence<byte>(payload), cancellationToken).ConfigureAwait(false);
 
     /// <summary>
-    /// Extensions for IMessageBuilder.
+    /// Sends a message.
     /// </summary>
-    public static class MessageBuilderExtensions
-    {
-        /// <summary>
-        /// Sends a message.
-        /// </summary>
-        public static async ValueTask<MessageId> Send(this IMessageBuilder<ReadOnlySequence<byte>> builder, byte[] payload, CancellationToken cancellationToken = default)
-            => await builder.Send(new ReadOnlySequence<byte>(payload), cancellationToken).ConfigureAwait(false);
-
-        /// <summary>
-        /// Sends a message.
-        /// </summary>
-        public static async ValueTask<MessageId> Send(this IMessageBuilder<ReadOnlySequence<byte>> builder, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default)
-            => await builder.Send(new ReadOnlySequence<byte>(payload), cancellationToken).ConfigureAwait(false);
-    }
+    public static async ValueTask<MessageId> Send(this IMessageBuilder<ReadOnlySequence<byte>> builder, ReadOnlyMemory<byte> payload, CancellationToken cancellationToken = default)
+        => await builder.Send(new ReadOnlySequence<byte>(payload), cancellationToken).ConfigureAwait(false);
 }

@@ -12,25 +12,24 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Compression
+namespace DotPulsar.Internal.Compression;
+
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.PulsarApi;
+using System;
+
+public sealed class DecompressorFactory : IDecompressorFactory
 {
-    using DotPulsar.Internal.Abstractions;
-    using DotPulsar.Internal.PulsarApi;
-    using System;
+    private readonly Func<IDecompress> _create;
 
-    public sealed class DecompressorFactory : IDecompressorFactory
+    public DecompressorFactory(CompressionType compressionType, Func<IDecompress> create)
     {
-        private readonly Func<IDecompress> _create;
-
-        public DecompressorFactory(CompressionType compressionType, Func<IDecompress> create)
-        {
-            CompressionType = compressionType;
-            _create = create;
-        }
-
-        public CompressionType CompressionType { get; }
-
-        public IDecompress Create()
-            => _create();
+        CompressionType = compressionType;
+        _create = create;
     }
+
+    public CompressionType CompressionType { get; }
+
+    public IDecompress Create()
+        => _create();
 }

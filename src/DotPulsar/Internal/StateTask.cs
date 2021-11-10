@@ -12,28 +12,27 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using System;
+
+public sealed class StateTask<TState> : IDisposable where TState : notnull
 {
-    using System;
+    private readonly TState _state;
+    private readonly StateChanged _change;
 
-    public sealed class StateTask<TState> : IDisposable where TState : notnull
+    public StateTask(TState state, StateChanged change)
     {
-        private readonly TState _state;
-        private readonly StateChanged _change;
-
-        public StateTask(TState state, StateChanged change)
-        {
-            _state = state;
-            _change = change;
-            CancelableCompletionSource = new CancelableCompletionSource<TState>();
-        }
-
-        public CancelableCompletionSource<TState> CancelableCompletionSource { get; }
-
-        public bool IsAwaiting(TState state)
-            => _change == StateChanged.To ? _state.Equals(state) : !_state.Equals(state);
-
-        public void Dispose()
-            => CancelableCompletionSource.Dispose();
+        _state = state;
+        _change = change;
+        CancelableCompletionSource = new CancelableCompletionSource<TState>();
     }
+
+    public CancelableCompletionSource<TState> CancelableCompletionSource { get; }
+
+    public bool IsAwaiting(TState state)
+        => _change == StateChanged.To ? _state.Equals(state) : !_state.Equals(state);
+
+    public void Dispose()
+        => CancelableCompletionSource.Dispose();
 }

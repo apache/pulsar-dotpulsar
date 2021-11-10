@@ -12,99 +12,98 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Schemas
+namespace DotPulsar.Schemas;
+
+using DotPulsar.Abstractions;
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Text;
+
+/// <summary>
+/// Schema definition for UTF-8 (default), UTF-16 (unicode) or US-ASCII encoded strings.
+/// </summary>
+public sealed class StringSchema : ISchema<string>
 {
-    using DotPulsar.Abstractions;
-    using System;
-    using System.Buffers;
-    using System.Collections.Generic;
-    using System.Text;
+    private const string _charSetKey = "__charset";
+    private const string _utf8 = "UTF-8";
+    private const string _unicode = "UTF-16";
+    private const string _ascii = "US-ASCII";
+
+    static StringSchema()
+    {
+        UTF8 = new StringSchema(Encoding.UTF8);
+        Unicode = new StringSchema(Encoding.Unicode);
+        ASCII = new StringSchema(Encoding.ASCII);
+    }
 
     /// <summary>
-    /// Schema definition for UTF-8 (default), UTF-16 (unicode) or US-ASCII encoded strings.
+    /// Schema definition for UTF-8 encoded strings.
     /// </summary>
-    public sealed class StringSchema : ISchema<string>
+    public static StringSchema UTF8 { get; }
+
+    /// <summary>
+    /// Schema definition for UTF-16 encoded strings.
+    /// </summary>
+    public static StringSchema Unicode { get; }
+
+    /// <summary>
+    /// Schema definition for US-ASCII encoded strings.
+    /// </summary>
+    public static StringSchema ASCII { get; }
+
+    private static string GetCharSet(string encodingName)
     {
-        private const string _charSetKey = "__charset";
-        private const string _utf8 = "UTF-8";
-        private const string _unicode = "UTF-16";
-        private const string _ascii = "US-ASCII";
-
-        static StringSchema()
+        return encodingName switch
         {
-            UTF8 = new StringSchema(Encoding.UTF8);
-            Unicode = new StringSchema(Encoding.Unicode);
-            ASCII = new StringSchema(Encoding.ASCII);
-        }
+            "Unicode (UTF-8)" => _utf8,
+            "Unicode" => _unicode,
+            "US-ASCII" => _ascii,
+            _ => throw new Exception($"Encoding '{encodingName}' is not supported!")
+        };
+    }
 
-        /// <summary>
-        /// Schema definition for UTF-8 encoded strings.
-        /// </summary>
-        public static StringSchema UTF8 { get; }
-
-        /// <summary>
-        /// Schema definition for UTF-16 encoded strings.
-        /// </summary>
-        public static StringSchema Unicode { get; }
-
-        /// <summary>
-        /// Schema definition for US-ASCII encoded strings.
-        /// </summary>
-        public static StringSchema ASCII { get; }
-
-        private static string GetCharSet(string encodingName)
+    private static StringSchema GetSchema(string charSet)
+    {
+        return charSet switch
         {
-            return encodingName switch
-            {
-                "Unicode (UTF-8)" => _utf8,
-                "Unicode" => _unicode,
-                "US-ASCII" => _ascii,
-                _ => throw new Exception($"Encoding '{encodingName}' is not supported!")
-            };
-        }
+            _utf8 => UTF8,
+            _unicode => Unicode,
+            _ascii => ASCII,
+            _ => throw new Exception($"CharSet '{charSet}' is not supported!")
+        };
+    }
 
-        private static StringSchema GetSchema(string charSet)
-        {
-            return charSet switch
-            {
-                _utf8 => UTF8,
-                _unicode => Unicode,
-                _ascii => ASCII,
-                _ => throw new Exception($"CharSet '{charSet}' is not supported!")
-            };
-        }
+    public static StringSchema From(SchemaInfo schemaInfo)
+    {
+        if (schemaInfo.Type != SchemaType.String)
+            throw new Exception("Not a string schema!");
 
-        public static StringSchema From(SchemaInfo schemaInfo)
-        {
-            if (schemaInfo.Type != SchemaType.String)
-                throw new Exception("Not a string schema!");
+        if (schemaInfo.Properties.TryGetValue(_charSetKey, out var charset))
+            return GetSchema(charset);
+        else
+            return UTF8;
+    }
 
-            if (schemaInfo.Properties.TryGetValue(_charSetKey, out var charset))
-                return GetSchema(charset);
-            else
-                return UTF8;
-        }
+    private readonly Encoding _encoding;
 
-        private readonly Encoding _encoding;
+    public StringSchema(Encoding encoding)
+    {
+        _encoding = encoding;
 
-        public StringSchema(Encoding encoding)
-        {
-            _encoding = encoding;
-
-            var properties = new Dictionary<string, string>
+        var properties = new Dictionary<string, string>
             {
                 { _charSetKey, GetCharSet(encoding.EncodingName) }
             };
 
-            SchemaInfo = new SchemaInfo("String", Array.Empty<byte>(), SchemaType.String, properties);
-        }
-
-        public SchemaInfo SchemaInfo { get; }
-
-        public string Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion)
-            => _encoding.GetString(bytes.ToArray());
-
-        public ReadOnlySequence<byte> Encode(string message)
-            => new(_encoding.GetBytes(message));
+        SchemaInfo = new SchemaInfo("String", Array.Empty<byte>(), SchemaType.String, properties);
     }
+
+    public SchemaInfo SchemaInfo { get; }
+
+    public string Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion)
+        => _encoding.GetString(bytes.ToArray());
+
+    public ReadOnlySequence<byte> Encode(string message)
+        => new(_encoding.GetBytes(message));
 }

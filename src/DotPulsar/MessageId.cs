@@ -12,119 +12,118 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+using DotPulsar.Internal.Extensions;
+using Internal.PulsarApi;
+using System;
+
+/// <summary>
+/// Unique identifier of a single message.
+/// </summary>
+public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
 {
-    using DotPulsar.Internal.Extensions;
-    using Internal.PulsarApi;
-    using System;
+    static MessageId()
+    {
+        Earliest = new MessageId(ulong.MaxValue, ulong.MaxValue, -1, -1);
+        Latest = new MessageId(long.MaxValue, long.MaxValue, -1, -1);
+    }
 
     /// <summary>
-    /// Unique identifier of a single message.
+    /// The oldest message available in the topic.
     /// </summary>
-    public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
+    public static MessageId Earliest { get; }
+
+    /// <summary>
+    /// The next message published in the topic.
+    /// </summary>
+    public static MessageId Latest { get; }
+
+    /// <summary>
+    /// Initializes a new instance using the specified ledgerId, entryId, partition and batchIndex.
+    /// </summary>
+    public MessageId(ulong ledgerId, ulong entryId, int partition, int batchIndex)
     {
-        static MessageId()
-        {
-            Earliest = new MessageId(ulong.MaxValue, ulong.MaxValue, -1, -1);
-            Latest = new MessageId(long.MaxValue, long.MaxValue, -1, -1);
-        }
+        LedgerId = ledgerId;
+        EntryId = entryId;
+        Partition = partition;
+        BatchIndex = batchIndex;
+    }
 
-        /// <summary>
-        /// The oldest message available in the topic.
-        /// </summary>
-        public static MessageId Earliest { get; }
+    /// <summary>
+    /// The id of the ledger.
+    /// </summary>
+    public ulong LedgerId { get; }
 
-        /// <summary>
-        /// The next message published in the topic.
-        /// </summary>
-        public static MessageId Latest { get; }
+    /// <summary>
+    /// The id of the entry.
+    /// </summary>
+    public ulong EntryId { get; }
 
-        /// <summary>
-        /// Initializes a new instance using the specified ledgerId, entryId, partition and batchIndex.
-        /// </summary>
-        public MessageId(ulong ledgerId, ulong entryId, int partition, int batchIndex)
-        {
-            LedgerId = ledgerId;
-            EntryId = entryId;
-            Partition = partition;
-            BatchIndex = batchIndex;
-        }
+    /// <summary>
+    /// The partition.
+    /// </summary>
+    public int Partition { get; }
 
-        /// <summary>
-        /// The id of the ledger.
-        /// </summary>
-        public ulong LedgerId { get; }
+    /// <summary>
+    /// The batch index.
+    /// </summary>
+    public int BatchIndex { get; }
 
-        /// <summary>
-        /// The id of the entry.
-        /// </summary>
-        public ulong EntryId { get; }
+    public int CompareTo(MessageId? other)
+    {
+        if (other is null)
+            return 1;
 
-        /// <summary>
-        /// The partition.
-        /// </summary>
-        public int Partition { get; }
+        var result = LedgerId.CompareTo(other.LedgerId);
+        if (result != 0)
+            return result;
 
-        /// <summary>
-        /// The batch index.
-        /// </summary>
-        public int BatchIndex { get; }
+        result = EntryId.CompareTo(other.EntryId);
+        if (result != 0)
+            return result;
 
-        public int CompareTo(MessageId? other)
-        {
-            if (other is null)
-                return 1;
+        result = Partition.CompareTo(other.Partition);
+        if (result != 0)
+            return result;
 
-            var result = LedgerId.CompareTo(other.LedgerId);
-            if (result != 0)
-                return result;
+        return BatchIndex.CompareTo(other.BatchIndex);
+    }
 
-            result = EntryId.CompareTo(other.EntryId);
-            if (result != 0)
-                return result;
+    public static bool operator >(MessageId x, MessageId y)
+        => x is not null && x.CompareTo(y) >= 1;
 
-            result = Partition.CompareTo(other.Partition);
-            if (result != 0)
-                return result;
+    public static bool operator <(MessageId x, MessageId y)
+        => x is not null ? x.CompareTo(y) <= -1 : y is not null;
 
-            return BatchIndex.CompareTo(other.BatchIndex);
-        }
+    public static bool operator >=(MessageId x, MessageId y)
+        => x is not null ? x.CompareTo(y) >= 0 : y is null;
 
-        public static bool operator >(MessageId x, MessageId y)
-            => x is not null && x.CompareTo(y) >= 1;
+    public static bool operator <=(MessageId x, MessageId y)
+        => x is null || x.CompareTo(y) <= 0;
 
-        public static bool operator <(MessageId x, MessageId y)
-            => x is not null ? x.CompareTo(y) <= -1 : y is not null;
+    public override bool Equals(object? o)
+        => o is MessageId id && Equals(id);
 
-        public static bool operator >=(MessageId x, MessageId y)
-            => x is not null ? x.CompareTo(y) >= 0 : y is null;
+    public bool Equals(MessageId? other)
+        => other is not null && LedgerId == other.LedgerId && EntryId == other.EntryId && Partition == other.Partition && BatchIndex == other.BatchIndex;
 
-        public static bool operator <=(MessageId x, MessageId y)
-            => x is null || x.CompareTo(y) <= 0;
+    public static bool operator ==(MessageId x, MessageId y)
+        => ReferenceEquals(x, y) || (x is not null && x.Equals(y));
 
-        public override bool Equals(object? o)
-            => o is MessageId id && Equals(id);
+    public static bool operator !=(MessageId x, MessageId y)
+        => !(x == y);
 
-        public bool Equals(MessageId? other)
-            => other is not null && LedgerId == other.LedgerId && EntryId == other.EntryId && Partition == other.Partition && BatchIndex == other.BatchIndex;
+    public override int GetHashCode()
+        => HashCode.Combine(LedgerId, EntryId, Partition, BatchIndex);
 
-        public static bool operator ==(MessageId x, MessageId y)
-            => ReferenceEquals(x, y) || (x is not null && x.Equals(y));
+    public override string ToString()
+        => $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}";
 
-        public static bool operator !=(MessageId x, MessageId y)
-            => !(x == y);
-
-        public override int GetHashCode()
-            => HashCode.Combine(LedgerId, EntryId, Partition, BatchIndex);
-
-        public override string ToString()
-            => $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}";
-
-        internal MessageIdData ToMessageIdData()
-        {
-            var messageIdData = new MessageIdData();
-            messageIdData.MapFrom(this);
-            return messageIdData;
-        }
+    internal MessageIdData ToMessageIdData()
+    {
+        var messageIdData = new MessageIdData();
+        messageIdData.MapFrom(this);
+        return messageIdData;
     }
 }

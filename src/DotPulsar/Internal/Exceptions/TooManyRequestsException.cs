@@ -12,12 +12,11 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Exceptions
-{
-    using DotPulsar.Exceptions;
+namespace DotPulsar.Internal.Exceptions;
 
-    public sealed class TooManyRequestsException : DotPulsarException
-    {
-        public TooManyRequestsException(string message) : base(message) { }
-    }
+using DotPulsar.Exceptions;
+
+public sealed class TooManyRequestsException : DotPulsarException
+{
+    public TooManyRequestsException(string message) : base(message) { }
 }

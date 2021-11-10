@@ -12,21 +12,20 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+/// <summary>
+/// Intial position at which the cursor will be set when subscribing.
+/// </summary>
+public enum SubscriptionInitialPosition : byte
 {
     /// <summary>
-    /// Intial position at which the cursor will be set when subscribing.
+    /// Consumption will start at the last message.
     /// </summary>
-    public enum SubscriptionInitialPosition : byte
-    {
-        /// <summary>
-        /// Consumption will start at the last message.
-        /// </summary>
-        Latest = 0,
+    Latest = 0,
 
-        /// <summary>
-        /// Consumption will start at the first message.
-        /// </summary>
-        Earliest = 1
-    }
+    /// <summary>
+    /// Consumption will start at the first message.
+    /// </summary>
+    Earliest = 1
 }

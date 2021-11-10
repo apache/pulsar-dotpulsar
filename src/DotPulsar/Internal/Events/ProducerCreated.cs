@@ -12,16 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Events
+namespace DotPulsar.Internal.Events;
+
+using Abstractions;
+using System;
+
+public sealed class ProducerCreated : IEvent
 {
-    using Abstractions;
-    using System;
+    public ProducerCreated(Guid correlationId)
+        => CorrelationId = correlationId;
 
-    public sealed class ProducerCreated : IEvent
-    {
-        public ProducerCreated(Guid correlationId)
-            => CorrelationId = correlationId;
-
-        public Guid CorrelationId { get; }
-    }
+    public Guid CorrelationId { get; }
 }

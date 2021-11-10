@@ -12,25 +12,24 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Extensions
-{
-    using DotPulsar.Abstractions;
-    using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
-    using System.Threading;
+namespace DotPulsar.Extensions;
 
+using DotPulsar.Abstractions;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+
+/// <summary>
+/// Extensions for IReceive.
+/// </summary>
+public static class ReceiveExtensions
+{
     /// <summary>
-    /// Extensions for IReceive.
+    /// Get an IAsyncEnumerable for receiving messages.
     /// </summary>
-    public static class ReceiveExtensions
+    public static async IAsyncEnumerable<TMessage> Messages<TMessage>(this IReceive<TMessage> receiver, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        /// <summary>
-        /// Get an IAsyncEnumerable for receiving messages.
-        /// </summary>
-        public static async IAsyncEnumerable<TMessage> Messages<TMessage>(this IReceive<TMessage> receiver, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-                yield return await receiver.Receive(cancellationToken).ConfigureAwait(false);
-        }
+        while (!cancellationToken.IsCancellationRequested)
+            yield return await receiver.Receive(cancellationToken).ConfigureAwait(false);
     }
 }

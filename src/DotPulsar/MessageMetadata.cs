@@ -12,157 +12,156 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+using Internal.Extensions;
+using Internal.PulsarApi;
+using System;
+
+/// <summary>
+/// The message metadata builder.
+/// </summary>
+public sealed class MessageMetadata
 {
-    using Internal.Extensions;
-    using Internal.PulsarApi;
-    using System;
+    /// <summary>
+    /// Initializes a new instance of the message metadata builder.
+    /// </summary>
+    public MessageMetadata()
+        => Metadata = new Internal.PulsarApi.MessageMetadata();
+
+    internal Internal.PulsarApi.MessageMetadata Metadata { get; }
 
     /// <summary>
-    /// The message metadata builder.
+    /// The delivery time of the message as unix time in milliseconds.
     /// </summary>
-    public sealed class MessageMetadata
+    public long DeliverAtTime
     {
-        /// <summary>
-        /// Initializes a new instance of the message metadata builder.
-        /// </summary>
-        public MessageMetadata()
-            => Metadata = new Internal.PulsarApi.MessageMetadata();
+        get => Metadata.DeliverAtTime;
+        set => Metadata.DeliverAtTime = value;
+    }
 
-        internal Internal.PulsarApi.MessageMetadata Metadata { get; }
+    /// <summary>
+    /// The delivery time of the message as an UTC DateTime.
+    /// </summary>
+    public DateTime DeliverAtTimeAsDateTime
+    {
+        get => Metadata.GetDeliverAtTimeAsDateTime();
+        set => Metadata.SetDeliverAtTime(value);
+    }
 
-        /// <summary>
-        /// The delivery time of the message as unix time in milliseconds.
-        /// </summary>
-        public long DeliverAtTime
+    /// <summary>
+    /// The delivery time of the message as a DateTimeOffset.
+    /// </summary>
+    public DateTimeOffset DeliverAtTimeAsDateTimeOffset
+    {
+        get => Metadata.GetDeliverAtTimeAsDateTimeOffset();
+        set => Metadata.SetDeliverAtTime(value);
+    }
+
+    /// <summary>
+    /// The event time of the message as unix time in milliseconds.
+    /// </summary>
+    public ulong EventTime
+    {
+        get => Metadata.EventTime;
+        set => Metadata.EventTime = value;
+    }
+
+    /// <summary>
+    /// The event time of the message as an UTC DateTime.
+    /// </summary>
+    public DateTime EventTimeAsDateTime
+    {
+        get => Metadata.GetEventTimeAsDateTime();
+        set => Metadata.SetEventTime(value);
+    }
+
+    /// <summary>
+    /// The event time of the message as a DateTimeOffset.
+    /// </summary>
+    public DateTimeOffset EventTimeAsDateTimeOffset
+    {
+        get => Metadata.GetEventTimeAsDateTimeOffset();
+        set => Metadata.SetEventTime(value);
+    }
+
+    /// <summary>
+    /// The key of the message as a string.
+    /// </summary>
+    public string? Key
+    {
+        get => Metadata.PartitionKey;
+        set => Metadata.SetKey(value);
+    }
+
+    /// <summary>
+    /// The key of the message as bytes.
+    /// </summary>
+    public byte[]? KeyBytes
+    {
+        get => Metadata.GetKeyAsBytes();
+        set => Metadata.SetKey(value);
+    }
+
+    /// <summary>
+    /// The ordering key of the message.
+    /// </summary>
+    public byte[]? OrderingKey
+    {
+        get => Metadata.OrderingKey;
+        set => Metadata.OrderingKey = value;
+    }
+
+    /// <summary>
+    /// The properties of the message.
+    /// </summary>
+    public string? this[string key]
+    {
+        get
         {
-            get => Metadata.DeliverAtTime;
-            set => Metadata.DeliverAtTime = value;
-        }
-
-        /// <summary>
-        /// The delivery time of the message as an UTC DateTime.
-        /// </summary>
-        public DateTime DeliverAtTimeAsDateTime
-        {
-            get => Metadata.GetDeliverAtTimeAsDateTime();
-            set => Metadata.SetDeliverAtTime(value);
-        }
-
-        /// <summary>
-        /// The delivery time of the message as a DateTimeOffset.
-        /// </summary>
-        public DateTimeOffset DeliverAtTimeAsDateTimeOffset
-        {
-            get => Metadata.GetDeliverAtTimeAsDateTimeOffset();
-            set => Metadata.SetDeliverAtTime(value);
-        }
-
-        /// <summary>
-        /// The event time of the message as unix time in milliseconds.
-        /// </summary>
-        public ulong EventTime
-        {
-            get => Metadata.EventTime;
-            set => Metadata.EventTime = value;
-        }
-
-        /// <summary>
-        /// The event time of the message as an UTC DateTime.
-        /// </summary>
-        public DateTime EventTimeAsDateTime
-        {
-            get => Metadata.GetEventTimeAsDateTime();
-            set => Metadata.SetEventTime(value);
-        }
-
-        /// <summary>
-        /// The event time of the message as a DateTimeOffset.
-        /// </summary>
-        public DateTimeOffset EventTimeAsDateTimeOffset
-        {
-            get => Metadata.GetEventTimeAsDateTimeOffset();
-            set => Metadata.SetEventTime(value);
-        }
-
-        /// <summary>
-        /// The key of the message as a string.
-        /// </summary>
-        public string? Key
-        {
-            get => Metadata.PartitionKey;
-            set => Metadata.SetKey(value);
-        }
-
-        /// <summary>
-        /// The key of the message as bytes.
-        /// </summary>
-        public byte[]? KeyBytes
-        {
-            get => Metadata.GetKeyAsBytes();
-            set => Metadata.SetKey(value);
-        }
-
-        /// <summary>
-        /// The ordering key of the message.
-        /// </summary>
-        public byte[]? OrderingKey
-        {
-            get => Metadata.OrderingKey;
-            set => Metadata.OrderingKey = value;
-        }
-
-        /// <summary>
-        /// The properties of the message.
-        /// </summary>
-        public string? this[string key]
-        {
-            get
+            for (var i = 0; i < Metadata.Properties.Count; ++i)
             {
-                for (var i = 0; i < Metadata.Properties.Count; ++i)
-                {
-                    var prop = Metadata.Properties[i];
+                var prop = Metadata.Properties[i];
 
-                    if (prop.Key == key)
-                        return prop.Value;
-                }
-
-                return null;
+                if (prop.Key == key)
+                    return prop.Value;
             }
-            set
+
+            return null;
+        }
+        set
+        {
+            for (var i = 0; i < Metadata.Properties.Count; ++i)
             {
-                for (var i = 0; i < Metadata.Properties.Count; ++i)
-                {
-                    var prop = Metadata.Properties[i];
+                var prop = Metadata.Properties[i];
 
-                    if (prop.Key != key)
-                        continue;
+                if (prop.Key != key)
+                    continue;
 
-                    prop.Value = value;
+                prop.Value = value;
 
-                    return;
-                }
-
-                Metadata.Properties.Add(new KeyValue { Key = key, Value = value });
+                return;
             }
-        }
 
-        /// <summary>
-        /// The schema version of the message.
-        /// </summary>
-        public byte[]? SchemaVersion
-        {
-            get => Metadata.SchemaVersion;
-            set => Metadata.SchemaVersion = value;
+            Metadata.Properties.Add(new KeyValue { Key = key, Value = value });
         }
+    }
 
-        /// <summary>
-        /// The sequence id of the message.
-        /// </summary>
-        public ulong SequenceId
-        {
-            get => Metadata.SequenceId;
-            set => Metadata.SequenceId = value;
-        }
+    /// <summary>
+    /// The schema version of the message.
+    /// </summary>
+    public byte[]? SchemaVersion
+    {
+        get => Metadata.SchemaVersion;
+        set => Metadata.SchemaVersion = value;
+    }
+
+    /// <summary>
+    /// The sequence id of the message.
+    /// </summary>
+    public ulong SequenceId
+    {
+        get => Metadata.SequenceId;
+        set => Metadata.SequenceId = value;
     }
 }

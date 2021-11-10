@@ -12,25 +12,24 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.IntegrationTests.Services
+namespace DotPulsar.IntegrationTests.Services;
+
+using Abstraction;
+
+public static class ServiceFactory
 {
-    using Abstraction;
+    private const string _pulsarDeploymentType = "PULSAR_DEPLOYMENT_TYPE";
+    private const string _containerDeployment = "container";
 
-    public static class ServiceFactory
+    public static IPulsarService CreatePulsarService()
     {
-        private const string _pulsarDeploymentType = "PULSAR_DEPLOYMENT_TYPE";
-        private const string _containerDeployment = "container";
+        var deploymentType = System.Environment.GetEnvironmentVariable(_pulsarDeploymentType);
 
-        public static IPulsarService CreatePulsarService()
+        if (deploymentType == _containerDeployment)
         {
-            var deploymentType = System.Environment.GetEnvironmentVariable(_pulsarDeploymentType);
-
-            if (deploymentType == _containerDeployment)
-            {
-                return new StandaloneContainerService();
-            }
-
-            return new StandaloneExternalService();
+            return new StandaloneContainerService();
         }
+
+        return new StandaloneExternalService();
     }
 }

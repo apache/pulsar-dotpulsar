@@ -12,12 +12,11 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Exceptions
-{
-    using DotPulsar.Exceptions;
+namespace DotPulsar.Internal.Exceptions;
 
-    public sealed class ChannelNotReadyException : DotPulsarException
-    {
-        public ChannelNotReadyException() : base("The service is not ready yet") { }
-    }
+using DotPulsar.Exceptions;
+
+public sealed class ChannelNotReadyException : DotPulsarException
+{
+    public ChannelNotReadyException() : base("The service is not ready yet") { }
 }

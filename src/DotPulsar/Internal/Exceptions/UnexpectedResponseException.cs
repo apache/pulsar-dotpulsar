@@ -12,15 +12,14 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Exceptions
+namespace DotPulsar.Internal.Exceptions;
+
+using DotPulsar.Exceptions;
+using System;
+
+public sealed class UnexpectedResponseException : DotPulsarException
 {
-    using DotPulsar.Exceptions;
-    using System;
+    public UnexpectedResponseException(string message) : base(message) { }
 
-    public sealed class UnexpectedResponseException : DotPulsarException
-    {
-        public UnexpectedResponseException(string message) : base(message) { }
-
-        public UnexpectedResponseException(string message, Exception innerException) : base(message, innerException) { }
-    }
+    public UnexpectedResponseException(string message, Exception innerException) : base(message, innerException) { }
 }

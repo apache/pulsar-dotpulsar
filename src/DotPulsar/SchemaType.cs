@@ -12,116 +12,115 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+/// <summary>
+/// The supported schema types for messages.
+/// </summary>
+public enum SchemaType : byte
 {
     /// <summary>
-    /// The supported schema types for messages.
+    /// No schema.
     /// </summary>
-    public enum SchemaType : byte
-    {
-        /// <summary>
-        /// No schema.
-        /// </summary>
-        None = 0,
+    None = 0,
 
-        /// <summary>
-        /// UTF-8 schema.
-        /// </summary>
-        String = 1,
+    /// <summary>
+    /// UTF-8 schema.
+    /// </summary>
+    String = 1,
 
-        /// <summary>
-        /// JSON schema.
-        /// </summary>
-        Json = 2,
+    /// <summary>
+    /// JSON schema.
+    /// </summary>
+    Json = 2,
 
-        /// <summary>
-        /// Protobuf schema.
-        /// </summary>
-        Protobuf = 3,
+    /// <summary>
+    /// Protobuf schema.
+    /// </summary>
+    Protobuf = 3,
 
-        /// <summary>
-        /// Avro schema.
-        /// </summary>
-        Avro = 4,
+    /// <summary>
+    /// Avro schema.
+    /// </summary>
+    Avro = 4,
 
-        /// <summary>
-        /// Boolean schema.
-        /// </summary>
-        Boolean = 5,
+    /// <summary>
+    /// Boolean schema.
+    /// </summary>
+    Boolean = 5,
 
-        /// <summary>
-        /// 8-byte integer schema.
-        /// </summary>
-        Int8 = 6,
+    /// <summary>
+    /// 8-byte integer schema.
+    /// </summary>
+    Int8 = 6,
 
-        /// <summary>
-        /// 16-byte integer schema.
-        /// </summary>
-        Int16 = 7,
+    /// <summary>
+    /// 16-byte integer schema.
+    /// </summary>
+    Int16 = 7,
 
-        /// <summary>
-        ///32-byte integer schema.
-        /// </summary>
-        Int32 = 8,
+    /// <summary>
+    ///32-byte integer schema.
+    /// </summary>
+    Int32 = 8,
 
-        /// <summary>
-        /// 64-byte integer schema.
-        /// </summary>
-        Int64 = 9,
+    /// <summary>
+    /// 64-byte integer schema.
+    /// </summary>
+    Int64 = 9,
 
-        /// <summary>
-        /// Float schema.
-        /// </summary>
-        Float = 10,
+    /// <summary>
+    /// Float schema.
+    /// </summary>
+    Float = 10,
 
-        /// <summary>
-        /// Double schema.
-        /// </summary>
-        Double = 11,
+    /// <summary>
+    /// Double schema.
+    /// </summary>
+    Double = 11,
 
-        /// <summary>
-        /// Date schema.
-        /// </summary>
-        Date = 12,
+    /// <summary>
+    /// Date schema.
+    /// </summary>
+    Date = 12,
 
-        /// <summary>
-        /// Time schema.
-        /// </summary>
-        Time = 13,
+    /// <summary>
+    /// Time schema.
+    /// </summary>
+    Time = 13,
 
-        /// <summary>
-        /// Timestamp schema.
-        /// </summary>
-        Timestamp = 14,
+    /// <summary>
+    /// Timestamp schema.
+    /// </summary>
+    Timestamp = 14,
 
-        /// <summary>
-        /// KeyValue schema.
-        /// </summary>
-        KeyValue = 15,
+    /// <summary>
+    /// KeyValue schema.
+    /// </summary>
+    KeyValue = 15,
 
-        /// <summary>
-        /// Instant schema.
-        /// </summary>
-        Instant = 16,
+    /// <summary>
+    /// Instant schema.
+    /// </summary>
+    Instant = 16,
 
-        /// <summary>
-        /// Local date schema.
-        /// </summary>
-        LocalDate = 17,
+    /// <summary>
+    /// Local date schema.
+    /// </summary>
+    LocalDate = 17,
 
-        /// <summary>
-        /// Local time schema.
-        /// </summary>
-        LocalTime = 18,
+    /// <summary>
+    /// Local time schema.
+    /// </summary>
+    LocalTime = 18,
 
-        /// <summary>
-        /// Local data time schema.
-        /// </summary>
-        LocalDateTime = 19,
+    /// <summary>
+    /// Local data time schema.
+    /// </summary>
+    LocalDateTime = 19,
 
-        /// <summary>
-        /// Protobuf native schema.
-        /// </summary>
-        ProtobufNative = 20
-    }
+    /// <summary>
+    /// Protobuf native schema.
+    /// </summary>
+    ProtobufNative = 20
 }

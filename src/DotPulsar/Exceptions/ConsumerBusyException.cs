@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class ConsumerBusyException : DotPulsarException
 {
-    public sealed class ConsumerBusyException : DotPulsarException
-    {
-        public ConsumerBusyException(string message) : base(message) { }
-    }
+    public ConsumerBusyException(string message) : base(message) { }
 }

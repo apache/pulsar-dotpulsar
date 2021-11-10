@@ -12,36 +12,35 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+/// <summary>
+/// The possible states a producer can be in.
+/// </summary>
+public enum ProducerState : byte
 {
     /// <summary>
-    /// The possible states a producer can be in.
+    /// The producer is closed. This is a final state.
     /// </summary>
-    public enum ProducerState : byte
-    {
-        /// <summary>
-        /// The producer is closed. This is a final state.
-        /// </summary>
-        Closed,
+    Closed,
 
-        /// <summary>
-        /// The producer is connected.
-        /// </summary>
-        Connected,
+    /// <summary>
+    /// The producer is connected.
+    /// </summary>
+    Connected,
 
-        /// <summary>
-        /// The producer is disconnected.
-        /// </summary>
-        Disconnected,
+    /// <summary>
+    /// The producer is disconnected.
+    /// </summary>
+    Disconnected,
 
-        /// <summary>
-        /// The producer is faulted. This is a final state.
-        /// </summary>
-        Faulted,
+    /// <summary>
+    /// The producer is faulted. This is a final state.
+    /// </summary>
+    Faulted,
 
-        /// <summary>
-        /// Some of the sub-producers are disconnected.
-        /// </summary>
-        PartiallyConnected
-    }
+    /// <summary>
+    /// Some of the sub-producers are disconnected.
+    /// </summary>
+    PartiallyConnected
 }

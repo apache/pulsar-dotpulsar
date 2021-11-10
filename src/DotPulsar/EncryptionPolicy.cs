@@ -12,31 +12,30 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+/// <summary>
+/// Encryption policies.
+/// </summary>
+public enum EncryptionPolicy : byte
 {
     /// <summary>
-    /// Encryption policies.
+    /// Never encrypt the connection.
     /// </summary>
-    public enum EncryptionPolicy : byte
-    {
-        /// <summary>
-        /// Never encrypt the connection.
-        /// </summary>
-        EnforceUnencrypted,
+    EnforceUnencrypted,
 
-        /// <summary>
-        /// Given the option of encrypting or not, prefer not to.
-        /// </summary>
-        PreferUnencrypted,
+    /// <summary>
+    /// Given the option of encrypting or not, prefer not to.
+    /// </summary>
+    PreferUnencrypted,
 
-        /// <summary>
-        /// Given the option of encrypting or not, prefer to do so.
-        /// </summary>
-        PreferEncrypted,
+    /// <summary>
+    /// Given the option of encrypting or not, prefer to do so.
+    /// </summary>
+    PreferEncrypted,
 
-        /// <summary>
-        /// Always encrypt the connection.
-        /// </summary>
-        EnforceEncrypted
-    }
+    /// <summary>
+    /// Always encrypt the connection.
+    /// </summary>
+    EnforceEncrypted
 }

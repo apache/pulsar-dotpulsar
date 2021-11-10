@@ -12,100 +12,99 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using Abstractions;
+using Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
 {
-    using Abstractions;
-    using Exceptions;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
+    private readonly object _lock;
+    private readonly Queue<T> _queue;
+    private readonly LinkedList<CancelableCompletionSource<T>> _pendingDequeues;
+    private int _isDisposed;
 
-    public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
+    public AsyncQueue()
     {
-        private readonly object _lock;
-        private readonly Queue<T> _queue;
-        private readonly LinkedList<CancelableCompletionSource<T>> _pendingDequeues;
-        private int _isDisposed;
+        _lock = new object();
+        _queue = new Queue<T>();
+        _pendingDequeues = new LinkedList<CancelableCompletionSource<T>>();
+    }
 
-        public AsyncQueue()
+    public void Enqueue(T item)
+    {
+        lock (_lock)
         {
-            _lock = new object();
-            _queue = new Queue<T>();
-            _pendingDequeues = new LinkedList<CancelableCompletionSource<T>>();
+            ThrowIfDisposed();
+
+            var node = _pendingDequeues.First;
+            if (node is not null)
+            {
+                node.Value.SetResult(item);
+                node.Value.Dispose();
+                _pendingDequeues.RemoveFirst();
+            }
+            else
+                _queue.Enqueue(item);
+        }
+    }
+
+    public ValueTask<T> Dequeue(CancellationToken cancellationToken = default)
+    {
+        LinkedListNode<CancelableCompletionSource<T>>? node = null;
+
+        lock (_lock)
+        {
+            ThrowIfDisposed();
+
+            if (_queue.Count > 0)
+                return new ValueTask<T>(_queue.Dequeue());
+
+            node = _pendingDequeues.AddLast(new CancelableCompletionSource<T>());
         }
 
-        public void Enqueue(T item)
-        {
-            lock (_lock)
-            {
-                ThrowIfDisposed();
+        node.Value.SetupCancellation(() => Cancel(node), cancellationToken);
+        return new ValueTask<T>(node.Value.Task);
+    }
 
-                var node = _pendingDequeues.First;
-                if (node is not null)
-                {
-                    node.Value.SetResult(item);
-                    node.Value.Dispose();
-                    _pendingDequeues.RemoveFirst();
-                }
-                else
-                    _queue.Enqueue(item);
+    public void Dispose()
+    {
+        lock (_lock)
+        {
+            if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
+                return;
+
+            foreach (var pendingDequeue in _pendingDequeues)
+                pendingDequeue.Dispose();
+
+            _pendingDequeues.Clear();
+            _queue.Clear();
+        }
+    }
+
+    private void Cancel(LinkedListNode<CancelableCompletionSource<T>> node)
+    {
+        lock (_lock)
+        {
+            try
+            {
+                node.Value.Dispose();
+                _pendingDequeues.Remove(node);
+            }
+            catch
+            {
+                // ignored
             }
         }
+    }
 
-        public ValueTask<T> Dequeue(CancellationToken cancellationToken = default)
-        {
-            LinkedListNode<CancelableCompletionSource<T>>? node = null;
-
-            lock (_lock)
-            {
-                ThrowIfDisposed();
-
-                if (_queue.Count > 0)
-                    return new ValueTask<T>(_queue.Dequeue());
-
-                node = _pendingDequeues.AddLast(new CancelableCompletionSource<T>());
-            }
-
-            node.Value.SetupCancellation(() => Cancel(node), cancellationToken);
-            return new ValueTask<T>(node.Value.Task);
-        }
-
-        public void Dispose()
-        {
-            lock (_lock)
-            {
-                if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
-                    return;
-
-                foreach (var pendingDequeue in _pendingDequeues)
-                    pendingDequeue.Dispose();
-
-                _pendingDequeues.Clear();
-                _queue.Clear();
-            }
-        }
-
-        private void Cancel(LinkedListNode<CancelableCompletionSource<T>> node)
-        {
-            lock (_lock)
-            {
-                try
-                {
-                    node.Value.Dispose();
-                    _pendingDequeues.Remove(node);
-                }
-                catch
-                {
-                    // ignored
-                }
-            }
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (_isDisposed != 0)
-                throw new AsyncQueueDisposedException();
-        }
+    private void ThrowIfDisposed()
+    {
+        if (_isDisposed != 0)
+            throw new AsyncQueueDisposedException();
     }
 }

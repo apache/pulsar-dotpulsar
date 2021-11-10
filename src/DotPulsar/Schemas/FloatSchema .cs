@@ -12,47 +12,46 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Schemas
+namespace DotPulsar.Schemas;
+
+using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
+using System;
+using System.Buffers;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Runtime.InteropServices;
+
+/// <summary>
+/// Schema definition for Float messages.
+/// </summary>
+public sealed class FloatSchema : ISchema<float>
 {
-    using DotPulsar.Abstractions;
-    using DotPulsar.Exceptions;
-    using System;
-    using System.Buffers;
-    using System.Collections.Immutable;
-    using System.Linq;
-    using System.Runtime.InteropServices;
+    public FloatSchema()
+        => SchemaInfo = new SchemaInfo("Float", Array.Empty<byte>(), SchemaType.Float, ImmutableDictionary<string, string>.Empty);
 
-    /// <summary>
-    /// Schema definition for Float messages.
-    /// </summary>
-    public sealed class FloatSchema : ISchema<float>
+    public SchemaInfo SchemaInfo { get; }
+
+    public float Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null)
     {
-        public FloatSchema()
-            => SchemaInfo = new SchemaInfo("Float", Array.Empty<byte>(), SchemaType.Float, ImmutableDictionary<string, string>.Empty);
+        if (bytes.Length != 4)
+            throw new SchemaSerializationException($"{nameof(FloatSchema)} expected to decode 4 bytes, but received {bytes} bytes");
 
-        public SchemaInfo SchemaInfo { get; }
+        var array = bytes.ToArray();
 
-        public float Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null)
-        {
-            if (bytes.Length != 4)
-                throw new SchemaSerializationException($"{nameof(FloatSchema)} expected to decode 4 bytes, but received {bytes} bytes");
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(array);
 
-            var array = bytes.ToArray();
+        return MemoryMarshal.Read<float>(array);
+    }
 
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(array);
+    public ReadOnlySequence<byte> Encode(float message)
+    {
+        var array = BitConverter.GetBytes(message);
 
-            return MemoryMarshal.Read<float>(array);
-        }
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(array);
 
-        public ReadOnlySequence<byte> Encode(float message)
-        {
-            var array = BitConverter.GetBytes(message);
-
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(array);
-
-            return new(array);
-        }
+        return new(array);
     }
 }

@@ -12,33 +12,32 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Schemas
+namespace DotPulsar.Schemas;
+
+using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
+using System;
+using System.Buffers;
+using System.Collections.Immutable;
+
+/// <summary>
+/// Schema definition for Byte (int8) messages.
+/// </summary>
+public sealed class ByteSchema : ISchema<byte>
 {
-    using DotPulsar.Abstractions;
-    using DotPulsar.Exceptions;
-    using System;
-    using System.Buffers;
-    using System.Collections.Immutable;
+    public ByteSchema()
+        => SchemaInfo = new SchemaInfo("INT8", Array.Empty<byte>(), SchemaType.Int8, ImmutableDictionary<string, string>.Empty);
 
-    /// <summary>
-    /// Schema definition for Byte (int8) messages.
-    /// </summary>
-    public sealed class ByteSchema : ISchema<byte>
+    public SchemaInfo SchemaInfo { get; }
+
+    public byte Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null)
     {
-        public ByteSchema()
-            => SchemaInfo = new SchemaInfo("INT8", Array.Empty<byte>(), SchemaType.Int8, ImmutableDictionary<string, string>.Empty);
+        if (bytes.Length != 1)
+            throw new SchemaSerializationException($"{nameof(ByteSchema)} expected to decode 1 byte, but received {bytes} bytes");
 
-        public SchemaInfo SchemaInfo { get; }
-
-        public byte Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null)
-        {
-            if (bytes.Length != 1)
-                throw new SchemaSerializationException($"{nameof(ByteSchema)} expected to decode 1 byte, but received {bytes} bytes");
-
-            return bytes.First.Span[0];
-        }
-
-        public ReadOnlySequence<byte> Encode(byte message)
-            => new(new[] { message });
+        return bytes.First.Span[0];
     }
+
+    public ReadOnlySequence<byte> Encode(byte message)
+        => new(new[] { message });
 }

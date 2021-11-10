@@ -12,35 +12,34 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Internal.Abstractions;
+
+using PulsarApi;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public interface IConnection : IAsyncDisposable
 {
-    using PulsarApi;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+    ValueTask<bool> HasChannels(CancellationToken cancellationToken);
 
-    public interface IConnection : IAsyncDisposable
-    {
-        ValueTask<bool> HasChannels(CancellationToken cancellationToken);
+    Task<ProducerResponse> Send(CommandProducer command, IChannel channel, CancellationToken cancellationToken);
+    Task<SubscribeResponse> Send(CommandSubscribe command, IChannel channel, CancellationToken cancellationToken);
 
-        Task<ProducerResponse> Send(CommandProducer command, IChannel channel, CancellationToken cancellationToken);
-        Task<SubscribeResponse> Send(CommandSubscribe command, IChannel channel, CancellationToken cancellationToken);
+    Task Send(CommandPing command, CancellationToken cancellationToken);
+    Task Send(CommandPong command, CancellationToken cancellationToken);
+    Task Send(CommandAck command, CancellationToken cancellationToken);
+    Task Send(CommandFlow command, CancellationToken cancellationToken);
+    Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken);
 
-        Task Send(CommandPing command, CancellationToken cancellationToken);
-        Task Send(CommandPong command, CancellationToken cancellationToken);
-        Task Send(CommandAck command, CancellationToken cancellationToken);
-        Task Send(CommandFlow command, CancellationToken cancellationToken);
-        Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken);
-
-        Task<BaseCommand> Send(CommandUnsubscribe command, CancellationToken cancellationToken);
-        Task<BaseCommand> Send(CommandConnect command, CancellationToken cancellationToken);
-        Task<BaseCommand> Send(CommandLookupTopic command, CancellationToken cancellationToken);
-        Task<BaseCommand> Send(CommandSeek command, CancellationToken cancellationToken);
-        Task<BaseCommand> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
-        Task<BaseCommand> Send(CommandCloseProducer command, CancellationToken cancellationToken);
-        Task<BaseCommand> Send(CommandCloseConsumer command, CancellationToken cancellationToken);
-        Task<BaseCommand> Send(SendPackage command, CancellationToken cancellationToken);
-        Task<BaseCommand> Send(CommandGetOrCreateSchema command, CancellationToken cancellationToken);
-        Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken);
-    }
+    Task<BaseCommand> Send(CommandUnsubscribe command, CancellationToken cancellationToken);
+    Task<BaseCommand> Send(CommandConnect command, CancellationToken cancellationToken);
+    Task<BaseCommand> Send(CommandLookupTopic command, CancellationToken cancellationToken);
+    Task<BaseCommand> Send(CommandSeek command, CancellationToken cancellationToken);
+    Task<BaseCommand> Send(CommandGetLastMessageId command, CancellationToken cancellationToken);
+    Task<BaseCommand> Send(CommandCloseProducer command, CancellationToken cancellationToken);
+    Task<BaseCommand> Send(CommandCloseConsumer command, CancellationToken cancellationToken);
+    Task<BaseCommand> Send(SendPackage command, CancellationToken cancellationToken);
+    Task<BaseCommand> Send(CommandGetOrCreateSchema command, CancellationToken cancellationToken);
+    Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken);
 }

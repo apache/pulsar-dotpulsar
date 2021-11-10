@@ -12,16 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Abstractions;
+
+/// <summary>
+/// A message routing abstraction
+/// </summary>
+public interface IMessageRouter
 {
     /// <summary>
-    /// A message routing abstraction
+    /// Choose a partition.
     /// </summary>
-    public interface IMessageRouter
-    {
-        /// <summary>
-        /// Choose a partition.
-        /// </summary>
-        int ChoosePartition(MessageMetadata messageMetadata, int numberOfPartitions);
-    }
+    int ChoosePartition(MessageMetadata messageMetadata, int numberOfPartitions);
 }

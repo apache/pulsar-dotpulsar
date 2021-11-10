@@ -12,121 +12,120 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Tests.Internal
+namespace DotPulsar.Tests.Internal;
+
+using DotPulsar.Internal;
+using FluentAssertions;
+using System.Buffers;
+using System.Linq;
+using Xunit;
+
+public class SequenceBuilderTests
 {
-    using DotPulsar.Internal;
-    using FluentAssertions;
-    using System.Buffers;
-    using System.Linq;
-    using Xunit;
-
-    public class SequenceBuilderTests
+    [Fact]
+    public void Append_GivenMultipleArrayInputs_ShouldArrangeInCorrectOrder()
     {
-        [Fact]
-        public void Append_GivenMultipleArrayInputs_ShouldArrangeInCorrectOrder()
-        {
-            //Arrange
-            var a = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-            var b = new byte[] { 0x04, 0x05, 0x06, 0x07, 0x08 };
-            var c = new byte[] { 0x09 };
+        //Arrange
+        var a = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+        var b = new byte[] { 0x04, 0x05, 0x06, 0x07, 0x08 };
+        var c = new byte[] { 0x09 };
 
-            var builder = new SequenceBuilder<byte>().Append(a).Append(b).Append(c);
+        var builder = new SequenceBuilder<byte>().Append(a).Append(b).Append(c);
 
-            //Act
-            var actual = builder.Build().ToArray();
+        //Act
+        var actual = builder.Build().ToArray();
 
-            //Assert
-            var expected = CreateRange(0, 10);
-            actual.Should().Equal(expected);
-        }
+        //Assert
+        var expected = CreateRange(0, 10);
+        actual.Should().Equal(expected);
+    }
 
-        [Fact]
-        public void Append_GivenMultipleArrayAndSequenceInputs_ShouldArrangeInCorrectOrder()
-        {
-            //Arrange
-            var a = new byte[] { 0x00, 0x01 };
-            var b = new byte[] { 0x02, 0x03 };
-            var c = new byte[] { 0x04, 0x05 };
-            var d = new byte[] { 0x06, 0x07 };
-            var e = new byte[] { 0x08, 0x09 };
+    [Fact]
+    public void Append_GivenMultipleArrayAndSequenceInputs_ShouldArrangeInCorrectOrder()
+    {
+        //Arrange
+        var a = new byte[] { 0x00, 0x01 };
+        var b = new byte[] { 0x02, 0x03 };
+        var c = new byte[] { 0x04, 0x05 };
+        var d = new byte[] { 0x06, 0x07 };
+        var e = new byte[] { 0x08, 0x09 };
 
-            var seq = new SequenceBuilder<byte>().Append(b).Append(c).Append(d).Build();
-            var builder = new SequenceBuilder<byte>().Append(a).Append(seq).Append(e);
+        var seq = new SequenceBuilder<byte>().Append(b).Append(c).Append(d).Build();
+        var builder = new SequenceBuilder<byte>().Append(a).Append(seq).Append(e);
 
-            //Act
-            var actual = builder.Build().ToArray();
+        //Act
+        var actual = builder.Build().ToArray();
 
-            //Assert
-            var expected = CreateRange(0, 10);
-            actual.Should().Equal(expected);
-        }
+        //Assert
+        var expected = CreateRange(0, 10);
+        actual.Should().Equal(expected);
+    }
 
-        [Fact]
-        public void Prepend_GivenMultipleArrayInputs_ShouldArrangeInCorrectOrder()
-        {
-            //Arrange
-            var a = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-            var b = new byte[] { 0x04, 0x05, 0x06, 0x07, 0x08 };
-            var c = new byte[] { 0x09 };
+    [Fact]
+    public void Prepend_GivenMultipleArrayInputs_ShouldArrangeInCorrectOrder()
+    {
+        //Arrange
+        var a = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+        var b = new byte[] { 0x04, 0x05, 0x06, 0x07, 0x08 };
+        var c = new byte[] { 0x09 };
 
-            var builder = new SequenceBuilder<byte>().Prepend(c).Prepend(b).Prepend(a);
+        var builder = new SequenceBuilder<byte>().Prepend(c).Prepend(b).Prepend(a);
 
-            //Act
-            var actual = builder.Build().ToArray();
+        //Act
+        var actual = builder.Build().ToArray();
 
-            //Assert
-            var expected = CreateRange(0, 10);
-            actual.Should().Equal(expected);
-        }
+        //Assert
+        var expected = CreateRange(0, 10);
+        actual.Should().Equal(expected);
+    }
 
-        [Fact]
-        public void Prepend_GivenMultipleArrayAndSequenceInputs_ShouldArrangeInCorrectOrder()
-        {
-            //Arrange
-            var a = new byte[] { 0x00, 0x01 };
-            var b = new byte[] { 0x02, 0x03 };
-            var c = new byte[] { 0x04, 0x05 };
-            var d = new byte[] { 0x06, 0x07 };
-            var e = new byte[] { 0x08, 0x09 };
+    [Fact]
+    public void Prepend_GivenMultipleArrayAndSequenceInputs_ShouldArrangeInCorrectOrder()
+    {
+        //Arrange
+        var a = new byte[] { 0x00, 0x01 };
+        var b = new byte[] { 0x02, 0x03 };
+        var c = new byte[] { 0x04, 0x05 };
+        var d = new byte[] { 0x06, 0x07 };
+        var e = new byte[] { 0x08, 0x09 };
 
-            var seq = new SequenceBuilder<byte>().Prepend(d).Prepend(c).Prepend(b).Build();
-            var builder = new SequenceBuilder<byte>().Prepend(e).Prepend(seq).Prepend(a);
+        var seq = new SequenceBuilder<byte>().Prepend(d).Prepend(c).Prepend(b).Build();
+        var builder = new SequenceBuilder<byte>().Prepend(e).Prepend(seq).Prepend(a);
 
-            //Act
-            var actual = builder.Build().ToArray();
+        //Act
+        var actual = builder.Build().ToArray();
 
-            //Assert
-            var expected = CreateRange(0, 10);
-            actual.Should().Equal(expected);
-        }
+        //Assert
+        var expected = CreateRange(0, 10);
+        actual.Should().Equal(expected);
+    }
 
-        [Fact]
-        public void Build_GivenMultipleInvocations_ShouldCreateIdenticalSequences()
-        {
-            //Arrange
-            var a = new byte[] { 0x00, 0x01 };
-            var b = new byte[] { 0x02, 0x03 };
+    [Fact]
+    public void Build_GivenMultipleInvocations_ShouldCreateIdenticalSequences()
+    {
+        //Arrange
+        var a = new byte[] { 0x00, 0x01 };
+        var b = new byte[] { 0x02, 0x03 };
 
-            var builder = new SequenceBuilder<byte>().Append(a).Append(b);
+        var builder = new SequenceBuilder<byte>().Append(a).Append(b);
 
-            //Act
-            var actual1 = builder.Build().ToArray();
-            var actual2 = builder.Build().ToArray();
+        //Act
+        var actual1 = builder.Build().ToArray();
+        var actual2 = builder.Build().ToArray();
 
-            //Assert
-            var expected = CreateRange(0, 4);
-            actual1.Should().Equal(expected);
-            actual2.Should().Equal(expected);
-        }
+        //Assert
+        var expected = CreateRange(0, 4);
+        actual1.Should().Equal(expected);
+        actual2.Should().Equal(expected);
+    }
 
-        private static byte[] CreateRange(int start, int count)
-        {
-            var bytes = new byte[count];
+    private static byte[] CreateRange(int start, int count)
+    {
+        var bytes = new byte[count];
 
-            for (var i = 0; i < count; ++i)
-                bytes[i] = System.Convert.ToByte(start + i);
+        for (var i = 0; i < count; ++i)
+            bytes[i] = System.Convert.ToByte(start + i);
 
-            return bytes;
-        }
+        return bytes;
     }
 }

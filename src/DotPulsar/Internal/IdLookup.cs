@@ -12,92 +12,91 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using System.Collections.Generic;
+
+public sealed class IdLookup<T> where T : class
 {
-    using System.Collections.Generic;
+    private T?[] _items;
 
-    public sealed class IdLookup<T> where T : class
+    public IdLookup()
+        => _items = new T[1];
+
+    public bool IsEmpty()
     {
-        private T?[] _items;
+        lock (_items)
+        {
+            for (var i = 0; i < _items.Length; ++i)
+            {
+                if (_items[i] is not null)
+                    return false;
+            }
 
-        public IdLookup()
-            => _items = new T[1];
+            return true;
+        }
+    }
 
-        public bool IsEmpty()
+    public ulong Add(T item)
+    {
+        lock (_items)
+        {
+            for (var i = 0; i < _items.Length; ++i)
+            {
+                if (_items[i] is not null)
+                    continue;
+
+                _items[i] = item;
+                return (ulong) i;
+            }
+
+            var newArray = new T[_items.Length + 1];
+            _items.CopyTo(newArray, 0);
+            var id = newArray.Length - 1;
+            newArray[id] = item;
+            _items = newArray;
+            return (ulong) id;
+        }
+    }
+
+    public T? Remove(ulong id)
+    {
+        lock (_items)
+        {
+            var item = _items[(int) id];
+            _items[(int) id] = null;
+            return item;
+        }
+    }
+
+    public T[] RemoveAll()
+    {
+        lock (_items)
+        {
+            var items = new List<T>();
+
+            for (var i = 0; i < _items.Length; ++i)
+            {
+                var item = _items[i];
+
+                if (item is not null)
+                {
+                    items.Add(item);
+                    _items[i] = null;
+                }
+            }
+
+            return items.ToArray();
+        }
+    }
+
+    public T? this[ulong id]
+    {
+        get
         {
             lock (_items)
             {
-                for (var i = 0; i < _items.Length; ++i)
-                {
-                    if (_items[i] is not null)
-                        return false;
-                }
-
-                return true;
-            }
-        }
-
-        public ulong Add(T item)
-        {
-            lock (_items)
-            {
-                for (var i = 0; i < _items.Length; ++i)
-                {
-                    if (_items[i] is not null)
-                        continue;
-
-                    _items[i] = item;
-                    return (ulong) i;
-                }
-
-                var newArray = new T[_items.Length + 1];
-                _items.CopyTo(newArray, 0);
-                var id = newArray.Length - 1;
-                newArray[id] = item;
-                _items = newArray;
-                return (ulong) id;
-            }
-        }
-
-        public T? Remove(ulong id)
-        {
-            lock (_items)
-            {
-                var item = _items[(int) id];
-                _items[(int) id] = null;
-                return item;
-            }
-        }
-
-        public T[] RemoveAll()
-        {
-            lock (_items)
-            {
-                var items = new List<T>();
-
-                for (var i = 0; i < _items.Length; ++i)
-                {
-                    var item = _items[i];
-
-                    if (item is not null)
-                    {
-                        items.Add(item);
-                        _items[i] = null;
-                    }
-                }
-
-                return items.ToArray();
-            }
-        }
-
-        public T? this[ulong id]
-        {
-            get
-            {
-                lock (_items)
-                {
-                    return _items[(int) id];
-                }
+                return _items[(int) id];
             }
         }
     }

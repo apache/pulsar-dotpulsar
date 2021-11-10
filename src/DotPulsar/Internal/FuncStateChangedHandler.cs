@@ -12,26 +12,25 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using DotPulsar.Abstractions;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public sealed class FuncStateChangedHandler<TStateChanged> : IHandleStateChanged<TStateChanged>
 {
-    using DotPulsar.Abstractions;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
+    private readonly Func<TStateChanged, CancellationToken, ValueTask> _stateChangedHandler;
 
-    public sealed class FuncStateChangedHandler<TStateChanged> : IHandleStateChanged<TStateChanged>
+    public FuncStateChangedHandler(Func<TStateChanged, CancellationToken, ValueTask> stateChangedHandler, CancellationToken cancellationToken)
     {
-        private readonly Func<TStateChanged, CancellationToken, ValueTask> _stateChangedHandler;
-
-        public FuncStateChangedHandler(Func<TStateChanged, CancellationToken, ValueTask> stateChangedHandler, CancellationToken cancellationToken)
-        {
-            _stateChangedHandler = stateChangedHandler;
-            CancellationToken = cancellationToken;
-        }
-
-        public CancellationToken CancellationToken { get; }
-
-        public async ValueTask OnStateChanged(TStateChanged stateChanged, CancellationToken cancellationToken)
-            => await _stateChangedHandler(stateChanged, cancellationToken).ConfigureAwait(false);
+        _stateChangedHandler = stateChangedHandler;
+        CancellationToken = cancellationToken;
     }
+
+    public CancellationToken CancellationToken { get; }
+
+    public async ValueTask OnStateChanged(TStateChanged stateChanged, CancellationToken cancellationToken)
+        => await _stateChangedHandler(stateChanged, cancellationToken).ConfigureAwait(false);
 }

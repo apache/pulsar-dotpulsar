@@ -12,52 +12,51 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Extensions
+namespace DotPulsar.Extensions;
+
+using Abstractions;
+using Internal;
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// Extensions for IProducer.
+/// </summary>
+public static class ProducerExtensions
 {
-    using Abstractions;
-    using Internal;
-    using System.Threading;
-    using System.Threading.Tasks;
+    /// <summary>
+    /// Get a builder that can be used to configure and build a Message.
+    /// </summary>
+    public static IMessageBuilder<TMessage> NewMessage<TMessage>(this IProducer<TMessage> producer)
+        => new MessageBuilder<TMessage>(producer);
 
     /// <summary>
-    /// Extensions for IProducer.
+    /// Wait for the state to change to a specific state.
     /// </summary>
-    public static class ProducerExtensions
+    /// <returns>
+    /// The current state.
+    /// </returns>
+    /// <remarks>
+    /// If the state change to a final state, then all awaiting tasks will complete.
+    /// </remarks>
+    public static async ValueTask<ProducerStateChanged> StateChangedTo(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
     {
-        /// <summary>
-        /// Get a builder that can be used to configure and build a Message.
-        /// </summary>
-        public static IMessageBuilder<TMessage> NewMessage<TMessage>(this IProducer<TMessage> producer)
-            => new MessageBuilder<TMessage>(producer);
+        var newState = await producer.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
+        return new ProducerStateChanged(producer, newState);
+    }
 
-        /// <summary>
-        /// Wait for the state to change to a specific state.
-        /// </summary>
-        /// <returns>
-        /// The current state.
-        /// </returns>
-        /// <remarks>
-        /// If the state change to a final state, then all awaiting tasks will complete.
-        /// </remarks>
-        public static async ValueTask<ProducerStateChanged> StateChangedTo(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
-        {
-            var newState = await producer.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
-            return new ProducerStateChanged(producer, newState);
-        }
-
-        /// <summary>
-        /// Wait for the state to change from a specific state.
-        /// </summary>
-        /// <returns>
-        /// The current state.
-        /// </returns>
-        /// <remarks>
-        /// If the state change to a final state, then all awaiting tasks will complete.
-        /// </remarks>
-        public static async ValueTask<ProducerStateChanged> StateChangedFrom(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
-        {
-            var newState = await producer.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
-            return new ProducerStateChanged(producer, newState);
-        }
+    /// <summary>
+    /// Wait for the state to change from a specific state.
+    /// </summary>
+    /// <returns>
+    /// The current state.
+    /// </returns>
+    /// <remarks>
+    /// If the state change to a final state, then all awaiting tasks will complete.
+    /// </remarks>
+    public static async ValueTask<ProducerStateChanged> StateChangedFrom(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
+    {
+        var newState = await producer.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
+        return new ProducerStateChanged(producer, newState);
     }
 }

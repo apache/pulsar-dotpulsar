@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class PersistenceException : DotPulsarException
 {
-    public sealed class PersistenceException : DotPulsarException
-    {
-        public PersistenceException(string message) : base(message) { }
-    }
+    public PersistenceException(string message) : base(message) { }
 }

@@ -12,33 +12,32 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.IntegrationTests.Abstraction
+namespace DotPulsar.IntegrationTests.Abstraction;
+
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Xunit;
+
+/// <summary>
+/// Pulsar Service interface
+/// </summary>
+public interface IPulsarService : IAsyncLifetime
 {
-    using System;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using Xunit;
+    /// <summary>
+    /// Get broker binary protocol uri
+    /// </summary>
+    Uri GetBrokerUri();
 
     /// <summary>
-    /// Pulsar Service interface
+    /// Get broker rest uri
     /// </summary>
-    public interface IPulsarService : IAsyncLifetime
-    {
-        /// <summary>
-        /// Get broker binary protocol uri
-        /// </summary>
-        Uri GetBrokerUri();
+    Uri GetWebServiceUri();
 
-        /// <summary>
-        /// Get broker rest uri
-        /// </summary>
-        Uri GetWebServiceUri();
-
-        /// <summary>
-        /// Create a partitioned topic
-        /// The format of the restTopic must be `{schema}/{tenant}/{namespace}/{topicName}`
-        /// For example, `persistent/public/default/test-topic`
-        /// </summary>
-        Task<HttpResponseMessage?> CreatePartitionedTopic(string restTopic, int numPartitions);
-    }
+    /// <summary>
+    /// Create a partitioned topic
+    /// The format of the restTopic must be `{schema}/{tenant}/{namespace}/{topicName}`
+    /// For example, `persistent/public/default/test-topic`
+    /// </summary>
+    Task<HttpResponseMessage?> CreatePartitionedTopic(string restTopic, int numPartitions);
 }

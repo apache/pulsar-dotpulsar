@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class AuthorizationException : DotPulsarException
 {
-    public sealed class AuthorizationException : DotPulsarException
-    {
-        public AuthorizationException(string message) : base(message) { }
-    }
+    public AuthorizationException(string message) : base(message) { }
 }

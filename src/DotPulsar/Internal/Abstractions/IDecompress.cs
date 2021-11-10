@@ -12,13 +12,12 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
-{
-    using System;
-    using System.Buffers;
+namespace DotPulsar.Internal.Abstractions;
 
-    public interface IDecompress : IDisposable
-    {
-        ReadOnlySequence<byte> Decompress(ReadOnlySequence<byte> data, int decompressedSize);
-    }
+using System;
+using System.Buffers;
+
+public interface IDecompress : IDisposable
+{
+    ReadOnlySequence<byte> Decompress(ReadOnlySequence<byte> data, int decompressedSize);
 }

@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+using System;
+
+public abstract class DotPulsarException : Exception
 {
-    using System;
+    public DotPulsarException(string message) : base(message) { }
 
-    public abstract class DotPulsarException : Exception
-    {
-        public DotPulsarException(string message) : base(message) { }
-
-        public DotPulsarException(string message, Exception innerException) : base(message, innerException) { }
-    }
+    public DotPulsarException(string message, Exception innerException) : base(message, innerException) { }
 }

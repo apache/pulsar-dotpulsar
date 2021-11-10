@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class UnsupportedVersionException : DotPulsarException
 {
-    public sealed class UnsupportedVersionException : DotPulsarException
-    {
-        public UnsupportedVersionException(string message) : base(message) { }
-    }
+    public UnsupportedVersionException(string message) : base(message) { }
 }

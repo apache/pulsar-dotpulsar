@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+using System;
+
+public sealed class AuthenticationException : DotPulsarException
 {
-    using System;
+    public AuthenticationException(string message) : base(message) { }
 
-    public sealed class AuthenticationException : DotPulsarException
-    {
-        public AuthenticationException(string message) : base(message) { }
-
-        public AuthenticationException(string message, Exception innerException) : base(message, innerException) { }
-    }
+    public AuthenticationException(string message, Exception innerException) : base(message, innerException) { }
 }

@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions
+namespace DotPulsar.Internal.Abstractions;
+
+public interface IRegisterEvent
 {
-    public interface IRegisterEvent
-    {
-        void Register(IEvent @event);
-    }
+    void Register(IEvent @event);
 }

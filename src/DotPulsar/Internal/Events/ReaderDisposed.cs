@@ -12,16 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Events
+namespace DotPulsar.Internal.Events;
+
+using Abstractions;
+using System;
+
+public sealed class ReaderDisposed : IEvent
 {
-    using Abstractions;
-    using System;
+    public ReaderDisposed(Guid correlationId)
+        => CorrelationId = correlationId;
 
-    public sealed class ReaderDisposed : IEvent
-    {
-        public ReaderDisposed(Guid correlationId)
-            => CorrelationId = correlationId;
-
-        public Guid CorrelationId { get; }
-    }
+    public Guid CorrelationId { get; }
 }

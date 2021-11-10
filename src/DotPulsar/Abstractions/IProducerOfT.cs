@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
-{
-    /// <summary>
-    /// A generic producer abstraction.
-    /// </summary>
-    public interface IProducer<TMessage> : IProducer, ISend<TMessage> { }
-}
+namespace DotPulsar.Abstractions;
+
+/// <summary>
+/// A generic producer abstraction.
+/// </summary>
+public interface IProducer<TMessage> : IProducer, ISend<TMessage> { }

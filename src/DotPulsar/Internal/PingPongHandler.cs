@@ -12,98 +12,97 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using Abstractions;
+using PulsarApi;
+using System;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+
+public sealed class PingPongHandler : IAsyncDisposable
 {
-    using Abstractions;
-    using PulsarApi;
-    using System;
-    using System.Diagnostics;
-    using System.Threading;
-    using System.Threading.Tasks;
+    private readonly IConnection _connection;
+    private readonly TimeSpan _keepAliveInterval;
+    private readonly Timer _timer;
+    private readonly CommandPing _ping;
+    private readonly CommandPong _pong;
+    private long _lastCommand;
 
-    public sealed class PingPongHandler : IAsyncDisposable
+    public PingPongHandler(IConnection connection, TimeSpan keepAliveInterval)
     {
-        private readonly IConnection _connection;
-        private readonly TimeSpan _keepAliveInterval;
-        private readonly Timer _timer;
-        private readonly CommandPing _ping;
-        private readonly CommandPong _pong;
-        private long _lastCommand;
+        _connection = connection;
+        _keepAliveInterval = keepAliveInterval;
+        _timer = new Timer(Watch);
+        _timer.Change(_keepAliveInterval, TimeSpan.Zero);
+        _ping = new CommandPing();
+        _pong = new CommandPong();
+        _lastCommand = Stopwatch.GetTimestamp();
+    }
 
-        public PingPongHandler(IConnection connection, TimeSpan keepAliveInterval)
+    public bool Incoming(BaseCommand.Type commandType)
+    {
+        Interlocked.Exchange(ref _lastCommand, Stopwatch.GetTimestamp());
+
+        if (commandType == BaseCommand.Type.Ping)
         {
-            _connection = connection;
-            _keepAliveInterval = keepAliveInterval;
-            _timer = new Timer(Watch);
-            _timer.Change(_keepAliveInterval, TimeSpan.Zero);
-            _ping = new CommandPing();
-            _pong = new CommandPong();
-            _lastCommand = Stopwatch.GetTimestamp();
+            Task.Factory.StartNew(() => SendPong());
+            return true;
         }
 
-        public bool Incoming(BaseCommand.Type commandType)
+        return commandType == BaseCommand.Type.Pong;
+    }
+
+    private void Watch(object? state)
+    {
+        try
         {
-            Interlocked.Exchange(ref _lastCommand, Stopwatch.GetTimestamp());
-
-            if (commandType == BaseCommand.Type.Ping)
+            var lastCommand = Interlocked.Read(ref _lastCommand);
+            var now = Stopwatch.GetTimestamp();
+            var elapsed = TimeSpan.FromSeconds((now - lastCommand) / Stopwatch.Frequency);
+            if (elapsed >= _keepAliveInterval)
             {
-                Task.Factory.StartNew(() => SendPong());
-                return true;
+                Task.Factory.StartNew(() => SendPing());
+                _timer.Change(_keepAliveInterval, TimeSpan.Zero);
             }
-
-            return commandType == BaseCommand.Type.Pong;
+            else
+                _timer.Change(_keepAliveInterval.Subtract(elapsed), TimeSpan.Zero);
         }
-
-        private void Watch(object? state)
+        catch
         {
-            try
-            {
-                var lastCommand = Interlocked.Read(ref _lastCommand);
-                var now = Stopwatch.GetTimestamp();
-                var elapsed = TimeSpan.FromSeconds((now - lastCommand) / Stopwatch.Frequency);
-                if (elapsed >= _keepAliveInterval)
-                {
-                    Task.Factory.StartNew(() => SendPing());
-                    _timer.Change(_keepAliveInterval, TimeSpan.Zero);
-                }
-                else
-                    _timer.Change(_keepAliveInterval.Subtract(elapsed), TimeSpan.Zero);
-            }
-            catch
-            {
-                // Ignore
-            }
+            // Ignore
         }
+    }
 
-        private async Task SendPing()
+    private async Task SendPing()
+    {
+        try
         {
-            try
-            {
-                await _connection.Send(_ping, default).ConfigureAwait(false);
-            }
-            catch { }
+            await _connection.Send(_ping, default).ConfigureAwait(false);
         }
+        catch { }
+    }
 
-        private async Task SendPong()
+    private async Task SendPong()
+    {
+        try
         {
-            try
-            {
-                await _connection.Send(_pong, default).ConfigureAwait(false);
-            }
-            catch { }
+            await _connection.Send(_pong, default).ConfigureAwait(false);
         }
+        catch { }
+    }
 
 #if NETSTANDARD2_0
-        public ValueTask DisposeAsync()
-        {
-            _timer.Dispose();
-            return new ValueTask();
-        }
+    public ValueTask DisposeAsync()
+    {
+        _timer.Dispose();
+        return new ValueTask();
+    }
 #else
         public async ValueTask DisposeAsync()
         {
             await _timer.DisposeAsync().ConfigureAwait(false);
         }
 #endif
-    }
 }

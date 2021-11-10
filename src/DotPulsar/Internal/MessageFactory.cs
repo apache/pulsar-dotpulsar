@@ -12,92 +12,91 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using DotPulsar.Abstractions;
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.PulsarApi;
+using System.Buffers;
+using System.Collections.Generic;
+
+public sealed class MessageFactory<TValue> : IMessageFactory<TValue>
 {
-    using DotPulsar.Abstractions;
-    using DotPulsar.Internal.Abstractions;
-    using DotPulsar.Internal.PulsarApi;
-    using System.Buffers;
-    using System.Collections.Generic;
+    private static readonly Dictionary<string, string> _empty;
 
-    public sealed class MessageFactory<TValue> : IMessageFactory<TValue>
+    static MessageFactory() => _empty = new Dictionary<string, string>();
+
+    private static IReadOnlyDictionary<string, string> FromKeyValueList(List<KeyValue> keyValues)
     {
-        private static readonly Dictionary<string, string> _empty;
+        if (keyValues.Count == 0)
+            return _empty;
 
-        static MessageFactory() => _empty = new Dictionary<string, string>();
+        var dictionary = new Dictionary<string, string>(keyValues.Count);
 
-        private static IReadOnlyDictionary<string, string> FromKeyValueList(List<KeyValue> keyValues)
+        for (var i = 0; i < keyValues.Count; ++i)
         {
-            if (keyValues.Count == 0)
-                return _empty;
-
-            var dictionary = new Dictionary<string, string>(keyValues.Count);
-
-            for (var i = 0; i < keyValues.Count; ++i)
-            {
-                var keyValue = keyValues[i];
-                dictionary.Add(keyValue.Key, keyValue.Value);
-            }
-
-            return dictionary;
+            var keyValue = keyValues[i];
+            dictionary.Add(keyValue.Key, keyValue.Value);
         }
 
-        private readonly ISchema<TValue> _schema;
+        return dictionary;
+    }
 
-        public MessageFactory(ISchema<TValue> schema)
-            => _schema = schema;
+    private readonly ISchema<TValue> _schema;
 
-        public IMessage<TValue> Create(MessageId messageId, uint redeliveryCount, ReadOnlySequence<byte> data, MessageMetadata metadata, SingleMessageMetadata? singleMetadata = null)
-        {
-            if (singleMetadata is null)
-                return Create(messageId, redeliveryCount, metadata, data);
+    public MessageFactory(ISchema<TValue> schema)
+        => _schema = schema;
 
-            return Create(messageId, redeliveryCount, metadata, singleMetadata, data);
-        }
+    public IMessage<TValue> Create(MessageId messageId, uint redeliveryCount, ReadOnlySequence<byte> data, MessageMetadata metadata, SingleMessageMetadata? singleMetadata = null)
+    {
+        if (singleMetadata is null)
+            return Create(messageId, redeliveryCount, metadata, data);
 
-        private Message<TValue> Create(
-            MessageId messageId,
-            uint redeliveryCount,
-            MessageMetadata metadata,
-            ReadOnlySequence<byte> data)
-        {
-            return new Message<TValue>(
-                messageId: messageId,
-                data: data,
-                producerName: metadata.ProducerName,
-                sequenceId: metadata.SequenceId,
-                redeliveryCount: redeliveryCount,
-                eventTime: metadata.EventTime,
-                publishTime: metadata.PublishTime,
-                properties: FromKeyValueList(metadata.Properties),
-                hasBase64EncodedKey: metadata.PartitionKeyB64Encoded,
-                key: metadata.PartitionKey,
-                orderingKey: metadata.OrderingKey,
-                schemaVersion: metadata.SchemaVersion,
-                _schema);
-        }
+        return Create(messageId, redeliveryCount, metadata, singleMetadata, data);
+    }
 
-        private Message<TValue> Create(
-            MessageId messageId,
-            uint redeliveryCount,
-            MessageMetadata metadata,
-            SingleMessageMetadata singleMetadata,
-            ReadOnlySequence<byte> data)
-        {
-            return new Message<TValue>(
-                messageId: messageId,
-                data: data,
-                producerName: metadata.ProducerName,
-                sequenceId: singleMetadata.SequenceId,
-                redeliveryCount: redeliveryCount,
-                eventTime: singleMetadata.EventTime,
-                publishTime: metadata.PublishTime,
-                properties: FromKeyValueList(singleMetadata.Properties),
-                hasBase64EncodedKey: singleMetadata.PartitionKeyB64Encoded,
-                key: singleMetadata.PartitionKey,
-                orderingKey: singleMetadata.OrderingKey,
-                schemaVersion: metadata.SchemaVersion,
-                _schema);
-        }
+    private Message<TValue> Create(
+        MessageId messageId,
+        uint redeliveryCount,
+        MessageMetadata metadata,
+        ReadOnlySequence<byte> data)
+    {
+        return new Message<TValue>(
+            messageId: messageId,
+            data: data,
+            producerName: metadata.ProducerName,
+            sequenceId: metadata.SequenceId,
+            redeliveryCount: redeliveryCount,
+            eventTime: metadata.EventTime,
+            publishTime: metadata.PublishTime,
+            properties: FromKeyValueList(metadata.Properties),
+            hasBase64EncodedKey: metadata.PartitionKeyB64Encoded,
+            key: metadata.PartitionKey,
+            orderingKey: metadata.OrderingKey,
+            schemaVersion: metadata.SchemaVersion,
+            _schema);
+    }
+
+    private Message<TValue> Create(
+        MessageId messageId,
+        uint redeliveryCount,
+        MessageMetadata metadata,
+        SingleMessageMetadata singleMetadata,
+        ReadOnlySequence<byte> data)
+    {
+        return new Message<TValue>(
+            messageId: messageId,
+            data: data,
+            producerName: metadata.ProducerName,
+            sequenceId: singleMetadata.SequenceId,
+            redeliveryCount: redeliveryCount,
+            eventTime: singleMetadata.EventTime,
+            publishTime: metadata.PublishTime,
+            properties: FromKeyValueList(singleMetadata.Properties),
+            hasBase64EncodedKey: singleMetadata.PartitionKeyB64Encoded,
+            key: singleMetadata.PartitionKey,
+            orderingKey: singleMetadata.OrderingKey,
+            schemaVersion: metadata.SchemaVersion,
+            _schema);
     }
 }

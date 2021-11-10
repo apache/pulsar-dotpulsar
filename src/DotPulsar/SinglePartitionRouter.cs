@@ -12,50 +12,49 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+using Abstractions;
+using HashDepot;
+using System;
+
+/// <summary>
+/// The single partition messages router.
+/// If a key is provided, the producer will hash the key and publish the message to a particular partition.
+/// If a key is not provided, the producer will randomly pick one single partition and publish all messages to that partition.
+/// </summary>
+public sealed class SinglePartitionRouter : IMessageRouter
 {
-    using Abstractions;
-    using HashDepot;
-    using System;
+    private int _partitionIndex;
 
     /// <summary>
-    /// The single partition messages router.
-    /// If a key is provided, the producer will hash the key and publish the message to a particular partition.
-    /// If a key is not provided, the producer will randomly pick one single partition and publish all messages to that partition.
+    /// Initializes a new instance of the single partition router that will randomly select a partition
     /// </summary>
-    public sealed class SinglePartitionRouter : IMessageRouter
+    public SinglePartitionRouter()
     {
-        private int _partitionIndex;
+        _partitionIndex = -1;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the single partition router that will randomly select a partition
-        /// </summary>
-        public SinglePartitionRouter()
-        {
-            _partitionIndex = -1;
-        }
+    /// <summary>
+    /// Initializes a new instance of the single partition router that will publish all messages to the given partition
+    /// </summary>
+    public SinglePartitionRouter(int partitionIndex)
+    {
+        _partitionIndex = partitionIndex;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the single partition router that will publish all messages to the given partition
-        /// </summary>
-        public SinglePartitionRouter(int partitionIndex)
-        {
-            _partitionIndex = partitionIndex;
-        }
+    /// <summary>
+    /// Choose a partition in single partition routing mode
+    /// </summary>
+    public int ChoosePartition(MessageMetadata messageMetadata, int numberOfPartitions)
+    {
+        var keyBytes = messageMetadata.KeyBytes;
+        if (keyBytes is not null && keyBytes.Length > 0)
+            return (int) MurmurHash3.Hash32(keyBytes, 0) % numberOfPartitions;
 
-        /// <summary>
-        /// Choose a partition in single partition routing mode
-        /// </summary>
-        public int ChoosePartition(MessageMetadata messageMetadata, int numberOfPartitions)
-        {
-            var keyBytes = messageMetadata.KeyBytes;
-            if (keyBytes is not null && keyBytes.Length > 0)
-                return (int) MurmurHash3.Hash32(keyBytes, 0) % numberOfPartitions;
+        if (_partitionIndex == -1)
+            _partitionIndex = new Random().Next(0, numberOfPartitions);
 
-            if (_partitionIndex == -1)
-                _partitionIndex = new Random().Next(0, numberOfPartitions);
-
-            return _partitionIndex;
-        }
+        return _partitionIndex;
     }
 }

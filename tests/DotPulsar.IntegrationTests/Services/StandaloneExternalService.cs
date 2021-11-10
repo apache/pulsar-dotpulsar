@@ -12,16 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.IntegrationTests.Services
+namespace DotPulsar.IntegrationTests.Services;
+
+using System;
+
+public sealed class StandaloneExternalService : PulsarServiceBase
 {
-    using System;
+    public override Uri GetBrokerUri()
+        => new("pulsar://localhost:6650");
 
-    public sealed class StandaloneExternalService : PulsarServiceBase
-    {
-        public override Uri GetBrokerUri()
-            => new("pulsar://localhost:6650");
-
-        public override Uri GetWebServiceUri()
-            => new("http://localhost:8080");
-    }
+    public override Uri GetWebServiceUri()
+        => new("http://localhost:8080");
 }

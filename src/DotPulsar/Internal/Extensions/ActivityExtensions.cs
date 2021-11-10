@@ -12,45 +12,44 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Extensions
+namespace DotPulsar.Internal.Extensions;
+
+using System;
+using System.Diagnostics;
+
+public static class ActivityExtensions
 {
-    using System;
-    using System.Diagnostics;
+    private const string _exceptionEventName = "exception";
+    private const string _exceptionStackTrace = "exception.stacktrace";
+    private const string _exceptionType = "exception.type";
+    private const string _exceptionMessage = "exception.message";
+    private const string _messageId = "messaging.message_id";
+    private const string _payloadSize = "messaging.message_payload_size_bytes";
+    private const string _statusCode = "otel.status_code";
 
-    public static class ActivityExtensions
+    public static void AddException(this Activity activity, Exception exception)
     {
-        private const string _exceptionEventName = "exception";
-        private const string _exceptionStackTrace = "exception.stacktrace";
-        private const string _exceptionType = "exception.type";
-        private const string _exceptionMessage = "exception.message";
-        private const string _messageId = "messaging.message_id";
-        private const string _payloadSize = "messaging.message_payload_size_bytes";
-        private const string _statusCode = "otel.status_code";
+        activity.SetStatusCode("ERROR");
 
-        public static void AddException(this Activity activity, Exception exception)
-        {
-            activity.SetStatusCode("ERROR");
-
-            var exceptionTags = new ActivityTagsCollection
+        var exceptionTags = new ActivityTagsCollection
             {
                 { _exceptionType, exception.GetType().FullName },
                 { _exceptionStackTrace, exception.ToString() }
             };
 
-            if (!string.IsNullOrWhiteSpace(exception.Message))
-                exceptionTags.Add(_exceptionMessage, exception.Message);
+        if (!string.IsNullOrWhiteSpace(exception.Message))
+            exceptionTags.Add(_exceptionMessage, exception.Message);
 
-            var activityEvent = new ActivityEvent(_exceptionEventName, default, exceptionTags);
-            activity.AddEvent(activityEvent);
-        }
-
-        public static void SetMessageId(this Activity activity, MessageId messageId)
-            => activity.SetTag(_messageId, messageId.ToString());
-
-        public static void SetStatusCode(this Activity activity, string statusCode)
-            => activity.SetTag(_statusCode, statusCode);
-
-        public static void SetPayloadSize(this Activity activity, long payloadSize)
-            => activity.SetTag(_payloadSize, payloadSize);
+        var activityEvent = new ActivityEvent(_exceptionEventName, default, exceptionTags);
+        activity.AddEvent(activityEvent);
     }
+
+    public static void SetMessageId(this Activity activity, MessageId messageId)
+        => activity.SetTag(_messageId, messageId.ToString());
+
+    public static void SetStatusCode(this Activity activity, string statusCode)
+        => activity.SetTag(_statusCode, statusCode);
+
+    public static void SetPayloadSize(this Activity activity, long payloadSize)
+        => activity.SetTag(_payloadSize, payloadSize);
 }

@@ -12,116 +12,115 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Compression
+namespace DotPulsar.Internal.Compression;
+
+using DotPulsar.Internal.Abstractions;
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+public static class SnappyCompression
 {
-    using DotPulsar.Internal.Abstractions;
-    using System;
-    using System.Buffers;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
+    public delegate byte[] Decode(ReadOnlySpan<byte> source);
+    public delegate byte[] Encode(ReadOnlySpan<byte> source);
 
-    public static class SnappyCompression
+    public static bool TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory)
     {
-        public delegate byte[] Decode(ReadOnlySpan<byte> source);
-        public delegate byte[] Encode(ReadOnlySpan<byte> source);
-
-        public static bool TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory)
+        try
         {
-            try
-            {
-                var assembly = Assembly.Load("IronSnappy");
+            var assembly = Assembly.Load("IronSnappy");
 
-                var definedTypes = assembly.DefinedTypes.ToArray();
+            var definedTypes = assembly.DefinedTypes.ToArray();
 
-                var snappy = FindSnappy(definedTypes);
+            var snappy = FindSnappy(definedTypes);
 
-                var methods = snappy.GetMethods(BindingFlags.Public | BindingFlags.Static);
+            var methods = snappy.GetMethods(BindingFlags.Public | BindingFlags.Static);
 
-                var decode = FindDecode(methods);
-                var encode = FindEncode(methods);
+            var decode = FindDecode(methods);
+            var encode = FindEncode(methods);
 
-                compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Snappy, () => new Compressor(CreateCompressor(encode)));
-                decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Snappy, () => new Decompressor(CreateDecompressor(decode)));
-                return true;
-            }
-            catch
-            {
-                // Ignore
-            }
-
-            compressorFactory = null;
-            decompressorFactory = null;
-
-            return false;
+            compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Snappy, () => new Compressor(CreateCompressor(encode)));
+            decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Snappy, () => new Decompressor(CreateDecompressor(decode)));
+            return true;
+        }
+        catch
+        {
+            // Ignore
         }
 
-        private static TypeInfo FindSnappy(IEnumerable<TypeInfo> types)
-        {
-            const string fullName = "IronSnappy.Snappy";
+        compressorFactory = null;
+        decompressorFactory = null;
 
-            foreach (var type in types)
-            {
-                if (type.FullName is null || !type.FullName.Equals(fullName))
-                    continue;
-
-                if (type.IsPublic && type.IsClass && type.IsAbstract && type.IsSealed)
-                    return type;
-
-                break;
-            }
-
-            throw new Exception($"{fullName} as a public and static class was not found");
-        }
-
-        private static Decode FindDecode(MethodInfo[] methods)
-        {
-            const string name = "Decode";
-
-            foreach (var method in methods)
-            {
-                if (method.Name != name || method.ReturnType != typeof(byte[]))
-                    continue;
-
-                var parameters = method.GetParameters();
-                if (parameters.Length != 1)
-                    continue;
-
-                if (parameters[0].ParameterType != typeof(ReadOnlySpan<byte>))
-                    continue;
-
-                return (Decode) method.CreateDelegate(typeof(Decode));
-            }
-
-            throw new Exception($"A method with the name '{name}' matching the delegate was not found");
-        }
-
-        private static Encode FindEncode(MethodInfo[] methods)
-        {
-            const string name = "Encode";
-
-            foreach (var method in methods)
-            {
-                if (method.Name != name || method.ReturnType != typeof(byte[]))
-                    continue;
-
-                var parameters = method.GetParameters();
-                if (parameters.Length != 1)
-                    continue;
-
-                if (parameters[0].ParameterType != typeof(ReadOnlySpan<byte>))
-                    continue;
-
-                return (Encode) method.CreateDelegate(typeof(Encode));
-            }
-
-            throw new Exception($"A method with the name '{name}' matching the delegate was not found");
-        }
-
-        private static Func<ReadOnlySequence<byte>, int, ReadOnlySequence<byte>> CreateDecompressor(Decode decompress)
-            => (source, size) => new ReadOnlySequence<byte>(decompress(source.ToArray()));
-
-        private static Func<ReadOnlySequence<byte>, ReadOnlySequence<byte>> CreateCompressor(Encode compress)
-            => (source) => new ReadOnlySequence<byte>(compress(source.ToArray()));
+        return false;
     }
+
+    private static TypeInfo FindSnappy(IEnumerable<TypeInfo> types)
+    {
+        const string fullName = "IronSnappy.Snappy";
+
+        foreach (var type in types)
+        {
+            if (type.FullName is null || !type.FullName.Equals(fullName))
+                continue;
+
+            if (type.IsPublic && type.IsClass && type.IsAbstract && type.IsSealed)
+                return type;
+
+            break;
+        }
+
+        throw new Exception($"{fullName} as a public and static class was not found");
+    }
+
+    private static Decode FindDecode(MethodInfo[] methods)
+    {
+        const string name = "Decode";
+
+        foreach (var method in methods)
+        {
+            if (method.Name != name || method.ReturnType != typeof(byte[]))
+                continue;
+
+            var parameters = method.GetParameters();
+            if (parameters.Length != 1)
+                continue;
+
+            if (parameters[0].ParameterType != typeof(ReadOnlySpan<byte>))
+                continue;
+
+            return (Decode) method.CreateDelegate(typeof(Decode));
+        }
+
+        throw new Exception($"A method with the name '{name}' matching the delegate was not found");
+    }
+
+    private static Encode FindEncode(MethodInfo[] methods)
+    {
+        const string name = "Encode";
+
+        foreach (var method in methods)
+        {
+            if (method.Name != name || method.ReturnType != typeof(byte[]))
+                continue;
+
+            var parameters = method.GetParameters();
+            if (parameters.Length != 1)
+                continue;
+
+            if (parameters[0].ParameterType != typeof(ReadOnlySpan<byte>))
+                continue;
+
+            return (Encode) method.CreateDelegate(typeof(Encode));
+        }
+
+        throw new Exception($"A method with the name '{name}' matching the delegate was not found");
+    }
+
+    private static Func<ReadOnlySequence<byte>, int, ReadOnlySequence<byte>> CreateDecompressor(Decode decompress)
+        => (source, size) => new ReadOnlySequence<byte>(decompress(source.ToArray()));
+
+    private static Func<ReadOnlySequence<byte>, ReadOnlySequence<byte>> CreateCompressor(Encode compress)
+        => (source) => new ReadOnlySequence<byte>(compress(source.ToArray()));
 }

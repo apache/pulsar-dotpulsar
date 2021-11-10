@@ -12,51 +12,50 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Extensions
+namespace DotPulsar.Extensions;
+
+using Abstractions;
+using Internal;
+using System.Buffers;
+
+/// <summary>
+/// Extensions for IPulsarClient.
+/// </summary>
+public static class PulsarClientExtensions
 {
-    using Abstractions;
-    using Internal;
-    using System.Buffers;
+    /// <summary>
+    /// Get a builder that can be used to configure and build a Producer instance.
+    /// </summary>
+    public static IProducerBuilder<ReadOnlySequence<byte>> NewProducer(this IPulsarClient pulsarClient)
+        => new ProducerBuilder<ReadOnlySequence<byte>>(pulsarClient, Schema.ByteSequence);
 
     /// <summary>
-    /// Extensions for IPulsarClient.
+    /// Get a builder that can be used to configure and build a Consumer instance.
     /// </summary>
-    public static class PulsarClientExtensions
-    {
-        /// <summary>
-        /// Get a builder that can be used to configure and build a Producer instance.
-        /// </summary>
-        public static IProducerBuilder<ReadOnlySequence<byte>> NewProducer(this IPulsarClient pulsarClient)
-            => new ProducerBuilder<ReadOnlySequence<byte>>(pulsarClient, Schema.ByteSequence);
+    public static IConsumerBuilder<ReadOnlySequence<byte>> NewConsumer(this IPulsarClient pulsarClient)
+        => new ConsumerBuilder<ReadOnlySequence<byte>>(pulsarClient, Schema.ByteSequence);
 
-        /// <summary>
-        /// Get a builder that can be used to configure and build a Consumer instance.
-        /// </summary>
-        public static IConsumerBuilder<ReadOnlySequence<byte>> NewConsumer(this IPulsarClient pulsarClient)
-            => new ConsumerBuilder<ReadOnlySequence<byte>>(pulsarClient, Schema.ByteSequence);
+    /// <summary>
+    /// Get a builder that can be used to configure and build a Reader instance.
+    /// </summary>
+    public static IReaderBuilder<ReadOnlySequence<byte>> NewReader(this IPulsarClient pulsarClient)
+        => new ReaderBuilder<ReadOnlySequence<byte>>(pulsarClient, Schema.ByteSequence);
 
-        /// <summary>
-        /// Get a builder that can be used to configure and build a Reader instance.
-        /// </summary>
-        public static IReaderBuilder<ReadOnlySequence<byte>> NewReader(this IPulsarClient pulsarClient)
-            => new ReaderBuilder<ReadOnlySequence<byte>>(pulsarClient, Schema.ByteSequence);
+    /// <summary>
+    /// Get a builder that can be used to configure and build a Producer instance.
+    /// </summary>
+    public static IProducerBuilder<TMessage> NewProducer<TMessage>(this IPulsarClient pulsarClient, ISchema<TMessage> schema)
+        => new ProducerBuilder<TMessage>(pulsarClient, schema);
 
-        /// <summary>
-        /// Get a builder that can be used to configure and build a Producer instance.
-        /// </summary>
-        public static IProducerBuilder<TMessage> NewProducer<TMessage>(this IPulsarClient pulsarClient, ISchema<TMessage> schema)
-            => new ProducerBuilder<TMessage>(pulsarClient, schema);
+    /// <summary>
+    /// Get a builder that can be used to configure and build a Consumer instance.
+    /// </summary>
+    public static IConsumerBuilder<TMessage> NewConsumer<TMessage>(this IPulsarClient pulsarClient, ISchema<TMessage> schema)
+        => new ConsumerBuilder<TMessage>(pulsarClient, schema);
 
-        /// <summary>
-        /// Get a builder that can be used to configure and build a Consumer instance.
-        /// </summary>
-        public static IConsumerBuilder<TMessage> NewConsumer<TMessage>(this IPulsarClient pulsarClient, ISchema<TMessage> schema)
-            => new ConsumerBuilder<TMessage>(pulsarClient, schema);
-
-        /// <summary>
-        /// Get a builder that can be used to configure and build a Reader instance.
-        /// </summary>
-        public static IReaderBuilder<TMessage> NewReader<TMessage>(this IPulsarClient pulsarClient, ISchema<TMessage> schema)
-            => new ReaderBuilder<TMessage>(pulsarClient, schema);
-    }
+    /// <summary>
+    /// Get a builder that can be used to configure and build a Reader instance.
+    /// </summary>
+    public static IReaderBuilder<TMessage> NewReader<TMessage>(this IPulsarClient pulsarClient, ISchema<TMessage> schema)
+        => new ReaderBuilder<TMessage>(pulsarClient, schema);
 }

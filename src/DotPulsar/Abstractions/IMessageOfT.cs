@@ -12,16 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions
+namespace DotPulsar.Abstractions;
+
+/// <summary>
+/// A generic message abstraction.
+/// </summary>
+public interface IMessage<TValue> : IMessage
 {
     /// <summary>
-    /// A generic message abstraction.
+    /// The value of the message.
     /// </summary>
-    public interface IMessage<TValue> : IMessage
-    {
-        /// <summary>
-        /// The value of the message.
-        /// </summary>
-        public TValue Value();
-    }
+    public TValue Value();
 }

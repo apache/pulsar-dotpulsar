@@ -12,68 +12,67 @@
  * limitations under the License.
  */
 
-namespace Reading
+namespace Reading;
+
+using DotPulsar;
+using DotPulsar.Abstractions;
+using DotPulsar.Extensions;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+internal static class Program
 {
-    using DotPulsar;
-    using DotPulsar.Abstractions;
-    using DotPulsar.Extensions;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    internal static class Program
+    private static async Task Main()
     {
-        private static async Task Main()
+        const string myTopic = "persistent://public/default/mytopic";
+
+        var cts = new CancellationTokenSource();
+
+        Console.CancelKeyPress += (sender, args) =>
         {
-            const string myTopic = "persistent://public/default/mytopic";
+            cts.Cancel();
+            args.Cancel = true;
+        };
 
-            var cts = new CancellationTokenSource();
+        await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
-            Console.CancelKeyPress += (sender, args) =>
-            {
-                cts.Cancel();
-                args.Cancel = true;
-            };
+        await using var reader = client.NewReader(Schema.String)
+            .StartMessageId(MessageId.Earliest)
+            .StateChangedHandler(Monitor)
+            .Topic(myTopic)
+            .Create();
 
-            await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
+        Console.WriteLine("Press Ctrl+C to exit");
 
-            await using var reader = client.NewReader(Schema.String)
-                .StartMessageId(MessageId.Earliest)
-                .StateChangedHandler(Monitor)
-                .Topic(myTopic)
-                .Create();
+        await ReadMessages(reader, cts.Token);
+    }
 
-            Console.WriteLine("Press Ctrl+C to exit");
-
-            await ReadMessages(reader, cts.Token);
-        }
-
-        private static async Task ReadMessages(IReader<string> reader, CancellationToken cancellationToken)
+    private static async Task ReadMessages(IReader<string> reader, CancellationToken cancellationToken)
+    {
+        try
         {
-            try
+            await foreach (var message in reader.Messages(cancellationToken))
             {
-                await foreach (var message in reader.Messages(cancellationToken))
-                {
-                    Console.WriteLine("Received: " + message.Value());
-                }
+                Console.WriteLine("Received: " + message.Value());
             }
-            catch (OperationCanceledException) { }
         }
+        catch (OperationCanceledException) { }
+    }
 
-        private static void Monitor(ReaderStateChanged stateChanged, CancellationToken cancellationToken)
+    private static void Monitor(ReaderStateChanged stateChanged, CancellationToken cancellationToken)
+    {
+        var stateMessage = stateChanged.ReaderState switch
         {
-            var stateMessage = stateChanged.ReaderState switch
-            {
-                ReaderState.Connected => "is connected",
-                ReaderState.Disconnected => "is disconnected",
-                ReaderState.Closed => "has closed",
-                ReaderState.ReachedEndOfTopic => "has reached end of topic",
-                ReaderState.Faulted => "has faulted",
-                _ => $"has an unknown state '{stateChanged.ReaderState}'"
-            };
+            ReaderState.Connected => "is connected",
+            ReaderState.Disconnected => "is disconnected",
+            ReaderState.Closed => "has closed",
+            ReaderState.ReachedEndOfTopic => "has reached end of topic",
+            ReaderState.Faulted => "has faulted",
+            _ => $"has an unknown state '{stateChanged.ReaderState}'"
+        };
 
-            var topic = stateChanged.Reader.Topic;
-            Console.WriteLine($"The reader for topic '{topic}' " + stateMessage);
-        }
+        var topic = stateChanged.Reader.Topic;
+        Console.WriteLine($"The reader for topic '{topic}' " + stateMessage);
     }
 }

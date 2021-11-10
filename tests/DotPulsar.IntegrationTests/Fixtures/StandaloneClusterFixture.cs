@@ -12,27 +12,26 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.IntegrationTests.Fixtures
+namespace DotPulsar.IntegrationTests.Fixtures;
+
+using Abstraction;
+using Services;
+using System.Threading.Tasks;
+using Xunit;
+
+public class StandaloneClusterFixture : IAsyncLifetime
 {
-    using Abstraction;
-    using Services;
-    using System.Threading.Tasks;
-    using Xunit;
+    public IPulsarService? PulsarService { private set; get; }
 
-    public class StandaloneClusterFixture : IAsyncLifetime
+    public async Task InitializeAsync()
     {
-        public IPulsarService? PulsarService { private set; get; }
+        PulsarService = ServiceFactory.CreatePulsarService();
+        await PulsarService.InitializeAsync();
+    }
 
-        public async Task InitializeAsync()
-        {
-            PulsarService = ServiceFactory.CreatePulsarService();
-            await PulsarService.InitializeAsync();
-        }
-
-        public async Task DisposeAsync()
-        {
-            if (PulsarService != null)
-                await PulsarService.DisposeAsync();
-        }
+    public async Task DisposeAsync()
+    {
+        if (PulsarService != null)
+            await PulsarService.DisposeAsync();
     }
 }

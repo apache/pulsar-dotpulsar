@@ -12,70 +12,69 @@
  * limitations under the License.
  */
 
-namespace Consuming
+namespace Consuming;
+
+using DotPulsar;
+using DotPulsar.Abstractions;
+using DotPulsar.Extensions;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+internal static class Program
 {
-    using DotPulsar;
-    using DotPulsar.Abstractions;
-    using DotPulsar.Extensions;
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    internal static class Program
+    private static async Task Main()
     {
-        private static async Task Main()
+        const string myTopic = "persistent://public/default/mytopic";
+
+        var cts = new CancellationTokenSource();
+
+        Console.CancelKeyPress += (sender, args) =>
         {
-            const string myTopic = "persistent://public/default/mytopic";
+            cts.Cancel();
+            args.Cancel = true;
+        };
 
-            var cts = new CancellationTokenSource();
+        await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
-            Console.CancelKeyPress += (sender, args) =>
-            {
-                cts.Cancel();
-                args.Cancel = true;
-            };
+        await using var consumer = client.NewConsumer(Schema.String)
+            .StateChangedHandler(Monitor)
+            .SubscriptionName("MySubscription")
+            .Topic(myTopic)
+            .Create();
 
-            await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
+        Console.WriteLine("Press Ctrl+C to exit");
 
-            await using var consumer = client.NewConsumer(Schema.String)
-                .StateChangedHandler(Monitor)
-                .SubscriptionName("MySubscription")
-                .Topic(myTopic)
-                .Create();
+        await ConsumeMessages(consumer, cts.Token);
+    }
 
-            Console.WriteLine("Press Ctrl+C to exit");
-
-            await ConsumeMessages(consumer, cts.Token);
-        }
-
-        private static async Task ConsumeMessages(IConsumer<string> consumer, CancellationToken cancellationToken)
+    private static async Task ConsumeMessages(IConsumer<string> consumer, CancellationToken cancellationToken)
+    {
+        try
         {
-            try
+            await foreach (var message in consumer.Messages(cancellationToken))
             {
-                await foreach (var message in consumer.Messages(cancellationToken))
-                {
-                    Console.WriteLine("Received: " + message.Value());
-                    await consumer.Acknowledge(message, cancellationToken);
-                }
+                Console.WriteLine("Received: " + message.Value());
+                await consumer.Acknowledge(message, cancellationToken);
             }
-            catch (OperationCanceledException) { }
         }
+        catch (OperationCanceledException) { }
+    }
 
-        private static void Monitor(ConsumerStateChanged stateChanged, CancellationToken cancellationToken)
+    private static void Monitor(ConsumerStateChanged stateChanged, CancellationToken cancellationToken)
+    {
+        var stateMessage = stateChanged.ConsumerState switch
         {
-            var stateMessage = stateChanged.ConsumerState switch
-            {
-                ConsumerState.Active => "is active",
-                ConsumerState.Inactive => "is inactive",
-                ConsumerState.Disconnected => "is disconnected",
-                ConsumerState.Closed => "has closed",
-                ConsumerState.ReachedEndOfTopic => "has reached end of topic",
-                ConsumerState.Faulted => "has faulted",
-                _ => $"has an unknown state '{stateChanged.ConsumerState}'"
-            };
+            ConsumerState.Active => "is active",
+            ConsumerState.Inactive => "is inactive",
+            ConsumerState.Disconnected => "is disconnected",
+            ConsumerState.Closed => "has closed",
+            ConsumerState.ReachedEndOfTopic => "has reached end of topic",
+            ConsumerState.Faulted => "has faulted",
+            _ => $"has an unknown state '{stateChanged.ConsumerState}'"
+        };
 
-            var topic = stateChanged.Consumer.Topic;
-            Console.WriteLine($"The consumer for topic '{topic}' " + stateMessage);
-        }
+        var topic = stateChanged.Consumer.Topic;
+        Console.WriteLine($"The consumer for topic '{topic}' " + stateMessage);
     }
 }

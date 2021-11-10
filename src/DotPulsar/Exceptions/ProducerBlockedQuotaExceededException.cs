@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions
+namespace DotPulsar.Exceptions;
+
+public sealed class ProducerBlockedQuotaExceededException : DotPulsarException
 {
-    public sealed class ProducerBlockedQuotaExceededException : DotPulsarException
-    {
-        public ProducerBlockedQuotaExceededException(string message) : base(message) { }
-    }
+    public ProducerBlockedQuotaExceededException(string message) : base(message) { }
 }

@@ -12,11 +12,10 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+public enum ExecutorState : byte
 {
-    public enum ExecutorState : byte
-    {
-        Ok,
-        Faulted
-    }
+    Ok,
+    Faulted
 }

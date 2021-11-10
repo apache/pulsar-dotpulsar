@@ -12,16 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+public enum ChannelState : byte
 {
-    public enum ChannelState : byte
-    {
-        ClosedByServer,
-        Connected,
-        Disconnected,
-        ReachedEndOfTopic,
-        Active,
-        Inactive,
-        Unsubscribed
-    }
+    ClosedByServer,
+    Connected,
+    Disconnected,
+    ReachedEndOfTopic,
+    Active,
+    Inactive,
+    Unsubscribed
 }

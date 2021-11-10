@@ -12,29 +12,28 @@
  * limitations under the License.
  */
 
-namespace DotPulsar
+namespace DotPulsar;
+
+using Abstractions;
+
+/// <summary>
+/// Representation of a consumer state change.
+/// </summary>
+public sealed class ConsumerStateChanged
 {
-    using Abstractions;
+    internal ConsumerStateChanged(IConsumer consumer, ConsumerState consumerState)
+    {
+        Consumer = consumer;
+        ConsumerState = consumerState;
+    }
 
     /// <summary>
-    /// Representation of a consumer state change.
+    /// The consumer that changed state.
     /// </summary>
-    public sealed class ConsumerStateChanged
-    {
-        internal ConsumerStateChanged(IConsumer consumer, ConsumerState consumerState)
-        {
-            Consumer = consumer;
-            ConsumerState = consumerState;
-        }
+    public IConsumer Consumer { get; }
 
-        /// <summary>
-        /// The consumer that changed state.
-        /// </summary>
-        public IConsumer Consumer { get; }
-
-        /// <summary>
-        /// The state that it changed to.
-        /// </summary>
-        public ConsumerState ConsumerState { get; }
-    }
+    /// <summary>
+    /// The state that it changed to.
+    /// </summary>
+    public ConsumerState ConsumerState { get; }
 }

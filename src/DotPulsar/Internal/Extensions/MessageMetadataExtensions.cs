@@ -12,65 +12,64 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Extensions
+namespace DotPulsar.Internal.Extensions;
+
+using System;
+using System.Text;
+using Metadata = PulsarApi.MessageMetadata;
+
+public static class MessageMetadataExtensions
 {
-    using System;
-    using System.Text;
-    using Metadata = PulsarApi.MessageMetadata;
+    // Deliver at
+    public static DateTime GetDeliverAtTimeAsDateTime(this Metadata metadata)
+        => metadata.GetDeliverAtTimeAsDateTimeOffset().UtcDateTime;
 
-    public static class MessageMetadataExtensions
+    public static void SetDeliverAtTime(this Metadata metadata, DateTime timestamp)
+        => metadata.SetDeliverAtTime(new DateTimeOffset(timestamp));
+
+    public static DateTimeOffset GetDeliverAtTimeAsDateTimeOffset(this Metadata metadata)
+        => DateTimeOffset.FromUnixTimeMilliseconds(metadata.DeliverAtTime);
+
+    public static void SetDeliverAtTime(this Metadata metadata, DateTimeOffset timestamp)
+        => metadata.DeliverAtTime = timestamp.ToUnixTimeMilliseconds();
+
+    // Event time
+    public static DateTime GetEventTimeAsDateTime(this Metadata metadata)
+        => metadata.GetEventTimeAsDateTimeOffset().UtcDateTime;
+
+    public static void SetEventTime(this Metadata metadata, DateTime timestamp)
+        => metadata.SetEventTime(new DateTimeOffset(timestamp));
+
+    public static DateTimeOffset GetEventTimeAsDateTimeOffset(this Metadata metadata)
+        => DateTimeOffset.FromUnixTimeMilliseconds((long) metadata.EventTime);
+
+    public static void SetEventTime(this Metadata metadata, DateTimeOffset timestamp)
+        => metadata.EventTime = (ulong) timestamp.ToUnixTimeMilliseconds();
+
+    // Key
+    public static byte[]? GetKeyAsBytes(this Metadata metadata)
     {
-        // Deliver at
-        public static DateTime GetDeliverAtTimeAsDateTime(this Metadata metadata)
-            => metadata.GetDeliverAtTimeAsDateTimeOffset().UtcDateTime;
+        if (metadata.PartitionKey is null)
+            return null;
 
-        public static void SetDeliverAtTime(this Metadata metadata, DateTime timestamp)
-            => metadata.SetDeliverAtTime(new DateTimeOffset(timestamp));
+        if (metadata.PartitionKeyB64Encoded)
+            return Convert.FromBase64String(metadata.PartitionKey);
 
-        public static DateTimeOffset GetDeliverAtTimeAsDateTimeOffset(this Metadata metadata)
-            => DateTimeOffset.FromUnixTimeMilliseconds(metadata.DeliverAtTime);
+        return Encoding.UTF8.GetBytes(metadata.PartitionKey);
+    }
 
-        public static void SetDeliverAtTime(this Metadata metadata, DateTimeOffset timestamp)
-            => metadata.DeliverAtTime = timestamp.ToUnixTimeMilliseconds();
+    public static void SetKey(this Metadata metadata, string? key)
+    {
+        metadata.PartitionKey = key;
+        metadata.PartitionKeyB64Encoded = false;
+    }
 
-        // Event time
-        public static DateTime GetEventTimeAsDateTime(this Metadata metadata)
-            => metadata.GetEventTimeAsDateTimeOffset().UtcDateTime;
+    public static void SetKey(this Metadata metadata, byte[]? key)
+    {
+        if (key is null)
+            return;
 
-        public static void SetEventTime(this Metadata metadata, DateTime timestamp)
-            => metadata.SetEventTime(new DateTimeOffset(timestamp));
-
-        public static DateTimeOffset GetEventTimeAsDateTimeOffset(this Metadata metadata)
-            => DateTimeOffset.FromUnixTimeMilliseconds((long) metadata.EventTime);
-
-        public static void SetEventTime(this Metadata metadata, DateTimeOffset timestamp)
-            => metadata.EventTime = (ulong) timestamp.ToUnixTimeMilliseconds();
-
-        // Key
-        public static byte[]? GetKeyAsBytes(this Metadata metadata)
-        {
-            if (metadata.PartitionKey is null)
-                return null;
-
-            if (metadata.PartitionKeyB64Encoded)
-                return Convert.FromBase64String(metadata.PartitionKey);
-
-            return Encoding.UTF8.GetBytes(metadata.PartitionKey);
-        }
-
-        public static void SetKey(this Metadata metadata, string? key)
-        {
-            metadata.PartitionKey = key;
-            metadata.PartitionKeyB64Encoded = false;
-        }
-
-        public static void SetKey(this Metadata metadata, byte[]? key)
-        {
-            if (key is null)
-                return;
-
-            metadata.PartitionKey = Convert.ToBase64String(key);
-            metadata.PartitionKeyB64Encoded = true;
-        }
+        metadata.PartitionKey = Convert.ToBase64String(key);
+        metadata.PartitionKeyB64Encoded = true;
     }
 }

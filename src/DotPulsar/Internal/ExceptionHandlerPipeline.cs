@@ -12,29 +12,28 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using DotPulsar.Abstractions;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+public sealed class ExceptionHandlerPipeline : IHandleException
 {
-    using DotPulsar.Abstractions;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+    private readonly IHandleException[] _handlers;
 
-    public sealed class ExceptionHandlerPipeline : IHandleException
+    public ExceptionHandlerPipeline(IEnumerable<IHandleException> handlers)
+        => _handlers = handlers.ToArray();
+
+    public async ValueTask OnException(ExceptionContext exceptionContext)
     {
-        private readonly IHandleException[] _handlers;
-
-        public ExceptionHandlerPipeline(IEnumerable<IHandleException> handlers)
-            => _handlers = handlers.ToArray();
-
-        public async ValueTask OnException(ExceptionContext exceptionContext)
+        foreach (var handler in _handlers)
         {
-            foreach (var handler in _handlers)
-            {
-                await handler.OnException(exceptionContext).ConfigureAwait(false);
+            await handler.OnException(exceptionContext).ConfigureAwait(false);
 
-                if (exceptionContext.ExceptionHandled)
-                    break;
-            }
+            if (exceptionContext.ExceptionHandled)
+                break;
         }
     }
 }

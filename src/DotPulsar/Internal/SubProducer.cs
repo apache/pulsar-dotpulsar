@@ -12,99 +12,98 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
+namespace DotPulsar.Internal;
+
+using Abstractions;
+using DotPulsar.Abstractions;
+using DotPulsar.Internal.Extensions;
+using Events;
+using System;
+using System.Buffers;
+using System.Threading;
+using System.Threading.Tasks;
+
+public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMessage>
 {
-    using Abstractions;
-    using DotPulsar.Abstractions;
-    using DotPulsar.Internal.Extensions;
-    using Events;
-    using System;
-    using System.Buffers;
-    using System.Threading;
-    using System.Threading.Tasks;
+    private readonly Guid _correlationId;
+    private readonly IRegisterEvent _eventRegister;
+    private IProducerChannel _channel;
+    private readonly IExecute _executor;
+    private readonly IStateChanged<ProducerState> _state;
+    private readonly IProducerChannelFactory _factory;
+    private readonly ISchema<TMessage> _schema;
+    private int _isDisposed;
 
-    public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMessage>
+    public Uri ServiceUrl { get; }
+    public string Topic { get; }
+
+    public SubProducer(
+        Guid correlationId,
+        Uri serviceUrl,
+        string topic,
+        IRegisterEvent registerEvent,
+        IProducerChannel initialChannel,
+        IExecute executor,
+        IStateChanged<ProducerState> state,
+        IProducerChannelFactory factory,
+        ISchema<TMessage> schema)
     {
-        private readonly Guid _correlationId;
-        private readonly IRegisterEvent _eventRegister;
-        private IProducerChannel _channel;
-        private readonly IExecute _executor;
-        private readonly IStateChanged<ProducerState> _state;
-        private readonly IProducerChannelFactory _factory;
-        private readonly ISchema<TMessage> _schema;
-        private int _isDisposed;
+        _correlationId = correlationId;
+        ServiceUrl = serviceUrl;
+        Topic = topic;
+        _eventRegister = registerEvent;
+        _channel = initialChannel;
+        _executor = executor;
+        _state = state;
+        _factory = factory;
+        _schema = schema;
+        _isDisposed = 0;
 
-        public Uri ServiceUrl { get; }
-        public string Topic { get; }
+        _eventRegister.Register(new ProducerCreated(_correlationId));
+    }
 
-        public SubProducer(
-            Guid correlationId,
-            Uri serviceUrl,
-            string topic,
-            IRegisterEvent registerEvent,
-            IProducerChannel initialChannel,
-            IExecute executor,
-            IStateChanged<ProducerState> state,
-            IProducerChannelFactory factory,
-            ISchema<TMessage> schema)
-        {
-            _correlationId = correlationId;
-            ServiceUrl = serviceUrl;
-            Topic = topic;
-            _eventRegister = registerEvent;
-            _channel = initialChannel;
-            _executor = executor;
-            _state = state;
-            _factory = factory;
-            _schema = schema;
-            _isDisposed = 0;
+    public async ValueTask<ProducerState> OnStateChangeTo(ProducerState state, CancellationToken cancellationToken)
+        => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
 
-            _eventRegister.Register(new ProducerCreated(_correlationId));
-        }
+    public async ValueTask<ProducerState> OnStateChangeFrom(ProducerState state, CancellationToken cancellationToken)
+        => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask<ProducerState> OnStateChangeTo(ProducerState state, CancellationToken cancellationToken)
-            => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
+    public bool IsFinalState()
+        => _state.IsFinalState();
 
-        public async ValueTask<ProducerState> OnStateChangeFrom(ProducerState state, CancellationToken cancellationToken)
-            => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
+    public bool IsFinalState(ProducerState state)
+        => _state.IsFinalState(state);
 
-        public bool IsFinalState()
-            => _state.IsFinalState();
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
+            return;
 
-        public bool IsFinalState(ProducerState state)
-            => _state.IsFinalState(state);
+        _eventRegister.Register(new ProducerDisposed(_correlationId));
+        await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
+        await _channel.DisposeAsync().ConfigureAwait(false);
+    }
 
-        public async ValueTask DisposeAsync()
-        {
-            if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
-                return;
+    public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
+        => await _executor.Execute(() => InternalSend(metadata.Metadata, _schema.Encode(message), cancellationToken), cancellationToken).ConfigureAwait(false);
 
-            _eventRegister.Register(new ProducerDisposed(_correlationId));
-            await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
-            await _channel.DisposeAsync().ConfigureAwait(false);
-        }
+    public async ValueTask<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
+        => await _executor.Execute(() => InternalSend(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
 
-        public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
-            => await _executor.Execute(() => InternalSend(metadata.Metadata, _schema.Encode(message), cancellationToken), cancellationToken).ConfigureAwait(false);
+    private async ValueTask<MessageId> InternalSend(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
+    {
+        var response = await _channel.Send(metadata, data, cancellationToken).ConfigureAwait(false);
+        return response.MessageId.ToMessageId();
+    }
 
-        public async ValueTask<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
-            => await _executor.Execute(() => InternalSend(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
+    public async Task EstablishNewChannel(CancellationToken cancellationToken)
+    {
+        var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
 
-        private async ValueTask<MessageId> InternalSend(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
-        {
-            var response = await _channel.Send(metadata, data, cancellationToken).ConfigureAwait(false);
-            return response.MessageId.ToMessageId();
-        }
+        var oldChannel = _channel;
+        _channel = channel;
 
-        public async Task EstablishNewChannel(CancellationToken cancellationToken)
-        {
-            var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
-
-            var oldChannel = _channel;
-            _channel = channel;
-
-            if (oldChannel is not null)
-                await oldChannel.DisposeAsync().ConfigureAwait(false);
-        }
+        if (oldChannel is not null)
+            await oldChannel.DisposeAsync().ConfigureAwait(false);
     }
 }

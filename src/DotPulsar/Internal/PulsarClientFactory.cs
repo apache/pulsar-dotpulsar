@@ -12,15 +12,14 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal
-{
-    using Abstractions;
-    using DotPulsar.Abstractions;
-    using System;
+namespace DotPulsar.Internal;
 
-    public sealed class PulsarClientFactory
-    {
-        public static PulsarClient CreatePulsarClient(IConnectionPool connectionPool, ProcessManager processManager, IHandleException exceptionHandler, Uri serviceUrl)
-            => new(connectionPool, processManager, exceptionHandler, serviceUrl);
-    }
+using Abstractions;
+using DotPulsar.Abstractions;
+using System;
+
+public sealed class PulsarClientFactory
+{
+    public static PulsarClient CreatePulsarClient(IConnectionPool connectionPool, ProcessManager processManager, IHandleException exceptionHandler, Uri serviceUrl)
+        => new(connectionPool, processManager, exceptionHandler, serviceUrl);
 }

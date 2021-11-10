@@ -12,12 +12,11 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Exceptions
-{
-    using System;
+namespace DotPulsar.Internal.Exceptions;
 
-    public sealed class ConnectionDisposedException : ObjectDisposedException
-    {
-        public ConnectionDisposedException() : base(typeof(Connection).FullName) { }
-    }
+using System;
+
+public sealed class ConnectionDisposedException : ObjectDisposedException
+{
+    public ConnectionDisposedException() : base(typeof(Connection).FullName) { }
 }
