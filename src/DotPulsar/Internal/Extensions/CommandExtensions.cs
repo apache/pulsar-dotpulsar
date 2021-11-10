@@ -176,7 +176,7 @@ namespace DotPulsar.Internal.Extensions
                 CommandType = BaseCommand.Type.Seek,
                 Seek = command
             };
-        
+
         public static BaseCommand AsBaseCommand(this CommandRedeliverUnacknowledgedMessages command)
             => new()
             {
@@ -194,7 +194,8 @@ namespace DotPulsar.Internal.Extensions
         public static BaseCommand AsBaseCommand(this CommandPartitionedTopicMetadata command)
             => new()
             {
-                CommandType = BaseCommand.Type.PartitionedMetadata, PartitionMetadata = command
+                CommandType = BaseCommand.Type.PartitionedMetadata,
+                PartitionMetadata = command
             };
     }
 }

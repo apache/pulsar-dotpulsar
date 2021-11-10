@@ -127,7 +127,7 @@ namespace DotPulsar.Internal
         }
 
         private async ValueTask Unsubscribe(CommandUnsubscribe command, CancellationToken cancellationToken)
-            =>await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+            => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
         public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
         {

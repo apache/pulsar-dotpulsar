@@ -137,7 +137,7 @@ namespace DotPulsar.Internal
             _ = response.ContinueWith(result =>
             {
                 if (result.Result.CommandType == BaseCommand.Type.Success)
-                   _consumerChannels.Remove(consumerId)?.Unsubscribed();
+                    _consumerChannels.Remove(consumerId)?.Unsubscribed();
             }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
             return response;

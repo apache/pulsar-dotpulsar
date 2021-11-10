@@ -83,9 +83,9 @@ namespace DotPulsar.Internal.Compression
                 if (type.FullName is null || !type.FullName.Equals(fullName))
                     continue;
 
-                if (type.IsPublic && 
-                    type.IsClass && 
-                    !type.IsAbstract && 
+                if (type.IsPublic &&
+                    type.IsClass &&
+                    !type.IsAbstract &&
                     type.ImplementedInterfaces.Contains(typeof(IDisposable)) &&
                     type.GetConstructor(Type.EmptyTypes) is not null)
                     return type;

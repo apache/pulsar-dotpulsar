@@ -59,7 +59,7 @@ namespace DotPulsar.Internal
         {
             if (Interlocked.Exchange(ref _isDisposed, 1) == 0)
                 _stream.Dispose();
-            
+
             return new ValueTask();
         }
 #else

@@ -19,7 +19,7 @@ namespace DotPulsar.IntegrationTests.Services
     public sealed class StandaloneExternalService : PulsarServiceBase
     {
         public override Uri GetBrokerUri()
-            => new ("pulsar://localhost:6650");
+            => new("pulsar://localhost:6650");
 
         public override Uri GetWebServiceUri()
             => new("http://localhost:8080");

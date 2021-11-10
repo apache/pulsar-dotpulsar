@@ -140,7 +140,7 @@ namespace DotPulsar.Internal
 
         private ValueTask<Connection> GetConnection(Uri serviceUrl, CancellationToken cancellationToken)
         {
-            return GetConnection(new PulsarUrl(serviceUrl,serviceUrl), cancellationToken);
+            return GetConnection(new PulsarUrl(serviceUrl, serviceUrl), cancellationToken);
         }
 
         private async ValueTask<Connection> GetConnection(PulsarUrl url, CancellationToken cancellationToken)

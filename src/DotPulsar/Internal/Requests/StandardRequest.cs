@@ -41,7 +41,7 @@ namespace DotPulsar.Internal.Requests
             => new(requestId, consumerId, null, commandType);
 
         public static StandardRequest WithProducerId(ulong requestId, ulong producerId, BaseCommand.Type? commandType = null)
-            => new (requestId, null, producerId, commandType);
+            => new(requestId, null, producerId, commandType);
 
         public bool SenderIsConsumer(ulong consumerId)
             => _consumerId.HasValue && _consumerId.Value == consumerId;

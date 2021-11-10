@@ -54,7 +54,7 @@ namespace DotPulsar.Extensions
         /// <remarks>
         /// If the state change to a final state, then all awaiting tasks will complete.
         /// </remarks>
-        public static  async ValueTask<ProducerStateChanged> StateChangedFrom(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
+        public static async ValueTask<ProducerStateChanged> StateChangedFrom(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
         {
             var newState = await producer.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
             return new ProducerStateChanged(producer, newState);

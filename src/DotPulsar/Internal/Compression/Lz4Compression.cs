@@ -50,7 +50,7 @@ namespace DotPulsar.Internal.Compression
                 return true;
             }
             catch
-            { 
+            {
                 // Ignore
             }
 
