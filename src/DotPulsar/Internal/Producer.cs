@@ -22,6 +22,7 @@ using DotPulsar.Internal.Extensions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -250,7 +251,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             {
                 activity.SetMessageId(messageId);
                 activity.SetPayloadSize(data.Length);
-                activity.SetStatusCode("OK");
+                activity.SetStatus(ActivityStatusCode.Ok);
             }
 
             return messageId;

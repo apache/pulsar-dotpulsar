@@ -25,17 +25,16 @@ public static class ActivityExtensions
     private const string _exceptionMessage = "exception.message";
     private const string _messageId = "messaging.message_id";
     private const string _payloadSize = "messaging.message_payload_size_bytes";
-    private const string _statusCode = "otel.status_code";
 
     public static void AddException(this Activity activity, Exception exception)
     {
-        activity.SetStatusCode("ERROR");
+        activity.SetStatus(ActivityStatusCode.Error);
 
         var exceptionTags = new ActivityTagsCollection
-            {
-                { _exceptionType, exception.GetType().FullName },
-                { _exceptionStackTrace, exception.ToString() }
-            };
+        {
+            { _exceptionType, exception.GetType().FullName },
+            { _exceptionStackTrace, exception.ToString() }
+        };
 
         if (!string.IsNullOrWhiteSpace(exception.Message))
             exceptionTags.Add(_exceptionMessage, exception.Message);
@@ -46,9 +45,6 @@ public static class ActivityExtensions
 
     public static void SetMessageId(this Activity activity, MessageId messageId)
         => activity.SetTag(_messageId, messageId.ToString());
-
-    public static void SetStatusCode(this Activity activity, string statusCode)
-        => activity.SetTag(_statusCode, statusCode);
 
     public static void SetPayloadSize(this Activity activity, long payloadSize)
         => activity.SetTag(_payloadSize, payloadSize);

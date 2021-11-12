@@ -32,7 +32,7 @@ public struct ConnectRequest : IRequest
 #if NETSTANDARD2_0
     public bool Equals(IRequest other)
 #else
-        public bool Equals([AllowNull] IRequest other)
+    public bool Equals([AllowNull] IRequest other)
 #endif
             => other is ConnectRequest;
 

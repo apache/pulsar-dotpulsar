@@ -100,9 +100,9 @@ public sealed class PingPongHandler : IAsyncDisposable
         return new ValueTask();
     }
 #else
-        public async ValueTask DisposeAsync()
-        {
-            await _timer.DisposeAsync().ConfigureAwait(false);
-        }
+    public async ValueTask DisposeAsync()
+    {
+        await _timer.DisposeAsync().ConfigureAwait(false);
+    }
 #endif
 }

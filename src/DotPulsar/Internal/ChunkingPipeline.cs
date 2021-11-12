@@ -89,7 +89,7 @@ public sealed class ChunkingPipeline
 #if NETSTANDARD2_0
             await _stream.WriteAsync(_buffer, 0, _bufferCount).ConfigureAwait(false);
 #else
-                await _stream.WriteAsync(_buffer.AsMemory(0, _bufferCount)).ConfigureAwait(false);
+            await _stream.WriteAsync(_buffer.AsMemory(0, _bufferCount)).ConfigureAwait(false);
 #endif
             _bufferCount = 0;
         }
@@ -103,7 +103,7 @@ public sealed class ChunkingPipeline
         var data = memory.ToArray();
         await _stream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
 #else
-            await _stream.WriteAsync(memory).ConfigureAwait(false);
+        await _stream.WriteAsync(memory).ConfigureAwait(false);
 #endif
     }
 }

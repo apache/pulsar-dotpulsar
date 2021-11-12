@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ## Added
 
+- .NET 6 added as a target framework
 - [Tracing](https://github.com/apache/pulsar-dotpulsar/wiki/Tracing) support following the [guidelines](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md) from the [OpenTelemetry](https://opentelemetry.io/) project
     - Sending a message will create a producer trace and add tracing metadata to the message
     - The 'Process' extension method for IConsumer\<TMessage\> is no longer experimental and will create a consumer trace

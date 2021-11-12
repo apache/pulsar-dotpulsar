@@ -63,11 +63,11 @@ public sealed class PulsarStream : IPulsarStream
         return new ValueTask();
     }
 #else
-        public async ValueTask DisposeAsync()
-        {
-            if (Interlocked.Exchange(ref _isDisposed, 1) == 0)
-                await _stream.DisposeAsync().ConfigureAwait(false);
-        }
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _isDisposed, 1) == 0)
+            await _stream.DisposeAsync().ConfigureAwait(false);
+    }
 #endif
 
     private async Task FillPipe(CancellationToken cancellationToken)
@@ -86,7 +86,7 @@ public sealed class PulsarStream : IPulsarStream
                 var bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
                 new Memory<byte>(buffer, 0, bytesRead).CopyTo(memory);
 #else
-                    var bytesRead = await _stream.ReadAsync(memory, cancellationToken).ConfigureAwait(false);
+                var bytesRead = await _stream.ReadAsync(memory, cancellationToken).ConfigureAwait(false);
 #endif
                 if (bytesRead == 0)
                     break;

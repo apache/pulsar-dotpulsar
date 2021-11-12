@@ -19,6 +19,7 @@ using DotPulsar.Internal;
 using DotPulsar.Internal.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,12 +53,12 @@ public static class ConsumerExtensions
 
         var tags = new KeyValuePair<string, object?>[]
         {
-                new KeyValuePair<string, object?>("messaging.destination", consumer.Topic),
-                new KeyValuePair<string, object?>("messaging.destination_kind", "topic"),
-                new KeyValuePair<string, object?>("messaging.operation", operation),
-                new KeyValuePair<string, object?>("messaging.system", "pulsar"),
-                new KeyValuePair<string, object?>("messaging.url", consumer.ServiceUrl),
-                new KeyValuePair<string, object?>("messaging.pulsar.subscription", consumer.SubscriptionName)
+            new KeyValuePair<string, object?>("messaging.destination", consumer.Topic),
+            new KeyValuePair<string, object?>("messaging.destination_kind", "topic"),
+            new KeyValuePair<string, object?>("messaging.operation", operation),
+            new KeyValuePair<string, object?>("messaging.system", "pulsar"),
+            new KeyValuePair<string, object?>("messaging.url", consumer.ServiceUrl),
+            new KeyValuePair<string, object?>("messaging.pulsar.subscription", consumer.SubscriptionName)
         };
 
         while (!cancellationToken.IsCancellationRequested)
@@ -70,7 +71,7 @@ public static class ConsumerExtensions
             {
                 activity.SetMessageId(message.MessageId);
                 activity.SetPayloadSize(message.Data.Length);
-                activity.SetStatusCode("OK");
+                activity.SetStatus(ActivityStatusCode.Ok);
             }
 
             try

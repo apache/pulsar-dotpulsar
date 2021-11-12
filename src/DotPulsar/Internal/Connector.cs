@@ -100,10 +100,10 @@ public sealed class Connector
             else
                 sslStream.Dispose();
 #else
-                if (sslStream is null)
-                    await stream.DisposeAsync().ConfigureAwait(false);
-                else
-                    await sslStream.DisposeAsync().ConfigureAwait(false);
+            if (sslStream is null)
+                await stream.DisposeAsync().ConfigureAwait(false);
+            else
+                await sslStream.DisposeAsync().ConfigureAwait(false);
 #endif
             throw;
         }
