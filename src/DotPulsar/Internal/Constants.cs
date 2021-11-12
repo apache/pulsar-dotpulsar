@@ -39,6 +39,7 @@ public static class Constants
         MagicNumber = new byte[] { 0x0e, 0x01 };
         MetadataSizeOffset = 6;
         MetadataOffset = 10;
+        ConversationId = "messaging.conversation_id";
     }
 
     public static string ClientName { get; }
@@ -51,4 +52,5 @@ public static class Constants
     public static byte[] MagicNumber { get; }
     public static int MetadataSizeOffset { get; }
     public static int MetadataOffset { get; }
+    public static string ConversationId { get; }
 }

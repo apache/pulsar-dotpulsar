@@ -15,13 +15,13 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
+using DotPulsar.Extensions;
+using DotPulsar.Internal.Extensions;
 using System.Collections.Generic;
 using System.Diagnostics;
 
 public static class DotPulsarActivitySource
 {
-    private const string _conversationId = "conversation_id";
-
     static DotPulsarActivitySource()
     {
         ActivitySource = new ActivitySource(Constants.ClientName, Constants.ClientVersion);
@@ -34,23 +34,7 @@ public static class DotPulsarActivitySource
         if (!ActivitySource.HasListeners())
             return null;
 
-        var activity = ActivitySource.StartActivity(operationName, ActivityKind.Consumer);
-
-        if (activity is not null && activity.IsAllDataRequested)
-        {
-            for (var i = 0; i < tags.Length; ++i)
-            {
-                var tag = tags[i];
-                activity.SetTag(tag.Key, tag.Value);
-            }
-
-
-            var properties = message.Properties;
-            if (properties.TryGetValue(_conversationId, out var conversationId))
-                activity.SetTag(_conversationId, conversationId);
-        }
-
-        return activity;
+        return StartActivity(operationName, ActivityKind.Consumer, tags, message.GetConversationId());
     }
 
     public static Activity? StartProducerActivity(MessageMetadata metadata, string operationName, KeyValuePair<string, object?>[] tags)
@@ -58,7 +42,12 @@ public static class DotPulsarActivitySource
         if (!ActivitySource.HasListeners())
             return null;
 
-        var activity = ActivitySource.StartActivity(operationName, ActivityKind.Producer);
+        return StartActivity(operationName, ActivityKind.Producer, tags, metadata.GetConversationId());
+    }
+
+    private static Activity? StartActivity(string operationName, ActivityKind kind, KeyValuePair<string, object?>[] tags, string? conversationId)
+    {
+        var activity = ActivitySource.StartActivity(operationName, kind);
 
         if (activity is not null && activity.IsAllDataRequested)
         {
@@ -68,9 +57,8 @@ public static class DotPulsarActivitySource
                 activity.SetTag(tag.Key, tag.Value);
             }
 
-            var conversationId = metadata[_conversationId];
             if (conversationId is not null)
-                activity.SetTag(_conversationId, conversationId);
+                activity.SetConversationId(conversationId);
         }
 
         return activity;

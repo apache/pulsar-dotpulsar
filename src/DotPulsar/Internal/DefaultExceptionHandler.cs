@@ -18,6 +18,7 @@ using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using Exceptions;
 using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,6 +54,7 @@ public sealed class DefaultExceptionHandler : IHandleException
             AsyncQueueDisposedException _ => FaultAction.Retry,
             OperationCanceledException _ => cancellationToken.IsCancellationRequested ? FaultAction.Rethrow : FaultAction.Retry,
             DotPulsarException _ => FaultAction.Rethrow,
+            IOException _ => FaultAction.Retry,
             SocketException socketException => socketException.SocketErrorCode switch
             {
                 SocketError.HostNotFound => FaultAction.Rethrow,

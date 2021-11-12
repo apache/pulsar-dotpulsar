@@ -46,6 +46,9 @@ public static class ActivityExtensions
     public static void SetMessageId(this Activity activity, MessageId messageId)
         => activity.SetTag(_messageId, messageId.ToString());
 
+    public static void SetConversationId(this Activity activity, string conversationId)
+        => activity.SetTag(Constants.ConversationId, conversationId);
+
     public static void SetPayloadSize(this Activity activity, long payloadSize)
         => activity.SetTag(_payloadSize, payloadSize);
 }
