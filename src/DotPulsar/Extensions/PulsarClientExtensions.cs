@@ -32,6 +32,12 @@ namespace DotPulsar.Extensions
             => new ConsumerBuilder(pulsarClient);
 
         /// <summary>
+        /// Get a builder that can be used to configure and build parallel Consumer instance.
+        /// </summary>
+        public static IParallelConsumerBuilder NewParallelConsumer(this IPulsarClient pulsarClient)
+            => new ParallelConsumerBuilder(pulsarClient);
+
+        /// <summary>
         /// Get a builder that can be used to configure and build a Reader instance.
         /// </summary>
         public static IReaderBuilder NewReader(this IPulsarClient pulsarClient)

@@ -34,6 +34,11 @@ namespace DotPulsar.Abstractions
         IConsumer CreateConsumer(ConsumerOptions options);
 
         /// <summary>
+        /// Create parallel workers consumer.
+        /// </summary>
+        IParallelConsumer CreateParallelConsumer(ParallelConsumerOptions options);
+
+        /// <summary>
         /// Create a reader.
         /// </summary>
         IReader CreateReader(ReaderOptions options);

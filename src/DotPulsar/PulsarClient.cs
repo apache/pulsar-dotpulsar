@@ -115,38 +115,119 @@ namespace DotPulsar
         /// </summary>
         public IConsumer CreateConsumer(ConsumerOptions options)
         {
-            ThrowIfDisposed();
-            _logger.Trace(nameof(PulsarClient), nameof(CreateConsumer), "Creating consumer for topic {0} subscription {1}", options.Topic, options.SubscriptionName);
+            return CreateConsumer(options.Topic,
+                                  options.SubscriptionName,
+                                  (BatchHandler batchHandler) => CreateNonPartitionedTopicConsumer(batchHandler, options),
+                                  (BatchHandler batchHandler, int partitionIndex, int partitionsCount) => CreatePartitionConsumer(options, batchHandler, partitionIndex, partitionsCount),
+                                  (PartitionedTopicMetadata partitionedTopicMetadata, Dictionary<int, Consumer> partitionConsumers, BatchHandler batchHandler) => CreatePartitionedTopicConsumer(options, partitionedTopicMetadata, partitionConsumers, batchHandler));
+        }
 
-            PartitionedTopicMetadata partitionedTopicMetadata = GetPartitionTopicMetadata(options.Topic).GetAwaiter().GetResult();
+        private Consumer CreatePartitionConsumer(ConsumerOptions options, BatchHandler batchHandler, int partitionIndex, int partitionsCount)
+        {
+            uint prefetchCount = Math.Max(1U, (uint) (options.MessagePrefetchCount / partitionsCount));
+            var partitionTopicConsumerOptions = new ConsumerOptions(options, $"{options.Topic}-partition-{partitionIndex}", prefetchCount);
+            return CreateNonPartitionedTopicConsumer(batchHandler, partitionTopicConsumerOptions);
+        }
+
+        private IConsumer CreatePartitionedTopicConsumer(ConsumerOptions options, PartitionedTopicMetadata partitionedTopicMetadata, Dictionary<int, Consumer> partitionsConsumers, BatchHandler batchHandler)
+        {
+            var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
+            return new PartitionedConsumer(options,
+                                           partitionedTopicMetadata,
+                                           partitionsConsumers,
+                                           batchHandler,
+                                           stateManager,
+                                           this);
+        }
+
+        internal Consumer CreateNonPartitionedTopicConsumer(BatchHandler batchHandler, ConsumerOptions options)
+        {
+            var correlationId = Guid.NewGuid();
+            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
+            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, batchHandler, options, _logger);
+            var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
+            var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager, factory);
+            var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
+            _processManager.Add(process);
+            process.Start();
+            _logger.Trace(nameof(PulsarClient), nameof(CreateNonPartitionedTopicConsumer), "Created consumer for topic {0} subscription {1}", options.Topic, options.SubscriptionName);
+            return consumer;
+        }
+
+        public IParallelConsumer CreateParallelConsumer(ParallelConsumerOptions options)
+        {
+            return CreateConsumer(options.Topic,
+                                  options.SubscriptionName,
+                                  (BatchHandler batchHandler) => CreateParallelNonPartitionedTopicConsumer(batchHandler, options),
+                                  (BatchHandler batchHandler, int partitionIndex, int partitionsCount) => CreatePartitionConsumer(options, batchHandler, partitionIndex, partitionsCount),
+                                  (PartitionedTopicMetadata partitionedTopicMetadata, Dictionary<int, Consumer> partitionConsumers, BatchHandler batchHandler) => CreateParallelPartitionedTopicConsumer(options, partitionedTopicMetadata, partitionConsumers, batchHandler));
+        }
+
+        private IParallelConsumer CreateParallelNonPartitionedTopicConsumer(BatchHandler batchHandler, ParallelConsumerOptions options)
+        {
+            var correlationId = Guid.NewGuid();
+            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
+            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, batchHandler, options, _logger);
+            var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
+            var parallelConsumer = new ParallelConsumer(correlationId,
+                                                        options.Topic,
+                                                        options.PartitionPrefetchCount,
+                                                        options.MaxParallelWorkersCount,
+                                                        _processManager,
+                                                        new NotReadyChannel(),
+                                                        executor,
+                                                        stateManager,
+                                                        factory);
+            var process = new ConsumerProcess(correlationId, stateManager, factory, parallelConsumer, options.SubscriptionType == SubscriptionType.Failover);
+            _processManager.Add(process);
+            process.Start();
+            _logger.Trace(nameof(PulsarClient), nameof(CreateNonPartitionedTopicConsumer), "Created parallel consumer for topic {0} subscription {1}", options.Topic, options.SubscriptionName);
+            return parallelConsumer;
+        }
+
+        private IParallelConsumer CreateParallelPartitionedTopicConsumer(ParallelConsumerOptions options, PartitionedTopicMetadata partitionedTopicMetadata, Dictionary<int, Consumer> partitionConsumers, BatchHandler batchHandler)
+        {
+            var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
+            return new ParallelPartitionedConsumer(options,
+                                                   partitionedTopicMetadata,
+                                                   partitionConsumers,
+                                                   batchHandler,
+                                                   stateManager,
+                                                   this);
+        }
+
+        internal IConsumerT CreateConsumer<IConsumerT, ConsumerT>(string topic,
+                                                                  string subscriptionName,
+                                                                  Func<BatchHandler, IConsumerT> createNoPartitionConsumer,
+                                                                  Func<BatchHandler, int, int, ConsumerT> createSinglePartitionConsumer,
+                                                                  Func<PartitionedTopicMetadata, Dictionary<int, ConsumerT>, BatchHandler, IConsumerT> createPartitionConsumer)
+            where ConsumerT: IAsyncDisposable
+        {
+            ThrowIfDisposed();
+            _logger.Trace(nameof(PulsarClient), nameof(CreateConsumer), "Creating consumer for topic {0} subscription {1}", topic, subscriptionName);
+
+            PartitionedTopicMetadata partitionedTopicMetadata = GetPartitionTopicMetadata(topic).GetAwaiter().GetResult();
 
             if (partitionedTopicMetadata.Partitions > 0)
             {
-                var consumers = new Dictionary<int, Consumer>();
+                var partitionsConsumers = new Dictionary<int, ConsumerT>();
 
                 try
                 {
                     var batchHandler = new BatchHandler(true);
-                    uint prefetchCount = Math.Max(1U, (uint) (options.MessagePrefetchCount / partitionedTopicMetadata.Partitions));
 
                     for (int partitionIndex = 0; partitionIndex < partitionedTopicMetadata.Partitions; partitionIndex++)
                     {
-                        var partitionTopicConsumerOptions = new ConsumerOptions(options, $"{options.Topic}-partition-{partitionIndex}", prefetchCount);
-                        consumers.Add(partitionIndex, CreateConsumerWithoutCheckingPartition(batchHandler, partitionTopicConsumerOptions));
+                        partitionsConsumers.Add(partitionIndex, createSinglePartitionConsumer(batchHandler, partitionIndex, partitionedTopicMetadata.Partitions));
                     }
 
-                    var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
-                    return new PartitionedConsumer(options.Topic,
-                                                   stateManager,
-                                                   options,
-                                                   partitionedTopicMetadata,
-                                                   consumers,
-                                                   batchHandler,
-                                                   this);
+                    return createPartitionConsumer(partitionedTopicMetadata,
+                                                   partitionsConsumers,
+                                                   batchHandler);
                 }
                 catch
                 {
-                    foreach (IConsumer consumer in consumers.Values)
+                    foreach (IConsumer consumer in partitionsConsumers.Values)
                     {
                         // dispose should be pretty fast (thus usage of ValueTask instead of Task)
                         consumer.DisposeAsync().GetAwaiter().GetResult();
@@ -157,22 +238,8 @@ namespace DotPulsar
             }
             else
             {
-                return CreateConsumerWithoutCheckingPartition(new BatchHandler(true), options);
+                return createNoPartitionConsumer(new BatchHandler(true));
             }
-        }
-
-        internal Consumer CreateConsumerWithoutCheckingPartition(BatchHandler batchHandler, ConsumerOptions options)
-        {
-            var correlationId = Guid.NewGuid();
-            var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-            var factory = new ConsumerChannelFactory(correlationId, _processManager, _connectionPool, executor, batchHandler, options, _logger);
-            var stateManager = new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
-            var consumer = new Consumer(correlationId, options.Topic, _processManager, new NotReadyChannel(), executor, stateManager, factory);
-            var process = new ConsumerProcess(correlationId, stateManager, factory, consumer, options.SubscriptionType == SubscriptionType.Failover);
-            _processManager.Add(process);
-            process.Start();
-            _logger.Trace(nameof(PulsarClient), nameof(CreateConsumerWithoutCheckingPartition), "Created consumer for topic {0} subscription {1}", options.Topic, options.SubscriptionName);
-            return consumer;
         }
 
         /// <summary>

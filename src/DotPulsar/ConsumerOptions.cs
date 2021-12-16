@@ -19,7 +19,7 @@ namespace DotPulsar
     /// <summary>
     /// The consumer building options.
     /// </summary>
-    public sealed class ConsumerOptions
+    public class ConsumerOptions
     {
         /// <summary>
         /// The default initial position.

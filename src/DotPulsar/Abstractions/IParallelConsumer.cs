@@ -17,15 +17,12 @@ namespace DotPulsar.Abstractions
     using System;
     using System.Collections.Generic;
     using System.Threading;
+    using System.Threading.Tasks;
 
-    /// <summary>
-    /// A consumer abstraction.
-    /// </summary>
-    public interface IConsumer : IConsumerBase, IAsyncDisposable
+    public interface IParallelConsumer : IConsumerBase, IAsyncDisposable
     {
-        /// <summary>
-        /// Get an IAsyncEnumerable for consuming messages
-        /// </summary>
-        IAsyncEnumerable<Message> Messages(CancellationToken cancellationToken = default);
+        delegate Task ParallelConsumerTaskDelegate(int workerId, IAsyncEnumerable<Message> messages, CancellationToken cancellationToken);
+
+        Task ConsumeMessages(Func<ParallelConsumerTaskDelegate> consumerTaskFactory, CancellationToken cancellationToken = default);
     }
 }
