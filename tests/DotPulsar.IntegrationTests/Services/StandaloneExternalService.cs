@@ -19,8 +19,8 @@ using System;
 public sealed class StandaloneExternalService : PulsarServiceBase
 {
     public override Uri GetBrokerUri()
-        => new("pulsar://localhost:6650");
+        => new("pulsar://localhost:54545");
 
     public override Uri GetWebServiceUri()
-        => new("http://localhost:8080");
+        => new("http://localhost:54546");
 }

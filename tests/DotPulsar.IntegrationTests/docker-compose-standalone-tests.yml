@@ -12,3 +12,51 @@ services:
       PULSAR_MEM: " -Xms1g -Xmx1g -XX:MaxDirectMemorySize=2g"
     command: |
       /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone --no-functions-worker"
+    networks:
+      - network_test_bed
+      
+  pulsar-manager:
+    container_name: pulsar-manager-standalone
+    image: "apachepulsar/pulsar-manager:v0.2.0"
+    ports:
+      - "9527:9527"
+      - "7750:7750"
+#    volumes:
+#      - static-content:/usr/src/app
+    depends_on:
+      - pulsar
+      - database
+    environment:
+      SPRING_CONFIGURATION_FILE: /pulsar-manager/pulsar-manager/application.properties
+#      REDIRECT_HOST: http://localhost
+#      REDIRECT_PORT: 9527
+#      DRIVER_CLASS_NAME: org.postgresql.Driver
+#      URL: jdbc:postgresql://database:5432/pulsar_manager
+#      USERNAME: alpha
+#      PASSWORD: alpha
+#      LOG_LEVEL: DEBUG
+#      JWT_TOKEN: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.OiV2NOK-21lXGmSgtQ0WlwE_-hgb3rpuc73jeBcQio4
+#      SECRET_KEY: file:///usr/src/app/my-secret.key
+    networks:
+      - network_test_bed
+      
+  database:
+    image: 'postgres:10.11'
+    container_name: database
+    ports:
+      - "5432:5432"
+    networks:
+      - network_test_bed
+    volumes:
+      - postgresql:/var/lib/postgresql
+    environment:
+      - POSTGRES_USER=alpha
+      - POSTGRES_PASSWORD=alpha
+        
+networks:
+  network_test_bed:
+    name: network_test_bed
+    driver: bridge
+    
+volumes:
+  postgresql:
