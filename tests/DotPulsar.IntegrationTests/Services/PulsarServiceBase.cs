@@ -17,46 +17,37 @@ namespace DotPulsar.IntegrationTests.Services;
 using Abstraction;
 using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-public class PulsarServiceBase : IPulsarService
+public abstract class PulsarServiceBase : IPulsarService
 {
     private readonly CancellationTokenSource _cts;
+    private readonly HttpClient _adminClient;
 
     protected PulsarServiceBase()
     {
         _cts = new CancellationTokenSource();
+        _adminClient = new HttpClient();
     }
 
-    public virtual Task InitializeAsync()
-        => Task.CompletedTask;
+    public abstract Task InitializeAsync();
 
     public virtual Task DisposeAsync()
     {
+        _adminClient.Dispose();
         _cts.Dispose();
         return Task.CompletedTask;
     }
 
-    public virtual Uri GetBrokerUri()
-        => throw new NotImplementedException();
+    public abstract Uri GetBrokerUri();
 
-    public virtual Uri GetWebServiceUri()
-        => throw new NotImplementedException();
+    public abstract Uri GetWebServiceUri();
 
-    public async Task CreatePartitionedTopic(string restTopic, int numPartitions, string? token = null)
+    public async Task<HttpResponseMessage?> CreatePartitionedTopic(string restTopic, int numPartitions)
     {
-        using var adminClient = new HttpClient();
-        if (token != null)
-        {
-            adminClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-        }
-
         var content = new StringContent(numPartitions.ToString(), Encoding.UTF8, "application/json");
-        var response = await adminClient.PutAsync($"{GetWebServiceUri()}admin/v2/{restTopic}/partitions", content, _cts.Token).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        return await _adminClient.PutAsync($"{GetWebServiceUri()}admin/v2/{restTopic}/partitions", content, _cts.Token).ConfigureAwait(false);
     }
 }

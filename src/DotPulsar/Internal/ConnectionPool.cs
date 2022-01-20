@@ -21,6 +21,7 @@ using PulsarApi;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,6 +37,7 @@ public sealed class ConnectionPool : IConnectionPool
     private readonly Task _closeInactiveConnections;
     private readonly string? _listenerName;
     private readonly TimeSpan _keepAliveInterval;
+    private readonly Func<Task<string>>? _accessTokenFactory;
 
     public ConnectionPool(
         CommandConnect commandConnect,
@@ -44,7 +46,8 @@ public sealed class ConnectionPool : IConnectionPool
         EncryptionPolicy encryptionPolicy,
         TimeSpan closeInactiveConnectionsInterval,
         string? listenerName,
-        TimeSpan keepAliveInterval)
+        TimeSpan keepAliveInterval,
+        Func<Task<string>>? accessTokenFactory)
     {
         _lock = new AsyncLock();
         _commandConnect = commandConnect;
@@ -56,6 +59,7 @@ public sealed class ConnectionPool : IConnectionPool
         _cancellationTokenSource = new CancellationTokenSource();
         _closeInactiveConnections = CloseInactiveConnections(closeInactiveConnectionsInterval, _cancellationTokenSource.Token);
         _keepAliveInterval = keepAliveInterval;
+        _accessTokenFactory = accessTokenFactory;
     }
 
     public async ValueTask DisposeAsync()
@@ -157,14 +161,21 @@ public sealed class ConnectionPool : IConnectionPool
     private async Task<Connection> EstablishNewConnection(PulsarUrl url, CancellationToken cancellationToken)
     {
         var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
-        var connection = new Connection(new PulsarStream(stream), _keepAliveInterval);
+        var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _accessTokenFactory);
         DotPulsarEventSource.Log.ConnectionCreated();
         _connections[url] = connection;
-        _ = connection.ProcessIncommingFrames().ContinueWith(t => DisposeConnection(url));
+        _ = connection.ProcessIncommingFrames(cancellationToken).ContinueWith(t => DisposeConnection(url));
         var commandConnect = _commandConnect;
 
+        if (_accessTokenFactory != null)
+        {
+            var token = await _accessTokenFactory();
+            commandConnect.AuthMethodName = "token";
+            commandConnect.AuthData = Encoding.UTF8.GetBytes(token);
+        }
+
         if (url.ProxyThroughServiceUrl)
-            commandConnect = WithProxyToBroker(_commandConnect, url.Logical);
+            commandConnect = WithProxyToBroker(commandConnect, url.Logical);
 
         var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
         response.Expect(BaseCommand.Type.Connected);
@@ -192,7 +203,8 @@ public sealed class ConnectionPool : IConnectionPool
             ProtocolVersion = commandConnect.ProtocolVersion,
             OriginalAuthData = commandConnect.ShouldSerializeOriginalAuthData() ? commandConnect.OriginalAuthData : null,
             OriginalAuthMethod = commandConnect.ShouldSerializeOriginalAuthMethod() ? commandConnect.OriginalAuthMethod : null,
-            ProxyToBrokerUrl = $"{logicalUrl.Host}:{logicalUrl.Port}"
+            ProxyToBrokerUrl = $"{logicalUrl.Host}:{logicalUrl.Port}",
+            FeatureFlags = commandConnect.FeatureFlags
         };
     }
 

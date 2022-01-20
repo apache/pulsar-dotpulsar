@@ -23,7 +23,6 @@ public sealed class StandaloneContainerService : PulsarServiceBase
 {
     public override async Task InitializeAsync()
     {
-        await base.InitializeAsync().ConfigureAwait(false);
         TakeDownPulsar(); // clean-up if anything was left running from previous run
 
         RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml up -d");

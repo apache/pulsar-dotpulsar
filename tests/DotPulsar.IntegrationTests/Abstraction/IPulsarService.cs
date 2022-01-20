@@ -39,5 +39,5 @@ public interface IPulsarService : IAsyncLifetime
     /// The format of the restTopic must be `{schema}/{tenant}/{namespace}/{topicName}`
     /// For example, `persistent/public/default/test-topic`
     /// </summary>
-    Task CreatePartitionedTopic(string restTopic, int numPartitions, string? token = null);
+    Task<HttpResponseMessage?> CreatePartitionedTopic(string restTopic, int numPartitions);
 }

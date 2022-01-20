@@ -68,8 +68,6 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
     public IPulsarClientBuilder AuthenticateUsingToken(string token)
     {
         _commandConnect.AuthMethodName = "token";
-        // _commandConnect.OriginalAuthMethod = "token";
-        // _commandConnect.OriginalAuthData = token;
         _commandConnect.AuthData = Encoding.UTF8.GetBytes(token);
         return this;
     }
@@ -77,6 +75,9 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
     public IPulsarClientBuilder AuthenticateUsingToken(Func<Task<string>> tokenFactory)
     {
         _tokenFactory = tokenFactory;
+        var featureFlags = _commandConnect.FeatureFlags ?? new FeatureFlags();
+        featureFlags.SupportsAuthRefresh = true;
+        _commandConnect.FeatureFlags = featureFlags;
         return this;
     }
 
@@ -165,12 +166,8 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
 
         var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
 
-        // IConnectionPool connectionPool = _tokenFactory == null
-        //     ? new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName, _keepAliveInterval)
-        //     : new AccessTokenConnectionPool(_tokenFactory, _commandConnect, cc => new ConnectionPool(cc,
-        //         _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName, _keepAliveInterval));
-        //     var processManager = new ProcessManager(connectionPool);
-        var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName, _keepAliveInterval);
+        var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName,
+            _keepAliveInterval, _tokenFactory);
         var processManager = new ProcessManager(connectionPool);
         var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
         var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);
