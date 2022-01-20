@@ -22,8 +22,8 @@ public sealed class StandaloneExternalService : PulsarServiceBase
     public override Task InitializeAsync() => Task.CompletedTask;
 
     public override Uri GetBrokerUri()
-        => new("pulsar://localhost:54547");
+        => new("pulsar://localhost:6650");
 
     public override Uri GetWebServiceUri()
-        => new("http://localhost:54548");
+        => new("http://localhost:8080");
 }
