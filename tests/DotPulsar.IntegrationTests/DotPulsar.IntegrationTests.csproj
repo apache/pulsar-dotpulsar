@@ -28,6 +28,9 @@
       <None Update="docker-compose-standalone-tests.yml">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="docker-compose-standalone-token-tests.yml">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

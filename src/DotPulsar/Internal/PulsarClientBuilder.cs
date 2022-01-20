@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Internal;
 
+using Abstractions;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using PulsarApi;
@@ -21,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading.Tasks;
 
 public sealed class PulsarClientBuilder : IPulsarClientBuilder
 {
@@ -36,6 +38,7 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
     private bool _verifyCertificateAuthority;
     private bool _verifyCertificateName;
     private TimeSpan _closeInactiveConnectionsInterval;
+    private Func<Task<string>>? _tokenFactory;
 
     public PulsarClientBuilder()
     {
@@ -65,7 +68,15 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
     public IPulsarClientBuilder AuthenticateUsingToken(string token)
     {
         _commandConnect.AuthMethodName = "token";
+        // _commandConnect.OriginalAuthMethod = "token";
+        // _commandConnect.OriginalAuthData = token;
         _commandConnect.AuthData = Encoding.UTF8.GetBytes(token);
+        return this;
+    }
+
+    public IPulsarClientBuilder AuthenticateUsingToken(Func<Task<string>> tokenFactory)
+    {
+        _tokenFactory = tokenFactory;
         return this;
     }
 
@@ -152,8 +163,13 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
         else
             throw new InvalidSchemeException($"Invalid scheme '{scheme}'. Expected '{Constants.PulsarScheme}' or '{Constants.PulsarSslScheme}'");
 
-
         var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
+
+        // IConnectionPool connectionPool = _tokenFactory == null
+        //     ? new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName, _keepAliveInterval)
+        //     : new AccessTokenConnectionPool(_tokenFactory, _commandConnect, cc => new ConnectionPool(cc,
+        //         _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName, _keepAliveInterval));
+        //     var processManager = new ProcessManager(connectionPool);
         var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName, _keepAliveInterval);
         var processManager = new ProcessManager(connectionPool);
         var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };

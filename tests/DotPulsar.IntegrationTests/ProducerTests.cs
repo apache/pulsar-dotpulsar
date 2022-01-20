@@ -29,6 +29,7 @@ using Xunit.Abstractions;
 [Collection(nameof(StandaloneClusterTest))]
 public class ProducerTests
 {
+    private const string Token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.CoBrja1EHr0e2kZKGFS8M-xS2SOC2E08yZmjktvcYOs";
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly IPulsarService _pulsarService;
 
@@ -43,7 +44,7 @@ public class ProducerTests
     public async Task SimpleProduceConsume_WhenSendingMessagesToProducer_ThenReceiveMessagesFromConsumer()
     {
         //Arrange
-        await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
+        await using var client = GetBuilder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
         string topicName = $"simple-produce-consume{Guid.NewGuid():N}";
         const string content = "test-message";
 
@@ -74,8 +75,8 @@ public class ProducerTests
         const int partitions = 3;
         const int msgCount = 3;
         var topicName = $"single-partitioned-{Guid.NewGuid():N}";
-        await _pulsarService.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
-        await using var client = PulsarClient.Builder().ServiceUrl(serviceUrl).Build();
+        await _pulsarService.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions, Token);
+        await using var client = GetBuilder().ServiceUrl(serviceUrl).Build();
 
         //Act
         var consumers = new List<IConsumer<string>>();
@@ -120,13 +121,15 @@ public class ProducerTests
     public async Task RoundRobinPartition_WhenSendMessages_ThenGetMessagesFromPartitionsInOrder()
     {
         //Arrange
-        await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
+
+        await using var client = GetBuilder()
+            .ServiceUrl(_pulsarService.GetBrokerUri()).Build();
         string topicName = $"round-robin-partitioned-{Guid.NewGuid():N}";
         const string content = "test-message";
         const int partitions = 3;
         var consumers = new List<IConsumer<string>>();
 
-        await _pulsarService.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
+        await _pulsarService.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions, Token);
 
         //Act
         await using var producer = client.NewProducer(Schema.String)
@@ -151,4 +154,8 @@ public class ProducerTests
             (await consumers[i].Receive()).Value().Should().Be($"{content}-{i}");
         }
     }
+
+    private static IPulsarClientBuilder GetBuilder()
+        => PulsarClient.Builder()
+            .AuthenticateUsingToken(Token);
 }

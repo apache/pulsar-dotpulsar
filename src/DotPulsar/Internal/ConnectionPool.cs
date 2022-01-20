@@ -184,14 +184,14 @@ public sealed class ConnectionPool : IConnectionPool
     {
         return new CommandConnect
         {
-            AuthData = commandConnect.AuthData,
-            AuthMethod = commandConnect.AuthMethod,
-            AuthMethodName = commandConnect.AuthMethodName,
+            AuthData = commandConnect.ShouldSerializeAuthData() ? commandConnect.AuthData : null,
+            AuthMethod = commandConnect.ShouldSerializeAuthMethod() ? commandConnect.AuthMethod : AuthMethod.AuthMethodNone,
+            AuthMethodName = commandConnect.ShouldSerializeAuthMethodName() ? commandConnect.AuthMethodName : null,
             ClientVersion = commandConnect.ClientVersion,
-            OriginalPrincipal = commandConnect.OriginalPrincipal,
+            OriginalPrincipal = commandConnect.ShouldSerializeOriginalPrincipal() ? commandConnect.OriginalPrincipal : null,
             ProtocolVersion = commandConnect.ProtocolVersion,
-            OriginalAuthData = commandConnect.OriginalAuthData,
-            OriginalAuthMethod = commandConnect.OriginalAuthMethod,
+            OriginalAuthData = commandConnect.ShouldSerializeOriginalAuthData() ? commandConnect.OriginalAuthData : null,
+            OriginalAuthMethod = commandConnect.ShouldSerializeOriginalAuthMethod() ? commandConnect.OriginalAuthMethod : null,
             ProxyToBrokerUrl = $"{logicalUrl.Host}:{logicalUrl.Port}"
         };
     }

@@ -1,0 +1,88 @@
+﻿version: '3.5'
+  
+services:
+
+  pulsar:
+    container_name: pulsar
+    image: 'apachepulsar/pulsar:2.7.0'
+    ports:
+      - '54546:8080'
+      - '54545:6650'
+    environment:
+      - PULSAR_PREFIX_tokenSecretKey=file:///appdata/my-secret.key
+    command: |
+      /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone --no-functions-worker"
+    networks:
+      - network_test_bed
+        
+  pulsar-tokens:
+    container_name: pulsar-tokens
+    image: 'apachepulsar/pulsar:2.7.0'
+    ports:
+      - '54548:8081'
+      - '54547:6651'
+    volumes:
+      - ./appdata/:/appdata
+    environment:
+      - PULSAR_PREFIX_tokenSecretKey=file:///appdata/my-secret.key
+      - authenticationEnabled=true
+      - authorizationEnabled=true
+      - authenticationProviders=org.apache.pulsar.broker.authentication.AuthenticationProviderToken
+      - authenticateOriginalAuthData=false
+#      - brokerClientAuthenticationPlugin=org.apache.pulsar.client.impl.auth.AuthenticationToken
+#      - brokerClientAuthenticationParameters=token:eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.CoBrja1EHr0e2kZKGFS8M-xS2SOC2E08yZmjktvcYOs
+      - superUserRoles=test-user
+      - webServicePort=8081
+      - brokerServicePort=6651
+#      - PULSAR_LOG_LEVEL=debug
+    command: |
+      /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone --no-functions-worker"
+    networks:
+      - network_test_bed
+      
+  pulsar-manager:
+    container_name: pulsar-manager-standalone
+    image: "apachepulsar/pulsar-manager:latest"
+    ports:
+      - "9527:9527"
+      - "7750:7750"
+    volumes:
+      - ./appdata/:/appdata
+    depends_on:
+      - database
+    environment:
+      SPRING_CONFIGURATION_FILE: /pulsar-manager/pulsar-manager/application.properties
+      REDIRECT_HOST: http://localhost
+      REDIRECT_PORT: 9527
+      DRIVER_CLASS_NAME: org.postgresql.Driver
+      URL: jdbc:postgresql://database:5432/pulsar_manager
+      USERNAME: alpha
+      PASSWORD: alpha
+      LOG_LEVEL: DEBUG
+      JWT_TOKEN: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.CoBrja1EHr0e2kZKGFS8M-xS2SOC2E08yZmjktvcYOs
+      SECRET_KEY: file:///appdata/my-secret.key
+    networks:
+      - network_test_bed
+      
+  database:
+    image: 'postgres:10.11'
+    container_name: database
+    ports:
+      - "5432:5432"
+    networks:
+      - network_test_bed
+    volumes:
+      - postgresql:/var/lib/postgresql
+    environment:
+      - POSTGRES_USER=alpha
+      - POSTGRES_PASSWORD=alpha
+
+networks:
+  network_test_bed:
+    name: network_test_bed
+    driver: bridge
+    
+volumes:
+  static-content:
+  postgresql:
+  
