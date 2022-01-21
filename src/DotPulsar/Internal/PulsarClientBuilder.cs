@@ -166,12 +166,19 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
 
         var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
 
-        var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName,
-            _keepAliveInterval, _tokenFactory);
-        var processManager = new ProcessManager(connectionPool);
         var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
         var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);
+        var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName,
+            _keepAliveInterval,
+            new Executor(Guid.Empty, new EmptyRegisterEvent(), exceptionHandlerPipeline),
+            _tokenFactory);
+        var processManager = new ProcessManager(connectionPool);
 
         return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline, _serviceUrl);
     }
+}
+
+internal class EmptyRegisterEvent : IRegisterEvent
+{
+    public void Register(IEvent @event) { }
 }

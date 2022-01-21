@@ -19,6 +19,7 @@ services:
       - brokerClientAuthenticationPlugin=org.apache.pulsar.client.impl.auth.AuthenticationToken
       - brokerClientAuthenticationParameters=token:eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.CoBrja1EHr0e2kZKGFS8M-xS2SOC2E08yZmjktvcYOs
       - superUserRoles=test-user
+      - PULSAR_PREFIX_authenticationRefreshCheckSeconds=5
       - webServicePort=8081
       - brokerServicePort=6651
 #      - PULSAR_LOG_LEVEL=debug

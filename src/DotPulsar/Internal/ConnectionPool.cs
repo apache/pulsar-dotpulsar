@@ -37,6 +37,7 @@ public sealed class ConnectionPool : IConnectionPool
     private readonly Task _closeInactiveConnections;
     private readonly string? _listenerName;
     private readonly TimeSpan _keepAliveInterval;
+    private readonly IExecute _executor;
     private readonly Func<Task<string>>? _accessTokenFactory;
 
     public ConnectionPool(
@@ -47,6 +48,7 @@ public sealed class ConnectionPool : IConnectionPool
         TimeSpan closeInactiveConnectionsInterval,
         string? listenerName,
         TimeSpan keepAliveInterval,
+        IExecute executor,
         Func<Task<string>>? accessTokenFactory)
     {
         _lock = new AsyncLock();
@@ -59,6 +61,7 @@ public sealed class ConnectionPool : IConnectionPool
         _cancellationTokenSource = new CancellationTokenSource();
         _closeInactiveConnections = CloseInactiveConnections(closeInactiveConnectionsInterval, _cancellationTokenSource.Token);
         _keepAliveInterval = keepAliveInterval;
+        _executor = executor;
         _accessTokenFactory = accessTokenFactory;
     }
 
@@ -109,6 +112,7 @@ public sealed class ConnectionPool : IConnectionPool
 
             if (response.LookupTopicResponse.ProxyThroughServiceUrl)
             {
+                await connection.DisposeAsync();
                 var url = new PulsarUrl(physicalUrl, lookupResponseServiceUrl);
                 return await GetConnection(url, cancellationToken).ConfigureAwait(false);
             }
@@ -169,7 +173,7 @@ public sealed class ConnectionPool : IConnectionPool
 
         if (_accessTokenFactory != null)
         {
-            var token = await _accessTokenFactory();
+            var token = await _accessTokenFactory.GetToken(_executor);
             commandConnect.AuthMethodName = "token";
             commandConnect.AuthData = Encoding.UTF8.GetBytes(token);
         }

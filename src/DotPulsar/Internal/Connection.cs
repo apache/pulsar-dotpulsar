@@ -20,6 +20,7 @@ using Extensions;
 using PulsarApi;
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -294,8 +295,9 @@ public sealed class Connection : IConnection
                 {
                     if (_accessTokenFactory != null && command.CommandType == BaseCommand.Type.AuthChallenge)
                     {
-                        var token = await _accessTokenFactory();
+                        var token = await _accessTokenFactory.GetToken();
                         await Send(new CommandAuthResponse { Response = new AuthData { Data = Encoding.UTF8.GetBytes(token), AuthMethodName = "token" } }, cancellationToken);
+                        DotPulsarEventSource.Log.TokenRefreshed();
                     }
                     else
                     {
