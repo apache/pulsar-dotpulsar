@@ -15,21 +15,22 @@
 namespace DotPulsar.IntegrationTests.Services;
 
 using Abstraction;
+using Xunit.Abstractions;
 
 public static class ServiceFactory
 {
     private const string _pulsarDeploymentType = "PULSAR_DEPLOYMENT_TYPE";
     private const string _containerDeployment = "container";
 
-    public static IPulsarService CreatePulsarService()
+    public static IPulsarService CreatePulsarService(IMessageSink messageSink)
     {
         var deploymentType = System.Environment.GetEnvironmentVariable(_pulsarDeploymentType);
 
         if (deploymentType == _containerDeployment)
         {
-            return new StandaloneContainerService();
+            return new StandaloneContainerService(messageSink);
         }
 
-        return new StandaloneExternalService();
+        return new StandaloneExternalService(messageSink);
     }
 }

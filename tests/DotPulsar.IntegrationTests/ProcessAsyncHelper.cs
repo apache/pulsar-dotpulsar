@@ -7,6 +7,26 @@ namespace DotPulsar.IntegrationTests;
 
 public static class ProcessAsyncHelper
 {
+    public static async Task ThrowOnFailure(this Task<ProcessResult> resultTask)
+    {
+        var result = await resultTask;
+
+        if (!result.Completed)
+        {
+            throw new InvalidOperationException($"Process did not complete correctly, {Environment.NewLine}{result.Output}");
+        }
+    }
+
+    public static async Task LogFailure(this Task<ProcessResult> resultTask, Action<string> logAction)
+    {
+        var result = await resultTask;
+
+        if (!result.Completed)
+        {
+            logAction(result.Output);
+        }
+    }
+
     public static async Task<ProcessResult> ExecuteShellCommand(string command, string arguments)
     {
         var result = new ProcessResult();
@@ -81,26 +101,10 @@ public static class ProcessAsyncHelper
             // Create task to wait for process exit and closing all output streams
             await Task.WhenAll(waitForExit, outputCloseEvent.Task, errorCloseEvent.Task);
 
-            // Waits process completion and then checks it was not completed by timeout
-            if (waitForExit.Result)
-            {
-                result.Completed = true;
-                result.ExitCode = process.ExitCode;
-
-                // Adds process output if it was completed with error
-                result.Output = process.ExitCode != 0 ? $"{outputBuilder}{errorBuilder}" : outputBuilder.ToString();
-            }
-            else
-            {
-                try
-                {
-                    // Kill hung process
-                    process.Kill();
-                }
-                catch
-                {
-                }
-            }
+            result.Completed = waitForExit.Result;
+            result.ExitCode = process.ExitCode;
+            // Adds process output if it was completed with error
+            result.Output = process.ExitCode != 0 ? $"{outputBuilder}{errorBuilder}" : outputBuilder.ToString();
         }
 
         return result;

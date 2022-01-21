@@ -15,17 +15,21 @@
 namespace DotPulsar.IntegrationTests.Services;
 
 using System;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 public sealed class StandaloneContainerService : PulsarServiceBase
 {
+    public StandaloneContainerService(IMessageSink messageSink) : base(messageSink) { }
+
     public override async Task InitializeAsync()
     {
-        TakeDownPulsar(); // clean-up if anything was left running from previous run
+        await TakeDownPulsar(); // clean-up if anything was left running from previous run
 
-        RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml up -d");
+        await ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-tests.yml up -d")
+            .ThrowOnFailure();
 
         var waitTries = 10;
 
@@ -50,33 +54,11 @@ public sealed class StandaloneContainerService : PulsarServiceBase
         throw new Exception("Unable to confirm Pulsar has initialized");
     }
 
-    public override async Task DisposeAsync()
-    {
-        await base.DisposeAsync().ConfigureAwait(false);
-        TakeDownPulsar();
-    }
+    protected override Task OnDispose() => TakeDownPulsar();
 
-    private static void TakeDownPulsar()
-        => RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml down");
-
-    private static void RunProcess(string name, string arguments)
-    {
-        var processStartInfo = new ProcessStartInfo { FileName = name, Arguments = arguments };
-
-        processStartInfo.Environment["TAG"] = "test";
-        processStartInfo.Environment["CONFIGURATION"] = "Debug";
-        processStartInfo.Environment["COMPUTERNAME"] = Environment.MachineName;
-
-        var process = Process.Start(processStartInfo);
-
-        if (process is null)
-            throw new Exception("Process.Start returned null");
-
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
-            throw new Exception($"Exit code {process.ExitCode} when running process {name} with arguments {arguments}");
-    }
+    private Task TakeDownPulsar()
+        => ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-tests.yml down")
+            .LogFailure(s => MessageSink.OnMessage(new DiagnosticMessage("Error bringing down container: {0}", s)));
 
     public override Uri GetBrokerUri()
         => new("pulsar://localhost:54545");

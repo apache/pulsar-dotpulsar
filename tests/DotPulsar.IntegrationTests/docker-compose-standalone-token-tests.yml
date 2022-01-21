@@ -25,3 +25,10 @@ services:
 #      - PULSAR_LOG_LEVEL=debug
     command: |
       /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone --no-functions-worker"
+    networks:
+      - pulsar-tokens
+        
+networks:
+  pulsar-tokens:
+    name: pulsar-tokens
+    driver: bridge

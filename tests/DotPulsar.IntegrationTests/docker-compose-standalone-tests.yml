@@ -12,3 +12,10 @@ services:
       PULSAR_MEM: " -Xms1g -Xmx1g -XX:MaxDirectMemorySize=2g"
     command: |
       /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone --no-functions-worker"
+    networks:
+      - pulsar-standalone
+        
+networks:
+  pulsar-standalone:
+    name: pulsar-standalone
+    driver: bridge

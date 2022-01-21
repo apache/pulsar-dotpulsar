@@ -20,26 +20,41 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 public abstract class PulsarServiceBase : IPulsarService
 {
+    protected readonly IMessageSink MessageSink;
     private readonly CancellationTokenSource _cts;
     private readonly HttpClient _adminClient;
 
-    protected PulsarServiceBase()
+    protected PulsarServiceBase(IMessageSink messageSink)
     {
+        MessageSink = messageSink;
         _cts = new CancellationTokenSource();
         _adminClient = new HttpClient();
     }
 
     public abstract Task InitializeAsync();
 
-    public virtual Task DisposeAsync()
+    public async Task DisposeAsync()
     {
         _adminClient.Dispose();
         _cts.Dispose();
-        return Task.CompletedTask;
+
+        try
+        {
+            await OnDispose();
+        }
+        catch (Exception e)
+        {
+            MessageSink.OnMessage(new DiagnosticMessage("Error disposing: {0}", e));
+        }
     }
+
+    protected virtual Task OnDispose()
+        => Task.CompletedTask;
 
     public abstract Uri GetBrokerUri();
 

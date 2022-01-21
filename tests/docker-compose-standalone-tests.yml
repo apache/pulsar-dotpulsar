@@ -12,6 +12,8 @@ services:
       PULSAR_MEM: " -Xms1g -Xmx1g -XX:MaxDirectMemorySize=2g"
     command: |
       /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone --no-functions-worker"
+    networks:
+      - pulsar-stresstests
 
   loadbalancer:
     container_name: loadbalancer
@@ -25,3 +27,10 @@ services:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     depends_on:
       - pulsar
+    networks:
+      - pulsar-stresstests
+
+networks:
+  pulsar-stresstests:
+    name: pulsar-stresstests
+    driver: bridge

@@ -13,7 +13,7 @@ public class TokenClusterFixture : PulsarServiceBase
 {
     private readonly IMessageSink _messageSink;
 
-    public TokenClusterFixture(IMessageSink messageSink)
+    public TokenClusterFixture(IMessageSink messageSink) : base(messageSink)
     {
         _messageSink = messageSink;
     }
@@ -24,7 +24,8 @@ public class TokenClusterFixture : PulsarServiceBase
     {
         await TakeDownPulsar(); // clean-up if anything was left running from previous run
 
-        await ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-token-tests.yml up -d");
+        await ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-token-tests.yml up -d")
+            .ThrowOnFailure();
 
         var waitTries = 10;
 
@@ -54,18 +55,16 @@ public class TokenClusterFixture : PulsarServiceBase
         throw new Exception("Unable to confirm Pulsar has initialized");
     }
 
-    public override async Task DisposeAsync()
-    {
-        await base.DisposeAsync().ConfigureAwait(false);
-        await TakeDownPulsar();
-    }
+    protected override async Task OnDispose()
+        => await TakeDownPulsar();
 
     public override Uri GetBrokerUri() => new("pulsar://localhost:54547");
 
     public override Uri GetWebServiceUri() => new("http://localhost:54548");
 
-    private static Task TakeDownPulsar()
-        => ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-token-tests.yml down");
+    private Task TakeDownPulsar()
+        => ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-token-tests.yml down")
+            .LogFailure(s => MessageSink.OnMessage(new DiagnosticMessage("Error bringing down container: {0}", s)));
 
     public static async Task<string> GetAuthToken(bool includeExpiry)
     {
@@ -78,6 +77,11 @@ public class TokenClusterFixture : PulsarServiceBase
 
         var result = await ProcessAsyncHelper.ExecuteShellCommand("docker",
             arguments);
+
+        if (!result.Completed)
+        {
+            throw new InvalidOperationException($"Getting token from container failed{Environment.NewLine}{result.Output}");
+        }
 
         return result.Output;
     }
