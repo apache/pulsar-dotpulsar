@@ -100,6 +100,13 @@ public static class CommandExtensions
             Ping = command
         };
 
+    public static BaseCommand AsBaseCommand(this CommandAuthResponse command)
+        => new()
+        {
+            CommandType = BaseCommand.Type.AuthResponse,
+            AuthResponse = command
+        };
+
     public static BaseCommand AsBaseCommand(this CommandPong command)
         => new()
         {

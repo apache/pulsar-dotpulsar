@@ -38,6 +38,10 @@ public sealed class DotPulsarEventSource
     public void ReaderCreated() { }
 
     public void ReaderDisposed() { }
+
+    public void TokenRefreshed() { }
+
+    public long TokenRefreshCount => 0;
 }
 
 #else
@@ -76,11 +80,15 @@ public sealed class DotPulsarEventSource : EventSource
 
     private PollingCounter? _currentReadersCounter;
     private long _currentReaders;
+
+    private PollingCounter? _tokenRefreshCounter;
+    private long _totalTokenRefreshes;
 #pragma warning restore IDE0052 // Remove unread private members
 
     public static readonly DotPulsarEventSource Log = new();
 
     public DotPulsarEventSource() : base("DotPulsar") { }
+    public long TokenRefreshCount => _totalTokenRefreshes;
 
     public void ClientCreated()
     {
@@ -137,6 +145,11 @@ public sealed class DotPulsarEventSource : EventSource
         Interlocked.Decrement(ref _currentReaders);
     }
 
+    public void TokenRefreshed()
+    {
+        Interlocked.Increment(ref _totalTokenRefreshes);
+    }
+
     protected override void OnEventCommand(EventCommandEventArgs command)
     {
         if (command.Command != EventCommand.Enable)
@@ -190,6 +203,11 @@ public sealed class DotPulsarEventSource : EventSource
         _currentReadersCounter ??= new PollingCounter("current-readers", this, () => Volatile.Read(ref _currentReaders))
         {
             DisplayName = "Current number of readers"
+        };
+
+        _tokenRefreshCounter ??= new PollingCounter("total-token-refreshes", this, () => Volatile.Read(ref _totalTokenRefreshes))
+        {
+            DisplayName = "Number of times token was refreshed"
         };
     }
 }

@@ -20,6 +20,8 @@ using Extensions;
 using PulsarApi;
 using System;
 using System.Buffers;
+using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,14 +31,16 @@ public sealed class Connection : IConnection
     private readonly ChannelManager _channelManager;
     private readonly PingPongHandler _pingPongHandler;
     private readonly IPulsarStream _stream;
+    private readonly Func<Task<string>>? _accessTokenFactory;
     private int _isDisposed;
 
-    public Connection(IPulsarStream stream, TimeSpan keepAliveInterval)
+    public Connection(IPulsarStream stream, TimeSpan keepAliveInterval, Func<Task<string>>? accessTokenFactory)
     {
         _lock = new AsyncLock();
         _channelManager = new ChannelManager();
         _pingPongHandler = new PingPongHandler(this, keepAliveInterval);
         _stream = stream;
+        _accessTokenFactory = accessTokenFactory;
     }
 
     public async ValueTask<bool> HasChannels(CancellationToken cancellationToken)
@@ -80,6 +84,9 @@ public sealed class Connection : IConnection
 
         return await responseTask.ConfigureAwait(false);
     }
+
+    private Task Send(CommandAuthResponse authResponse, CancellationToken cancellationToken)
+        => Send(authResponse.AsBaseCommand(), cancellationToken);
 
     public Task Send(CommandPing command, CancellationToken cancellationToken)
         => Send(command.AsBaseCommand(), cancellationToken);
@@ -268,13 +275,13 @@ public sealed class Connection : IConnection
         }
     }
 
-    public async Task ProcessIncommingFrames()
+    public async Task ProcessIncommingFrames(CancellationToken cancellationToken)
     {
         await Task.Yield();
 
         try
         {
-            await foreach (var frame in _stream.Frames())
+            await foreach (var frame in _stream.Frames(cancellationToken))
             {
                 var commandSize = frame.ReadUInt32(0, true);
                 var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
@@ -285,7 +292,18 @@ public sealed class Connection : IConnection
                 if (command.CommandType == BaseCommand.Type.Message)
                     _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
                 else
-                    _channelManager.Incoming(command);
+                {
+                    if (_accessTokenFactory != null && command.CommandType == BaseCommand.Type.AuthChallenge)
+                    {
+                        var token = await _accessTokenFactory.GetToken();
+                        await Send(new CommandAuthResponse { Response = new AuthData { Data = Encoding.UTF8.GetBytes(token), AuthMethodName = "token" } }, cancellationToken);
+                        DotPulsarEventSource.Log.TokenRefreshed();
+                    }
+                    else
+                    {
+                        _channelManager.Incoming(command);
+                    }
+                }
             }
         }
         catch

@@ -15,9 +15,14 @@
 namespace DotPulsar.IntegrationTests.Services;
 
 using System;
+using System.Threading.Tasks;
+using Xunit.Abstractions;
 
 public sealed class StandaloneExternalService : PulsarServiceBase
 {
+    public StandaloneExternalService(IMessageSink messageSink) : base(messageSink) { }
+    public override Task InitializeAsync() => Task.CompletedTask;
+
     public override Uri GetBrokerUri()
         => new("pulsar://localhost:6650");
 

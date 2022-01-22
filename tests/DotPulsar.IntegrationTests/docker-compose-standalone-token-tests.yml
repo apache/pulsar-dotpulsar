@@ -1,0 +1,34 @@
+﻿version: '3.5'
+  
+services:
+        
+  pulsar-tokens:
+    container_name: pulsar-tokens
+    image: 'apachepulsar/pulsar:2.7.0'
+    ports:
+      - '54548:8081'
+      - '54547:6651'
+    volumes:
+      - ./appdata/:/appdata
+    environment:
+      - PULSAR_PREFIX_tokenSecretKey=file:///appdata/my-secret.key
+      - authenticationEnabled=true
+      - authorizationEnabled=true
+      - authenticationProviders=org.apache.pulsar.broker.authentication.AuthenticationProviderToken
+      - authenticateOriginalAuthData=false
+      - brokerClientAuthenticationPlugin=org.apache.pulsar.client.impl.auth.AuthenticationToken
+      - brokerClientAuthenticationParameters=token:eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.CoBrja1EHr0e2kZKGFS8M-xS2SOC2E08yZmjktvcYOs
+      - superUserRoles=test-user
+      - PULSAR_PREFIX_authenticationRefreshCheckSeconds=5
+      - webServicePort=8081
+      - brokerServicePort=6651
+#      - PULSAR_LOG_LEVEL=debug
+    command: |
+      /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone --no-functions-worker"
+    networks:
+      - pulsar-tokens
+        
+networks:
+  pulsar-tokens:
+    name: pulsar-tokens
+    driver: bridge

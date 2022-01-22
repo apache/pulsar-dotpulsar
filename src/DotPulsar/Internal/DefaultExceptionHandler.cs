@@ -62,6 +62,7 @@ public sealed class DefaultExceptionHandler : IHandleException
                 SocketError.NetworkUnreachable => FaultAction.Rethrow,
                 _ => FaultAction.Retry
             },
+            TokenFactoryFailedException => FaultAction.Retry,
             _ => FaultAction.Rethrow
         };
 }

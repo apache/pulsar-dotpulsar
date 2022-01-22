@@ -14,19 +14,29 @@
 
 namespace DotPulsar.StressTests.Fixtures;
 
+using IntegrationTests;
 using System;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 public class StandaloneClusterFixture : IAsyncLifetime
 {
+    private readonly IMessageSink _messageSink;
+
+    public StandaloneClusterFixture(IMessageSink messageSink)
+    {
+        _messageSink = messageSink;
+    }
+
     public async Task InitializeAsync()
     {
-        TakeDownPulsar(); // clean-up if anything was left running from previous run
+        await TakeDownPulsar(); // clean-up if anything was left running from previous run
 
-        RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml up -d");
+        await ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-tests.yml up -d")
+            .ThrowOnFailure();
 
         var waitTries = 10;
 
@@ -54,34 +64,19 @@ public class StandaloneClusterFixture : IAsyncLifetime
         throw new Exception("Unable to confirm Pulsar has initialized");
     }
 
-    public Task DisposeAsync()
+    public async Task DisposeAsync()
     {
-        TakeDownPulsar();
-        return Task.CompletedTask;
-    }
-
-    private static void TakeDownPulsar()
-        => RunProcess("docker-compose", "-f docker-compose-standalone-tests.yml down");
-
-    private static void RunProcess(string name, string arguments)
-    {
-        var processStartInfo = new ProcessStartInfo
+        try
         {
-            FileName = name,
-            Arguments = arguments
-        };
-
-        processStartInfo.Environment["TAG"] = "test";
-        processStartInfo.Environment["CONFIGURATION"] = "Debug";
-        processStartInfo.Environment["COMPUTERNAME"] = Environment.MachineName;
-
-        var process = Process.Start(processStartInfo);
-        if (process is null)
-            throw new Exception("Process.Start returned null");
-
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
-            throw new Exception($"Exit code {process.ExitCode} when running process {name} with arguments {arguments}");
+            await TakeDownPulsar();
+        }
+        catch (Exception e)
+        {
+            _messageSink.OnMessage(new DiagnosticMessage("Error taking down pulsar: {0}", e));
+        }
     }
+
+    private Task TakeDownPulsar()
+        => ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-tests.yml down")
+            .LogFailure(s => _messageSink.OnMessage(new DiagnosticMessage("Error bringing down container: {0}", s)));
 }

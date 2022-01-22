@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotPulsar\DotPulsar.csproj" />
+    <ProjectReference Include="..\DotPulsar.IntegrationTests\DotPulsar.IntegrationTests.csproj" />
   </ItemGroup>
 
 </Project>

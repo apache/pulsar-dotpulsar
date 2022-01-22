@@ -18,14 +18,22 @@ using Abstraction;
 using Services;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 public class StandaloneClusterFixture : IAsyncLifetime
 {
+    private readonly IMessageSink _messageSink;
+
+    public StandaloneClusterFixture(IMessageSink messageSink)
+    {
+        _messageSink = messageSink;
+    }
+
     public IPulsarService? PulsarService { private set; get; }
 
     public async Task InitializeAsync()
     {
-        PulsarService = ServiceFactory.CreatePulsarService();
+        PulsarService = ServiceFactory.CreatePulsarService(_messageSink);
         await PulsarService.InitializeAsync();
     }
 
