@@ -1,3 +1,17 @@
+﻿/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 namespace DotPulsar.IntegrationTests.Fixtures;
 
 using Abstraction;
@@ -9,11 +23,11 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-public class TokenClusterFixture : PulsarServiceBase
+public class StandaloneTokenClusterFixture : PulsarServiceBase
 {
     private readonly IMessageSink _messageSink;
 
-    public TokenClusterFixture(IMessageSink messageSink) : base(messageSink)
+    public StandaloneTokenClusterFixture(IMessageSink messageSink) : base(messageSink)
     {
         _messageSink = messageSink;
     }
@@ -24,7 +38,8 @@ public class TokenClusterFixture : PulsarServiceBase
     {
         await TakeDownPulsar(); // clean-up if anything was left running from previous run
 
-        await ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-token-tests.yml up -d")
+        await ProcessAsyncHelper
+            .ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-token-tests.yml up -d")
             .ThrowOnFailure();
 
         var waitTries = 10;
@@ -44,7 +59,7 @@ public class TokenClusterFixture : PulsarServiceBase
                 await client.GetAsync($"{PulsarService.GetWebServiceUri()}/metrics/").ConfigureAwait(false);
                 return;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _messageSink.OnMessage(new DiagnosticMessage("Error trying to fetch metrics: {0}", e));
                 waitTries--;
@@ -63,26 +78,22 @@ public class TokenClusterFixture : PulsarServiceBase
     public override Uri GetWebServiceUri() => new("http://localhost:54548");
 
     private Task TakeDownPulsar()
-        => ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-token-tests.yml down")
-            .LogFailure(s => MessageSink.OnMessage(new DiagnosticMessage("Error bringing down container: {0}", s)));
+        => ProcessAsyncHelper
+        .ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-token-tests.yml down")
+        .LogFailure(s => MessageSink.OnMessage(new DiagnosticMessage("Error bringing down container: {0}", s)));
 
     public static async Task<string> GetAuthToken(bool includeExpiry)
     {
         var arguments = "exec pulsar-tokens bin/pulsar tokens create --secret-key file:///appdata/my-secret.key --subject test-user";
 
         if (includeExpiry)
-        {
             arguments += " --expiry-time 10s";
-        }
 
-        var result = await ProcessAsyncHelper.ExecuteShellCommand("docker",
-            arguments);
+        var tokenCreateRequest = await ProcessAsyncHelper.ExecuteShellCommand("docker", arguments);
 
-        if (!result.Completed)
-        {
-            throw new InvalidOperationException($"Getting token from container failed{Environment.NewLine}{result.Output}");
-        }
+        if (!tokenCreateRequest.Completed)
+            throw new InvalidOperationException($"Getting token from container failed: {tokenCreateRequest.Output}");
 
-        return result.Output;
+        return tokenCreateRequest.Output;
     }
 }

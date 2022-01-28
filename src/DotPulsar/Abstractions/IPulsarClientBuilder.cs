@@ -16,7 +16,6 @@ namespace DotPulsar.Abstractions;
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 
 /// <summary>
 /// A pulsar client building abstraction.
@@ -31,12 +30,13 @@ public interface IPulsarClientBuilder
     /// <summary>
     /// Authenticate using a (JSON Web) token. This is optional.
     /// </summary>
+    [Obsolete("This method is obsolete. Call Authentication(AuthenticationFactory.Token(...)) instead.", false)]
     IPulsarClientBuilder AuthenticateUsingToken(string token);
 
     /// <summary>
-    /// Authenticate using a (JSON Web) token factory. This is optional.
+    /// Set the authentication provider. This is optional.
     /// </summary>
-    IPulsarClientBuilder AuthenticateUsingToken(Func<Task<string>> tokenFactory);
+    IPulsarClientBuilder Authentication(IAuthentication authentication);
 
     /// <summary>
     /// Set connection encryption policy. The default is 'EnforceUnencrypted' if the ServiceUrl scheme is 'pulsar' and 'EnforceEncrypted' if it's 'pulsar+ssl'.

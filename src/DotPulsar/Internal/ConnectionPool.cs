@@ -15,13 +15,13 @@
 namespace DotPulsar.Internal;
 
 using Abstractions;
+using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using Extensions;
 using PulsarApi;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,8 +37,7 @@ public sealed class ConnectionPool : IConnectionPool
     private readonly Task _closeInactiveConnections;
     private readonly string? _listenerName;
     private readonly TimeSpan _keepAliveInterval;
-    private readonly IExecute _executor;
-    private readonly Func<Task<string>>? _accessTokenFactory;
+    private readonly IAuthentication? _authentication;
 
     public ConnectionPool(
         CommandConnect commandConnect,
@@ -48,8 +47,7 @@ public sealed class ConnectionPool : IConnectionPool
         TimeSpan closeInactiveConnectionsInterval,
         string? listenerName,
         TimeSpan keepAliveInterval,
-        IExecute executor,
-        Func<Task<string>>? accessTokenFactory)
+        IAuthentication? authentication)
     {
         _lock = new AsyncLock();
         _commandConnect = commandConnect;
@@ -61,8 +59,7 @@ public sealed class ConnectionPool : IConnectionPool
         _cancellationTokenSource = new CancellationTokenSource();
         _closeInactiveConnections = CloseInactiveConnections(closeInactiveConnectionsInterval, _cancellationTokenSource.Token);
         _keepAliveInterval = keepAliveInterval;
-        _executor = executor;
-        _accessTokenFactory = accessTokenFactory;
+        _authentication = authentication;
     }
 
     public async ValueTask DisposeAsync()
@@ -112,7 +109,6 @@ public sealed class ConnectionPool : IConnectionPool
 
             if (response.LookupTopicResponse.ProxyThroughServiceUrl)
             {
-                await connection.DisposeAsync();
                 var url = new PulsarUrl(physicalUrl, lookupResponseServiceUrl);
                 return await GetConnection(url, cancellationToken).ConfigureAwait(false);
             }
@@ -146,10 +142,8 @@ public sealed class ConnectionPool : IConnectionPool
         }
     }
 
-    private ValueTask<Connection> GetConnection(Uri serviceUrl, CancellationToken cancellationToken)
-    {
-        return GetConnection(new PulsarUrl(serviceUrl, serviceUrl), cancellationToken);
-    }
+    private async ValueTask<Connection> GetConnection(Uri serviceUrl, CancellationToken cancellationToken)
+        => await GetConnection(new PulsarUrl(serviceUrl, serviceUrl), cancellationToken).ConfigureAwait(false);
 
     private async ValueTask<Connection> GetConnection(PulsarUrl url, CancellationToken cancellationToken)
     {
@@ -165,18 +159,11 @@ public sealed class ConnectionPool : IConnectionPool
     private async Task<Connection> EstablishNewConnection(PulsarUrl url, CancellationToken cancellationToken)
     {
         var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
-        var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _accessTokenFactory);
+        var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _authentication);
         DotPulsarEventSource.Log.ConnectionCreated();
         _connections[url] = connection;
-        _ = connection.ProcessIncommingFrames(cancellationToken).ContinueWith(t => DisposeConnection(url));
+        _ = connection.ProcessIncommingFrames(_cancellationTokenSource.Token).ContinueWith(t => DisposeConnection(url));
         var commandConnect = _commandConnect;
-
-        if (_accessTokenFactory != null)
-        {
-            var token = await _accessTokenFactory.GetToken(_executor);
-            commandConnect.AuthMethodName = "token";
-            commandConnect.AuthData = Encoding.UTF8.GetBytes(token);
-        }
 
         if (url.ProxyThroughServiceUrl)
             commandConnect = WithProxyToBroker(commandConnect, url.Logical);

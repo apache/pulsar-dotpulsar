@@ -1,21 +1,33 @@
+﻿/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 namespace DotPulsar.IntegrationTests;
 
 using Abstraction;
 using Abstractions;
 using Extensions;
 using Fixtures;
-using Internal;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-[Collection(nameof(StandaloneTokenClusterTest))]
+[Collection(nameof(StandaloneTokenClusterTests))]
 public class TokenRefreshTests
 {
     public enum TokenTestRefreshType
@@ -30,7 +42,7 @@ public class TokenRefreshTests
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly IPulsarService _pulsarService;
 
-    public TokenRefreshTests(ITestOutputHelper outputHelper, TokenClusterFixture fixture)
+    public TokenRefreshTests(ITestOutputHelper outputHelper, StandaloneTokenClusterFixture fixture)
     {
         _testOutputHelper = outputHelper;
         Debug.Assert(fixture.PulsarService != null, "fixture.PulsarService != null");
@@ -44,11 +56,9 @@ public class TokenRefreshTests
     [Theory]
     public async Task TestExpiryRefresh(TokenTestRefreshType refreshType, int timesToFail)
     {
-        var initialRefreshCount = DotPulsarEventSource.Log.TokenRefreshCount;
-
         var publishingStarted = false;
         var delayedNames = new HashSet<string>();
-        Task<string> GetToken(string name, ref int count)
+        ValueTask<string> GetToken(string name, ref int count)
         {
             if (refreshType is TokenTestRefreshType.Standard)
             {
@@ -57,74 +67,68 @@ public class TokenRefreshTests
 
             if (refreshType is TokenTestRefreshType.FailAtStartup && !publishingStarted && ++count <= timesToFail)
             {
-                return Task.FromException<string>(new Exception("Initial Token Failed"));
+                return ValueTask.FromException<string>(new Exception("Initial Token Failed"));
             }
 
             if (refreshType is TokenTestRefreshType.FailOnRefresh && publishingStarted && ++count <= timesToFail)
             {
-                return Task.FromException<string>(count == 1 ? new Exception("Refresh Failed") : new Exception("Initial Token Failed"));
+                return ValueTask.FromException<string>(count == 1 ? new Exception("Refresh Failed") : new Exception("Initial Token Failed"));
             }
 
             if (refreshType is TokenTestRefreshType.TimeoutOnRefresh && publishingStarted && !delayedNames.Contains(name))
             {
                 delayedNames.Add(name);
-                return Task.Delay(6000).ContinueWith(_ => GetAuthToken(name)).Unwrap();
+                Task.Delay(6000);
             }
 
             return GetAuthToken(name);
         }
 
         var producerTokenCount = 0;
-        await using var producerClient = GetPulsarClient("Producer", ()
-            => GetToken("Producer", ref producerTokenCount));
+        await using var producerClient = GetPulsarClient("Producer", (ct) => GetToken("Producer", ref producerTokenCount));
 
         var consumerTokenCount = 0;
-        await using var consumerClient = GetPulsarClient("Consumer", ()
-            => GetToken("Consumer", ref consumerTokenCount));
+        await using var consumerClient = GetPulsarClient("Consumer", (ct) => GetToken("Consumer", ref consumerTokenCount));
 
-        var producer = CreateProducer(producerClient);
-
-        var consumer = consumerClient.NewConsumer(Schema.String)
+        await using var producer = producerClient.NewProducer(Schema.String)
             .Topic(MyTopic)
+            .StateChangedHandler(Monitor)
+            .Create();
+
+        await using var consumer = consumerClient.NewConsumer(Schema.String)
+            .Topic(MyTopic)
+            .StateChangedHandler(Monitor)
             .SubscriptionName("test-sub")
             .InitialPosition(SubscriptionInitialPosition.Earliest)
             .Create();
 
-        var received = new List<string>();
         const int messageCount = 20;
+        var received = new List<string>(messageCount);
 
         var publisherTask = Task.Run(async () =>
         {
             for (var i = 0; i < messageCount; i++)
             {
                 _testOutputHelper.WriteLine("Trying to publish message for index {0}", i);
-                var messageId = await producer.Send(Encoding.UTF8.GetBytes(i.ToString()));
+                var messageId = await producer.Send(i.ToString());
                 publishingStarted = true;
                 _testOutputHelper.WriteLine("Published message {0} for index {1}", messageId, i);
-
                 await Task.Delay(1000);
             }
         });
 
         var consumerTask = Task.Run(async () =>
         {
-            await consumer.OnStateChangeTo(ConsumerState.Active);
-            for (int j = 0; j < messageCount; j++)
+            for (var i = 0; i < messageCount; i++)
             {
                 var message = await consumer.Receive();
-                received.Add(Encoding.UTF8.GetString(message.Data));
+                received.Add(message.Value());
             }
         });
 
-        var all = Task.WhenAll(consumerTask, publisherTask);
         var timeoutTask = Task.Delay(60_000);
-        var result = await Task.WhenAny(all, timeoutTask);
-        Assert.True(result != timeoutTask);
-
-        if (refreshType is TokenTestRefreshType.Standard)
-        {
-            Assert.True(DotPulsarEventSource.Log.TokenRefreshCount > initialRefreshCount);
-        }
+        await Task.WhenAny(Task.WhenAll(consumerTask, publisherTask), timeoutTask);
+        Assert.False(timeoutTask.IsCompleted);
 
         var expected = Enumerable.Range(0, messageCount).Select(i => i.ToString()).ToList();
         var missing = expected.Except(received).ToList();
@@ -135,22 +139,53 @@ public class TokenRefreshTests
         }
     }
 
-    private static IProducer<ReadOnlySequence<byte>> CreateProducer(IPulsarClient producerClient)
-        => producerClient.NewProducer()
-            .Topic(MyTopic)
-            .Create();
-
-    private IPulsarClient GetPulsarClient(string name, Func<Task<string>> tokenFactory)
+    private IPulsarClient GetPulsarClient(string name, Func<CancellationToken, ValueTask<string>> tokenFactory)
         => PulsarClient.Builder()
-            .AuthenticateUsingToken(tokenFactory)
+            .Authentication(AuthenticationFactory.Token(tokenFactory))
             .RetryInterval(TimeSpan.FromSeconds(1))
-            .ExceptionHandler(ec => _testOutputHelper.WriteLine("Error (handled={0}) occurred in {1} client: {2}", ec.ExceptionHandled, name, ec.Exception))
+            .ExceptionHandler(ec =>
+            {
+                _testOutputHelper.WriteLine("Error (handled={0}) occurred in {1} client: {2}", ec.ExceptionHandled, name, ec.Exception);
+            })
             .ServiceUrl(_pulsarService.GetBrokerUri()).Build();
 
-    private async Task<string> GetAuthToken(string name)
+    private async ValueTask<string> GetAuthToken(string name)
     {
-        var result = await TokenClusterFixture.GetAuthToken(true);
+        var result = await StandaloneTokenClusterFixture.GetAuthToken(true);
         _testOutputHelper.WriteLine("{0} received token {1}", name, result);
         return result;
+    }
+
+    private void Monitor(ProducerStateChanged stateChanged, CancellationToken cancellationToken)
+    {
+        var stateMessage = stateChanged.ProducerState switch
+        {
+            ProducerState.Connected => "is connected",
+            ProducerState.Disconnected => "is disconnected",
+            ProducerState.PartiallyConnected => "is partially connected",
+            ProducerState.Closed => "has closed",
+            ProducerState.Faulted => "has faulted",
+            _ => $"has an unknown state '{stateChanged.ProducerState}'"
+        };
+
+        var topic = stateChanged.Producer.Topic;
+        _testOutputHelper.WriteLine($"The producer for topic '{topic}' " + stateMessage);
+    }
+
+    private void Monitor(ConsumerStateChanged stateChanged, CancellationToken cancellationToken)
+    {
+        var stateMessage = stateChanged.ConsumerState switch
+        {
+            ConsumerState.Active => "is active",
+            ConsumerState.Inactive => "is inactive",
+            ConsumerState.Disconnected => "is disconnected",
+            ConsumerState.Closed => "has closed",
+            ConsumerState.ReachedEndOfTopic => "has reached end of topic",
+            ConsumerState.Faulted => "has faulted",
+            _ => $"has an unknown state '{stateChanged.ConsumerState}'"
+        };
+
+        var topic = stateChanged.Consumer.Topic;
+        _testOutputHelper.WriteLine($"The consumer for topic '{topic}' " + stateMessage);
     }
 }
