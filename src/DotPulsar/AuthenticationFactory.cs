@@ -21,7 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 /// <summary>
-/// Factory class that allows to create Authentication instances for all the supported authentication methods.
+/// Factory for creating IAuthentication instances for all the supported authentication methods.
 /// </summary>
 public static class AuthenticationFactory
 {

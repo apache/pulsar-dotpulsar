@@ -12,56 +12,38 @@
  * limitations under the License.
  */
 
-namespace Consuming;
+namespace Processing;
 
 using DotPulsar;
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-internal static class Program
+public class Worker : BackgroundService
 {
-    private static async Task Main()
+    private readonly ILogger<Worker> _logger;
+
+    public Worker(ILogger<Worker> logger) => _logger = logger;
+
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        const string myTopic = "persistent://public/default/mytopic";
-
-        var cts = new CancellationTokenSource();
-
-        Console.CancelKeyPress += (sender, args) =>
-        {
-            cts.Cancel();
-            args.Cancel = true;
-        };
-
         await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
 
         await using var consumer = client.NewConsumer(Schema.String)
-            .StateChangedHandler(Monitor)
+            .StateChangedHandler(Monitor, cancellationToken)
             .SubscriptionName("MySubscription")
-            .Topic(myTopic)
+            .Topic("persistent://public/default/mytopic")
             .Create();
 
-        Console.WriteLine("Press Ctrl+C to exit");
-
-        await ConsumeMessages(consumer, cts.Token);
+        await consumer.Process(ProcessMessage, cancellationToken);
     }
 
-    private static async Task ConsumeMessages(IConsumer<string> consumer, CancellationToken cancellationToken)
+    private ValueTask ProcessMessage(IMessage<string> message, CancellationToken cancellationToken)
     {
-        try
-        {
-            await foreach (var message in consumer.Messages(cancellationToken))
-            {
-                Console.WriteLine($"Received: {message.Value()}");
-                await consumer.Acknowledge(message, cancellationToken);
-            }
-        }
-        catch (OperationCanceledException) { }
+        _logger.LogInformation($"Received: {message.Value()}");
+        return ValueTask.CompletedTask;
     }
 
-    private static void Monitor(ConsumerStateChanged stateChanged, CancellationToken cancellationToken)
+    private void Monitor(ConsumerStateChanged stateChanged, CancellationToken cancellationToken)
     {
         var stateMessage = stateChanged.ConsumerState switch
         {
@@ -75,6 +57,6 @@ internal static class Program
         };
 
         var topic = stateChanged.Consumer.Topic;
-        Console.WriteLine($"The consumer for topic '{topic}' {stateMessage}");
+        _logger.LogInformation($"The consumer for topic '{topic}' {stateMessage}");
     }
 }

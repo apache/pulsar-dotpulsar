@@ -57,7 +57,7 @@ internal static class Program
             {
                 var data = DateTime.UtcNow.ToLongTimeString();
                 _ = await producer.Send(data, cancellationToken);
-                Console.WriteLine("Sent: " + data);
+                Console.WriteLine($"Sent: {data}");
                 await Task.Delay(delay, cancellationToken);
             }
         }
