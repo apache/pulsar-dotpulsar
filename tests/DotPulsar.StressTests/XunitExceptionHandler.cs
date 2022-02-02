@@ -38,9 +38,6 @@ internal class XunitExceptionHandler : IHandleException
         await _exceptionHandler.OnException(exceptionContext).ConfigureAwait(false);
 
         if (!exceptionContext.ExceptionHandled)
-            _output.WriteLine(
-                $"{exceptionContext.Exception.GetType().Name} " +
-                $"{exceptionContext.Exception.Message}{Environment.NewLine}" +
-                $"{exceptionContext.Exception.StackTrace}");
+            _output.WriteLine($"Got exception: {exceptionContext.Exception}");
     }
 }

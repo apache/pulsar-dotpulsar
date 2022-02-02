@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.IntegrationTests;
+namespace DotPulsar.TestHelpers;
 
 using System;
 using System.Diagnostics;
@@ -26,9 +26,7 @@ public static class ProcessAsyncHelper
         var result = await resultTask;
 
         if (!result.Completed)
-        {
-            throw new InvalidOperationException($"Process did not complete correctly, {Environment.NewLine}{result.Output}");
-        }
+            throw new InvalidOperationException($"Process did not complete correctly: {result.Output}");
     }
 
     public static async Task LogFailure(this Task<ProcessResult> resultTask, Action<string> logAction)
@@ -36,15 +34,11 @@ public static class ProcessAsyncHelper
         var result = await resultTask;
 
         if (!result.Completed)
-        {
             logAction(result.Output);
-        }
     }
 
     public static async Task<ProcessResult> ExecuteShellCommand(string command, string arguments)
     {
-        var result = new ProcessResult();
-
         using var process = new Process();
 
         process.StartInfo.FileName = command;
@@ -60,14 +54,10 @@ public static class ProcessAsyncHelper
         process.OutputDataReceived += (s, e) =>
         {
             // The output stream has been closed i.e. the process has terminated
-            if (e.Data == null)
-            {
+            if (e.Data is null)
                 outputCloseEvent.SetResult(true);
-            }
             else
-            {
                 outputBuilder.Append(e.Data);
-            }
         };
 
         var errorBuilder = new StringBuilder();
@@ -76,16 +66,13 @@ public static class ProcessAsyncHelper
         process.ErrorDataReceived += (s, e) =>
         {
             // The error stream has been closed i.e. the process has terminated
-            if (e.Data == null)
-            {
+            if (e.Data is null)
                 errorCloseEvent.SetResult(true);
-            }
             else
-            {
                 errorBuilder.Append(e.Data);
-            }
         };
 
+        var result = new ProcessResult();
         bool isStarted;
 
         try

@@ -2,12 +2,12 @@
   
 services:
         
-  pulsar-tokens:
-    container_name: pulsar-tokens
+  standalone:
+    container_name: standalone
     image: 'apachepulsar/pulsar:2.7.0'
     ports:
-      - '54548:8081'
-      - '54547:6651'
+      - '54548:8080'
+      - '54547:6650'
     volumes:
       - ./appdata/:/appdata
     environment:
@@ -17,18 +17,10 @@ services:
       - authenticationProviders=org.apache.pulsar.broker.authentication.AuthenticationProviderToken
       - authenticateOriginalAuthData=false
       - brokerClientAuthenticationPlugin=org.apache.pulsar.client.impl.auth.AuthenticationToken
-      - brokerClientAuthenticationParameters=token:eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.CoBrja1EHr0e2kZKGFS8M-xS2SOC2E08yZmjktvcYOs
+      - brokerClientAuthenticationParameters=token:eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LXVzZXIifQ.KGnuZLJys6MUSth__ZRYdb4sPIKe9_kRrm2wfZ7Dwrc
       - superUserRoles=test-user
       - PULSAR_PREFIX_authenticationRefreshCheckSeconds=5
-      - webServicePort=8081
-      - brokerServicePort=6651
-#      - PULSAR_LOG_LEVEL=debug
+      - webServicePort=8080
+      - brokerServicePort=6650
     command: |
       /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone --no-functions-worker"
-    networks:
-      - pulsar-tokens
-        
-networks:
-  pulsar-tokens:
-    name: pulsar-tokens
-    driver: bridge

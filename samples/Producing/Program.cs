@@ -78,6 +78,6 @@ internal static class Program
         };
 
         var topic = stateChanged.Producer.Topic;
-        Console.WriteLine($"The producer for topic '{topic}' " + stateMessage);
+        Console.WriteLine($"The producer for topic '{topic}' {stateMessage}");
     }
 }

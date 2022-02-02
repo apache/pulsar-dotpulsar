@@ -73,6 +73,6 @@ internal static class Program
         };
 
         var topic = stateChanged.Reader.Topic;
-        Console.WriteLine($"The reader for topic '{topic}' " + stateMessage);
+        Console.WriteLine($"The reader for topic '{topic}' {stateMessage}");
     }
 }

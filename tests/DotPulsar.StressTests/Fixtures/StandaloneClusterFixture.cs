@@ -14,7 +14,7 @@
 
 namespace DotPulsar.StressTests.Fixtures;
 
-using IntegrationTests;
+using DotPulsar.TestHelpers;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -35,30 +35,30 @@ public class StandaloneClusterFixture : IAsyncLifetime
     {
         await TakeDownPulsar(); // clean-up if anything was left running from previous run
 
-        await ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-tests.yml up -d")
+        await ProcessAsyncHelper
+            .ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-tests.yml up -d")
             .ThrowOnFailure();
 
-        var waitTries = 10;
-
-        using var handler = new HttpClientHandler
-        {
-            AllowAutoRedirect = true
-        };
-
+        using var handler = new HttpClientHandler { AllowAutoRedirect = true };
         using var client = new HttpClient(handler);
 
+        var waitTries = 10;
         while (waitTries > 0)
         {
             try
             {
-                await client.GetAsync("http://localhost:54546/metrics/").ConfigureAwait(false);
-                return;
+                var requestUri = "http://localhost:54546/metrics/";
+                var response = await client.GetAsync(requestUri);
+                if (response.IsSuccessStatusCode)
+                    return;
             }
-            catch
+            catch (Exception e)
             {
-                waitTries--;
-                await Task.Delay(5000).ConfigureAwait(false);
+                _messageSink.OnMessage(new DiagnosticMessage("Error trying to fetch metrics: {0}", e));
             }
+
+            waitTries--;
+            await Task.Delay(TimeSpan.FromSeconds(10));
         }
 
         throw new Exception("Unable to confirm Pulsar has initialized");
@@ -72,11 +72,12 @@ public class StandaloneClusterFixture : IAsyncLifetime
         }
         catch (Exception e)
         {
-            _messageSink.OnMessage(new DiagnosticMessage("Error taking down pulsar: {0}", e));
+            _messageSink.OnMessage(new DiagnosticMessage($"Error taking down pulsar: {e}"));
         }
     }
 
     private Task TakeDownPulsar()
-        => ProcessAsyncHelper.ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-tests.yml down")
-            .LogFailure(s => _messageSink.OnMessage(new DiagnosticMessage("Error bringing down container: {0}", s)));
+        => ProcessAsyncHelper
+        .ExecuteShellCommand("docker-compose", "-f docker-compose-standalone-tests.yml down")
+        .LogFailure(s => _messageSink.OnMessage(new DiagnosticMessage($"Error bringing down container: {s}")));
 }

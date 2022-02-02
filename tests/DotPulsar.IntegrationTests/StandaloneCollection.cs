@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.IntegrationTests.Fixtures;
+namespace DotPulsar.IntegrationTests;
 
 using Xunit;
 
-[CollectionDefinition(nameof(StandaloneClusterTest))]
-public class StandaloneClusterTest : ICollectionFixture<StandaloneClusterFixture> { }
+[CollectionDefinition(nameof(StandaloneCollection))]
+public sealed class StandaloneCollection : ICollectionFixture<StandaloneFixture> { }

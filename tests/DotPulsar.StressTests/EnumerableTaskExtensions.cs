@@ -44,7 +44,7 @@ public static class EnumerableValueTaskExtensions
 
     [DebuggerStepThrough]
     public static async Task<TResult[]> WhenAllAsTask<TResult>(this IEnumerable<ValueTask<TResult>> source) where TResult : notnull
-        => await source.WhenAll().ConfigureAwait(false);
+        => await source.WhenAll();
 
     [DebuggerStepThrough]
     public static async IAsyncEnumerable<TResult> Enumerate<TResult>(this IEnumerable<ValueTask<TResult>> source) where TResult : notnull
@@ -52,7 +52,7 @@ public static class EnumerableValueTaskExtensions
         foreach (var operation in source.Select(GetInfo))
         {
             yield return operation.Task is not null
-                ? await operation.Task.ConfigureAwait(false)
+                ? await operation.Task
                 : operation.Result;
         }
     }

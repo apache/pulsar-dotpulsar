@@ -86,6 +86,8 @@ public sealed class Connection : IConnection
 
     private async Task Send(CommandAuthResponse command, CancellationToken cancellationToken)
     {
+        await Task.Yield();
+
         if (_authentication is not null)
         {
             if (command.Response is null)
@@ -308,7 +310,7 @@ public sealed class Connection : IConnection
                 if (command.CommandType == BaseCommand.Type.Message)
                     _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
                 else if (command.CommandType == BaseCommand.Type.AuthChallenge)
-                    await Send(new CommandAuthResponse(), cancellationToken).ConfigureAwait(false);
+                    _ = Send(new CommandAuthResponse(), cancellationToken).ConfigureAwait(false);
                 else
                     _channelManager.Incoming(command);
             }

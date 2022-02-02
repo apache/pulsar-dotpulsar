@@ -75,6 +75,6 @@ internal static class Program
         };
 
         var topic = stateChanged.Consumer.Topic;
-        Console.WriteLine($"The consumer for topic '{topic}' " + stateMessage);
+        Console.WriteLine($"The consumer for topic '{topic}' {stateMessage}");
     }
 }

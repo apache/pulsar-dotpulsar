@@ -14,36 +14,33 @@
 
 namespace DotPulsar.IntegrationTests;
 
-using Abstraction;
 using Abstractions;
 using Extensions;
-using Fixtures;
 using FluentAssertions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-[Collection(nameof(StandaloneClusterTest))]
+[Collection(nameof(StandaloneCollection))]
 public class ProducerTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly IPulsarService _pulsarService;
+    private readonly StandaloneFixture _fixture;
 
-    public ProducerTests(ITestOutputHelper outputHelper, StandaloneClusterFixture fixture)
+    public ProducerTests(ITestOutputHelper outputHelper, StandaloneFixture fixture)
     {
         _testOutputHelper = outputHelper;
-        Debug.Assert(fixture.PulsarService != null, "fixture.PulsarService != null");
-        _pulsarService = fixture.PulsarService;
+        _fixture = fixture;
     }
 
     [Fact]
     public async Task SimpleProduceConsume_WhenSendingMessagesToProducer_ThenReceiveMessagesFromConsumer()
     {
         //Arrange
-        await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
+        await using var client = CreateClient();
         string topicName = $"simple-produce-consume{Guid.NewGuid():N}";
         const string content = "test-message";
 
@@ -69,13 +66,12 @@ public class ProducerTests
     public async Task SinglePartition_WhenSendMessages_ThenGetMessagesFromSinglePartition()
     {
         //Arrange
-        var serviceUrl = _pulsarService.GetBrokerUri();
         const string content = "test-message";
         const int partitions = 3;
         const int msgCount = 3;
         var topicName = $"single-partitioned-{Guid.NewGuid():N}";
-        await _pulsarService.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
-        await using var client = PulsarClient.Builder().ServiceUrl(serviceUrl).Build();
+        await _fixture.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
+        await using var client = CreateClient();
 
         //Act
         var consumers = new List<IConsumer<string>>();
@@ -120,19 +116,19 @@ public class ProducerTests
     public async Task RoundRobinPartition_WhenSendMessages_ThenGetMessagesFromPartitionsInOrder()
     {
         //Arrange
-        await using var client = PulsarClient.Builder().ServiceUrl(_pulsarService.GetBrokerUri()).Build();
+        await using var client = CreateClient();
+
         string topicName = $"round-robin-partitioned-{Guid.NewGuid():N}";
         const string content = "test-message";
         const int partitions = 3;
         var consumers = new List<IConsumer<string>>();
 
-        await _pulsarService.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
+        await _fixture.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
 
         //Act
         await using var producer = client.NewProducer(Schema.String)
             .Topic(topicName)
             .Create();
-        await producer.StateChangedTo(ProducerState.Connected);
 
         for (var i = 0; i < partitions; ++i)
         {
@@ -151,4 +147,12 @@ public class ProducerTests
             (await consumers[i].Receive()).Value().Should().Be($"{content}-{i}");
         }
     }
+
+    private IPulsarClient CreateClient()
+        => PulsarClient
+        .Builder()
+        .Authentication(AuthenticationFactory.Token(async ct => await _fixture.GetToken(Timeout.InfiniteTimeSpan)))
+        .ExceptionHandler(ec => _testOutputHelper.WriteLine($"Exception: {ec.Exception}"))
+        .ServiceUrl(_fixture.ServiceUrl)
+        .Build();
 }
