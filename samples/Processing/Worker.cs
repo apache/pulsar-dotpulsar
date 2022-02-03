@@ -26,10 +26,12 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
+        await using var client = PulsarClient.Builder()
+            .ExceptionHandler(context => _logger.PulsarClientException(context))
+            .Build(); //Connecting to pulsar://localhost:6650
 
         await using var consumer = client.NewConsumer(Schema.String)
-            .StateChangedHandler(Monitor, cancellationToken)
+            .StateChangedHandler(consumerStateChanged => _logger.ConsumerChangedState(consumerStateChanged))
             .SubscriptionName("MySubscription")
             .Topic("persistent://public/default/mytopic")
             .Create();
@@ -39,24 +41,7 @@ public class Worker : BackgroundService
 
     private ValueTask ProcessMessage(IMessage<string> message, CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"Received: {message.Value()}");
+        _logger.OutputMessage(message);
         return ValueTask.CompletedTask;
-    }
-
-    private void Monitor(ConsumerStateChanged stateChanged, CancellationToken cancellationToken)
-    {
-        var stateMessage = stateChanged.ConsumerState switch
-        {
-            ConsumerState.Active => "is active",
-            ConsumerState.Inactive => "is inactive",
-            ConsumerState.Disconnected => "is disconnected",
-            ConsumerState.Closed => "has closed",
-            ConsumerState.ReachedEndOfTopic => "has reached end of topic",
-            ConsumerState.Faulted => "has faulted",
-            _ => $"has an unknown state '{stateChanged.ConsumerState}'"
-        };
-
-        var topic = stateChanged.Consumer.Topic;
-        _logger.LogInformation($"The consumer for topic '{topic}' {stateMessage}");
     }
 }

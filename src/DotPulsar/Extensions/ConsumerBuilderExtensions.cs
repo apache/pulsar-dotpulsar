@@ -30,6 +30,18 @@ public static class ConsumerBuilderExtensions
     /// </summary>
     public static IConsumerBuilder<TMessage> StateChangedHandler<TMessage>(
         this IConsumerBuilder<TMessage> builder,
+        Action<ConsumerStateChanged> handler)
+    {
+        void forwarder(ConsumerStateChanged consumerStateChanged, CancellationToken _) => handler(consumerStateChanged);
+        builder.StateChangedHandler(new ActionStateChangedHandler<ConsumerStateChanged>(forwarder, default));
+        return builder;
+    }
+
+    /// <summary>
+    /// Register a state changed handler.
+    /// </summary>
+    public static IConsumerBuilder<TMessage> StateChangedHandler<TMessage>(
+        this IConsumerBuilder<TMessage> builder,
         Action<ConsumerStateChanged, CancellationToken> handler,
         CancellationToken cancellationToken = default)
     {

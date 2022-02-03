@@ -30,6 +30,18 @@ public static class ProducerBuilderExtensions
     /// </summary>
     public static IProducerBuilder<TMessage> StateChangedHandler<TMessage>(
         this IProducerBuilder<TMessage> builder,
+        Action<ProducerStateChanged> handler)
+    {
+        void forwarder(ProducerStateChanged producerStateChanged, CancellationToken _) => handler(producerStateChanged);
+        builder.StateChangedHandler(new ActionStateChangedHandler<ProducerStateChanged>(forwarder, default));
+        return builder;
+    }
+
+    /// <summary>
+    /// Register a state changed handler.
+    /// </summary>
+    public static IProducerBuilder<TMessage> StateChangedHandler<TMessage>(
+        this IProducerBuilder<TMessage> builder,
         Action<ProducerStateChanged, CancellationToken> handler,
         CancellationToken cancellationToken = default)
     {

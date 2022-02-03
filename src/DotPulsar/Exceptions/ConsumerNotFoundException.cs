@@ -12,9 +12,7 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Exceptions;
-
-using DotPulsar.Exceptions;
+namespace DotPulsar.Exceptions;
 
 public sealed class ConsumerNotFoundException : DotPulsarException
 {

@@ -16,7 +16,7 @@ namespace DotPulsar.Internal;
 
 using Abstractions;
 using DotPulsar.Abstractions;
-using Exceptions;
+using DotPulsar.Exceptions;
 using PulsarApi;
 using System;
 using System.Buffers;

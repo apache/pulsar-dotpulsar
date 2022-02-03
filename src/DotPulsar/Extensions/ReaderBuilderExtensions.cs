@@ -30,6 +30,18 @@ public static class ReaderBuilderExtensions
     /// </summary>
     public static IReaderBuilder<TMessage> StateChangedHandler<TMessage>(
         this IReaderBuilder<TMessage> builder,
+        Action<ReaderStateChanged> handler)
+    {
+        void forwarder(ReaderStateChanged readerStateChanged, CancellationToken _) => handler(readerStateChanged);
+        builder.StateChangedHandler(new ActionStateChangedHandler<ReaderStateChanged>(forwarder, default));
+        return builder;
+    }
+
+    /// <summary>
+    /// Register a state changed handler.
+    /// </summary>
+    public static IReaderBuilder<TMessage> StateChangedHandler<TMessage>(
+        this IReaderBuilder<TMessage> builder,
         Action<ReaderStateChanged, CancellationToken> handler,
         CancellationToken cancellationToken = default)
     {
