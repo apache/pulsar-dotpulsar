@@ -21,22 +21,22 @@ Install the NuGet package [DotPulsar](https://www.nuget.org/packages/DotPulsar/)
 const string myTopic = "persistent://public/default/mytopic";
 
 await using var client = PulsarClient.Builder()
-                                     .Build(); //Connecting to pulsar://localhost:6650
+                                     .Build(); // Connecting to pulsar://localhost:6650
 
-var producer = client.NewProducer()
-                     .Topic(myTopic)
-                     .Create();
+await using var producer = client.NewProducer(Schema.String)
+                                 .Topic(myTopic)
+                                 .Create();
 
-_ = await producer.Send(Encoding.UTF8.GetBytes("Hello World"));
+_ = await producer.Send("Hello World"); // Send a message and ignore the returned MessageId
 
-var consumer = client.NewConsumer()
-                     .SubscriptionName("MySubscription")
-                     .Topic(myTopic)
-                     .Create();
+await using var consumer = client.NewConsumer(Schema.String)
+                                 .SubscriptionName("MySubscription")
+                                 .Topic(myTopic)
+                                 .Create();
 
 await foreach (var message in consumer.Messages())
 {
-    Console.WriteLine("Received: " + Encoding.UTF8.GetString(message.Data.ToArray()));
+    Console.WriteLine($"Received: {message.Value()}");
     await consumer.Acknowledge(message);
 }
 ```
@@ -82,7 +82,7 @@ Help prioritizing the roadmap is most welcome, so please reach out and tell us w
 
 ## Join Our Community
 
-Apache Pulsar has a [Slack instance](https://pulsar.apache.org/contact/) and there you'll find us in the #dev-dotpulsar channel. Just waiting for you to pop by :-)
+Apache Pulsar has a [Slack instance](https://pulsar.apache.org/contact/) and there you'll find us in the #dev-dotpulsar channel.
 
 ## Versioning
 

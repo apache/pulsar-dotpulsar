@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Extension methods for IConsumerBuilder, IProducerBuilder, and IReaderBuilder for setting a StateChangedHandler without a cancellation token
+
+### Changed
+
+- The following internal exceptions are now public
+    - ChannelNotReadyException (should be ignored when logging exceptions)
+    - ConsumerNotFoundException (from the broker, but indicates an internal problem)
+    - ServiceNotReadyException (the broker is not ready)
+    - TooManyRequestsException (the broker is getting too many requests)
+
 ## [2.1.0] - 2022-02-02
 
 ### Added
@@ -13,7 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 - IPulsarClientBuilder.Authentication(IAuthentication authentication) for using custom authentication
 - The AuthenticationFactory with support for:
     - Token(string token)
-	- Token(Func\<CancellationToken, ValueTask\<string\>\> tokenSupplier)
+    - Token(Func\<CancellationToken, ValueTask\<string\>\> tokenSupplier)
 
 ### Deprecated
 
@@ -33,8 +47,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 - [Tracing](https://github.com/apache/pulsar-dotpulsar/wiki/Tracing) support following the [guidelines](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md) from the [OpenTelemetry](https://opentelemetry.io/) project
     - Sending a message will create a producer trace and add tracing metadata to the message
     - The 'Process' extension method for IConsumer\<TMessage\> is no longer experimental and will create a consumer trace
-	- The 'GetConversationId' extension method for IMessage has been added
-	- The 'SetConversationId' and 'GetConversationId' extension methods for MessageMetadata have been added
+    - The 'GetConversationId' extension method for IMessage has been added
+    - The 'SetConversationId' and 'GetConversationId' extension methods for MessageMetadata have been added
 - The client will send a 'ping' if there has been no activity on the connection for 30 seconds. This default can be changed by setting the 'KeepAliveInterval' on the IPulsarClientBuilder
 
 ### Changed
@@ -132,7 +146,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 - The Consumer now have the read-only property 'SubscriptionName'
 - All message compression types are now supported (listed below). Please read this [compression how-to](https://github.com/apache/pulsar-dotpulsar/wiki/Compression)
     - LZ4
-	- SNAPPY
+    - SNAPPY
     - ZLIB
     - ZSTD
 
@@ -141,23 +155,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 - MessageId.ToString() now returns a string matching that of other clients: "{LedgerId}:{EntryId}:{Partition}:{BatchIndex}"
 - A lot of methods were made into extension methods and now require a using statement for 'DotPulsar.Extensions'
     - Producer.StateChangedTo(ProducerState state, CancellationToken cancellationToken)
-	- Producer.StateChangedFrom(ProducerState state, CancellationToken cancellationToken)
-	- Producer.Send(byte[] data, CancellationToken cancellationToken)
-	- Producer.Send(ReadOnlyMemory\<byte\> data, CancellationToken cancellationToken)
-	- Producer.Send(MessageMetadata metadata, byte[] data, CancellationToken cancellationToken)
-	- Producer.Send(MessageMetadata metadata, ReadOnlyMemory\<byte\> data, CancellationToken cancellationToken)
-	- Consumer.Acknowledge(Message message, CancellationToken cancellationToken)
-	- Consumer.AcknowledgeCumulative(Message message, CancellationToken cancellationToken)
-	- Consumer.StateChangedTo(ConsumerState state, CancellationToken cancellationToken)
-	- Consumer.StateChangedFrom(ConsumerState state, CancellationToken cancellationToken)
-	- Consumer.Messages(CancellationToken cancellationToken)
-	- Consumer.Seek(DateTime publishTime, CancellationToken cancellationToken)
-	- Consumer.Seek(DateTimeOffset publishTime, CancellationToken cancellationToken)
-	- Reader.StateChangedTo(ReaderState state, CancellationToken cancellationToken)
-	- Reader.StateChangedFrom(ReaderState state, CancellationToken cancellationToken)
-	- Reader.Messages(CancellationToken cancellationToken)
-	- Reader.Seek(DateTime publishTime, CancellationToken cancellationToken)
-	- Reader.Seek(DateTimeOffset publishTime, CancellationToken cancellationToken)
+    - Producer.StateChangedFrom(ProducerState state, CancellationToken cancellationToken)
+    - Producer.Send(byte[] data, CancellationToken cancellationToken)
+    - Producer.Send(ReadOnlyMemory\<byte\> data, CancellationToken cancellationToken)
+    - Producer.Send(MessageMetadata metadata, byte[] data, CancellationToken cancellationToken)
+    - Producer.Send(MessageMetadata metadata, ReadOnlyMemory\<byte\> data, CancellationToken cancellationToken)
+    - Consumer.Acknowledge(Message message, CancellationToken cancellationToken)
+    - Consumer.AcknowledgeCumulative(Message message, CancellationToken cancellationToken)
+    - Consumer.StateChangedTo(ConsumerState state, CancellationToken cancellationToken)
+    - Consumer.StateChangedFrom(ConsumerState state, CancellationToken cancellationToken)
+    - Consumer.Messages(CancellationToken cancellationToken)
+    - Consumer.Seek(DateTime publishTime, CancellationToken cancellationToken)
+    - Consumer.Seek(DateTimeOffset publishTime, CancellationToken cancellationToken)
+    - Reader.StateChangedTo(ReaderState state, CancellationToken cancellationToken)
+    - Reader.StateChangedFrom(ReaderState state, CancellationToken cancellationToken)
+    - Reader.Messages(CancellationToken cancellationToken)
+    - Reader.Seek(DateTime publishTime, CancellationToken cancellationToken)
+    - Reader.Seek(DateTimeOffset publishTime, CancellationToken cancellationToken)
 
 ### Fixed
 
