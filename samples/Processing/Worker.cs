@@ -28,7 +28,7 @@ public class Worker : BackgroundService
     {
         await using var client = PulsarClient.Builder()
             .ExceptionHandler(context => _logger.PulsarClientException(context))
-            .Build(); //Connecting to pulsar://localhost:6650
+            .Build(); // Connecting to pulsar://localhost:6650
 
         await using var consumer = client.NewConsumer(Schema.String)
             .StateChangedHandler(consumerStateChanged => _logger.ConsumerChangedState(consumerStateChanged))

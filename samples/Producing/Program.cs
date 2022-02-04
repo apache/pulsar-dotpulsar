@@ -25,8 +25,6 @@ internal static class Program
 {
     private static async Task Main()
     {
-        const string myTopic = "persistent://public/default/mytopic";
-
         var cts = new CancellationTokenSource();
 
         Console.CancelKeyPress += (sender, args) =>
@@ -35,11 +33,11 @@ internal static class Program
             args.Cancel = true;
         };
 
-        await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
+        await using var client = PulsarClient.Builder().Build(); // Connecting to pulsar://localhost:6650
 
         await using var producer = client.NewProducer(Schema.String)
             .StateChangedHandler(Monitor)
-            .Topic(myTopic)
+            .Topic("persistent://public/default/mytopic")
             .Create();
 
         Console.WriteLine("Press Ctrl+C to exit");
@@ -67,17 +65,8 @@ internal static class Program
 
     private static void Monitor(ProducerStateChanged stateChanged, CancellationToken cancellationToken)
     {
-        var stateMessage = stateChanged.ProducerState switch
-        {
-            ProducerState.Connected => "is connected",
-            ProducerState.Disconnected => "is disconnected",
-            ProducerState.PartiallyConnected => "is partially connected",
-            ProducerState.Closed => "has closed",
-            ProducerState.Faulted => "has faulted",
-            _ => $"has an unknown state '{stateChanged.ProducerState}'"
-        };
-
         var topic = stateChanged.Producer.Topic;
-        Console.WriteLine($"The producer for topic '{topic}' {stateMessage}");
+        var state = stateChanged.ProducerState;
+        Console.WriteLine($"The producer for topic '{topic}' changed state to '{state}'");
     }
 }

@@ -25,8 +25,6 @@ internal static class Program
 {
     private static async Task Main()
     {
-        const string myTopic = "persistent://public/default/mytopic";
-
         var cts = new CancellationTokenSource();
 
         Console.CancelKeyPress += (sender, args) =>
@@ -35,12 +33,12 @@ internal static class Program
             args.Cancel = true;
         };
 
-        await using var client = PulsarClient.Builder().Build(); //Connecting to pulsar://localhost:6650
+        await using var client = PulsarClient.Builder().Build(); // Connecting to pulsar://localhost:6650
 
         await using var reader = client.NewReader(Schema.String)
             .StartMessageId(MessageId.Earliest)
             .StateChangedHandler(Monitor)
-            .Topic(myTopic)
+            .Topic("persistent://public/default/mytopic")
             .Create();
 
         Console.WriteLine("Press Ctrl+C to exit");
@@ -62,17 +60,8 @@ internal static class Program
 
     private static void Monitor(ReaderStateChanged stateChanged, CancellationToken cancellationToken)
     {
-        var stateMessage = stateChanged.ReaderState switch
-        {
-            ReaderState.Connected => "is connected",
-            ReaderState.Disconnected => "is disconnected",
-            ReaderState.Closed => "has closed",
-            ReaderState.ReachedEndOfTopic => "has reached end of topic",
-            ReaderState.Faulted => "has faulted",
-            _ => $"has an unknown state '{stateChanged.ReaderState}'"
-        };
-
         var topic = stateChanged.Reader.Topic;
-        Console.WriteLine($"The reader for topic '{topic}' {stateMessage}");
+        var state = stateChanged.ReaderState;
+        Console.WriteLine($"The reader for topic '{topic}' changed state to '{state}'");
     }
 }
