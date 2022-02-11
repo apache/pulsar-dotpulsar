@@ -31,16 +31,17 @@ public sealed class Consumer<TMessage> : IEstablishNewChannel, IConsumer<TMessag
 {
     private readonly Guid _correlationId;
     private readonly IRegisterEvent _eventRegister;
-    private IConsumerChannel<TMessage> _channel;
     private readonly ObjectPool<CommandAck> _commandAckPool;
     private readonly IExecute _executor;
     private readonly IStateChanged<ConsumerState> _state;
     private readonly IConsumerChannelFactory<TMessage> _factory;
     private int _isDisposed;
+    private IConsumerChannel<TMessage> _channel;
 
     public Uri ServiceUrl { get; }
     public string SubscriptionName { get; }
     public string Topic { get; }
+    public IDeadLetterProcessor<TMessage>? DeadLetterProcessor { get; internal set; }
 
     public Consumer(
         Guid correlationId,
@@ -196,8 +197,7 @@ public sealed class Consumer<TMessage> : IEstablishNewChannel, IConsumer<TMessag
     {
         var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
 
-        var oldChannel = _channel;
-        _channel = channel;
+        (var oldChannel, _channel) = (_channel, channel);
 
         if (oldChannel is not null)
             await oldChannel.DisposeAsync().ConfigureAwait(false);

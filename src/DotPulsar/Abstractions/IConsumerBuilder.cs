@@ -14,6 +14,10 @@
 
 namespace DotPulsar.Abstractions;
 
+using DotPulsar.Internal;
+
+using System;
+
 /// <summary>
 /// A consumer building abstraction.
 /// </summary>
@@ -63,6 +67,8 @@ public interface IConsumerBuilder<TMessage>
     /// Set the topic for this consumer. This is required.
     /// </summary>
     IConsumerBuilder<TMessage> Topic(string topic);
+
+    IConsumerBuilder<TMessage> DeadLetterPolicy(Action<IDeadLetterPolicyBuilder<TMessage>> action);
 
     /// <summary>
     /// Create the consumer.

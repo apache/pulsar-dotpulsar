@@ -14,7 +14,12 @@
 
 namespace DotPulsar.Abstractions;
 
+using DotPulsar.Internal;
+
 /// <summary>
 /// A generic consumer abstraction.
 /// </summary>
-public interface IConsumer<TMessage> : IConsumer, IReceive<IMessage<TMessage>> { }
+public interface IConsumer<TMessage> : IConsumer, IReceive<IMessage<TMessage>>
+{
+    public IDeadLetterProcessor<TMessage>? DeadLetterProcessor { get; }
+}

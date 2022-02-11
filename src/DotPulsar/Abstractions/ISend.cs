@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Abstractions;
 
+using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,4 +27,9 @@ public interface ISend<TMessage>
     /// Sends a message with metadata.
     /// </summary>
     ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends a message with metadata. Does not encode or verify the message
+    /// </summary>
+    internal ValueTask<MessageId> Send(ReadOnlySequence<byte> message, MessageMetadata metadata, CancellationToken cancellationToken = default);
 }

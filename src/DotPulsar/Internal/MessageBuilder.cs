@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 public sealed class MessageBuilder<TMessage> : IMessageBuilder<TMessage>
 {
     private readonly IProducer<TMessage> _producer;
-    private readonly MessageMetadata _metadata;
+    internal readonly MessageMetadata _metadata;
 
     public MessageBuilder(IProducer<TMessage> producer)
     {

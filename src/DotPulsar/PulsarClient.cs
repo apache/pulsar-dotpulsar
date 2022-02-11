@@ -110,8 +110,12 @@ public sealed class PulsarClient : IPulsarClient
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
         var consumer = new Consumer<TMessage>(correlationId, ServiceUrl, options.SubscriptionName, options.Topic, _processManager, initialChannel, executor, stateManager, factory);
+
         if (options.StateChangedHandler is not null)
             _ = StateMonitor.MonitorConsumer(consumer, options.StateChangedHandler);
+
+        consumer.DeadLetterProcessor = options.DeadLetterProcessor;
+
         var process = new ConsumerProcess(correlationId, stateManager, consumer, options.SubscriptionType == SubscriptionType.Failover);
         _processManager.Add(process);
         process.Start();
