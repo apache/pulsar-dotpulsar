@@ -90,6 +90,9 @@ public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMes
     public async ValueTask<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         => await _executor.Execute(() => InternalSend(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
 
+    ValueTask<MessageId> ISend<TMessage>.Send(ReadOnlySequence<byte> data, MessageMetadata metadata, CancellationToken cancellationToken)
+        => InternalSend(metadata.Metadata, data, cancellationToken);
+
     private async ValueTask<MessageId> InternalSend(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
     {
         var response = await _channel.Send(metadata, data, cancellationToken).ConfigureAwait(false);

@@ -20,6 +20,7 @@ using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
 using DotPulsar.Internal.Extensions;
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -230,7 +231,15 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         return _messageRouter.ChoosePartition(metadata, _producerCount);
     }
 
-    public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
+    public ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        var data = _options.Schema.Encode(message);
+        return ((ISend<TMessage>)this).Send(data, metadata,cancellationToken);
+    }
+
+    async ValueTask<MessageId> ISend<TMessage>.Send(ReadOnlySequence<byte> data, MessageMetadata metadata, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
 
@@ -244,7 +253,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         {
             var partition = await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false);
             var producer = _producers[partition];
-            var data = _options.Schema.Encode(message);
+            
             var messageId = await producer.Send(metadata.Metadata, data, cancellationToken).ConfigureAwait(false);
 
             if (activity is not null && activity.IsAllDataRequested)

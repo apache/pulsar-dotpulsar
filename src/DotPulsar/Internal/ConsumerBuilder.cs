@@ -17,6 +17,8 @@ namespace DotPulsar.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 
+using System;
+
 public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
 {
     private readonly IPulsarClient _pulsarClient;
@@ -30,6 +32,7 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
     private SubscriptionType _subscriptionType;
     private string? _topic;
     private IHandleStateChanged<ConsumerStateChanged>? _stateChangedHandler;
+    private Action<IDeadLetterPolicyBuilder<TMessage>>? _deadLetterConfig;
 
     public ConsumerBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
     {
@@ -96,6 +99,12 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
         return this;
     }
 
+    public IConsumerBuilder<TMessage> DeadLetterPolicy(Action<IDeadLetterPolicyBuilder<TMessage>> action)
+    {
+        _deadLetterConfig = action;
+        return this;
+    }
+
     public IConsumer<TMessage> Create()
     {
         if (string.IsNullOrEmpty(_subscriptionName))
@@ -114,6 +123,15 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
             StateChangedHandler = _stateChangedHandler,
             SubscriptionType = _subscriptionType
         };
+
+        if (_deadLetterConfig is not null)
+        {
+            var config = new DeadLetterPolicyBuilder<TMessage>(_pulsarClient, _schema);
+            _deadLetterConfig(config);
+            (var policy, var dlProducerBuilder) = config.Create();
+            options.DeadLetterPolicy = policy;
+            options.DeadLetterProcessor = new DeadLetterProcessor<TMessage>(policy, dlProducerBuilder);
+        }
 
         return _pulsarClient.CreateConsumer(options);
     }

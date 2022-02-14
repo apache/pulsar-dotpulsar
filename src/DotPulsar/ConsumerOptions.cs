@@ -15,6 +15,7 @@
 namespace DotPulsar;
 
 using DotPulsar.Abstractions;
+using DotPulsar.Internal;
 
 /// <summary>
 /// The consumer building options.
@@ -110,4 +111,8 @@ public sealed class ConsumerOptions<TMessage>
     /// Set the topic for this consumer. This is required.
     /// </summary>
     public string Topic { get; set; }
+
+    public DeadLetterPolicy? DeadLetterPolicy { get; set; }
+
+    internal IDeadLetterProcessor<TMessage>? DeadLetterProcessor { get; set; }
 }
