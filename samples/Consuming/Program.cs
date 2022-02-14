@@ -59,7 +59,7 @@ internal static class Program
         catch (OperationCanceledException) { }
     }
 
-    private static void Monitor(ConsumerStateChanged stateChanged, CancellationToken cancellationToken)
+    private static void Monitor(ConsumerStateChanged stateChanged)
     {
         var topic = stateChanged.Consumer.Topic;
         var state = stateChanged.ConsumerState;

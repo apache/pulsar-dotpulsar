@@ -63,7 +63,7 @@ internal static class Program
         { }
     }
 
-    private static void Monitor(ProducerStateChanged stateChanged, CancellationToken cancellationToken)
+    private static void Monitor(ProducerStateChanged stateChanged)
     {
         var topic = stateChanged.Producer.Topic;
         var state = stateChanged.ProducerState;
