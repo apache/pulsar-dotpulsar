@@ -48,7 +48,7 @@ public sealed class PulsarClient : IPulsarClient
         _exceptionHandler = exceptionHandler;
         ServiceUrl = serviceUrl;
         _isDisposed = 0;
-        DotPulsarEventSource.Log.ClientCreated();
+        DotPulsarMeter.ClientCreated();
     }
 
     /// <summary>
@@ -164,7 +164,7 @@ public sealed class PulsarClient : IPulsarClient
         if (_processManager is IAsyncDisposable disposable)
             await disposable.DisposeAsync().ConfigureAwait(false);
 
-        DotPulsarEventSource.Log.ClientDisposed();
+        DotPulsarMeter.ClientDisposed();
     }
 
     private void ThrowIfDisposed()

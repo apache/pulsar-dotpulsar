@@ -54,25 +54,25 @@ public sealed class ProcessManager : IRegisterEvent, IAsyncDisposable
         switch (e)
         {
             case ConsumerCreated _:
-                DotPulsarEventSource.Log.ConsumerCreated();
+                DotPulsarMeter.ConsumerCreated();
                 break;
             case ConsumerDisposed consumerDisposed:
                 Remove(consumerDisposed.CorrelationId);
-                DotPulsarEventSource.Log.ConsumerDisposed();
+                DotPulsarMeter.ConsumerDisposed();
                 break;
             case ProducerCreated _:
-                DotPulsarEventSource.Log.ProducerCreated();
+                DotPulsarMeter.ProducerCreated();
                 break;
             case ProducerDisposed producerDisposed:
                 Remove(producerDisposed.CorrelationId);
-                DotPulsarEventSource.Log.ProducerDisposed();
+                DotPulsarMeter.ProducerDisposed();
                 break;
             case ReaderCreated _:
-                DotPulsarEventSource.Log.ReaderCreated();
+                DotPulsarMeter.ReaderCreated();
                 break;
             case ReaderDisposed readerDisposed:
                 Remove(readerDisposed.CorrelationId);
-                DotPulsarEventSource.Log.ReaderDisposed();
+                DotPulsarMeter.ReaderDisposed();
                 break;
             default:
                 if (_processes.TryGetValue(e.CorrelationId, out var process))

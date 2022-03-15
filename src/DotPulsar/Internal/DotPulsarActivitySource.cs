@@ -24,7 +24,7 @@ public static class DotPulsarActivitySource
 {
     static DotPulsarActivitySource()
     {
-        ActivitySource = new ActivitySource(Constants.ClientName, Constants.ClientVersion);
+        ActivitySource = new(Constants.ClientName, Constants.ClientVersion);
     }
 
     public static ActivitySource ActivitySource { get; }

@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal;
 
 using System;
+using System.Diagnostics;
 
 public static class Constants
 {
@@ -40,6 +41,7 @@ public static class Constants
         MetadataSizeOffset = 6;
         MetadataOffset = 10;
         ConversationId = "messaging.conversation_id";
+        TimestampToTicks = TimeSpan.TicksPerSecond / (double) Stopwatch.Frequency;
     }
 
     public static string ClientName { get; }
@@ -53,4 +55,5 @@ public static class Constants
     public static int MetadataSizeOffset { get; }
     public static int MetadataOffset { get; }
     public static string ConversationId { get; }
+    public static double TimestampToTicks { get; }
 }

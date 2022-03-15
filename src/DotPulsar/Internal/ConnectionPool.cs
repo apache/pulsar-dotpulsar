@@ -160,7 +160,7 @@ public sealed class ConnectionPool : IConnectionPool
     {
         var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
         var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _authentication);
-        DotPulsarEventSource.Log.ConnectionCreated();
+        DotPulsarMeter.ConnectionCreated();
         _connections[url] = connection;
         _ = connection.ProcessIncommingFrames(_cancellationTokenSource.Token).ContinueWith(t => DisposeConnection(url));
         var commandConnect = _commandConnect;
@@ -178,7 +178,7 @@ public sealed class ConnectionPool : IConnectionPool
         if (_connections.TryRemove(serviceUrl, out Connection? connection) && connection is not null)
         {
             await connection.DisposeAsync().ConfigureAwait(false);
-            DotPulsarEventSource.Log.ConnectionDisposed();
+            DotPulsarMeter.ConnectionDisposed();
         }
     }
 

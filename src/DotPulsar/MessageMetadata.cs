@@ -131,6 +131,12 @@ public sealed class MessageMetadata
         }
         set
         {
+            if (key is null)
+                throw new ArgumentNullException(nameof(key), $"The '{nameof(key)}' cannot be null");
+
+            if (value is null)
+                throw new ArgumentNullException(nameof(value), $"The '{nameof(value)}' cannot be null");
+
             for (var i = 0; i < Metadata.Properties.Count; ++i)
             {
                 var prop = Metadata.Properties[i];

@@ -51,7 +51,7 @@ public static class ConsumerExtensions
         const string operation = "process";
         var operationName = $"{consumer.Topic} {operation}";
 
-        var tags = new KeyValuePair<string, object?>[]
+        var activityTags = new KeyValuePair<string, object?>[]
         {
             new KeyValuePair<string, object?>("messaging.destination", consumer.Topic),
             new KeyValuePair<string, object?>("messaging.destination_kind", "topic"),
@@ -61,18 +61,25 @@ public static class ConsumerExtensions
             new KeyValuePair<string, object?>("messaging.pulsar.subscription", consumer.SubscriptionName)
         };
 
+        var meterTags = new KeyValuePair<string, object?>[]
+        {
+            new KeyValuePair<string, object?>("topic", consumer.Topic),
+            new KeyValuePair<string, object?>("subscription", consumer.SubscriptionName)
+        };
+
         while (!cancellationToken.IsCancellationRequested)
         {
             var message = await consumer.Receive(cancellationToken).ConfigureAwait(false);
 
-            var activity = DotPulsarActivitySource.StartConsumerActivity(message, operationName, tags);
-
+            var activity = DotPulsarActivitySource.StartConsumerActivity(message, operationName, activityTags);
             if (activity is not null && activity.IsAllDataRequested)
             {
                 activity.SetMessageId(message.MessageId);
                 activity.SetPayloadSize(message.Data.Length);
                 activity.SetStatus(ActivityStatusCode.Ok);
             }
+
+            var startTimestamp = DotPulsarMeter.MessageProcessedEnabled ? Stopwatch.GetTimestamp() : 0;
 
             try
             {
@@ -83,6 +90,9 @@ public static class ConsumerExtensions
                 if (activity is not null && activity.IsAllDataRequested)
                     activity.AddException(exception);
             }
+
+            if (startTimestamp != 0)
+                DotPulsarMeter.MessageProcessed(startTimestamp, meterTags);
 
             activity?.Dispose();
 

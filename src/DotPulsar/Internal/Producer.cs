@@ -29,7 +29,8 @@ using System.Threading.Tasks;
 public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 {
     private readonly string _operationName;
-    private readonly KeyValuePair<string, object?>[] _tags;
+    private readonly KeyValuePair<string, object?>[] _activityTags;
+    private readonly KeyValuePair<string, object?>[] _meterTags;
     private readonly SequenceId _sequenceId;
     private readonly StateManager<ProducerState> _state;
     private readonly IConnectionPool _connectionPool;
@@ -57,12 +58,16 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         ICompressorFactory? compressorFactory)
     {
         _operationName = $"{options.Topic} send";
-        _tags = new KeyValuePair<string, object?>[]
+        _activityTags = new KeyValuePair<string, object?>[]
         {
                 new KeyValuePair<string, object?>("messaging.destination", options.Topic),
                 new KeyValuePair<string, object?>("messaging.destination_kind", "topic"),
                 new KeyValuePair<string, object?>("messaging.system", "pulsar"),
                 new KeyValuePair<string, object?>("messaging.url", serviceUrl),
+        };
+        _meterTags = new KeyValuePair<string, object?>[]
+        {
+                new KeyValuePair<string, object?>("topic", options.Topic)
         };
         _sequenceId = new SequenceId(options.InitialSequenceId);
         _state = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
@@ -238,14 +243,20 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         if (autoAssignSequenceId)
             metadata.SequenceId = _sequenceId.FetchNext();
 
-        var activity = DotPulsarActivitySource.StartProducerActivity(metadata, _operationName, _tags);
+        var activity = DotPulsarActivitySource.StartProducerActivity(metadata, _operationName, _activityTags);
 
         try
         {
             var partition = await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false);
             var producer = _producers[partition];
             var data = _options.Schema.Encode(message);
+
+            var startTimestamp = DotPulsarMeter.MessageSentEnabled ? Stopwatch.GetTimestamp() : 0;
+
             var messageId = await producer.Send(metadata.Metadata, data, cancellationToken).ConfigureAwait(false);
+
+            if (startTimestamp != 0)
+                DotPulsarMeter.MessageSent(startTimestamp, _meterTags);
 
             if (activity is not null && activity.IsAllDataRequested)
             {
