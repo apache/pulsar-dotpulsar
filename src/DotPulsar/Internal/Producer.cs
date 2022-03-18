@@ -244,14 +244,13 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             metadata.SequenceId = _sequenceId.FetchNext();
 
         var activity = DotPulsarActivitySource.StartProducerActivity(metadata, _operationName, _activityTags);
+        var startTimestamp = DotPulsarMeter.MessageSentEnabled ? Stopwatch.GetTimestamp() : 0;
 
         try
         {
             var partition = await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false);
             var producer = _producers[partition];
             var data = _options.Schema.Encode(message);
-
-            var startTimestamp = DotPulsarMeter.MessageSentEnabled ? Stopwatch.GetTimestamp() : 0;
 
             var messageId = await producer.Send(metadata.Metadata, data, cancellationToken).ConfigureAwait(false);
 

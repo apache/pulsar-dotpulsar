@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2022-03-18
+
+### Added
+
+- Metrics (the meter name is 'DotPulsar')
+    - dotpulsar.client.count - number of active clients (gauge)
+    - dotpulsar.connection.count - number of active connections (gauge)
+    - dotpulsar.reader.count - number of active readers (gauge with 'topic' tag)
+    - dotpulsar.consumer.count - number of active consumers (gauge with 'topic' tag)
+    - dotpulsar.producer.count - number of active producers (gauge with 'topic' tag)
+    - dotpulsar.producer.send.duration - Measures the duration for sending a message (histogram with 'topic' tag)
+    - dotpulsar.consumer.process.duration - Measures the duration for processing a message (histogram with 'topic' and 'subscription' tags)
+
+### Changed
+
+- Adding a property to MessageMetadata with a key or value of null will throw an ArgumentNullException
+
 ## [2.2.0] - 2022-02-04
 
 ### Added

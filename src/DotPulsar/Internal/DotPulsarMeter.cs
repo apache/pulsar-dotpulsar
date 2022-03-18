@@ -37,11 +37,11 @@ public static class DotPulsarMeter
     static DotPulsarMeter()
     {
         Meter = new(Constants.ClientName, Constants.ClientVersion);
-        var numberOfClients = Meter.CreateObservableGauge("dotpulsar.client.count", GetNumberOfClients, "{clients}", "Number of clients");
-        var numberOfConnections = Meter.CreateObservableGauge("dotpulsar.connection.count", GetNumberOfConnections, "{connections}", "Number of connections");
-        var numberOfReaders = Meter.CreateObservableGauge("dotpulsar.reader.count", GetNumberOfReaders, "{readers}", "Number of readers");
-        var numberOfConsumers = Meter.CreateObservableGauge("dotpulsar.consumer.count", GetNumberOfConsumers, "{consumers}", "Number of consumers");
-        var numberOfProducers = Meter.CreateObservableGauge("dotpulsar.producer.count", GetNumberOfProducers, "{producers}", "Number of producers");
+        _ = Meter.CreateObservableGauge("dotpulsar.client.count", GetNumberOfClients, "{clients}", "Number of clients");
+        _ = Meter.CreateObservableGauge("dotpulsar.connection.count", GetNumberOfConnections, "{connections}", "Number of connections");
+        _ = Meter.CreateObservableGauge("dotpulsar.reader.count", GetNumberOfReaders, "{readers}", "Number of readers");
+        _ = Meter.CreateObservableGauge("dotpulsar.consumer.count", GetNumberOfConsumers, "{consumers}", "Number of consumers");
+        _ = Meter.CreateObservableGauge("dotpulsar.producer.count", GetNumberOfProducers, "{producers}", "Number of producers");
         _producerSendDuration = Meter.CreateHistogram<double>("dotpulsar.producer.send.duration", "ms", "Measures the duration for sending a message");
         _consumerProcessDuration = Meter.CreateHistogram<double>("dotpulsar.consumer.process.duration", "ms", "Measures the duration for processing a message");
     }
