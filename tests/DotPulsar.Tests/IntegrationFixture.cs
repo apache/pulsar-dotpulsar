@@ -21,6 +21,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 public class IntegrationFixture : IAsyncLifetime
 {
@@ -29,10 +31,13 @@ public class IntegrationFixture : IAsyncLifetime
     private const string UserName = "test-user";
     private const int Port = 6650;
 
+    private readonly IMessageSink _messageSink;
     private readonly IContainerService _cluster;
 
-    public IntegrationFixture()
+    public IntegrationFixture(IMessageSink messageSink)
     {
+        _messageSink = messageSink;
+
         var environmentVariables = new[]
         {
             $"PULSAR_PREFIX_tokenSecretKey=file://{SecretKeyPath}",
@@ -63,7 +68,7 @@ public class IntegrationFixture : IAsyncLifetime
             .Command("/bin/bash -c", arguments)
             .Build();
 
-        ServiceUrl = new Uri("pulsar:://localhost:6650");
+        ServiceUrl = new Uri("pulsar://localhost:6650");
     }
 
     public Uri ServiceUrl { get; private set; }
@@ -76,9 +81,11 @@ public class IntegrationFixture : IAsyncLifetime
 
     public Task InitializeAsync()
     {
+        _cluster.StateChange += (sender, args) => _messageSink.OnMessage(new DiagnosticMessage($"The Pulsar cluster changed state to: {args.State}"));
         _cluster.Start();
         _cluster.WaitForMessageInLogs("Successfully updated the policies on namespace public/default", int.MaxValue);
         var endpoint = _cluster.ToHostExposedEndpoint($"{Port}/tcp");
+        _messageSink.OnMessage(new DiagnosticMessage($"Endpoint opened at {endpoint}"));
         ServiceUrl = new Uri($"pulsar://localhost:{endpoint.Port}");
         return Task.CompletedTask;
     }
