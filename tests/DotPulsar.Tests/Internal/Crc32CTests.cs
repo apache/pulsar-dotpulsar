@@ -18,6 +18,7 @@ using DotPulsar.Internal;
 using FluentAssertions;
 using Xunit;
 
+[Trait("Category", "Unit")]
 public class Crc32CTests
 {
     [Fact]

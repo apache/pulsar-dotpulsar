@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.IntegrationTests;
+namespace DotPulsar.Tests;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
@@ -24,18 +24,18 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-[Collection(nameof(StandaloneCollection))]
+[Collection("Integration"), Trait("Category", "Integration")]
 public class TokenTests
 {
     private const string MyTopic = "persistent://public/default/mytopic";
 
+    private readonly IntegrationFixture _fixture;
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly StandaloneFixture _fixture;
 
-    public TokenTests(ITestOutputHelper outputHelper, StandaloneFixture fixture)
+    public TokenTests(IntegrationFixture fixture, ITestOutputHelper outputHelper)
     {
-        _testOutputHelper = outputHelper;
         _fixture = fixture;
+        _testOutputHelper = outputHelper;
     }
 
     [Fact]
@@ -59,13 +59,13 @@ public class TokenTests
     {
         // Arrange
         var throwException = false;
-        await using var client = CreateClient(async ct =>
+        await using var client = CreateClient(ct =>
         {
             if (throwException)
                 throw new Exception();
-            var token = await _fixture.GetToken(TimeSpan.FromSeconds(10));
+            var token = _fixture.CreateToken(TimeSpan.FromSeconds(10));
             _testOutputHelper.WriteLine($"Received token: {token}");
-            return token;
+            return ValueTask.FromResult(token);
         });
 
         await using var producer = CreateProducer(client);
@@ -107,15 +107,15 @@ public class TokenTests
         var refreshCount = 0;
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        await using var client = CreateClient(async ct =>
+        await using var client = CreateClient(ct =>
         {
             ++refreshCount;
             if (refreshCount == 3)
                 tcs.SetResult();
 
-            var token = await _fixture.GetToken(TimeSpan.FromSeconds(10));
+            var token = _fixture.CreateToken(TimeSpan.FromSeconds(10));
             _testOutputHelper.WriteLine($"Received token: {token}");
-            return token;
+            return ValueTask.FromResult(token);
         });
 
         await using var producer = CreateProducer(client);

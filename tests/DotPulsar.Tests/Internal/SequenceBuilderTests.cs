@@ -20,6 +20,7 @@ using System.Buffers;
 using System.Linq;
 using Xunit;
 
+[Trait("Category", "Unit")]
 public class SequenceBuilderTests
 {
     [Fact]

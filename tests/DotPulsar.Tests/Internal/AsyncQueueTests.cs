@@ -20,6 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
+[Trait("Category", "Unit")]
 public class AsyncQueueTests
 {
     [Fact]

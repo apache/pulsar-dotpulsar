@@ -12,11 +12,10 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.StressTests;
+namespace DotPulsar.Tests;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
-using Fixtures;
 using FluentAssertions;
 using System;
 using System.Collections.Generic;
@@ -24,15 +23,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
-[Collection(nameof(StandaloneClusterTest))]
+[Collection("Integration"), Trait("Category", "Integration")]
 public class ConsumerTests
 {
-    private readonly ITestOutputHelper _output;
+    private readonly IntegrationFixture _fixture;
 
-    public ConsumerTests(ITestOutputHelper output)
-        => _output = output;
+    public ConsumerTests(IntegrationFixture fixture)
+    {
+        _fixture = fixture;
+    }
 
     [Theory]
     [InlineData(10000)]
@@ -44,8 +44,8 @@ public class ConsumerTests
         var topic = $"persistent://public/default/consumer-tests-{testRunId}";
 
         await using var client = PulsarClient.Builder()
-            .ExceptionHandler(new XunitExceptionHandler(_output))
-            .ServiceUrl(new Uri("pulsar://localhost:54545"))
+            .ServiceUrl(_fixture.ServiceUrl)
+            .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
             .Build();
 
         await using var consumer = client.NewConsumer(Schema.ByteArray)

@@ -19,6 +19,7 @@ using DotPulsar.Internal.Extensions;
 using FluentAssertions;
 using Xunit;
 
+[Trait("Category", "Unit")]
 public class ReadOnlySequenceExtensionsTests
 {
     [Fact]

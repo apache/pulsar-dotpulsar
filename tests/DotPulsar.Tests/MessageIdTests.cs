@@ -20,6 +20,7 @@ using DotPulsar;
 using FluentAssertions;
 using Xunit;
 
+[Trait("Category", "Unit")]
 public class MessageIdTests
 {
     [Fact]

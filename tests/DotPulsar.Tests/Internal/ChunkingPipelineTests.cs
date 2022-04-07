@@ -23,6 +23,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
+[Trait("Category", "Unit")]
 public class ChunkingPipelineTests
 {
     [Fact]

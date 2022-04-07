@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.IntegrationTests;
+namespace DotPulsar.Tests;
 
 using Abstractions;
 using Extensions;
@@ -24,16 +24,16 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-[Collection(nameof(StandaloneCollection))]
+[Collection("Integration"), Trait("Category", "Integration")]
 public class ProducerTests
 {
+    private readonly IntegrationFixture _fixture;
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly StandaloneFixture _fixture;
 
-    public ProducerTests(ITestOutputHelper outputHelper, StandaloneFixture fixture)
+    public ProducerTests(IntegrationFixture fixture, ITestOutputHelper outputHelper)
     {
-        _testOutputHelper = outputHelper;
         _fixture = fixture;
+        _testOutputHelper = outputHelper;
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class ProducerTests
         const int partitions = 3;
         const int msgCount = 3;
         var topicName = $"single-partitioned-{Guid.NewGuid():N}";
-        await _fixture.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
+        _fixture.CreatePartitionedTopic($"persistent://public/default/{topicName}", partitions);
         await using var client = CreateClient();
 
         //Act
@@ -123,7 +123,7 @@ public class ProducerTests
         const int partitions = 3;
         var consumers = new List<IConsumer<string>>();
 
-        await _fixture.CreatePartitionedTopic($"persistent/public/default/{topicName}", partitions);
+        _fixture.CreatePartitionedTopic($"persistent://public/default/{topicName}", partitions);
 
         //Act
         await using var producer = client.NewProducer(Schema.String)
@@ -151,7 +151,7 @@ public class ProducerTests
     private IPulsarClient CreateClient()
         => PulsarClient
         .Builder()
-        .Authentication(AuthenticationFactory.Token(async ct => await _fixture.GetToken(Timeout.InfiniteTimeSpan)))
+        .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
         .ExceptionHandler(ec => _testOutputHelper.WriteLine($"Exception: {ec.Exception}"))
         .ServiceUrl(_fixture.ServiceUrl)
         .Build();
