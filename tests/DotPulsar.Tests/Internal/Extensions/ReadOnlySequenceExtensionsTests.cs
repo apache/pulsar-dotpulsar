@@ -101,7 +101,7 @@ public class ReadOnlySequenceExtensionsTests
     }
 
     [Fact]
-    public void ReadUInt32_GivenSequenceWithSingleSegment_ShouldGiveExceptedResult()
+    public void ReadUInt32_GivenSequenceWithSingleSegment_ShouldGiveExpectedResult()
     {
         //Arrange
         var sequence = new SequenceBuilder<byte>().Append(new byte[] { 0x00, 0x01, 0x02, 0x03 }).Build();
@@ -115,10 +115,38 @@ public class ReadOnlySequenceExtensionsTests
     }
 
     [Fact]
-    public void ReadUInt32_GivenSequenceWithSingleSegmentAndNonZeroStart_ShouldGiveExceptedResult()
+    public void ReadUInt32_GivenSequenceWithSingleSegmentAndNonZeroStart_ShouldGiveExpectedResult()
     {
         //Arrange
         var sequence = new SequenceBuilder<byte>().Append(new byte[] { 0x09, 0x00, 0x01, 0x02, 0x03 }).Build();
+
+        //Act
+        var actual = sequence.ReadUInt32(1, true);
+
+        //Assert
+        const uint expected = 66051;
+        actual.Should().Be(expected);
+    }
+
+    [Fact]
+    public void ReadUInt32_GivenSequenceWithMultipleSegments_ShouldGiveExpectedResult()
+    {
+        // Arrange
+        var sequence = new SequenceBuilder<byte>().Append(new byte[] { 0x00, 0x00 }).Append(new byte[] { 0x00, 0x01, 0x00 }).Build();
+
+        // Act
+        var actual = sequence.ReadUInt32(0, true);
+
+        // Assert
+        const int expected = 1;
+        actual.Should().Be(expected);
+    }
+
+    [Fact]
+    public void ReadUInt32_GivenSequenceWithMultipleSegmentsAndNonZeroStart_ShouldGiveExpectedResult()
+    {
+        //Arrange
+        var sequence = new SequenceBuilder<byte>().Append(new byte[] { 0x09, 0x00 }).Append(new byte[] { 0x01, 0x02, 0x03 }).Build();
 
         //Act
         var actual = sequence.ReadUInt32(1, true);
