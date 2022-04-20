@@ -28,6 +28,8 @@ using System.Threading.Tasks;
 
 public sealed class PulsarStream : IPulsarStream
 {
+    private const int _frameSizePrefix = 4;
+    private const int _unknownFrameSize = 0;
     private const long _pauseAtMoreThan10Mb = 10485760;
     private const long _resumeAt5MbOrLess = 5242881;
     private const int _chunkSize = 75000;
@@ -117,31 +119,32 @@ public sealed class PulsarStream : IPulsarStream
 
         try
         {
-            uint? frameSize = null;
+            var frameSize = _unknownFrameSize;
+
             while (true)
             {
-                var minimumSize = frameSize.HasValue ? (int) frameSize.Value + 4 : 4;
-                var result = await _reader.ReadAtLeastAsync(minimumSize, cancellationToken).ConfigureAwait(false);
-                var buffer = result.Buffer;
+                var minimumSize = _frameSizePrefix + frameSize;
+                var readResult = await _reader.ReadAtLeastAsync(minimumSize, cancellationToken).ConfigureAwait(false);
+                var buffer = readResult.Buffer;
 
                 while (true)
                 {
-                    if (buffer.Length < 4)
+                    if (buffer.Length < _frameSizePrefix)
                         break;
 
-                    frameSize ??= buffer.ReadUInt32(0, true);
-                    var totalSize = frameSize.Value + 4;
+                    frameSize = (int) buffer.ReadUInt32(0, true);
+                    var totalSize = _frameSizePrefix + frameSize;
 
                     if (buffer.Length < totalSize)
                         break;
 
-                    yield return buffer.Slice(4, frameSize.Value);
+                    yield return buffer.Slice(_frameSizePrefix, frameSize);
 
                     buffer = buffer.Slice(totalSize);
-                    frameSize = null;
+                    frameSize = _unknownFrameSize;
                 }
 
-                if (result.IsCompleted)
+                if (readResult.IsCompleted)
                     break;
 
                 _reader.AdvanceTo(buffer.Start);
