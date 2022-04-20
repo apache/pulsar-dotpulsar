@@ -65,22 +65,22 @@ public static class ReadOnlySequenceExtensions
 
             var span = memory.Span;
 
-            for (var i = (int) start; i < span.Length; ++i, ++read)
+            for (var i = (int) start; i < span.Length && read < 4; ++i, ++read)
             {
                 switch (read)
                 {
                     case 0:
                         if (reverse) union.B0 = span[i];
                         else union.B3 = span[i];
-                        continue;
+                        break;
                     case 1:
                         if (reverse) union.B1 = span[i];
                         else union.B2 = span[i];
-                        continue;
+                        break;
                     case 2:
                         if (reverse) union.B2 = span[i];
                         else union.B1 = span[i];
-                        continue;
+                        break;
                     case 3:
                         if (reverse) union.B3 = span[i];
                         else union.B0 = span[i];
