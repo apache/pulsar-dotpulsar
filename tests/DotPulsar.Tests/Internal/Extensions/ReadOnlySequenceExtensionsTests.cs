@@ -128,34 +128,6 @@ public class ReadOnlySequenceExtensionsTests
         actual.Should().Be(expected);
     }
 
-    [Fact]
-    public void ReadUInt32_GivenSequenceWithMultipleSegments_ShouldGiveExpectedResult()
-    {
-        // Arrange
-        var sequence = new SequenceBuilder<byte>().Append(new byte[] { 0x00, 0x00 }).Append(new byte[] { 0x00, 0x01, 0x00 }).Build();
-
-        // Act
-        var actual = sequence.ReadUInt32(0, true);
-
-        // Assert
-        const int expected = 1;
-        actual.Should().Be(expected);
-    }
-
-    [Fact]
-    public void ReadUInt32_GivenSequenceWithMultipleSegmentsAndNonZeroStart_ShouldGiveExpectedResult()
-    {
-        //Arrange
-        var sequence = new SequenceBuilder<byte>().Append(new byte[] { 0x09, 0x00 }).Append(new byte[] { 0x01, 0x02, 0x03 }).Build();
-
-        //Act
-        var actual = sequence.ReadUInt32(1, true);
-
-        //Assert
-        const uint expected = 66051;
-        actual.Should().Be(expected);
-    }
-
 #pragma warning disable xUnit1025 // Miscoded warning can't tell these are all different
     [Theory]
     [InlineData(new byte[] { }, new byte[] { 0x02, 0x03, 0x04, 0x05 })]
@@ -174,7 +146,7 @@ public class ReadOnlySequenceExtensionsTests
     [InlineData(new byte[] { 0x02 }, new byte[] { 0x03, 0x04, 0x05 }, new byte[] { 0x09 })]
     [InlineData(new byte[] { 0x02 }, new byte[] { 0x03 }, new byte[] { 0x04, 0x05 }, new byte[] { 0x09 })]
 #pragma warning restore xUnit1025 // InlineData should be unique within the Theory it belongs to
-    public void ReadUInt32_GivenSequenceWithMultipleSegments_ShouldGiveExceptedResult(params byte[][] testPath)
+    public void ReadUInt32_GivenSequenceWithMultipleSegments_ShouldGiveExpectedResult(params byte[][] testPath)
     {
         //Arrange
         var sequenceBuilder = new SequenceBuilder<byte>();
@@ -194,7 +166,7 @@ public class ReadOnlySequenceExtensionsTests
     [InlineData(2, new byte[] { 0x09, 0x09, 0x02 }, new byte[] { 0x03, 0x04, 0x05 }, new byte[] { 0x09, 0x09, 0x09 })]
     [InlineData(3, new byte[] { 0x09, 0x09, 0x09 }, new byte[] { 0x02, 0x03, 0x04 }, new byte[] { 0x05, 0x09, 0x09 })]
     [InlineData(4, new byte[] { 0x09, 0x09, 0x09 }, new byte[] { 0x09, 0x02, 0x03 }, new byte[] { 0x04, 0x05, 0x09 })]
-    public void ReadUInt32_GivenSequenceWithMultipleSegmentsAndNonZeroStart_ShouldGiveExceptedResult(long start, params byte[][] testPath)
+    public void ReadUInt32_GivenSequenceWithMultipleSegmentsAndNonZeroStart_ShouldGiveExpectedResult(long start, params byte[][] testPath)
     {
         //Arrange
         var sequenceBuilder = new SequenceBuilder<byte>();
