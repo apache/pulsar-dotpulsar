@@ -117,9 +117,11 @@ public sealed class PulsarStream : IPulsarStream
 
         try
         {
+            uint? frameSize = null;
             while (true)
             {
-                var result = await _reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                var minimumSize = frameSize.HasValue ? (int) frameSize.Value + 4 : 4;
+                var result = await _reader.ReadAtLeastAsync(minimumSize, cancellationToken).ConfigureAwait(false);
                 var buffer = result.Buffer;
 
                 while (true)
@@ -127,15 +129,16 @@ public sealed class PulsarStream : IPulsarStream
                     if (buffer.Length < 4)
                         break;
 
-                    var frameSize = buffer.ReadUInt32(0, true);
-                    var totalSize = frameSize + 4;
+                    frameSize ??= buffer.ReadUInt32(0, true);
+                    var totalSize = frameSize.Value + 4;
 
                     if (buffer.Length < totalSize)
                         break;
 
-                    yield return buffer.Slice(4, frameSize);
+                    yield return buffer.Slice(4, frameSize.Value);
 
                     buffer = buffer.Slice(totalSize);
+                    frameSize = null;
                 }
 
                 if (result.IsCompleted)
