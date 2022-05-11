@@ -120,6 +120,7 @@ public sealed class PulsarStream : IPulsarStream
         try
         {
             var frameSize = _unknownFrameSize;
+            var totalSize = 0;
 
             while (true)
             {
@@ -132,8 +133,11 @@ public sealed class PulsarStream : IPulsarStream
                     if (buffer.Length < _frameSizePrefix)
                         break;
 
-                    frameSize = (int) buffer.ReadUInt32(0, true);
-                    var totalSize = _frameSizePrefix + frameSize;
+                    if (frameSize == _unknownFrameSize)
+                    {
+                        frameSize = (int) buffer.ReadUInt32(0, true);
+                        totalSize = _frameSizePrefix + frameSize;
+                    }
 
                     if (buffer.Length < totalSize)
                         break;
