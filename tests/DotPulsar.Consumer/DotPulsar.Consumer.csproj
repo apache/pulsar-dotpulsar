@@ -15,7 +15,7 @@
     </ItemGroup>
 
   <Target Name="PublishConsumer" AfterTargets="Build">
-    <Exec Command="dotnet publish $(ProjectDir) -r linux-x64 -o $(SolutionDir)tests\DotPulsar.Tests\$(OutDir) --no-build"
+    <Exec Command="dotnet publish $(ProjectDir) -r linux-x64 -o $(ProjectDir)..\DotPulsar.Tests\$(OutDir) --no-build"
           ConsoleToMSBuild="true" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="ConsoleOutput" />
       <Output TaskParameter="ExitCode" PropertyName="ExitCode" />
