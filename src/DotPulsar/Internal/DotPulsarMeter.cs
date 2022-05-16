@@ -29,6 +29,7 @@ public static class DotPulsarMeter
     private static int _numberOfReaders;
     private static int _numberOfConsumers;
     private static int _numberOfProducers;
+    private static int _numberOfServerTimeouts;
 #pragma warning restore IDE0044
 #pragma warning restore IDE0079
     private static readonly Histogram<double> _producerSendDuration;
@@ -42,6 +43,7 @@ public static class DotPulsarMeter
         _ = Meter.CreateObservableGauge("dotpulsar.reader.count", GetNumberOfReaders, "{readers}", "Number of readers");
         _ = Meter.CreateObservableGauge("dotpulsar.consumer.count", GetNumberOfConsumers, "{consumers}", "Number of consumers");
         _ = Meter.CreateObservableGauge("dotpulsar.producer.count", GetNumberOfProducers, "{producers}", "Number of producers");
+        _ = Meter.CreateObservableGauge("dotpulsar.server.timeout.count", GetNumberOfProducers, "{servertimeout}", "Number of times server stopped responding");
         _producerSendDuration = Meter.CreateHistogram<double>("dotpulsar.producer.send.duration", "ms", "Measures the duration for sending a message");
         _consumerProcessDuration = Meter.CreateHistogram<double>("dotpulsar.consumer.process.duration", "ms", "Measures the duration for processing a message");
     }
@@ -54,6 +56,7 @@ public static class DotPulsarMeter
 
     public static void ConnectionCreated() => Interlocked.Increment(ref _numberOfConnections);
     public static void ConnectionDisposed() => Interlocked.Decrement(ref _numberOfConnections);
+    public static void ServerTimedout() => Interlocked.Decrement(ref _numberOfServerTimeouts);
     private static int GetNumberOfConnections() => Volatile.Read(ref _numberOfConnections);
 
     public static void ReaderCreated() => Interlocked.Increment(ref _numberOfReaders);
@@ -67,6 +70,7 @@ public static class DotPulsarMeter
     public static void ProducerCreated() => Interlocked.Increment(ref _numberOfProducers);
     public static void ProducerDisposed() => Interlocked.Decrement(ref _numberOfProducers);
     private static int GetNumberOfProducers() => Volatile.Read(ref _numberOfProducers);
+    private static int GetNumberOfServerTimeouts() => Volatile.Read(ref _numberOfServerTimeouts);
 
 
     public static bool MessageSentEnabled => _producerSendDuration.Enabled;

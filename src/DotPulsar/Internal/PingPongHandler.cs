@@ -25,21 +25,29 @@ public sealed class PingPongHandler : IAsyncDisposable
 {
     private readonly IConnection _connection;
     private readonly TimeSpan _keepAliveInterval;
+    private readonly TimeSpan _serverResponseTimeout;
     private readonly Timer _timer;
     private readonly CommandPing _ping;
     private readonly CommandPong _pong;
     private long _lastCommand;
+    private readonly TaskCompletionSource<object> _serverNotRespondingTcs;
 
-    public PingPongHandler(IConnection connection, TimeSpan keepAliveInterval)
+    public PingPongHandler(IConnection connection,
+        TimeSpan keepAliveInterval,
+        TimeSpan serverResponseTimeout)
     {
         _connection = connection;
         _keepAliveInterval = keepAliveInterval;
+        _serverResponseTimeout = serverResponseTimeout;
         _timer = new Timer(Watch);
         _timer.Change(_keepAliveInterval, TimeSpan.Zero);
         _ping = new CommandPing();
         _pong = new CommandPong();
         _lastCommand = Stopwatch.GetTimestamp();
+        _serverNotRespondingTcs = new TaskCompletionSource<object>();
     }
+
+    public Task ServerNotResponding => _serverNotRespondingTcs.Task;
 
     public bool Incoming(BaseCommand.Type commandType)
     {
@@ -47,7 +55,7 @@ public sealed class PingPongHandler : IAsyncDisposable
 
         if (commandType == BaseCommand.Type.Ping)
         {
-            Task.Factory.StartNew(() => SendPong());
+            Task.Factory.StartNew(SendPong);
             return true;
         }
 
@@ -61,13 +69,25 @@ public sealed class PingPongHandler : IAsyncDisposable
             var lastCommand = Interlocked.Read(ref _lastCommand);
             var now = Stopwatch.GetTimestamp();
             var elapsed = TimeSpan.FromSeconds((now - lastCommand) / Stopwatch.Frequency);
-            if (elapsed >= _keepAliveInterval)
+
+            if (elapsed > _serverResponseTimeout)
             {
-                Task.Factory.StartNew(() => SendPing());
-                _timer.Change(_keepAliveInterval, TimeSpan.Zero);
+                DotPulsarMeter.ServerTimedout();
+                _serverNotRespondingTcs.SetResult(new object());
             }
             else
-                _timer.Change(_keepAliveInterval.Subtract(elapsed), TimeSpan.Zero);
+            {
+                if (elapsed >= _keepAliveInterval)
+                {
+                    Task.Factory.StartNew(() => SendPing());
+                    _timer.Change(_keepAliveInterval, TimeSpan.Zero);
+                }
+                else
+                {
+                    var result = _keepAliveInterval.Subtract(elapsed);
+                    _timer.Change(result, TimeSpan.Zero);
+                }
+            }
         }
         catch
         {

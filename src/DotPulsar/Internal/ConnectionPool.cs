@@ -38,6 +38,7 @@ public sealed class ConnectionPool : IConnectionPool
     private readonly string? _listenerName;
     private readonly TimeSpan _keepAliveInterval;
     private readonly IAuthentication? _authentication;
+    private readonly TimeSpan _serverResponseTimeout;
 
     public ConnectionPool(
         CommandConnect commandConnect,
@@ -47,6 +48,7 @@ public sealed class ConnectionPool : IConnectionPool
         TimeSpan closeInactiveConnectionsInterval,
         string? listenerName,
         TimeSpan keepAliveInterval,
+        TimeSpan serverResponseTimeout,
         IAuthentication? authentication)
     {
         _lock = new AsyncLock();
@@ -59,6 +61,7 @@ public sealed class ConnectionPool : IConnectionPool
         _cancellationTokenSource = new CancellationTokenSource();
         _closeInactiveConnections = CloseInactiveConnections(closeInactiveConnectionsInterval, _cancellationTokenSource.Token);
         _keepAliveInterval = keepAliveInterval;
+        _serverResponseTimeout = serverResponseTimeout;
         _authentication = authentication;
     }
 
@@ -159,7 +162,8 @@ public sealed class ConnectionPool : IConnectionPool
     private async Task<Connection> EstablishNewConnection(PulsarUrl url, CancellationToken cancellationToken)
     {
         var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
-        var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _authentication);
+        var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _serverResponseTimeout,
+            _authentication);
         DotPulsarMeter.ConnectionCreated();
         _connections[url] = connection;
         _ = connection.ProcessIncommingFrames(_cancellationTokenSource.Token).ContinueWith(t => DisposeConnection(url));

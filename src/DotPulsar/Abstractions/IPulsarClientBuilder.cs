@@ -54,6 +54,16 @@ public interface IPulsarClientBuilder
     IPulsarClientBuilder KeepAliveInterval(TimeSpan interval);
 
     /// <summary>
+    /// The maximum amount of time to wait without receiving any message from the server at
+    /// which point the connection is assumed to be dead or the server is not responding.
+    /// As we are sending pings the server should respond to those at a minimum within this specified timeout period.
+    /// Once this happens the connection will be torn down and all consumers/producers will enter
+    /// the disconnected state and attempt to reconnect
+    /// The default is 60 seconds.
+    /// </summary>
+    IPulsarClientBuilder ServerResponseTimeout(TimeSpan interval);
+
+    /// <summary>
     /// Set the listener name. This is optional.
     /// </summary>
     IPulsarClientBuilder ListenerName(string listenerName);
