@@ -15,7 +15,6 @@
 namespace DotPulsar.Tests;
 
 using Ductus.FluentDocker.Builders;
-using Ductus.FluentDocker.Commands;
 using Ductus.FluentDocker.Services;
 using Ductus.FluentDocker.Services.Extensions;
 using System;
@@ -137,19 +136,5 @@ public class IntegrationFixture : IAsyncLifetime
 
         if (!result.Success)
             throw new Exception($"Could not create the partitioned topic: {result.Error}");
-    }
-
-    public void DisconnectBroker()
-    {
-        var hosts = new Hosts().Discover();
-        var docker = hosts.Single();
-        docker.Host.NetworkDisconnect(PulsarContainerName, NetworkAlias, true);
-    }
-
-    public void ReconnectBroker()
-    {
-        var hosts = new Hosts().Discover();
-        var docker = hosts.Single();
-        docker.Host.NetworkConnect(PulsarContainerName, NetworkAlias, new[] { "pulsar" });
     }
 }
