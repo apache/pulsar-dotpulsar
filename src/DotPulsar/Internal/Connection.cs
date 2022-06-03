@@ -299,7 +299,7 @@ public sealed class Connection : IConnection
 
     public async Task ProcessIncommingFrames(CancellationToken cancellationToken)
     {
-        await Task.WhenAny(ProcessIncommingFramesImpl(cancellationToken), _pingPongHandler.ServerNotResponding);
+        await Task.WhenAny(ProcessIncommingFramesImpl(cancellationToken), _pingPongHandler.ServerNotResponding).ConfigureAwait(false);
     }
 
     public async Task ProcessIncommingFramesImpl(CancellationToken cancellationToken)

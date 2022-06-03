@@ -74,19 +74,18 @@ public sealed class PingPongHandler : IAsyncDisposable
             {
                 DotPulsarMeter.ServerTimedout();
                 _serverNotRespondingTcs.SetResult(new object());
+                return;
+            }
+
+            if (elapsed >= _keepAliveInterval)
+            {
+                Task.Factory.StartNew(() => SendPing());
+                _timer.Change(_keepAliveInterval, TimeSpan.Zero);
             }
             else
             {
-                if (elapsed >= _keepAliveInterval)
-                {
-                    Task.Factory.StartNew(() => SendPing());
-                    _timer.Change(_keepAliveInterval, TimeSpan.Zero);
-                }
-                else
-                {
-                    var result = _keepAliveInterval.Subtract(elapsed);
-                    _timer.Change(result, TimeSpan.Zero);
-                }
+                var result = _keepAliveInterval.Subtract(elapsed);
+                _timer.Change(result, TimeSpan.Zero);
             }
         }
         catch
