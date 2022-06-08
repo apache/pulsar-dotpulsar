@@ -27,6 +27,7 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
     private readonly List<IHandleException> _exceptionHandlers;
     private EncryptionPolicy? _encryptionPolicy;
     private TimeSpan _keepAliveInterval;
+    private TimeSpan _serverResponseTimeout;
     private string? _listenerName;
     private TimeSpan _retryInterval;
     private Uri _serviceUrl;
@@ -51,6 +52,7 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
 
         _exceptionHandlers = new List<IHandleException>();
         _keepAliveInterval = TimeSpan.FromSeconds(30);
+        _serverResponseTimeout = TimeSpan.FromSeconds(60);
         _retryInterval = TimeSpan.FromSeconds(3);
         _serviceUrl = new Uri($"{Constants.PulsarScheme}://localhost:{Constants.DefaultPulsarPort}");
         _clientCertificates = new X509Certificate2Collection();
@@ -93,6 +95,12 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
     public IPulsarClientBuilder KeepAliveInterval(TimeSpan interval)
     {
         _keepAliveInterval = interval;
+        return this;
+    }
+
+    public IPulsarClientBuilder ServerResponseTimeout(TimeSpan interval)
+    {
+        _serverResponseTimeout = interval;
         return this;
     }
 
@@ -165,7 +173,8 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
 
         var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
         var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);
-        var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName, _keepAliveInterval, _authentication);
+
+        var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName, _keepAliveInterval, _serverResponseTimeout, _authentication);
         var processManager = new ProcessManager(connectionPool);
 
         return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline, _serviceUrl);

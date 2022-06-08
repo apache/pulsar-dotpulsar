@@ -152,6 +152,7 @@ public class ProducerTests
         => PulsarClient
         .Builder()
         .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
+        .KeepAliveInterval(TimeSpan.FromSeconds(5))
         .ExceptionHandler(ec => _testOutputHelper.WriteLine($"Exception: {ec.Exception}"))
         .ServiceUrl(_fixture.ServiceUrl)
         .Build();

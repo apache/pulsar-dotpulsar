@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotPulsar\DotPulsar.csproj" />
+    <ProjectReference Include="..\DotPulsar.Consumer\DotPulsar.Consumer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

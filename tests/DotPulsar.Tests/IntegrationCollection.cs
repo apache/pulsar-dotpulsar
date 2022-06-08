@@ -18,3 +18,6 @@ using Xunit;
 
 [CollectionDefinition("Integration")]
 public class IntegrationCollection : ICollectionFixture<IntegrationFixture> { }
+
+[CollectionDefinition("KeepAlive")]
+public class KeepAliveCollection : ICollectionFixture<KeepAliveFixture> { }

@@ -33,11 +33,15 @@ public sealed class Connection : IConnection
     private readonly IAuthentication? _authentication;
     private int _isDisposed;
 
-    public Connection(IPulsarStream stream, TimeSpan keepAliveInterval, IAuthentication? authentication)
+    public Connection(
+        IPulsarStream stream,
+        TimeSpan keepAliveInterval,
+        TimeSpan serverResponseTimeout,
+        IAuthentication? authentication)
     {
         _lock = new AsyncLock();
         _channelManager = new ChannelManager();
-        _pingPongHandler = new PingPongHandler(this, keepAliveInterval);
+        _pingPongHandler = new PingPongHandler(this, keepAliveInterval, serverResponseTimeout);
         _stream = stream;
         _authentication = authentication;
     }
@@ -294,6 +298,11 @@ public sealed class Connection : IConnection
     }
 
     public async Task ProcessIncommingFrames(CancellationToken cancellationToken)
+    {
+        await Task.WhenAny(ProcessIncommingFramesImpl(cancellationToken), _pingPongHandler.ServerNotResponding).ConfigureAwait(false);
+    }
+
+    public async Task ProcessIncommingFramesImpl(CancellationToken cancellationToken)
     {
         await Task.Yield();
 

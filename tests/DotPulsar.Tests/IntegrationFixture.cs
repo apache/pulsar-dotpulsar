@@ -18,6 +18,7 @@ using Ductus.FluentDocker.Builders;
 using Ductus.FluentDocker.Services;
 using Ductus.FluentDocker.Services.Extensions;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -32,56 +33,78 @@ public class IntegrationFixture : IAsyncLifetime
     private const int Port = 6650;
 
     private readonly IMessageSink _messageSink;
-    private readonly IContainerService _cluster;
+    private IContainerService? _cluster;
+    private INetworkService? _network;
+
+    protected virtual string[] EnvironmentVariables => new[]
+    {
+        $"PULSAR_PREFIX_tokenSecretKey=file://{SecretKeyPath}",
+        "PULSAR_PREFIX_authenticationRefreshCheckSeconds=5",
+        $"superUserRoles={UserName}",
+        "authenticationEnabled=true",
+        "authorizationEnabled=true",
+        "authenticationProviders=org.apache.pulsar.broker.authentication.AuthenticationProviderToken",
+        "authenticateOriginalAuthData=false",
+        $"brokerClientAuthenticationPlugin={AuthenticationPlugin}",
+        $"CLIENT_PREFIX_authPlugin={AuthenticationPlugin}",
+    };
+
+    protected virtual bool IncludeNetwork => false;
 
     public IntegrationFixture(IMessageSink messageSink)
     {
         _messageSink = messageSink;
-
-        var environmentVariables = new[]
-        {
-            $"PULSAR_PREFIX_tokenSecretKey=file://{SecretKeyPath}",
-            "PULSAR_PREFIX_authenticationRefreshCheckSeconds=5",
-            $"superUserRoles={UserName}",
-            "authenticationEnabled=true",
-            "authorizationEnabled=true",
-            "authenticationProviders=org.apache.pulsar.broker.authentication.AuthenticationProviderToken",
-            "authenticateOriginalAuthData=false",
-            $"brokerClientAuthenticationPlugin={AuthenticationPlugin}",
-            $"CLIENT_PREFIX_authPlugin={AuthenticationPlugin}",
-        };
-
-        var arguments = "\"" +
-            $"bin/pulsar tokens create-secret-key --output {SecretKeyPath} && " +
-            $"export brokerClientAuthenticationParameters=token:$(bin/pulsar tokens create --secret-key {SecretKeyPath} --subject {UserName}) && " +
-            "export CLIENT_PREFIX_authParams=$brokerClientAuthenticationParameters && " +
-            "bin/apply-config-from-env.py conf/standalone.conf && " +
-            "bin/apply-config-from-env-with-prefix.py CLIENT_PREFIX_ conf/client.conf && " +
-            "bin/pulsar standalone --no-functions-worker"
-            + "\"";
-
-        _cluster = new Builder()
-            .UseContainer()
-            .UseImage("apachepulsar/pulsar:2.9.2")
-            .WithEnvironment(environmentVariables)
-            .ExposePort(Port)
-            .Command("/bin/bash -c", arguments)
-            .Build();
-
+        var instanceId = Guid.NewGuid().ToString();
+        PulsarContainerName = $"dotpulsar-pulsar.{instanceId}";
+        NetworkAlias = $"dotpulsar-network.{instanceId}";
         ServiceUrl = new Uri("pulsar://localhost:6650");
     }
 
     public Uri ServiceUrl { get; private set; }
+    public string NetworkAlias { get; }
+    public string PulsarContainerName { get; }
 
     public Task DisposeAsync()
     {
-        _cluster.Dispose();
+        _cluster?.Dispose();
+        _network?.Dispose();
         return Task.CompletedTask;
     }
 
     public Task InitializeAsync()
     {
-        _cluster.StateChange += (sender, args) => _messageSink.OnMessage(new DiagnosticMessage($"The Pulsar cluster changed state to: {args.State}"));
+        var arguments = "\"" +
+                        $"bin/pulsar tokens create-secret-key --output {SecretKeyPath} && " +
+                        $"export brokerClientAuthenticationParameters=token:$(bin/pulsar tokens create --secret-key {SecretKeyPath} --subject {UserName}) && " +
+                        "export CLIENT_PREFIX_authParams=$brokerClientAuthenticationParameters && " +
+                        "bin/apply-config-from-env.py conf/standalone.conf && " +
+                        "bin/apply-config-from-env-with-prefix.py CLIENT_PREFIX_ conf/client.conf && " +
+                        "bin/pulsar standalone --no-functions-worker"
+                        + "\"";
+
+        var docker= new Hosts().Discover().Single();
+
+        if (IncludeNetwork)
+        {
+            _network = docker.CreateNetwork(NetworkAlias, removeOnDispose:true);
+        }
+
+        var builder = new Builder()
+            .UseContainer()
+            .WithName(PulsarContainerName)
+            .UseImage("apachepulsar/pulsar:2.9.2")
+            .WithEnvironment(EnvironmentVariables)
+            .WithHostName("pulsar")
+            .ExposePort(Port)
+            .Command("/bin/bash -c", arguments);
+
+        if (IncludeNetwork)
+        {
+            builder = builder.UseNetwork(NetworkAlias);
+        }
+
+        _cluster = builder.Build();
+        _cluster.StateChange += (_, args) => _messageSink.OnMessage(new DiagnosticMessage($"The Pulsar cluster changed state to: {args.State}"));
         _cluster.Start();
         _cluster.WaitForMessageInLogs("Successfully updated the policies on namespace public/default", int.MaxValue);
         var endpoint = _cluster.ToHostExposedEndpoint($"{Port}/tcp");
