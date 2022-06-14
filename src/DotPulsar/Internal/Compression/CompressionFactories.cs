@@ -27,17 +27,35 @@ public static class CompressionFactories
         _compressorFactories = new List<ICompressorFactory>();
         _decompressorFactories = new List<IDecompressorFactory>();
 
+        LoadSupportForLz4();
+        LoadSupportForSnappy();
+        LoadSupportForZlib();
+        LoadSupportForZstd();
+    }
 
+    private static void LoadSupportForLz4()
+    {
         if (Lz4Compression.TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory))
             Add(compressorFactory, decompressorFactory);
+    }
 
-        if (SnappyCompression.TryLoading(out compressorFactory, out decompressorFactory))
+    private static void LoadSupportForSnappy()
+    {
+        if (SnappyCompression.TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory))
             Add(compressorFactory, decompressorFactory);
+    }
 
-        if (ZlibCompression.TryLoading(out compressorFactory, out decompressorFactory))
+    private static void LoadSupportForZlib()
+    {
+        if (ZlibCompression.TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory))
             Add(compressorFactory, decompressorFactory);
+    }
 
-        if (ZstdCompression.TryLoading(out compressorFactory, out decompressorFactory))
+    private static void LoadSupportForZstd()
+    {
+        if (ZstdSharpCompression.TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory))
+            Add(compressorFactory, decompressorFactory);
+        else if (ZstdCompression.TryLoading(out compressorFactory, out decompressorFactory))
             Add(compressorFactory, decompressorFactory);
     }
 

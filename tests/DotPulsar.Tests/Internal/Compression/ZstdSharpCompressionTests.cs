@@ -17,26 +17,17 @@ namespace DotPulsar.Tests.Internal.Compression;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Compression;
 using FluentAssertions;
-using System.Runtime.InteropServices;
 using Xunit;
 
 [Trait("Category", "Unit")]
-public class ZstdCompressionTests
+public class ZstdSharpCompressionTests
 {
     [Fact]
     public void Compression_GivenDataToCompressAndDecompress_ShouldReturnOriginalData()
     {
         // Arrange
-        var couldLoad = ZstdCompression.TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory);
-
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            couldLoad.Should().BeFalse();
-            return;
-        }
-        else
-            couldLoad.Should().BeTrue();
-
+        var couldLoad = ZstdSharpCompression.TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory);
+        couldLoad.Should().BeTrue();
         using var compressor = compressorFactory!.Create();
         using var decompressor = decompressorFactory!.Create();
 
