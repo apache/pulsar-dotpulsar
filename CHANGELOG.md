@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2022-06-14
+
+### Added
+
+- Support for [Zstd compression](https://github.com/apache/pulsar-dotpulsar/wiki/Compression) via the [ZstdSharp.Port](https://www.nuget.org/packages/ZstdSharp.Port) NuGet package
+
+### Fixed
+
+- The presence of [ZstdNet](https://www.nuget.org/packages/ZstdNet) on a non-Windows system will cause DotPulsar to fault consumers, producers, and readers
+
 ## [2.3.1] - 2022-04-20
 
 ### Changed
