@@ -47,7 +47,8 @@ public static class Lz4Compression
 
             compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Lz4, () => new Compressor(CreateCompressor(encode, maximumOutputSize)));
             decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Lz4, () => new Decompressor(CreateDecompressor(decode)));
-            return true;
+
+            return CompressionTester.TestCompression(compressorFactory, decompressorFactory);
         }
         catch
         {

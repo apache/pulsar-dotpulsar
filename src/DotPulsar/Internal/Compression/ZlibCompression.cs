@@ -43,7 +43,8 @@ public static class ZlibCompression
 
             compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Zlib, () => new Compressor(CreateCompressor(compressBuffer)));
             decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Zlib, () => new Decompressor(CreateDecompressor(uncompressBuffer)));
-            return true;
+
+            return CompressionTester.TestCompression(compressorFactory, decompressorFactory);
         }
         catch
         {

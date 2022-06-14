@@ -43,7 +43,8 @@ public static class SnappyCompression
 
             compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Snappy, () => new Compressor(CreateCompressor(encode)));
             decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Snappy, () => new Decompressor(CreateDecompressor(decode)));
-            return true;
+
+            return CompressionTester.TestCompression(compressorFactory, decompressorFactory);
         }
         catch
         {

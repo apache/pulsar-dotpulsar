@@ -63,7 +63,7 @@ public static class ZstdCompression
                 return new Decompressor(CreateDecompressor(unwrap), (IDisposable) decompressor);
             });
 
-            return true;
+            return CompressionTester.TestCompression(compressorFactory, decompressorFactory);
         }
         catch
         {
