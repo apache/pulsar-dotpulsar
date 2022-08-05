@@ -23,6 +23,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -226,7 +227,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         {
             _ = await _state.StateChangedFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
             if (_throw is not null)
-                throw _throw;
+                //Retain original stack trace by throwing like this
+                ExceptionDispatchInfo.Capture(_throw).Throw();
         }
 
         if (_producerCount == 1)
