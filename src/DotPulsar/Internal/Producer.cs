@@ -227,8 +227,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         {
             _ = await _state.StateChangedFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
             if (_throw is not null)
-                //Retain original stack trace by throwing like this
-                ExceptionDispatchInfo.Capture(_throw).Throw();
+                ExceptionDispatchInfo.Capture(_throw).Throw();  //Retain original stack trace by throwing like this
         }
 
         if (_producerCount == 1)
