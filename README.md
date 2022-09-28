@@ -12,7 +12,7 @@ Have a look at the [changelog](CHANGELOG.md).
 
 ## Getting Started
 
-Let's take a look at a "Hello world" example, where we first produce a message and then consume it.
+Let's take a look at a "Hello world" example, where we create our consumer, produce a message, and then consume it. Note that the topic and subscription will be created if they don't exist.
 
 First, we need a Pulsar setup. Have a look [here](https://pulsar.apache.org/docs/en/standalone-docker/) to see how to setup a local standalone Pulsar instance.
 Install the NuGet package [DotPulsar](https://www.nuget.org/packages/DotPulsar/) and copy/paste the code below (you will be needing using declarations for 'DotPulsar' and 'DotPulsar.Extensions').
@@ -22,17 +22,17 @@ const string myTopic = "persistent://public/default/mytopic";
 
 await using var client = PulsarClient.Builder()
                                      .Build(); // Connecting to pulsar://localhost:6650
-
+                                     
+await using var consumer = client.NewConsumer(Schema.String)
+                                 .SubscriptionName("MySubscription")
+                                 .Topic(myTopic)
+                                 .Create();
+                                 
 await using var producer = client.NewProducer(Schema.String)
                                  .Topic(myTopic)
                                  .Create();
 
 _ = await producer.Send("Hello World"); // Send a message and ignore the returned MessageId
-
-await using var consumer = client.NewConsumer(Schema.String)
-                                 .SubscriptionName("MySubscription")
-                                 .Topic(myTopic)
-                                 .Create();
 
 await foreach (var message in consumer.Messages())
 {
