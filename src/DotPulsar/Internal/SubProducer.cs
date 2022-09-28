@@ -23,7 +23,7 @@ using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMessage>
+public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
 {
     private readonly Guid _correlationId;
     private readonly IRegisterEvent _eventRegister;
@@ -31,7 +31,6 @@ public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMes
     private readonly IExecute _executor;
     private readonly IStateChanged<ProducerState> _state;
     private readonly IProducerChannelFactory _factory;
-    private readonly ISchema<TMessage> _schema;
     private int _isDisposed;
 
     public Uri ServiceUrl { get; }
@@ -45,8 +44,7 @@ public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMes
         IProducerChannel initialChannel,
         IExecute executor,
         IStateChanged<ProducerState> state,
-        IProducerChannelFactory factory,
-        ISchema<TMessage> schema)
+        IProducerChannelFactory factory)
     {
         _correlationId = correlationId;
         ServiceUrl = serviceUrl;
@@ -56,7 +54,6 @@ public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMes
         _executor = executor;
         _state = state;
         _factory = factory;
-        _schema = schema;
         _isDisposed = 0;
 
         _eventRegister.Register(new ProducerCreated(_correlationId));
@@ -83,9 +80,6 @@ public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMes
         await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
         await _channel.DisposeAsync().ConfigureAwait(false);
     }
-
-    public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
-        => await _executor.Execute(() => InternalSend(metadata.Metadata, _schema.Encode(message), cancellationToken), cancellationToken).ConfigureAwait(false);
 
     public async ValueTask<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         => await _executor.Execute(() => InternalSend(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);

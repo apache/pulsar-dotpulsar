@@ -14,17 +14,18 @@
 
 namespace DotPulsar.Abstractions;
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 /// <summary>
-/// An abstraction for sending a message.
+/// An abstraction for enqueueing a message to be sent.
 /// </summary>
-public interface ISend<TMessage>
+public interface IEnqueue<TMessage>
 {
     /// <summary>
-    /// Sends a message with metadata.
+    /// Enqueue a message to be sent.
     /// </summary>
-    /// <returns>ValueTask which completes when the Broker acknowledgement has been received.</returns>
-    ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default);
+    /// <returns>ValueTask which completes when the message is added to the send queue.</returns>
+    ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageMetadata, MessageId, ValueTask> onMessageSent, CancellationToken cancellationToken = default);
 }

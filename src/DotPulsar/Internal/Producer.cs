@@ -17,7 +17,6 @@ namespace DotPulsar.Internal;
 using Abstractions;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
-using DotPulsar.Extensions;
 using DotPulsar.Internal.Extensions;
 using System;
 using System.Collections.Concurrent;
@@ -40,7 +39,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     private readonly ICompressorFactory? _compressorFactory;
     private readonly ProducerOptions<TMessage> _options;
     private readonly ProcessManager _processManager;
-    private readonly ConcurrentDictionary<int, SubProducer<TMessage>> _producers;
+    private readonly ConcurrentDictionary<int, SubProducer> _producers;
     private readonly IMessageRouter _messageRouter;
     private readonly CancellationTokenSource _cts;
     private readonly IExecute _executor;
@@ -85,7 +84,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         _messageRouter = options.MessageRouter;
         _cts = new CancellationTokenSource();
         _executor = new Executor(Guid.Empty, this, _exceptionHandler);
-        _producers = new ConcurrentDictionary<int, SubProducer<TMessage>>();
+        _producers = new ConcurrentDictionary<int, SubProducer>();
         _ = Setup();
     }
 
@@ -111,7 +110,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     {
         var numberOfPartitions = await GetNumberOfPartitions(Topic, _cts.Token).ConfigureAwait(false);
         var isPartitionedTopic = numberOfPartitions != 0;
-        var monitoringTasks = new Task<ProducerStateChanged>[isPartitionedTopic ? numberOfPartitions : 1];
+        var monitoringTasks = new Task<ProducerState>[isPartitionedTopic ? numberOfPartitions : 1];
 
         var topic = Topic;
 
@@ -122,7 +121,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
             var producer = CreateSubProducer(topic);
             _ = _producers.TryAdd(partition, producer);
-            monitoringTasks[partition] = producer.StateChangedFrom(ProducerState.Disconnected, _cts.Token).AsTask();
+            monitoringTasks[partition] = producer.OnStateChangeFrom(ProducerState.Disconnected, _cts.Token).AsTask();
         }
 
         Interlocked.Exchange(ref _producerCount, monitoringTasks.Length);
@@ -139,7 +138,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                 if (!task.IsCompleted)
                     continue;
 
-                var state = task.Result.ProducerState;
+                var state = task.Result;
                 switch (state)
                 {
                     case ProducerState.Connected:
@@ -153,7 +152,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                         return;
                 }
 
-                monitoringTasks[i] = task.Result.Producer.StateChangedFrom(state, _cts.Token).AsTask();
+                monitoringTasks[i] = _producers[i].OnStateChangeFrom(state, _cts.Token).AsTask();
             }
 
             if (connectedProducers == 0)
@@ -165,7 +164,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         }
     }
 
-    private SubProducer<TMessage> CreateSubProducer(string topic)
+    private SubProducer CreateSubProducer(string topic)
     {
         var correlationId = Guid.NewGuid();
         var producerName = _options.ProducerName;
@@ -174,7 +173,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-        var producer = new SubProducer<TMessage>(correlationId, ServiceUrl, topic, _processManager, initialChannel, executor, stateManager, factory, schema);
+        var producer = new SubProducer(correlationId, ServiceUrl, topic, _processManager, initialChannel, executor, stateManager, factory);
         var process = new ProducerProcess(correlationId, stateManager, producer);
         _processManager.Add(process);
         process.Start();
@@ -290,6 +289,12 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             if (autoAssignSequenceId)
                 metadata.SequenceId = 0;
         }
+    }
+
+    public ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageMetadata, MessageId, ValueTask> onMessageSent, CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+        throw new NotImplementedException();
     }
 
     private void ThrowIfDisposed()
