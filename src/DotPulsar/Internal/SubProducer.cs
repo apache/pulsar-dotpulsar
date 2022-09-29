@@ -84,6 +84,11 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
     public async ValueTask<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
         => await _executor.Execute(() => InternalSend(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
 
+    public void Enqueue(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, Func<MessageId, ValueTask> onMessageSent, Action<Exception> onError)
+    {
+        throw new NotImplementedException();
+    }
+
     private async ValueTask<MessageId> InternalSend(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
     {
         var response = await _channel.Send(metadata, data, cancellationToken).ConfigureAwait(false);

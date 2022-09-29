@@ -266,35 +266,97 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             if (startTimestamp != 0)
                 DotPulsarMeter.MessageSent(startTimestamp, _meterTags);
 
-            if (activity is not null && activity.IsAllDataRequested)
-            {
-                activity.SetMessageId(messageId);
-                activity.SetPayloadSize(data.Length);
-                activity.SetStatus(ActivityStatusCode.Ok);
-            }
+            CompleteActivity(messageId, data.Length, activity);
 
             return messageId;
         }
         catch (Exception exception)
         {
-            if (activity is not null && activity.IsAllDataRequested)
-                activity.AddException(exception);
-
+            FailActivity(exception, activity);
             throw;
         }
         finally
         {
-            activity?.Dispose();
-
             if (autoAssignSequenceId)
                 metadata.SequenceId = 0;
         }
     }
 
-    public ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageMetadata, MessageId, ValueTask> onMessageSent, CancellationToken cancellationToken = default)
+    public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageMetadata, MessageId, ValueTask> onMessageSent, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
-        throw new NotImplementedException();
+
+        var autoAssignSequenceId = metadata.SequenceId == 0;
+        if (autoAssignSequenceId)
+            metadata.SequenceId = _sequenceId.FetchNext();
+
+        var activity = DotPulsarActivitySource.StartProducerActivity(metadata, _operationName, _activityTags);
+        var startTimestamp = DotPulsarMeter.MessageSentEnabled ? Stopwatch.GetTimestamp() : 0;
+
+        try
+        {
+            var partition = await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false);
+            var subProducer = _producers[partition];
+            var data = _options.Schema.Encode(message);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            subProducer.Enqueue(metadata.Metadata, data, async messageId =>
+                {
+                    if (startTimestamp != 0)
+                        DotPulsarMeter.MessageSent(startTimestamp, _meterTags);
+
+                    CompleteActivity(messageId, data.Length, activity);
+
+                    try
+                    {
+                        await onMessageSent.Invoke(metadata, messageId);
+                    }
+                    catch (Exception)
+                    {
+                        // ignored
+                    }
+                },
+                exception =>
+                {
+                    FailActivity(exception, activity);
+
+                    if (autoAssignSequenceId)
+                        metadata.SequenceId = 0;
+                });
+        }
+        catch (Exception exception)
+        {
+            FailActivity(exception, activity);
+
+            if (autoAssignSequenceId)
+                metadata.SequenceId = 0;
+            throw;
+        }
+    }
+
+    private void CompleteActivity(MessageId messageId, long payloadSize, Activity? activity)
+    {
+        if (activity is null) return;
+
+        if (activity.IsAllDataRequested)
+        {
+            activity.SetMessageId(messageId);
+            activity.SetPayloadSize(payloadSize);
+            activity.SetStatus(ActivityStatusCode.Ok);
+        }
+
+        activity.Dispose();
+    }
+
+    private void FailActivity(Exception exception, Activity? activity)
+    {
+        if (activity is null) return;
+
+        if (activity.IsAllDataRequested)
+            activity.AddException(exception);
+
+        activity.Dispose();
     }
 
     private void ThrowIfDisposed()
