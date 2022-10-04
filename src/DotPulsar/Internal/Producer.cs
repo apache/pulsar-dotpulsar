@@ -173,7 +173,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-        var producer = new SubProducer(correlationId, ServiceUrl, topic, _processManager, initialChannel, executor, stateManager, factory);
+        var producer = new SubProducer(correlationId, ServiceUrl, topic, _processManager, initialChannel, executor, stateManager, factory, _exceptionHandler);
         var process = new ProducerProcess(correlationId, stateManager, producer);
         _processManager.Add(process);
         process.Start();
@@ -261,7 +261,16 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             var producer = _producers[partition];
             var data = _options.Schema.Encode(message);
 
-            var messageId = await producer.Send(metadata.Metadata, data, cancellationToken).ConfigureAwait(false);
+            var tcs = new TaskCompletionSource<MessageId>();
+            await producer.Enqueue(metadata.Metadata, data, id =>
+            {
+                tcs.SetResult(id);
+                return new ValueTask(Task.CompletedTask);
+            },
+            exception => throw exception,
+            cancellationToken).ConfigureAwait(false);
+
+            MessageId messageId = await tcs.Task;
 
             if (startTimestamp != 0)
                 DotPulsarMeter.MessageSent(startTimestamp, _meterTags);
@@ -299,9 +308,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             var subProducer = _producers[partition];
             var data = _options.Schema.Encode(message);
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            subProducer.Enqueue(metadata.Metadata, data, async messageId =>
+            await subProducer.Enqueue(metadata.Metadata, data, async messageId =>
                 {
                     if (startTimestamp != 0)
                         DotPulsarMeter.MessageSent(startTimestamp, _meterTags);
@@ -323,7 +330,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
                     if (autoAssignSequenceId)
                         metadata.SequenceId = 0;
-                });
+                }, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception)
         {

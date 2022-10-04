@@ -97,9 +97,57 @@ public sealed class ProducerChannel : IProducerChannel
                 sendPackage.Payload = compressor.Compress(payload);
             }
 
+            // TODO: Rewrite to internally use Send with callback
             var response = await _connection.Send(sendPackage, cancellationToken).ConfigureAwait(false);
             response.Expect(BaseCommand.Type.SendReceipt);
             return response.SendReceipt;
+        }
+        finally
+        {
+            _sendPackagePool.Return(sendPackage);
+        }
+    }
+
+    public async Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, Func<CommandSendReceipt, ValueTask> onSendReceipt,
+        CancellationToken cancellationToken)
+    {
+        var sendPackage = _sendPackagePool.Get();
+
+        try
+        {
+            metadata.PublishTime = (ulong) DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            metadata.ProducerName = _name;
+
+            if (metadata.SchemaVersion is null && _schemaVersion is not null)
+                metadata.SchemaVersion = _schemaVersion;
+
+            sendPackage.Command ??= new CommandSend { ProducerId = _id, NumMessages = 1 };
+
+            sendPackage.Command.SequenceId = metadata.SequenceId;
+            sendPackage.Metadata = metadata;
+
+            if (_compressorFactory is null)
+                sendPackage.Payload = payload;
+            else
+            {
+                sendPackage.Metadata.Compression = _compressorFactory.CompressionType;
+                sendPackage.Metadata.UncompressedSize = (uint) payload.Length;
+                using var compressor = _compressorFactory.Create();
+                sendPackage.Payload = compressor.Compress(payload);
+            }
+
+            await _connection.Send(sendPackage, async response =>
+            {
+                try
+                {
+                    response.Expect(BaseCommand.Type.SendReceipt);
+                    await onSendReceipt(response.SendReceipt);
+                }
+                catch (Exception)
+                {
+                    //TODO: Does it make sense to handle this?
+                }
+            }, cancellationToken).ConfigureAwait(false);
         }
         finally
         {

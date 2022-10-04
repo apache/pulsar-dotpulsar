@@ -20,17 +20,22 @@ using DotPulsar.Internal.Extensions;
 using Events;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
 {
+    private readonly AsyncLock _channelLock;
     private readonly Guid _correlationId;
     private readonly IRegisterEvent _eventRegister;
     private IProducerChannel _channel;
     private readonly IExecute _executor;
     private readonly IStateChanged<ProducerState> _state;
     private readonly IProducerChannelFactory _factory;
+    private readonly IHandleException _exceptionHandler;
+    private readonly SemaphoreSlim _maxPendingMessagesSemaphore;
+    private readonly Queue<SendOp> _queue;
     private int _isDisposed;
 
     public Uri ServiceUrl { get; }
@@ -44,8 +49,10 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         IProducerChannel initialChannel,
         IExecute executor,
         IStateChanged<ProducerState> state,
-        IProducerChannelFactory factory)
+        IProducerChannelFactory factory,
+        IHandleException exceptionHandler)
     {
+        _channelLock = new AsyncLock();
         _correlationId = correlationId;
         ServiceUrl = serviceUrl;
         Topic = topic;
@@ -54,6 +61,9 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         _executor = executor;
         _state = state;
         _factory = factory;
+        _exceptionHandler = exceptionHandler;
+        _queue = new Queue<SendOp>();
+        _maxPendingMessagesSemaphore = new SemaphoreSlim(1000, 1000); // TODO: Make size configurable
         _isDisposed = 0;
 
         _eventRegister.Register(new ProducerCreated(_correlationId));
@@ -77,22 +87,100 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
             return;
 
         _eventRegister.Register(new ProducerDisposed(_correlationId));
+        _maxPendingMessagesSemaphore.Dispose();
+        await _channelLock.DisposeAsync();
         await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
         await _channel.DisposeAsync().ConfigureAwait(false);
     }
 
-    public async ValueTask<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
-        => await _executor.Execute(() => InternalSend(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
-
-    public void Enqueue(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, Func<MessageId, ValueTask> onMessageSent, Action<Exception> onError)
+    public async ValueTask Enqueue(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, Func<MessageId, ValueTask> onMessageSent, Action<Exception> onError,
+    CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        // TODO: This will not guarantee ordering if multiple messages are sent at the same time, but not sure we need to support that.
+        await _maxPendingMessagesSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+        IDisposable accessGrant;
+        try
+        {
+            accessGrant = await _channelLock.Lock(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            _maxPendingMessagesSemaphore.Release();
+            throw;
+        }
+
+        SendOp sendOp = new SendOp(metadata, data, onMessageSent);
+        try
+        {
+            // TODO: How do we make sure the message is resent if sending fails? Will we always get a new channel afterwards?
+            await _channel.Send(metadata, data, ProcessResponse, cancellationToken).ConfigureAwait(false);
+            _queue.Enqueue(sendOp);
+        }
+        catch (OperationCanceledException)
+        {
+            _maxPendingMessagesSemaphore.Release();
+            throw;
+        }
+        catch (Exception e)
+        {
+            var exceptionContext = new ExceptionContext(e, CancellationToken.None);
+            //TODO: The exception handler waits for the retry delay. Should it now be handled in the executor instead?
+            await _exceptionHandler.OnException(exceptionContext).ConfigureAwait(false);
+
+            // TODO: What is the difference between Rethrow and ThrowException? Does it have something to do with out the exception is propagated to the user?
+            if (exceptionContext.Result != FaultAction.Retry)
+            {
+                //TODO: Saw something about rethrowing with the initial stacktrace somewhere.
+                _maxPendingMessagesSemaphore.Release();
+                throw exceptionContext.Exception;
+            }
+            else
+            {
+                _queue.Enqueue(sendOp);
+            }
+        }
+        finally
+        {
+            accessGrant.Dispose();
+        }
     }
 
-    private async ValueTask<MessageId> InternalSend(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
+    private async ValueTask ProcessResponse(PulsarApi.CommandSendReceipt sendReceipt)
     {
-        var response = await _channel.Send(metadata, data, cancellationToken).ConfigureAwait(false);
-        return response.MessageId.ToMessageId();
+        // TODO: Can we ever get here with a sendReceipt belonging to a different connection? If so how do we handle that?
+        // TODO: Cancel properly on shutdown. What token should we use?
+        using (await _channelLock.Lock(CancellationToken.None).ConfigureAwait(false))
+        {
+            if (_queue.Count == 0) return;
+
+            SendOp sendOp = _queue.Peek(); //SendOp? sendOp = _sendQueue.Peek();
+
+            // TODO: If ledger id -1 and entry id -1 apparently the message has been dropped. Most likely because dedup is enabled
+            // Not sure this can happen, but it is handled this way in the java client. Saying timed out message
+            if (sendOp is null) return;
+
+            // Ignore ack for messages that has already timed out, again not sure what they mean by timeout
+            if (sendReceipt.SequenceId < sendOp.Metadata.SequenceId) return;
+
+            if (sendReceipt.SequenceId == sendOp.Metadata.SequenceId)
+            {
+                try
+                {
+                    await sendOp.OnSuccess.Invoke(sendReceipt.MessageId.ToMessageId()).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // TODO: Does it make sense to do anything but this?
+                    // Ignored
+                }
+                _queue.Dequeue();
+                _maxPendingMessagesSemaphore.Release();
+                return;
+            }
+
+            await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
+        }
     }
 
     public async Task EstablishNewChannel(CancellationToken cancellationToken)
@@ -100,9 +188,58 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
 
         var oldChannel = _channel;
-        if (oldChannel is not null)
-            await oldChannel.DisposeAsync().ConfigureAwait(false);
 
-        _channel = channel;
+        using (await _channelLock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            _channel = channel;
+            foreach (SendOp sendOp in _queue)
+            {
+                try
+                {
+                    await _channel.Send(sendOp.Metadata, sendOp.Data, ProcessResponse, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    var exceptionContext = new ExceptionContext(e, cancellationToken);
+                    //TODO: The exception handler waits for the retry delay. Should it now be handled in the executor instead?
+                    await _exceptionHandler.OnException(exceptionContext).ConfigureAwait(false);
+
+                    // TODO: What is the difference between Rethrow and ThrowException? Does it have something to do with out the exception is propagated to the user?
+                    if (exceptionContext.Result != FaultAction.Retry)
+                    {
+                        //TODO: Saw something about rethrowing with the initial stacktrace somewhere.
+                        _maxPendingMessagesSemaphore.Release();
+                        throw exceptionContext.Exception;
+                    }
+
+                    if (exceptionContext.Result == FaultAction.Retry)
+                    {
+                        // TODO: No point in continuing resend, but how do we trigger reconnect?
+                        await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
+                        // We could loop on creating the channel?
+                        break;
+                    }
+                }
+            }
+        }
+        await oldChannel.DisposeAsync().ConfigureAwait(false);
+    }
+
+    private class SendOp
+    {
+        public SendOp(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, Func<MessageId, ValueTask> onSuccess)
+        {
+            Metadata = metadata;
+            Data = data;
+            OnSuccess = onSuccess;
+        }
+
+        public PulsarApi.MessageMetadata Metadata { get; }
+        public ReadOnlySequence<byte> Data { get; }
+        public Func<MessageId, ValueTask> OnSuccess { get; }
     }
 }

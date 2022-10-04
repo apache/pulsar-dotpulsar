@@ -40,6 +40,7 @@ public interface IConnection : IAsyncDisposable
     Task<BaseCommand> Send(CommandCloseProducer command, CancellationToken cancellationToken);
     Task<BaseCommand> Send(CommandCloseConsumer command, CancellationToken cancellationToken);
     Task<BaseCommand> Send(SendPackage command, CancellationToken cancellationToken);
+    Task Send(SendPackage command, Func<BaseCommand, Task> responseCallback, CancellationToken cancellationToken);
     Task<BaseCommand> Send(CommandGetOrCreateSchema command, CancellationToken cancellationToken);
     Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken);
 }

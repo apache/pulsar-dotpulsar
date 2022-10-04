@@ -23,5 +23,7 @@ using System.Threading.Tasks;
 public interface IProducerChannel : IAsyncDisposable
 {
     Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken);
+    Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, Func<CommandSendReceipt, ValueTask> onSendReceipt, CancellationToken
+    cancellationToken);
     ValueTask ClosedByClient(CancellationToken cancellationToken);
 }
