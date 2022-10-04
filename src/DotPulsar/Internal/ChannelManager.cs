@@ -143,11 +143,11 @@ public sealed class ChannelManager : IDisposable
         return response;
     }
 
-    public Task<BaseCommand> Outgoing(CommandSend command)
+    public void Outgoing(CommandSend command, TaskCompletionSource<BaseCommand> tcs)
     {
         using (TakeProducerSenderLock(command.ProducerId))
         {
-            return _requestResponseHandler.Outgoing(command);
+            _requestResponseHandler.Outgoing(command, tcs);
         }
     }
 

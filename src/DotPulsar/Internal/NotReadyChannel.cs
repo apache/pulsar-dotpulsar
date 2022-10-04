@@ -34,10 +34,7 @@ public sealed class NotReadyChannel<TMessage> : IConsumerChannel<TMessage>, IPro
     public ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken = default)
         => throw GetException();
 
-    public Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
-        => throw GetException();
-
-    public Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, Func<CommandSendReceipt, ValueTask> onSendReceipt, CancellationToken
+    public Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, TaskCompletionSource<CommandSendReceipt> responseTcs, CancellationToken
     cancellationToken)
         => throw GetException();
 

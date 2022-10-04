@@ -84,10 +84,10 @@ public sealed class RequestResponseHandler : IDisposable
         return _requests.CreateTask(request);
     }
 
-    public Task<BaseCommand> Outgoing(CommandSend command)
+    public void Outgoing(CommandSend command, TaskCompletionSource<BaseCommand> tcs)
     {
         var request = new SendRequest(command.ProducerId, command.SequenceId);
-        return _requests.CreateTask(request);
+        _requests.AddTaskCompletionSource(request, tcs);
     }
 
     public Task<BaseCommand> Outgoing(CommandGetOrCreateSchema command)

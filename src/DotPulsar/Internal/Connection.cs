@@ -233,43 +233,16 @@ public sealed class Connection : IConnection
         return await responseTask.ConfigureAwait(false);
     }
 
-    public async Task<BaseCommand> Send(SendPackage command, CancellationToken cancellationToken)
+    public async Task Send(SendPackage command, TaskCompletionSource<BaseCommand> responseTcs, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
 
-        Task<BaseCommand>? responseTask;
-
         using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
         {
-            responseTask = _channelManager.Outgoing(command.Command!);
+            _channelManager.Outgoing(command.Command!, responseTcs);
             var sequence = Serializer.Serialize(command.Command!.AsBaseCommand(), command.Metadata!, command.Payload);
             await _stream.Send(sequence).ConfigureAwait(false);
         }
-        //TODO: Rewrite to internally use send with callback.
-        return await responseTask.ConfigureAwait(false);
-    }
-
-    public async Task Send(SendPackage command, Func<BaseCommand, Task> callback, CancellationToken cancellationToken)
-    {
-        ThrowIfDisposed();
-
-        Task<BaseCommand>? responseTask;
-
-        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-        {
-            responseTask = _channelManager.Outgoing(command.Command!);
-            var sequence = Serializer.Serialize(command.Command!.AsBaseCommand(), command.Metadata!, command.Payload);
-            await _stream.Send(sequence).ConfigureAwait(false);
-        }
-
-        _ = responseTask.ContinueWith(async task =>
-        {
-            // TODO: Verify that the task can never be faulted, only complete or cancelled.
-            if (task.IsCompleted && !task.IsCanceled)
-            {
-                await callback.Invoke(task.Result);
-            }
-        }, cancellationToken);
     }
 
     public async Task<BaseCommand> Send(CommandGetOrCreateSchema command, CancellationToken cancellationToken)

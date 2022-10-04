@@ -113,8 +113,14 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         SendOp sendOp = new SendOp(metadata, data, onMessageSent);
         try
         {
+            var tcs = new TaskCompletionSource<PulsarApi.CommandSendReceipt>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _ = tcs.Task.ContinueWith(async task =>
+            {
+                // TODO: Handle cancellation and fault
+                await ProcessResponse(task.Result, cancellationToken);
+            }, cancellationToken);
             // TODO: How do we make sure the message is resent if sending fails? Will we always get a new channel afterwards?
-            await _channel.Send(metadata, data, ProcessResponse, cancellationToken).ConfigureAwait(false);
+            await _channel.Send(metadata, data, tcs, cancellationToken).ConfigureAwait(false);
             _queue.Enqueue(sendOp);
         }
         catch (OperationCanceledException)
@@ -146,19 +152,19 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         }
     }
 
-    private async ValueTask ProcessResponse(PulsarApi.CommandSendReceipt sendReceipt)
+    private async ValueTask ProcessResponse(PulsarApi.CommandSendReceipt sendReceipt, CancellationToken cancellationToken)
     {
         // TODO: Can we ever get here with a sendReceipt belonging to a different connection? If so how do we handle that?
         // TODO: Cancel properly on shutdown. What token should we use?
-        using (await _channelLock.Lock(CancellationToken.None).ConfigureAwait(false))
+        using (await _channelLock.Lock(cancellationToken).ConfigureAwait(false))
         {
             if (_queue.Count == 0) return;
 
-            SendOp sendOp = _queue.Peek(); //SendOp? sendOp = _sendQueue.Peek();
+            SendOp sendOp = _queue.Peek();
 
             // TODO: If ledger id -1 and entry id -1 apparently the message has been dropped. Most likely because dedup is enabled
             // Not sure this can happen, but it is handled this way in the java client. Saying timed out message
-            if (sendOp is null) return;
+            //if (sendOp is null) return;
 
             // Ignore ack for messages that has already timed out, again not sure what they mean by timeout
             if (sendReceipt.SequenceId < sendOp.Metadata.SequenceId) return;
@@ -196,7 +202,13 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
             {
                 try
                 {
-                    await _channel.Send(sendOp.Metadata, sendOp.Data, ProcessResponse, cancellationToken).ConfigureAwait(false);
+                    var tcs = new TaskCompletionSource<PulsarApi.CommandSendReceipt>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    _ = tcs.Task.ContinueWith(async (task) =>
+                    {
+                        // TODO: Handle cancellation and fault. Maybe create method which gets task as parameter.
+                        await ProcessResponse(task.Result, cancellationToken);
+                    }, cancellationToken);
+                    await _channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
