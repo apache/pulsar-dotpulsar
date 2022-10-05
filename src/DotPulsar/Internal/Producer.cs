@@ -173,7 +173,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-        var producer = new SubProducer(correlationId, ServiceUrl, topic, _processManager, initialChannel, executor, stateManager, factory, _exceptionHandler);
+        var producer = new SubProducer(correlationId, _processManager, initialChannel, executor, stateManager, factory);
         var process = new ProducerProcess(correlationId, stateManager, producer);
         _processManager.Add(process);
         process.Start();

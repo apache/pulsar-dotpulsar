@@ -63,7 +63,7 @@ public sealed class ProducerChannel : IProducerChannel
 
     public ValueTask DisposeAsync() => new();
 
-    public async Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, TaskCompletionSource<CommandSendReceipt> responseTcs,
+    public async Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, TaskCompletionSource<BaseCommand> responseTcs,
         CancellationToken cancellationToken)
     {
         var sendPackage = _sendPackagePool.Get();
@@ -91,33 +91,7 @@ public sealed class ProducerChannel : IProducerChannel
                 sendPackage.Payload = compressor.Compress(payload);
             }
 
-            // TODO: There may be a better way to do this?
-            var baseResponseTcs = new TaskCompletionSource<BaseCommand>();
-            _ = baseResponseTcs.Task.ContinueWith(task =>
-            {
-                if (task.IsCanceled)
-                {
-                    responseTcs.TrySetCanceled();
-                    return;
-                }
-
-                if (task.IsFaulted)
-                {
-                    responseTcs.TrySetException(task.Exception!);
-                    return;
-                }
-
-                try
-                {
-                    task.Result.Expect(BaseCommand.Type.SendReceipt);
-                    responseTcs.TrySetResult(task.Result.SendReceipt);
-                }
-                catch (Exception exception)
-                {
-                    responseTcs.SetException(exception);
-                }
-            }, cancellationToken);
-            await _connection.Send(sendPackage, baseResponseTcs, cancellationToken).ConfigureAwait(false);
+            await _connection.Send(sendPackage, responseTcs, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
