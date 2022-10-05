@@ -16,5 +16,5 @@ namespace DotPulsar.Exceptions;
 
 public sealed class ChannelNotReadyException : DotPulsarException
 {
-    public ChannelNotReadyException() : base("The channnel is not ready yet") { }
+    public ChannelNotReadyException() : base("The channel is not ready yet") { }
 }
