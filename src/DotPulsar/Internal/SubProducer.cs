@@ -152,7 +152,7 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
 
     private void ProcessReceipt(CommandSendReceipt sendReceipt)
     {
-        if (!_sendQueue.TryPeek(out SendOp sendOp)) return;
+        if (!_sendQueue.TryPeek(out SendOp? sendOp) || sendOp is null) return;
 
         ulong receiptSequenceId = sendReceipt.SequenceId;
         ulong expectedSequenceId = sendOp.Metadata.SequenceId;
@@ -183,7 +183,7 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
 
         await _dispatcherTask;
-        await _sendQueue.ResetCursor(cancellationToken).ConfigureAwait(false);
+        _sendQueue.ResetCursor();
 
         _dispatcherCts = new CancellationTokenSource();
         _dispatcherTask = MessageDispatcher(channel, _dispatcherCts.Token);
