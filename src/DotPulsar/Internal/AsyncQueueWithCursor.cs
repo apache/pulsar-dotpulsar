@@ -63,7 +63,12 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
             if (_queue.Count < _maxItems)
             {
                 var node = _queue.AddLast(item);
-                _cursorNextItemTcs?.SetResult(node);
+
+                if (_cursorNextItemTcs is not null)
+                {
+                    _cursorNextItemTcs.TrySetResult(node);
+                    _cursorNextItemTcs = null;
+                }
             }
 
             if (_queue.Count < _maxItems)
@@ -132,7 +137,6 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
             }
 
             _currentNode = await _cursorNextItemTcs.Task.ConfigureAwait(false);
-            _cursorNextItemTcs = null;
             return _currentNode.Value;
         }
         finally
@@ -142,7 +146,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     }
 
     /// <summary>
-    /// Reset the cursor back to the last item
+    /// Reset the cursor back to the last item, and cancel any waiting NextItem tasks
     /// </summary>
     public void ResetCursor()
     {
@@ -151,6 +155,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
         lock (_queue)
         {
             _currentNode = null;
+            _cursorNextItemTcs?.TrySetCanceled();
         }
     }
 
