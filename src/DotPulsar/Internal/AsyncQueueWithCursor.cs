@@ -132,8 +132,9 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
 
                 if (_currentNode is not null) return _currentNode.Value;
 
-                _cursorNextItemTcs = new TaskCompletionSource<LinkedListNode<T>>(TaskCreationOptions.RunContinuationsAsynchronously);
-                cancellationToken.Register(() => _cursorNextItemTcs.TrySetCanceled(cancellationToken));
+                var tcs = new TaskCompletionSource<LinkedListNode<T>>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _cursorNextItemTcs = tcs;
+                cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
             }
 
             _currentNode = await _cursorNextItemTcs.Task.ConfigureAwait(false);

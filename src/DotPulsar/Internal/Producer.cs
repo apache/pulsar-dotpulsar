@@ -264,7 +264,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             var tcs = new TaskCompletionSource<MessageId>();
             await producer.Send(metadata.Metadata, data, tcs, cancellationToken).ConfigureAwait(false);
 
-            MessageId messageId = await tcs.Task;
+            MessageId messageId = await tcs.Task.ConfigureAwait(false);
 
             if (startTimestamp != 0)
                 DotPulsarMeter.MessageSent(startTimestamp, _meterTags);
@@ -321,7 +321,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                 CompleteActivity(task.Result, data.Length, activity);
                 try
                 {
-                    await onMessageSent.Invoke(metadata, task.Result);
+                    await onMessageSent.Invoke(metadata, task.Result).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {

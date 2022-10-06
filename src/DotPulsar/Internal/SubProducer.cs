@@ -130,7 +130,7 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
     {
         try
         {
-            while (cancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 var responseTask = await responseQueue.Dequeue(cancellationToken);
 
