@@ -31,4 +31,16 @@ public interface IExecute
     ValueTask<TResult> Execute<TResult>(Func<Task<TResult>> func, CancellationToken cancellationToken = default);
 
     ValueTask<TResult> Execute<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken = default);
+
+    ValueTask<bool> TryExecuteOnce(Action action, CancellationToken cancellationToken = default);
+
+    ValueTask<bool> TryExecuteOnce(Func<Task> func, CancellationToken cancellationToken = default);
+
+    ValueTask<bool> TryExecuteOnce(Func<ValueTask> func, CancellationToken cancellationToken = default);
+
+    ValueTask<(bool success, TResult? result)> TryExecuteOnce<TResult>(Func<TResult> func, CancellationToken cancellationToken = default);
+
+    ValueTask<(bool success, TResult? result)> TryExecuteOnce<TResult>(Func<Task<TResult>> func, CancellationToken cancellationToken = default);
+
+    ValueTask<(bool success, TResult? result)> TryExecuteOnce<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken = default);
 }

@@ -16,8 +16,10 @@ namespace DotPulsar.Internal;
 
 using Abstractions;
 using DotPulsar.Abstractions;
-using DotPulsar.Internal.Extensions;
+using DotPulsar.Exceptions;
+using Extensions;
 using Events;
+using Exceptions;
 using PulsarApi;
 using System;
 using System.Buffers;
@@ -84,11 +86,10 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         await _channel.DisposeAsync().ConfigureAwait(false);
     }
 
-    public async ValueTask Enqueue(MessageMetadata metadata, ReadOnlySequence<byte> data, Func<MessageId, ValueTask> onMessageSent, Action<Exception> onError,
-    CancellationToken cancellationToken)
+    public async ValueTask Send(MessageMetadata metadata, ReadOnlySequence<byte> data, TaskCompletionSource<MessageId> receiptTcs, CancellationToken cancellationToken)
     {
-        // TODO: Throw if disposed or if faulted
-        SendOp sendOp = new SendOp(metadata, data, onMessageSent, onError);
+        if (IsFinalState()) throw new ProducerClosedException(); // TODO: This exception might be intended for other purposes.
+        SendOp sendOp = new SendOp(metadata, data, receiptTcs);
         await _sendQueue.Enqueue(sendOp, cancellationToken);
     }
 
@@ -98,18 +99,20 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         try
         {
             var responseQueue = new AsyncQueue<Task<BaseCommand>>();
-            responseProcessorTask = ResponseProcessor(channel, responseQueue, cancellationToken);
+            responseProcessorTask = ResponseProcessor(responseQueue, cancellationToken);
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                SendOp sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
                 var tcs = new TaskCompletionSource<BaseCommand>();
-
                 _ = tcs.Task.ContinueWith(task => responseQueue.Enqueue(task),
                     TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
 
-                // TODO: Use _executor to ensure exceptions are handled, and state is updated/connection is reset
-                await channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken).ConfigureAwait(false);
+                SendOp sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
+
+                // TODO: What should we do with the exceptions that are raised here.
+                bool success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), cancellationToken).ConfigureAwait(false);
+
+                if (!success) StopProcessingAndRetry();
             }
         }
         catch (OperationCanceledException)
@@ -123,7 +126,7 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         }
     }
 
-    private async ValueTask ResponseProcessor(IProducerChannel channel, AsyncQueue<Task<BaseCommand>> responseQueue, CancellationToken cancellationToken)
+    private async ValueTask ResponseProcessor(IDequeue<Task<BaseCommand>> responseQueue, CancellationToken cancellationToken)
     {
         try
         {
@@ -131,18 +134,14 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
             {
                 var responseTask = await responseQueue.Dequeue(cancellationToken);
 
-                // TODO: Handle exception properly
-                if (responseTask.IsFaulted) throw new Exception();
+                bool success = await _executor.TryExecuteOnce(() =>
+                {
+                    if (responseTask.IsFaulted) throw responseTask.Exception!;
+                    responseTask.Result.Expect(BaseCommand.Type.SendReceipt);
+                    ProcessReceipt(responseTask.Result.SendReceipt);
+                }, cancellationToken).ConfigureAwait(false);
 
-                // TODO: Handle exception
-                responseTask.Result.Expect(BaseCommand.Type.SendReceipt);
-
-                if (await ProcessReceipt(responseTask.Result.SendReceipt))
-                    continue;
-                // TODO: decide if we want to close the channel og simply raise disconnect, and let Establish new channel dispose it?
-                await channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
-                _eventRegister.Register(new ChannelDisconnected(_correlationId));
-
+                if (!success) StopProcessingAndRetry();
             }
         }
         catch (OperationCanceledException)
@@ -151,37 +150,39 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         }
     }
 
-    private async ValueTask<bool> ProcessReceipt(CommandSendReceipt sendReceipt)
+    private void ProcessReceipt(CommandSendReceipt sendReceipt)
     {
-        if (!_sendQueue.TryPeek(out SendOp sendOp)) return true;
+        if (!_sendQueue.TryPeek(out SendOp sendOp)) return;
+
+        ulong receiptSequenceId = sendReceipt.SequenceId;
+        ulong expectedSequenceId = sendOp.Metadata.SequenceId;
 
         // Ignore acknowledgements for messages that have already been removed from the queue
-        if (sendReceipt.SequenceId < sendOp.Metadata.SequenceId) return true;
+        if (receiptSequenceId < expectedSequenceId) return;
 
-        if (sendReceipt.SequenceId != sendOp.Metadata.SequenceId) return false;
-
-        try
+        if (receiptSequenceId != expectedSequenceId)
         {
-            await sendOp.OnSuccess.Invoke(sendReceipt.MessageId.ToMessageId()).ConfigureAwait(false);
-        }
-        catch (Exception)
-        {
-            // TODO: Does it make sense to do anything but this?
-            // Ignored
+            throw new ProducerSendReceiptOrderingException($"Received sequenceId {receiptSequenceId}. Expected {expectedSequenceId}");
         }
 
         _sendQueue.Dequeue();
-        return true;
+        sendOp.ReceiptTcs.SetResult(sendReceipt.MessageId.ToMessageId());
+    }
+
+    private void StopProcessingAndRetry()
+    {
+        if (!_dispatcherCts.IsCancellationRequested) _dispatcherCts.Cancel();
+        // TODO: decide if we want to close the channel og simply raise disconnect, and let Establish new channel dispose it?
+        //await channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
+        _eventRegister.Register(new ChannelDisconnected(_correlationId));
     }
 
     public async Task EstablishNewChannel(CancellationToken cancellationToken)
     {
-        if (!_dispatcherCts.IsCancellationRequested) _dispatcherCts.Cancel();
-
+        // TODO: Is it a problem that this cancellation token is always none
         var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
 
         await _dispatcherTask;
-
         await _sendQueue.ResetCursor(cancellationToken).ConfigureAwait(false);
 
         _dispatcherCts = new CancellationTokenSource();
@@ -190,22 +191,21 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         var oldChannel = _channel;
         _channel = channel;
 
+        // TODO: Why does IProducerChannel.DisposeAsync not do anything?
         await oldChannel.DisposeAsync().ConfigureAwait(false);
     }
 
     private class SendOp
     {
-        public SendOp(MessageMetadata metadata, ReadOnlySequence<byte> data, Func<MessageId, ValueTask> onSuccess, Action<Exception> onError)
+        public SendOp(MessageMetadata metadata, ReadOnlySequence<byte> data, TaskCompletionSource<MessageId> receiptTcs)
         {
             Metadata = metadata;
             Data = data;
-            OnSuccess = onSuccess;
-            OnError = onError;
+            ReceiptTcs = receiptTcs;
         }
 
         public MessageMetadata Metadata { get; }
         public ReadOnlySequence<byte> Data { get; }
-        public Func<MessageId, ValueTask> OnSuccess { get; }
-        public Action<Exception> OnError { get; }
+        public TaskCompletionSource<MessageId> ReceiptTcs { get; }
     }
 }

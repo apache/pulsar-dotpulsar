@@ -54,6 +54,7 @@ public sealed class DefaultExceptionHandler : IHandleException
             AsyncLockDisposedException _ => FaultAction.Retry,
             PulsarStreamDisposedException _ => FaultAction.Retry,
             AsyncQueueDisposedException _ => FaultAction.Retry,
+            ProducerSendReceiptOrderingException _ => FaultAction.Retry,
             OperationCanceledException _ => cancellationToken.IsCancellationRequested ? FaultAction.Rethrow : FaultAction.Retry,
             DotPulsarException _ => FaultAction.Rethrow,
             IOException _ => FaultAction.Retry,

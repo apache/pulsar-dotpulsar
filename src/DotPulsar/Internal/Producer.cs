@@ -262,13 +262,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             var data = _options.Schema.Encode(message);
 
             var tcs = new TaskCompletionSource<MessageId>();
-            await producer.Enqueue(metadata.Metadata, data, id =>
-            {
-                tcs.SetResult(id);
-                return new ValueTask(Task.CompletedTask);
-            },
-            exception => throw exception,
-            cancellationToken).ConfigureAwait(false);
+            await producer.Send(metadata.Metadata, data, tcs, cancellationToken).ConfigureAwait(false);
 
             MessageId messageId = await tcs.Task;
 
@@ -308,29 +302,32 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             var subProducer = _producers[partition];
             var data = _options.Schema.Encode(message);
 
-            await subProducer.Enqueue(metadata.Metadata, data, async messageId =>
-                {
-                    if (startTimestamp != 0)
-                        DotPulsarMeter.MessageSent(startTimestamp, _meterTags);
+            var tcs = new TaskCompletionSource<MessageId>();
+            await subProducer.Send(metadata.Metadata, data, tcs, cancellationToken).ConfigureAwait(false);
 
-                    CompleteActivity(messageId, data.Length, activity);
+            _ = tcs.Task.ContinueWith(async task =>
+            {
+                if (startTimestamp != 0)
+                    DotPulsarMeter.MessageSent(startTimestamp, _meterTags);
 
-                    try
-                    {
-                        await onMessageSent.Invoke(metadata, messageId);
-                    }
-                    catch (Exception)
-                    {
-                        // ignored
-                    }
-                },
-                exception =>
+                if (task.IsFaulted || task.IsCanceled)
                 {
-                    FailActivity(exception, activity);
+                    FailActivity(task.IsCanceled ? new OperationCanceledException() : task.Exception!, activity);
 
                     if (autoAssignSequenceId)
                         metadata.SequenceId = 0;
-                }, cancellationToken).ConfigureAwait(false);
+                }
+
+                CompleteActivity(task.Result, data.Length, activity);
+                try
+                {
+                    await onMessageSent.Invoke(metadata, task.Result);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception)
         {
