@@ -96,10 +96,9 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         await _channel.DisposeAsync().ConfigureAwait(false);
     }
 
-    public async ValueTask Send(MessageMetadata metadata, ReadOnlySequence<byte> data, TaskCompletionSource<MessageId> receiptTcs, CancellationToken cancellationToken)
+    public async ValueTask Send(SendOp sendOp, CancellationToken cancellationToken)
     {
         if (IsFinalState()) throw new ProducerClosedException(); // TODO: This exception might be intended for other purposes.
-        SendOp sendOp = new SendOp(metadata, data, receiptTcs);
         await _sendQueue.Enqueue(sendOp, cancellationToken).ConfigureAwait(false);
     }
 
@@ -110,12 +109,17 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            var tcs = new TaskCompletionSource<BaseCommand>();
+            SendOp sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
 
+            if (sendOp.CancellationToken.IsCancellationRequested)
+            {
+                _sendQueue.RemoveCurrentItem();
+                continue;
+            }
+
+            var tcs = new TaskCompletionSource<BaseCommand>();
             _ = tcs.Task.ContinueWith(task => responseQueue.Enqueue(task),
                 TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
-
-            SendOp sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
 
             // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
             bool success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), CancellationToken.None).ConfigureAwait(false);
@@ -206,19 +210,5 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         {
             _newChannelLock.Release();
         }
-    }
-
-    private class SendOp
-    {
-        public SendOp(MessageMetadata metadata, ReadOnlySequence<byte> data, TaskCompletionSource<MessageId> receiptTcs)
-        {
-            Metadata = metadata;
-            Data = data;
-            ReceiptTcs = receiptTcs;
-        }
-
-        public MessageMetadata Metadata { get; }
-        public ReadOnlySequence<byte> Data { get; }
-        public TaskCompletionSource<MessageId> ReceiptTcs { get; }
     }
 }

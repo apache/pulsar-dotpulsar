@@ -20,6 +20,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using ZstdSharp.Unsafe;
 
 [Trait("Category", "Unit")]
 public class AsyncQueueWithCursorTests
@@ -263,6 +264,80 @@ public class AsyncQueueWithCursorTests
         //Assert
         before.Should().Be(expected2);
         after.Should().Be(expected1);
+
+        //Annihilate
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task RemoveCurrentItem_GivenQueueEmpty_ShouldThrow()
+    {
+        //Arrange
+        var sut = new AsyncQueueWithCursor<int>(2);
+
+        //Act
+        var exception = Record.Exception(() => sut.RemoveCurrentItem());
+
+        //Assert
+        exception.Should().BeOfType<ArgumentException>();
+
+        //Annihilate
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task RemoveCurrentItem_GivenQueueWithItemButCursorNotMoved_ShouldThrow()
+    {
+        //Arrange
+        var sut = new AsyncQueueWithCursor<int>(2);
+        await sut.Enqueue(1, CancellationToken.None);
+
+        //Act
+        var exception = Record.Exception(() => sut.RemoveCurrentItem());
+
+        //Assert
+        exception.Should().BeOfType<ArgumentException>();
+
+        //Annihilate
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task RemoveCurrentItem_GivenQueueWithCursorOnItem_ShouldRemoveItem()
+    {
+        //Arrange
+        var sut = new AsyncQueueWithCursor<int>(2);
+        await sut.Enqueue(1, CancellationToken.None);
+        await sut.NextItem(CancellationToken.None);
+
+        //Act
+        sut.RemoveCurrentItem();
+
+        //Assert
+        sut.TryPeek(out _).Should().BeFalse();
+
+        //Annihilate
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task RemoveCurrentItem_GivenQueueWithMultipleItems_ShouldMoveCursor()
+    {
+        //Arrange
+        const int expected = 3;
+        var sut = new AsyncQueueWithCursor<int>(3);
+        await sut.Enqueue(1, CancellationToken.None);
+        await sut.Enqueue(2, CancellationToken.None);
+        await sut.Enqueue(expected, CancellationToken.None);
+        await sut.NextItem(CancellationToken.None);
+        await sut.NextItem(CancellationToken.None);
+
+        //Act
+        sut.RemoveCurrentItem();
+        var result = await sut.NextItem(CancellationToken.None);
+
+        //Assert
+        result.Should().Be(expected);
 
         //Annihilate
         await sut.DisposeAsync();

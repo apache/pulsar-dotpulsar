@@ -239,9 +239,9 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
     public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
     {
-        // TODO: cancellation does not work as expected. I.e. it will not be possible to cancel a task when it has been added to the queue.
         ThrowIfDisposed();
 
+        // TODO: Remove duplicate metrics code.
         var autoAssignSequenceId = metadata.SequenceId == 0;
         if (autoAssignSequenceId)
             metadata.SequenceId = _sequenceId.FetchNext();
@@ -263,7 +263,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             var data = _options.Schema.Encode(message);
 
             var tcs = new TaskCompletionSource<MessageId>();
-            await producer.Send(metadata.Metadata, data, tcs, cancellationToken).ConfigureAwait(false);
+            cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
+            await producer.Send(new SendOp(metadata.Metadata, data, tcs, cancellationToken), cancellationToken).ConfigureAwait(false);
 
             MessageId messageId = await tcs.Task.ConfigureAwait(false);
 
@@ -304,7 +305,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             var data = _options.Schema.Encode(message);
 
             var tcs = new TaskCompletionSource<MessageId>();
-            await subProducer.Send(metadata.Metadata, data, tcs, cancellationToken).ConfigureAwait(false);
+            await subProducer.Send(new SendOp(metadata.Metadata, data, tcs, CancellationToken.None), cancellationToken).ConfigureAwait(false);
 
             _ = tcs.Task.ContinueWith(async task =>
             {

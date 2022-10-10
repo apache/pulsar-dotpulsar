@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Internal;
 
+using Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -97,7 +98,6 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     /// <summary>
     /// Remove the last item from the queue
     /// </summary>
-    /// <exception cref="InvalidOperationException">The AsyncQueueWithCursor&lt;T&gt; is empty.</exception>
     public void Dequeue()
     {
         ThrowIfDisposed();
@@ -107,8 +107,31 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
             if (_currentNode == _queue.First)
                 _currentNode = null;
 
-            _queue.RemoveFirst();
+            try
+            {
+                _queue.RemoveFirst();
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new AsyncQueueWithCursorEmptyException(e);
+            }
             ReleasePendingLockGrant();
+        }
+    }
+
+    /// <summary>
+    /// Remove the current item the cursor is pointing to if applicable.
+    /// </summary>
+    public void RemoveCurrentItem()
+    {
+        ThrowIfDisposed();
+
+        lock (_queue)
+        {
+            if (_currentNode is null) throw new AsyncQueueWithCursorEmptyException();
+            var newCurrent = _currentNode.Previous;
+            _queue.Remove(_currentNode);
+            _currentNode = newCurrent;
         }
     }
 
@@ -181,7 +204,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     private void ThrowIfDisposed()
     {
         if (_isDisposed != 0)
-            throw new ObjectDisposedException("Queue is disposed"); // TODO: Create specific exception type
+            throw new AsyncQueueWithCursorDisposedException();
     }
 
     private void ReleasePendingLockGrant()
