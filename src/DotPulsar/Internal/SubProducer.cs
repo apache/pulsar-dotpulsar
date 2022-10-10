@@ -81,10 +81,11 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
 
         _eventRegister.Register(new ProducerDisposed(_correlationId));
         _newChannelLock.Dispose();
-        _dispatcherCts?.Cancel();
 
         try
         {
+            _dispatcherCts?.Cancel();
+            _dispatcherCts?.Dispose();
             await (_dispatcherTask ?? Task.CompletedTask).ConfigureAwait(false);
         }
         catch
@@ -172,7 +173,6 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
     {
         try
         {
-            // TODO: Should more of this run through the executor for exception handling?
             await _newChannelLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             if (_dispatcherCts is not null && !_dispatcherCts.IsCancellationRequested)
@@ -181,14 +181,7 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
                 _dispatcherCts.Dispose();
             }
 
-            try
-            {
-                await (_dispatcherTask ?? Task.CompletedTask).ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-                // Ignore
-            }
+            await _executor.TryExecuteOnce(() => _dispatcherTask ?? Task.CompletedTask, cancellationToken).ConfigureAwait(false);
 
             var oldChannel = _channel;
             // TODO: Not sure we need to actually close the channel?
