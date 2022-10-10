@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Abstractions;
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,4 +28,10 @@ public interface ISend<TMessage>
     /// </summary>
     /// <returns>ValueTask which completes when the Broker acknowledgement has been received.</returns>
     ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Enqueue a message to be sent.
+    /// </summary>
+    /// <returns>ValueTask which completes when the message is added to the send queue.</returns>
+    ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default);
 }

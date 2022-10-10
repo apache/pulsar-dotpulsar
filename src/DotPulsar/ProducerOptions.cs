@@ -83,4 +83,9 @@ public sealed class ProducerOptions<TMessage>
     /// Set the message router. The default router is the Round Robin partition router.
     /// </summary>
     public IMessageRouter MessageRouter { get; set; }
+
+    /// <summary>
+    /// Set the max size of the queue holding the messages pending to receive an acknowledgment from the broker.
+    /// </summary>
+    public uint MaxPendingMessages { get; set; }
 }

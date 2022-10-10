@@ -63,12 +63,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
             if (_queue.Count < _maxItems)
             {
                 var node = _queue.AddLast(item);
-
-                if (_cursorNextItemTcs is not null)
-                {
-                    _cursorNextItemTcs.TrySetResult(node);
-                    _cursorNextItemTcs = null;
-                }
+                _cursorNextItemTcs?.TrySetResult(node);
             }
 
             if (_queue.Count < _maxItems)
@@ -109,6 +104,9 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
 
         lock (_queue)
         {
+            if (_currentNode == _queue.First)
+                _currentNode = null;
+
             _queue.RemoveFirst();
             ReleasePendingLockGrant();
         }
@@ -128,7 +126,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
         {
             lock (_queue)
             {
-                _currentNode = _currentNode is null ? _queue.First : _currentNode.Next;
+                _currentNode = _currentNode is null || _currentNode.List is null ? _queue.First : _currentNode.Next;
 
                 if (_currentNode is not null) return _currentNode.Value;
 
@@ -137,11 +135,20 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
                 cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
             }
 
-            _currentNode = await _cursorNextItemTcs.Task.ConfigureAwait(false);
+            var result = await _cursorNextItemTcs.Task.ConfigureAwait(false);
+
+            lock (_queue)
+            {
+                _currentNode = result;
+            }
             return _currentNode.Value;
         }
         finally
         {
+            lock (_queue)
+            {
+                _cursorNextItemTcs = null;
+            }
             _cursorSemaphore.Release();
         }
     }

@@ -28,6 +28,7 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
     private string? _topic;
     private IHandleStateChanged<ProducerStateChanged>? _stateChangedHandler;
     private IMessageRouter? _messageRouter;
+    private uint _maxPendingMessages;
 
     public ProducerBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
     {
@@ -36,6 +37,7 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
         _attachTraceInfoToMessages = false;
         _compressionType = ProducerOptions<TMessage>.DefaultCompressionType;
         _initialSequenceId = ProducerOptions<TMessage>.DefaultInitialSequenceId;
+        _maxPendingMessages = 500;
     }
 
     public IProducerBuilder<TMessage> AttachTraceInfoToMessages(bool attachTraceInfoToMessages)
@@ -80,10 +82,19 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
         return this;
     }
 
+    public IProducerBuilder<TMessage> MaxPendingMessages(uint maxPendingMessages)
+    {
+        _maxPendingMessages = maxPendingMessages;
+        return this;
+    }
+
     public IProducer<TMessage> Create()
     {
         if (string.IsNullOrEmpty(_topic))
             throw new ConfigurationException("ProducerOptions.Topic may not be null or empty");
+
+        if (_maxPendingMessages == 0)
+            throw new ConfigurationException("ProducerOptions.MaxPendingMessages must be greater than 0");
 
         var options = new ProducerOptions<TMessage>(_topic!, _schema)
         {
@@ -91,7 +102,8 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
             CompressionType = _compressionType,
             InitialSequenceId = _initialSequenceId,
             ProducerName = _producerName,
-            StateChangedHandler = _stateChangedHandler
+            StateChangedHandler = _stateChangedHandler,
+            MaxPendingMessages = _maxPendingMessages
         };
 
         if (_messageRouter is not null)

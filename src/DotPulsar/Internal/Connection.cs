@@ -239,7 +239,15 @@ public sealed class Connection : IConnection
 
         using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
         {
-            _channelManager.Outgoing(command.Command!, responseTcs);
+            try
+            {
+                _channelManager.Outgoing(command.Command!, responseTcs);
+            }
+            catch (OperationCanceledException)
+            {
+                responseTcs.TrySetCanceled();
+                throw;
+            }
             var sequence = Serializer.Serialize(command.Command!.AsBaseCommand(), command.Metadata!, command.Payload);
             await _stream.Send(sequence).ConfigureAwait(false);
         }

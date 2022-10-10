@@ -28,9 +28,10 @@ using System.Threading.Tasks;
 
 public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
 {
+    private readonly SemaphoreSlim _newChannelLock;
     private readonly AsyncQueueWithCursor<SendOp> _sendQueue;
-    private CancellationTokenSource _dispatcherCts;
-    private Task _dispatcherTask;
+    private CancellationTokenSource? _dispatcherCts;
+    private Task? _dispatcherTask;
     private readonly Guid _correlationId;
     private readonly IRegisterEvent _eventRegister;
     private IProducerChannel _channel;
@@ -45,10 +46,11 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         IProducerChannel initialChannel,
         IExecute executor,
         IStateChanged<ProducerState> state,
-        IProducerChannelFactory factory)
+        IProducerChannelFactory factory,
+        uint maxPendingMessages)
     {
-        _sendQueue = new AsyncQueueWithCursor<SendOp>(1000); // TODO: Make size configurable
-        _dispatcherCts = new CancellationTokenSource();
+        _newChannelLock = new SemaphoreSlim(1, 1);
+        _sendQueue = new AsyncQueueWithCursor<SendOp>(maxPendingMessages);
         _correlationId = correlationId;
         _eventRegister = registerEvent;
         _channel = initialChannel;
@@ -57,7 +59,6 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         _factory = factory;
         _isDisposed = 0;
 
-        _dispatcherTask = MessageDispatcher(_channel, _dispatcherCts.Token);
         _eventRegister.Register(new ProducerCreated(_correlationId));
     }
 
@@ -79,9 +80,18 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
             return;
 
         _eventRegister.Register(new ProducerDisposed(_correlationId));
-        _dispatcherCts.Cancel();
-        await _dispatcherTask;
-        await _sendQueue.DisposeAsync();
+        _newChannelLock.Dispose();
+        _dispatcherCts?.Cancel();
+
+        try
+        {
+            await (_dispatcherTask ?? Task.CompletedTask).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Ignored
+        }
+        await _sendQueue.DisposeAsync().ConfigureAwait(false);
         await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
         await _channel.DisposeAsync().ConfigureAwait(false);
     }
@@ -90,109 +100,112 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
     {
         if (IsFinalState()) throw new ProducerClosedException(); // TODO: This exception might be intended for other purposes.
         SendOp sendOp = new SendOp(metadata, data, receiptTcs);
-        await _sendQueue.Enqueue(sendOp, cancellationToken);
+        await _sendQueue.Enqueue(sendOp, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task MessageDispatcher(IProducerChannel channel, CancellationToken cancellationToken)
     {
-        ValueTask? responseProcessorTask = null;
-        try
+        var responseQueue = new AsyncQueue<Task<BaseCommand>>();
+        var responseProcessorTask = ResponseProcessor(responseQueue, cancellationToken);
+
+        while (!cancellationToken.IsCancellationRequested)
         {
-            var responseQueue = new AsyncQueue<Task<BaseCommand>>();
-            responseProcessorTask = ResponseProcessor(responseQueue, cancellationToken);
+            var tcs = new TaskCompletionSource<BaseCommand>();
 
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var tcs = new TaskCompletionSource<BaseCommand>();
-                _ = tcs.Task.ContinueWith(task => responseQueue.Enqueue(task),
-                    TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
+            _ = tcs.Task.ContinueWith(task => responseQueue.Enqueue(task),
+                TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
 
-                SendOp sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
+            SendOp sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
 
-                // TODO: What should we do with the exceptions that are raised here.
-                bool success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), cancellationToken).ConfigureAwait(false);
+            // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
+            bool success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), CancellationToken.None).ConfigureAwait(false);
 
-                if (!success) StopProcessingAndRetry();
-            }
+            if (success) continue;
+            _eventRegister.Register(new ChannelDisconnected(_correlationId));
+            break;
         }
-        catch (OperationCanceledException)
-        {
-            // Ignored
-        }
-        finally
-        {
-            // TODO: Would this ever raise another exception.
-            await (responseProcessorTask ?? new ValueTask(Task.CompletedTask));
-        }
+
+        await responseProcessorTask.ConfigureAwait(false);
     }
 
     private async ValueTask ResponseProcessor(IDequeue<Task<BaseCommand>> responseQueue, CancellationToken cancellationToken)
     {
-        try
+        while (!cancellationToken.IsCancellationRequested)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            var responseTask = await responseQueue.Dequeue(cancellationToken).ConfigureAwait(false);
+
+            bool success = await _executor.TryExecuteOnce(() =>
             {
-                var responseTask = await responseQueue.Dequeue(cancellationToken);
+                if (responseTask.IsFaulted) throw responseTask.Exception!;
+                responseTask.Result.Expect(BaseCommand.Type.SendReceipt);
+                ProcessReceipt(responseTask.Result.SendReceipt);
+            }, CancellationToken.None).ConfigureAwait(false); // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
 
-                bool success = await _executor.TryExecuteOnce(() =>
-                {
-                    if (responseTask.IsFaulted) throw responseTask.Exception!;
-                    responseTask.Result.Expect(BaseCommand.Type.SendReceipt);
-                    ProcessReceipt(responseTask.Result.SendReceipt);
-                }, cancellationToken).ConfigureAwait(false);
-
-                if (!success) StopProcessingAndRetry();
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Ignored
+            // TODO: Should we crate a new event instead of channel disconnected?
+            if (success) continue;
+            _eventRegister.Register(new ChannelDisconnected(_correlationId));
+            break;
         }
     }
 
     private void ProcessReceipt(CommandSendReceipt sendReceipt)
     {
-        if (!_sendQueue.TryPeek(out SendOp? sendOp) || sendOp is null) return;
-
         ulong receiptSequenceId = sendReceipt.SequenceId;
+
+        if (!_sendQueue.TryPeek(out SendOp? sendOp) || sendOp is null)
+            throw new ProducerSendReceiptOrderingException($"Received sequenceId {receiptSequenceId} but send queue is empty");
+
         ulong expectedSequenceId = sendOp.Metadata.SequenceId;
 
-        // Ignore acknowledgements for messages that have already been removed from the queue
-        if (receiptSequenceId < expectedSequenceId) return;
-
         if (receiptSequenceId != expectedSequenceId)
-        {
             throw new ProducerSendReceiptOrderingException($"Received sequenceId {receiptSequenceId}. Expected {expectedSequenceId}");
-        }
 
         _sendQueue.Dequeue();
-        sendOp.ReceiptTcs.SetResult(sendReceipt.MessageId.ToMessageId());
-    }
-
-    private void StopProcessingAndRetry()
-    {
-        if (!_dispatcherCts.IsCancellationRequested) _dispatcherCts.Cancel();
-        // TODO: decide if we want to close the channel og simply raise disconnect, and let Establish new channel dispose it?
-        //await channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
-        _eventRegister.Register(new ChannelDisconnected(_correlationId));
+        sendOp.ReceiptTcs.TrySetResult(sendReceipt.MessageId.ToMessageId());
     }
 
     public async Task EstablishNewChannel(CancellationToken cancellationToken)
     {
-        // TODO: Is it a problem that this cancellation token is always none
-        var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
+        try
+        {
+            // TODO: Should more of this run through the executor for exception handling?
+            await _newChannelLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-        await _dispatcherTask;
-        _sendQueue.ResetCursor();
+            if (_dispatcherCts is not null && !_dispatcherCts.IsCancellationRequested)
+            {
+                _dispatcherCts.Cancel();
+                _dispatcherCts.Dispose();
+            }
 
-        _dispatcherCts = new CancellationTokenSource();
-        _dispatcherTask = MessageDispatcher(channel, _dispatcherCts.Token);
+            try
+            {
+                await (_dispatcherTask ?? Task.CompletedTask).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Ignore
+            }
 
-        var oldChannel = _channel;
-        _channel = channel;
+            var oldChannel = _channel;
+            // TODO: Not sure we need to actually close the channel?
+            await oldChannel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
+            // TODO: Why does IProducerChannel.DisposeAsync not do anything?
+            await oldChannel.DisposeAsync().ConfigureAwait(false);
 
-        // TODO: Why does IProducerChannel.DisposeAsync not do anything?
-        await oldChannel.DisposeAsync().ConfigureAwait(false);
+            _channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
+
+            _sendQueue.ResetCursor();
+            _dispatcherCts = new CancellationTokenSource();
+            _dispatcherTask = MessageDispatcher(_channel, _dispatcherCts.Token);
+        }
+        catch (Exception)
+        {
+            // Ignored
+        }
+        finally
+        {
+            _newChannelLock.Release();
+        }
     }
 
     private class SendOp

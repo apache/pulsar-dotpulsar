@@ -173,7 +173,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-        var producer = new SubProducer(correlationId, _processManager, initialChannel, executor, stateManager, factory);
+        var producer = new SubProducer(correlationId, _processManager, initialChannel, executor, stateManager, factory, _options.MaxPendingMessages);
         var process = new ProducerProcess(correlationId, stateManager, producer);
         _processManager.Add(process);
         process.Start();
@@ -239,6 +239,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
     public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
     {
+        // TODO: cancellation does not work as expected. I.e. it will not be possible to cancel a task when it has been added to the queue.
         ThrowIfDisposed();
 
         var autoAssignSequenceId = metadata.SequenceId == 0;
@@ -285,7 +286,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         }
     }
 
-    public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageMetadata, MessageId, ValueTask> onMessageSent, CancellationToken cancellationToken = default)
+    public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
 
@@ -321,13 +322,14 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                 CompleteActivity(task.Result, data.Length, activity);
                 try
                 {
-                    await onMessageSent.Invoke(metadata, task.Result).ConfigureAwait(false);
+                    if (onMessageSent is not null)
+                        await onMessageSent.Invoke(task.Result).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {
                     // ignored
                 }
-            }, cancellationToken).ConfigureAwait(false);
+            }, CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception exception)
         {
