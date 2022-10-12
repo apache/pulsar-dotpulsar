@@ -16,9 +16,9 @@ namespace DotPulsar.Internal.Exceptions;
 
 using System;
 
-public sealed class AsyncQueueWithCursorEmptyException : InvalidOperationException
+public sealed class AsyncQueueWithCursorNoItemException : InvalidOperationException
 {
-    public AsyncQueueWithCursorEmptyException() : base(typeof(AsyncQueueWithCursor<>).FullName) { }
+    public AsyncQueueWithCursorNoItemException() : base(typeof(AsyncQueueWithCursor<>).FullName) { }
 
-    public AsyncQueueWithCursorEmptyException(Exception innerException) : base(typeof(AsyncQueueWithCursor<>).FullName, innerException) { }
+    public AsyncQueueWithCursorNoItemException(Exception innerException) : base(typeof(AsyncQueueWithCursor<>).FullName, innerException) { }
 }

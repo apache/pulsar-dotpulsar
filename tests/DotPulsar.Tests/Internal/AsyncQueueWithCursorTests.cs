@@ -15,6 +15,7 @@
 namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Internal;
+using DotPulsar.Internal.Exceptions;
 using FluentAssertions;
 using System;
 using System.Threading;
@@ -279,7 +280,7 @@ public class AsyncQueueWithCursorTests
         var exception = Record.Exception(() => sut.RemoveCurrentItem());
 
         //Assert
-        exception.Should().BeOfType<ArgumentException>();
+        exception.Should().BeOfType<AsyncQueueWithCursorNoItemException>();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -296,7 +297,7 @@ public class AsyncQueueWithCursorTests
         var exception = Record.Exception(() => sut.RemoveCurrentItem());
 
         //Assert
-        exception.Should().BeOfType<ArgumentException>();
+        exception.Should().BeOfType<AsyncQueueWithCursorNoItemException>();
 
         //Annihilate
         await sut.DisposeAsync();

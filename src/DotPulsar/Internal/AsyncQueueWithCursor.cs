@@ -113,7 +113,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
             }
             catch (InvalidOperationException e)
             {
-                throw new AsyncQueueWithCursorEmptyException(e);
+                throw new AsyncQueueWithCursorNoItemException(e);
             }
             ReleasePendingLockGrant();
         }
@@ -128,7 +128,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
 
         lock (_queue)
         {
-            if (_currentNode is null) throw new AsyncQueueWithCursorEmptyException();
+            if (_currentNode is null) throw new AsyncQueueWithCursorNoItemException();
             var newCurrent = _currentNode.Previous;
             _queue.Remove(_currentNode);
             _currentNode = newCurrent;
