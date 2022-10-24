@@ -36,11 +36,7 @@ public class Worker : BackgroundService
             .Topic("persistent://public/default/mytopic")
             .Create();
 
-        var options = new ProcessingOptions
-        {
-            MaxDegreeOfParallelism = 5
-        };
-        await consumer.Process(ProcessMessage, options, cancellationToken);
+        await consumer.Process(ProcessMessage, cancellationToken);
     }
 
     private ValueTask ProcessMessage(IMessage<string> message, CancellationToken cancellationToken)
