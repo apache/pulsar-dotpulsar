@@ -16,10 +16,7 @@ namespace DotPulsar.Extensions;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Internal;
-using DotPulsar.Internal.Extensions;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -46,59 +43,21 @@ public static class ConsumerExtensions
     public static async ValueTask Process<TMessage>(
         this IConsumer<TMessage> consumer,
         Func<IMessage<TMessage>, CancellationToken, ValueTask> processor,
+        ProcessingOptions options,
         CancellationToken cancellationToken = default)
     {
-        const string operation = "process";
-        var operationName = $"{consumer.Topic} {operation}";
-
-        var activityTags = new KeyValuePair<string, object?>[]
-        {
-            new KeyValuePair<string, object?>("messaging.destination", consumer.Topic),
-            new KeyValuePair<string, object?>("messaging.destination_kind", "topic"),
-            new KeyValuePair<string, object?>("messaging.operation", operation),
-            new KeyValuePair<string, object?>("messaging.system", "pulsar"),
-            new KeyValuePair<string, object?>("messaging.url", consumer.ServiceUrl),
-            new KeyValuePair<string, object?>("messaging.pulsar.subscription", consumer.SubscriptionName)
-        };
-
-        var meterTags = new KeyValuePair<string, object?>[]
-        {
-            new KeyValuePair<string, object?>("topic", consumer.Topic),
-            new KeyValuePair<string, object?>("subscription", consumer.SubscriptionName)
-        };
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            var message = await consumer.Receive(cancellationToken).ConfigureAwait(false);
-
-            var activity = DotPulsarActivitySource.StartConsumerActivity(message, operationName, activityTags);
-            if (activity is not null && activity.IsAllDataRequested)
-            {
-                activity.SetMessageId(message.MessageId);
-                activity.SetPayloadSize(message.Data.Length);
-                activity.SetStatus(ActivityStatusCode.Ok);
-            }
-
-            var startTimestamp = DotPulsarMeter.MessageProcessedEnabled ? Stopwatch.GetTimestamp() : 0;
-
-            try
-            {
-                await processor(message, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception exception)
-            {
-                if (activity is not null && activity.IsAllDataRequested)
-                    activity.AddException(exception);
-            }
-
-            if (startTimestamp != 0)
-                DotPulsarMeter.MessageProcessed(startTimestamp, meterTags);
-
-            activity?.Dispose();
-
-            await consumer.Acknowledge(message.MessageId, cancellationToken).ConfigureAwait(false);
-        }
+        using var messageProcessor = new MessageProcessor<TMessage>(consumer, processor, options);
+        await messageProcessor.Process(cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Process and auto-acknowledge a message using the default processing options.
+    /// </summary>
+    public static async ValueTask Process<TMessage>(
+        this IConsumer<TMessage> consumer,
+        Func<IMessage<TMessage>, CancellationToken, ValueTask> processor,
+        CancellationToken cancellationToken = default)
+        => await Process(consumer, processor, new ProcessingOptions(), cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Wait for the state to change to a specific state.
