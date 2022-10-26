@@ -22,6 +22,7 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
     private readonly IPulsarClient _pulsarClient;
     private readonly ISchema<TMessage> _schema;
     private string? _producerName;
+    private bool _attachTraceInfoToMessages;
     private CompressionType _compressionType;
     private ulong _initialSequenceId;
     private string? _topic;
@@ -32,8 +33,15 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
     {
         _pulsarClient = pulsarClient;
         _schema = schema;
+        _attachTraceInfoToMessages = false;
         _compressionType = ProducerOptions<TMessage>.DefaultCompressionType;
         _initialSequenceId = ProducerOptions<TMessage>.DefaultInitialSequenceId;
+    }
+
+    public IProducerBuilder<TMessage> AttachTraceInfoToMessages(bool attachTraceInfoToMessages)
+    {
+        _attachTraceInfoToMessages = attachTraceInfoToMessages;
+        return this;
     }
 
     public IProducerBuilder<TMessage> CompressionType(CompressionType compressionType)
@@ -79,6 +87,7 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
 
         var options = new ProducerOptions<TMessage>(_topic!, _schema)
         {
+            AttachTraceInfoToMessages = _attachTraceInfoToMessages,
             CompressionType = _compressionType,
             InitialSequenceId = _initialSequenceId,
             ProducerName = _producerName,

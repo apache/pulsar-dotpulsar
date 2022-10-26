@@ -27,7 +27,8 @@ public sealed class ProcessingOptions
     /// </summary>
     public const int Unbounded = -1;
 
-    private bool _ensureOrderedAcknowledgement;
+    private bool _ensureOrderedAcknowledgment;
+    private bool _linkTraces;
     private int _maxDegreeOfParallelism;
     private int _maxMessagesPerTask;
     private TaskScheduler _taskScheduler;
@@ -37,19 +38,29 @@ public sealed class ProcessingOptions
     /// </summary>
     public ProcessingOptions()
     {
-        _ensureOrderedAcknowledgement = true;
+        _ensureOrderedAcknowledgment = true;
+        _linkTraces = false;
         _maxDegreeOfParallelism = 1;
         _maxMessagesPerTask = Unbounded;
         _taskScheduler = TaskScheduler.Default;
     }
 
     /// <summary>
-    /// Whether ordered acknowledgement should be enforced. The default is 'true'.
+    /// Whether ordered acknowledgment should be enforced. The default is 'true'.
     /// </summary>
-    public bool EnsureOrderedAcknowledgement
+    public bool EnsureOrderedAcknowledgment
     {
-        get => _ensureOrderedAcknowledgement;
-        set { _ensureOrderedAcknowledgement = value; }
+        get => _ensureOrderedAcknowledgment;
+        set { _ensureOrderedAcknowledgment = value; }
+    }
+
+    /// <summary>
+    /// Whether to link the process trace to the message's send trace, if tracing is enabled. The default is 'false'.
+    /// </summary>
+    public bool LinkTraces
+    {
+        get => _linkTraces;
+        set { _linkTraces = value; }
     }
 
     /// <summary>

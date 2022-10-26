@@ -36,12 +36,18 @@ public sealed class ProducerOptions<TMessage>
     /// </summary>
     public ProducerOptions(string topic, ISchema<TMessage> schema)
     {
+        AttachTraceInfoToMessages = false;
         CompressionType = DefaultCompressionType;
         InitialSequenceId = DefaultInitialSequenceId;
         Topic = topic;
         Schema = schema;
         MessageRouter = new RoundRobinPartitionRouter();
     }
+
+    /// <summary>
+    /// Whether to attach the sending trace's parent and state to the outgoing messages metadata. The default is 'false'.
+    /// </summary>
+    public bool AttachTraceInfoToMessages { get; set; }
 
     /// <summary>
     /// Set the compression type. The default is 'None'.

@@ -29,12 +29,21 @@ public static class DotPulsarActivitySource
 
     public static ActivitySource ActivitySource { get; }
 
-    public static Activity? StartConsumerActivity(IMessage message, string operationName, KeyValuePair<string, object?>[] tags)
+    public static Activity? StartConsumerActivity(IMessage message, string operationName, KeyValuePair<string, object?>[] tags, bool autoLinkTraces)
     {
         if (!ActivitySource.HasListeners())
             return null;
 
-        return StartActivity(operationName, ActivityKind.Consumer, tags, message.GetConversationId());
+        IEnumerable<ActivityLink>? activityLinks = null;
+
+        if (autoLinkTraces)
+        {
+            var activityLink = GetActivityLink(message);
+            if (activityLink is not null)
+                activityLinks = new ActivityLink[] { activityLink.Value };
+        }
+
+        return StartActivity(operationName, ActivityKind.Consumer, tags, activityLinks, message.GetConversationId());
     }
 
     public static Activity? StartProducerActivity(MessageMetadata metadata, string operationName, KeyValuePair<string, object?>[] tags)
@@ -42,21 +51,33 @@ public static class DotPulsarActivitySource
         if (!ActivitySource.HasListeners())
             return null;
 
-        return StartActivity(operationName, ActivityKind.Producer, tags, metadata.GetConversationId());
+        return StartActivity(operationName, ActivityKind.Producer, tags, null, metadata.GetConversationId());
     }
 
-    private static Activity? StartActivity(string operationName, ActivityKind kind, KeyValuePair<string, object?>[] tags, string? conversationId)
+    private static ActivityLink? GetActivityLink(IMessage message)
     {
-        var activity = ActivitySource.StartActivity(operationName, kind);
+        if (message.Properties.TryGetValue(Constants.TraceParent, out var traceParent))
+        {
+            _ = message.Properties.TryGetValue(Constants.TraceState, out var traceState);
+
+            if (ActivityContext.TryParse(traceParent, traceState, out var context))
+                return new ActivityLink(context);
+        }
+
+        return null;
+    }
+
+    private static Activity? StartActivity(
+        string operationName,
+        ActivityKind kind,
+        KeyValuePair<string, object?>[] tags,
+        IEnumerable<ActivityLink>? activityLinks,
+        string? conversationId)
+    {
+        var activity = ActivitySource.StartActivity(kind, name: operationName, tags: tags, links: activityLinks);
 
         if (activity is not null && activity.IsAllDataRequested)
         {
-            for (var i = 0; i < tags.Length; ++i)
-            {
-                var tag = tags[i];
-                activity.SetTag(tag.Key, tag.Value);
-            }
-
             if (conversationId is not null)
                 activity.SetConversationId(conversationId);
         }

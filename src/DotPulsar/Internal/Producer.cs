@@ -32,6 +32,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     private readonly string _operationName;
     private readonly KeyValuePair<string, object?>[] _activityTags;
     private readonly KeyValuePair<string, object?>[] _meterTags;
+    private readonly bool _attachTraceInfoToMessages;
     private readonly SequenceId _sequenceId;
     private readonly StateManager<ProducerState> _state;
     private readonly IConnectionPool _connectionPool;
@@ -70,6 +71,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         {
                 new KeyValuePair<string, object?>("topic", options.Topic)
         };
+        _attachTraceInfoToMessages = options.AttachTraceInfoToMessages;
         _sequenceId = new SequenceId(options.InitialSequenceId);
         _state = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
         ServiceUrl = serviceUrl;
@@ -245,6 +247,13 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             metadata.SequenceId = _sequenceId.FetchNext();
 
         var activity = DotPulsarActivitySource.StartProducerActivity(metadata, _operationName, _activityTags);
+        if (activity is not null && _attachTraceInfoToMessages)
+        {
+            metadata[Constants.TraceParent] = activity.Id;
+            if (activity.TraceStateString is not null)
+                metadata[Constants.TraceState] = activity.TraceStateString;
+        }
+
         var startTimestamp = DotPulsarMeter.MessageSentEnabled ? Stopwatch.GetTimestamp() : 0;
 
         try

@@ -20,6 +20,11 @@ namespace DotPulsar.Abstractions;
 public interface IProducerBuilder<TMessage>
 {
     /// <summary>
+    /// Whether to attach the sending trace's parent and state to the outgoing messages metadata. The default is 'false'.
+    /// </summary>
+    IProducerBuilder<TMessage> AttachTraceInfoToMessages(bool attachTraceInfoToMessages);
+
+    /// <summary>
     /// Set the compression type. The default is 'None'.
     /// </summary>
     IProducerBuilder<TMessage> CompressionType(CompressionType compressionType);

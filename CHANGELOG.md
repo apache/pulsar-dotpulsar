@@ -8,7 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ### Added
 
-- The 'Process' extension method for IConsumer\<TMessage\> can now be used for parallel processing of messages
+- The 'Process' extension method for IConsumer\<TMessage\> can now be used for parallel processing of messages. You can control:
+    - Whether ordered acknowledgment should be enforced
+    - The maximum number of messages that may be processed concurrently
+    - The maximum number of messages that may be processed per task
+    - The TaskScheduler to use for scheduling tasks
+- The trace created when sending a message can now be automatically linked to by traces created when consuming the message. All you have to do is:
+    - Make sure 'messaging.trace_parent' and 'messaging.trace_state' are not already in use in the message's metadata (properties)
+    - Set 'AttachTraceInfoToMessages' on ProducerOptions or IProducerBuilder when creating a producer
+    - Set 'LinkTraces' on the ProcessingOptions passed to the 'Process' extension method for IConsumer\<TMessage\>
 
 ## [2.4.1] - 2022-09-16
 

@@ -36,7 +36,8 @@ public sealed class MessageProcessor<TMessage> : IDisposable
     private readonly SemaphoreSlim _receiveLock;
     private readonly SemaphoreSlim _acknowledgeLock;
     private readonly ObjectPool<ProcessInfo> _processInfoPool;
-    private readonly bool _ensureOrderedAcknowledgement;
+    private readonly bool _linkTraces;
+    private readonly bool _ensureOrderedAcknowledgment;
     private readonly int _maxDegreeOfParallelism;
     private readonly int _maxMessagesPerTask;
     private readonly TaskScheduler _taskScheduler;
@@ -70,7 +71,8 @@ public sealed class MessageProcessor<TMessage> : IDisposable
         _acknowledgeLock = new SemaphoreSlim(1, 1);
         _processInfoPool = new DefaultObjectPool<ProcessInfo>(new DefaultPooledObjectPolicy<ProcessInfo>());
 
-        _ensureOrderedAcknowledgement = options.EnsureOrderedAcknowledgement;
+        _linkTraces = options.LinkTraces;
+        _ensureOrderedAcknowledgment = options.EnsureOrderedAcknowledgment;
         _maxDegreeOfParallelism = options.MaxDegreeOfParallelism;
         _maxMessagesPerTask = options.MaxMessagesPerTask;
         _taskScheduler = options.TaskScheduler;
@@ -103,7 +105,7 @@ public sealed class MessageProcessor<TMessage> : IDisposable
 
         var processInfo = new ProcessInfo();
 
-        var needToEnsureOrderedAcknowledgement = _ensureOrderedAcknowledgement && _maxDegreeOfParallelism > 1;
+        var needToEnsureOrderedAcknowledgement = _ensureOrderedAcknowledgment && _maxDegreeOfParallelism > 1;
         var isUnbounded = _maxMessagesPerTask == ProcessingOptions.Unbounded;
 
         while (!cancellationToken.IsCancellationRequested)
@@ -124,7 +126,7 @@ public sealed class MessageProcessor<TMessage> : IDisposable
                 _receiveLock.Release();
             }
 
-            var activity = DotPulsarActivitySource.StartConsumerActivity(message, _operationName, _activityTags);
+            var activity = DotPulsarActivitySource.StartConsumerActivity(message, _operationName, _activityTags, _linkTraces);
             if (activity is not null && activity.IsAllDataRequested)
             {
                 activity.SetMessageId(message.MessageId);
@@ -191,7 +193,7 @@ public sealed class MessageProcessor<TMessage> : IDisposable
         var processorTask = Task.Factory.StartNew(
             async () => await Processor(cancellationToken).ConfigureAwait(false),
             cancellationToken,
-            TaskCreationOptions.None,
+            TaskCreationOptions.DenyChildAttach,
             _taskScheduler).Unwrap();
 
         _processorTasks.AddLast(processorTask);

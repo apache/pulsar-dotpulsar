@@ -41,6 +41,8 @@ public static class Constants
         MetadataSizeOffset = 6;
         MetadataOffset = 10;
         ConversationId = "messaging.conversation_id";
+        TraceParent = "messaging.trace_parent";
+        TraceState = "messaging.trace_state";
         TimestampToTicks = TimeSpan.TicksPerSecond / (double) Stopwatch.Frequency;
     }
 
@@ -55,5 +57,7 @@ public static class Constants
     public static int MetadataSizeOffset { get; }
     public static int MetadataOffset { get; }
     public static string ConversationId { get; }
+    public static string TraceParent { get; }
+    public static string TraceState { get; }
     public static double TimestampToTicks { get; }
 }
