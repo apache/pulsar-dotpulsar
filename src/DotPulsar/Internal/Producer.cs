@@ -22,6 +22,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,10 +46,13 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     private readonly IExecute _executor;
     private int _isDisposed;
     private int _producerCount;
+    private ISendChannel<TMessage>? _sendChannel;
     private Exception? _throw;
 
     public Uri ServiceUrl { get; }
     public string Topic { get; }
+
+    public ISendChannel<TMessage> SendChannel { get => _sendChannel ??= new SendChannel<TMessage>(this); }
 
     public Producer(
         Uri serviceUrl,
@@ -340,6 +344,11 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                 metadata.SequenceId = 0;
             throw;
         }
+    }
+
+    public async ValueTask WaitForSendQueueEmpty(CancellationToken cancellationToken)
+    {
+        await Task.WhenAll(_producers.Values.Select(producer => producer.WaitForSendQueueEmpty(cancellationToken).AsTask())).ConfigureAwait(false);
     }
 
     private void CompleteActivity(MessageId messageId, long payloadSize, Activity? activity)

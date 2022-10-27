@@ -17,4 +17,10 @@ namespace DotPulsar.Abstractions;
 /// <summary>
 /// A generic producer abstraction.
 /// </summary>
-public interface IProducer<TMessage> : IProducer, ISend<TMessage> { }
+public interface IProducer<TMessage> : IProducer, ISend<TMessage>
+{
+    /// <summary>
+    /// Get a channel for this producer.
+    /// </summary>
+    ISendChannel<TMessage> SendChannel { get; }
+}

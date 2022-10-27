@@ -103,6 +103,11 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         await _sendQueue.Enqueue(sendOp, cancellationToken).ConfigureAwait(false);
     }
 
+    public async ValueTask WaitForSendQueueEmpty(CancellationToken cancellationToken)
+    {
+        await _sendQueue.WaitForEmpty(cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task MessageDispatcher(IProducerChannel channel, CancellationToken cancellationToken)
     {
         var responseQueue = new AsyncQueue<Task<BaseCommand>>();

@@ -25,6 +25,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     private readonly AsyncLock _pendingLock;
     private readonly SemaphoreSlim _cursorSemaphore;
     private readonly LinkedList<T> _queue;
+    private readonly IList<TaskCompletionSource<object>> _queueEmptyTcs;
     private readonly uint _maxItems;
     private IDisposable? _pendingLockGrant;
     private LinkedListNode<T>? _currentNode;
@@ -35,6 +36,8 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     {
         _pendingLock = new AsyncLock();
         _cursorSemaphore = new SemaphoreSlim(1, 1);
+        // TODO: Figure out if we can use https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcompletionsource?view=net-6.0
+        _queueEmptyTcs = new List<TaskCompletionSource<object>>();
         _queue = new LinkedList<T>();
         _maxItems = maxItems;
     }
@@ -115,6 +118,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
             {
                 throw new AsyncQueueWithCursorNoItemException(e);
             }
+            if (_queue.Count == 0) NotifyQueueEmptyAwaiters();
             ReleasePendingLockGrant();
         }
     }
@@ -132,6 +136,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
             var newCurrent = _currentNode.Previous;
             _queue.Remove(_currentNode);
             _currentNode = newCurrent;
+            if (_queue.Count == 0) NotifyQueueEmptyAwaiters();
         }
     }
 
@@ -190,6 +195,24 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Wait for the queue to become empty and return. Note that this will not block for enqueue operations.
+    /// </summary>
+    public async Task WaitForEmpty(CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+        var tcs = new TaskCompletionSource<object>();
+        lock (_queue)
+        {
+            if (_queue.Count == 0) return;
+
+            cancellationToken.Register(() => tcs.TrySetCanceled());
+            _queueEmptyTcs.Add(tcs);
+        }
+
+        await tcs.Task.ConfigureAwait(false);
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
@@ -205,6 +228,15 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     {
         if (_isDisposed != 0)
             throw new AsyncQueueWithCursorDisposedException();
+    }
+
+    private void NotifyQueueEmptyAwaiters()
+    {
+        foreach (TaskCompletionSource<object>? tcs in _queueEmptyTcs)
+        {
+            tcs.SetResult(0);
+        }
+        _queueEmptyTcs.Clear();
     }
 
     private void ReleasePendingLockGrant()
