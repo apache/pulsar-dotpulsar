@@ -107,8 +107,10 @@ csharp_style_prefer_method_group_conversion = true:silent
 csharp_style_prefer_top_level_statements = true:silent
 csharp_style_inlined_variable_declaration = true:suggestion
 # Namespace
+# https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0065#csharp_using_directive_placement
 csharp_using_directive_placement = inside_namespace:error
-csharp_style_namespace_declarations = block_scoped:silent
+# https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0160-ide0161#csharp_style_namespace_declarations
+csharp_style_namespace_declarations = file_scoped:error
 ###############################
 # C# Formatting Rules         #
 ###############################
@@ -186,6 +188,14 @@ resharper_constructor_or_destructor_body = expression_body
 resharper_local_function_body = expression_body
 # https://www.jetbrains.com/help/resharper/EditorConfig_CSHARP_CSharpCodeStylePageImplSchema.html?keymap=rs#resharper_csharp_method_or_operator_body
 resharper_method_or_operator_body = expression_body
+####################################################################################
+## These are only active if enabled in code cleanup profile.                      ##
+## Editor | Code Cleanup | Optimize 'using' directives                            ##
+####################################################################################
+# https://www.jetbrains.com/help/rider/EditorConfig_CSHARP_CSharpCodeStylePageImplSchema.html#resharper_csharp_add_imports_to_deepest_scope
+resharper_csharp_add_imports_to_deepest_scope = true
+# https://www.jetbrains.com/help/rider/EditorConfig_CSHARP_CSharpCodeStylePageImplSchema.html#resharper_csharp_qualified_using_at_nested_scope
+resharper_csharp_qualified_using_at_nested_scope = true
 ################################################################
 # Duplicates of options already set in .NET Coding Conventions #
 ################################################################
