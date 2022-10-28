@@ -29,14 +29,14 @@ public static class DotPulsarActivitySource
 
     public static ActivitySource ActivitySource { get; }
 
-    public static Activity? StartConsumerActivity(IMessage message, string operationName, KeyValuePair<string, object?>[] tags, bool autoLinkTraces)
+    public static Activity? StartConsumerActivity(IMessage message, string operationName, KeyValuePair<string, object?>[] tags, bool linkTraces)
     {
         if (!ActivitySource.HasListeners())
             return null;
 
         IEnumerable<ActivityLink>? activityLinks = null;
 
-        if (autoLinkTraces)
+        if (linkTraces)
         {
             var activityLink = GetActivityLink(message);
             if (activityLink is not null)
