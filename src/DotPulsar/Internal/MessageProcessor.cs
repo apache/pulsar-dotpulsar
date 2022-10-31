@@ -154,38 +154,41 @@ public sealed class MessageProcessor<TMessage> : IDisposable
             if (needToEnsureOrderedAcknowledgement)
             {
                 await _acknowledgeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
                 processInfo.IsProcessed = true;
-                var messagesToAcknowledge = 0;
-                MessageId? messageId = null;
-
-                while (_processingQueue.TryPeek(out processInfo))
-                {
-                    if (!processInfo.IsProcessed)
-                        break;
-
-                    ++messagesToAcknowledge;
-
-                    if (_processingQueue.TryDequeue(out processInfo))
-                    {
-                        messageId = processInfo.MessageId;
-                        _processInfoPool.Return(processInfo);
-                    }
-                }
-
-                if (messagesToAcknowledge == 1)
-                    await _consumer.Acknowledge(messageId!).ConfigureAwait(false);
-                else if (messagesToAcknowledge > 1)
-                    await _consumer.AcknowledgeCumulative(messageId!).ConfigureAwait(false);
-
+                await AcknowledgeProcessedMessages(cancellationToken).ConfigureAwait(false);
                 _acknowledgeLock.Release();
             }
             else
-                await _consumer.Acknowledge(message.MessageId).ConfigureAwait(false);
+                await _consumer.Acknowledge(message.MessageId, cancellationToken).ConfigureAwait(false);
 
             if (!isUnbounded && ++messagesProcessed == _maxMessagesPerTask)
                 return;
         }
+    }
+
+    private async ValueTask AcknowledgeProcessedMessages(CancellationToken cancellationToken)
+    {
+        var messagesToAcknowledge = 0;
+        var messageId = MessageId.Earliest;
+
+        while (_processingQueue.TryPeek(out var processInfo))
+        {
+            if (!processInfo.IsProcessed)
+                break;
+
+            ++messagesToAcknowledge;
+
+            if (_processingQueue.TryDequeue(out processInfo))
+            {
+                messageId = processInfo.MessageId;
+                _processInfoPool.Return(processInfo);
+            }
+        }
+
+        if (messagesToAcknowledge == 1)
+            await _consumer.Acknowledge(messageId, cancellationToken).ConfigureAwait(false);
+        else if (messagesToAcknowledge > 1)
+            await _consumer.AcknowledgeCumulative(messageId, cancellationToken).ConfigureAwait(false);
     }
 
     private void StartNewProcessorTask(CancellationToken cancellationToken)
