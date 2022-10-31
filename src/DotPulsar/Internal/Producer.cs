@@ -243,9 +243,29 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
     public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
     {
+        var tcs = new TaskCompletionSource<MessageId>();
+        cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
+
+        ValueTask OnMessageSent(MessageId messageId)
+        {
+            tcs.TrySetResult(messageId);
+            return new ValueTask();
+        }
+
+        await InternalSend(metadata, message, true, OnMessageSent, cancellationToken).ConfigureAwait(false);
+
+        return await tcs.Task.ConfigureAwait(false);
+    }
+
+    public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
+    {
+        await InternalSend(metadata, message, false, onMessageSent, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async ValueTask InternalSend(MessageMetadata metadata, TMessage message, bool sendOpCancelable, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
+    {
         ThrowIfDisposed();
 
-        // TODO: Remove duplicate metrics code.
         var autoAssignSequenceId = metadata.SequenceId == 0;
         if (autoAssignSequenceId)
             metadata.SequenceId = _sequenceId.FetchNext();
@@ -263,53 +283,11 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         try
         {
             var partition = await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false);
-            var producer = _producers[partition];
-            var data = _options.Schema.Encode(message);
-
-            var tcs = new TaskCompletionSource<MessageId>();
-            cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
-            await producer.Send(new SendOp(metadata.Metadata, data, tcs, cancellationToken), cancellationToken).ConfigureAwait(false);
-
-            MessageId messageId = await tcs.Task.ConfigureAwait(false);
-
-            if (startTimestamp != 0)
-                DotPulsarMeter.MessageSent(startTimestamp, _meterTags);
-
-            CompleteActivity(messageId, data.Length, activity);
-
-            return messageId;
-        }
-        catch (Exception exception)
-        {
-            FailActivity(exception, activity);
-            throw;
-        }
-        finally
-        {
-            if (autoAssignSequenceId)
-                metadata.SequenceId = 0;
-        }
-    }
-
-    public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
-    {
-        ThrowIfDisposed();
-
-        var autoAssignSequenceId = metadata.SequenceId == 0;
-        if (autoAssignSequenceId)
-            metadata.SequenceId = _sequenceId.FetchNext();
-
-        var activity = DotPulsarActivitySource.StartProducerActivity(metadata, _operationName, _activityTags);
-        var startTimestamp = DotPulsarMeter.MessageSentEnabled ? Stopwatch.GetTimestamp() : 0;
-
-        try
-        {
-            var partition = await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false);
             var subProducer = _producers[partition];
             var data = _options.Schema.Encode(message);
 
             var tcs = new TaskCompletionSource<MessageId>();
-            await subProducer.Send(new SendOp(metadata.Metadata, data, tcs, CancellationToken.None), cancellationToken).ConfigureAwait(false);
+            await subProducer.Send(new SendOp(metadata.Metadata, data, tcs, sendOpCancelable ? cancellationToken : CancellationToken.None), cancellationToken).ConfigureAwait(false);
 
             _ = tcs.Task.ContinueWith(async task =>
             {

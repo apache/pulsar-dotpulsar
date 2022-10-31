@@ -22,7 +22,6 @@ using System.Threading.Tasks;
 
 public interface IProducerChannel : IAsyncDisposable
 {
-    // TODO: Why does one return ValueTask and the other Task?
     Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, TaskCompletionSource<BaseCommand> responseTcs, CancellationToken
     cancellationToken);
     ValueTask ClosedByClient(CancellationToken cancellationToken);

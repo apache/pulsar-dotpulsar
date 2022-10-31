@@ -63,6 +63,35 @@ public class ProducerTests
     }
 
     [Fact]
+    public async Task SimpleProduceConsume_WhenSendingWithChannel_ThenReceiveMessagesFromConsumer()
+    {
+        //Arrange
+        await using var client = CreateClient();
+        string topicName = $"simple-produce-consume{Guid.NewGuid():N}";
+        const string content = "test-message";
+
+        //Act
+        await using var producer = client.NewProducer(Schema.String)
+            .Topic(topicName)
+            .Create();
+
+        await using var consumer = client.NewConsumer(Schema.String)
+            .Topic(topicName)
+            .SubscriptionName("test-sub")
+            .InitialPosition(SubscriptionInitialPosition.Earliest)
+            .Create();
+
+        await producer.SendChannel.Send(content);
+        _testOutputHelper.WriteLine($"Sent a message: {content}");
+
+        producer.SendChannel.Complete();
+        await producer.SendChannel.Completion();
+
+        //Assert
+        (await consumer.Receive()).Value().Should().Be(content);
+    }
+
+    [Fact]
     public async Task SinglePartition_WhenSendMessages_ThenGetMessagesFromSinglePartition()
     {
         //Arrange
