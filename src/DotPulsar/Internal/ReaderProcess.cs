@@ -22,6 +22,7 @@ public sealed class ReaderProcess : Process
 {
     private readonly IStateManager<ReaderState> _stateManager;
     private readonly IEstablishNewChannel _reader;
+    private Task? _establishNewChannelTask;
 
     public ReaderProcess(
         Guid correlationId,
@@ -55,7 +56,7 @@ public sealed class ReaderProcess : Process
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
                 _stateManager.SetState(ReaderState.Disconnected);
-                _ = _reader.EstablishNewChannel(CancellationTokenSource.Token);
+                EstablishNewChannel();
                 return;
             case ChannelState.Connected:
                 _stateManager.SetState(ReaderState.Connected);
@@ -64,5 +65,12 @@ public sealed class ReaderProcess : Process
                 _stateManager.SetState(ReaderState.ReachedEndOfTopic);
                 return;
         }
+    }
+
+    private void EstablishNewChannel()
+    {
+        var token = CancellationTokenSource.Token;
+        if (_establishNewChannelTask is null || _establishNewChannelTask.IsCompleted)
+            _establishNewChannelTask = Task.Run(() => _reader.EstablishNewChannel(token).ConfigureAwait(false), token);
     }
 }

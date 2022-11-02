@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.2] - 2022-11-02
+
+### Changed
+
+- A temporarily broken connection could cause DotPulsar to mark consumers, readers, and producers as disconnected while the broker was unaware of the problem. When reconnecting the broker would claim that the consumer, reader or producer is still active. Therefore the default exception handling will now retry (instead of rethrow/fault) on these two exceptions (waiting for the broker to realize that the existing connections are dead)
+    - ConsumerBusyException
+    - ProducerBusyException
+
+### Fixed
+
+- Under certain circumstances a double connection attempt could be initiated, resulting in one good connection and a looping connection calling the exception pipeline
+
 ## [2.5.1] - 2022-11-01
 
 ### Fixed

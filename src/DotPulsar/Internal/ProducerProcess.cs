@@ -22,6 +22,7 @@ public sealed class ProducerProcess : Process
 {
     private readonly IStateManager<ProducerState> _stateManager;
     private readonly IEstablishNewChannel _producer;
+    private Task? _establishNewChannelTask;
 
     public ProducerProcess(
         Guid correlationId,
@@ -55,11 +56,18 @@ public sealed class ProducerProcess : Process
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
                 _stateManager.SetState(ProducerState.Disconnected);
-                _ = _producer.EstablishNewChannel(CancellationTokenSource.Token);
+                EstablishNewChannel();
                 return;
             case ChannelState.Connected:
                 _stateManager.SetState(ProducerState.Connected);
                 return;
         }
+    }
+
+    private void EstablishNewChannel()
+    {
+        var token = CancellationTokenSource.Token;
+        if (_establishNewChannelTask is null || _establishNewChannelTask.IsCompleted)
+            _establishNewChannelTask = Task.Run(() => _producer.EstablishNewChannel(token).ConfigureAwait(false), token);
     }
 }

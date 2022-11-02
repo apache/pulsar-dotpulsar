@@ -197,9 +197,9 @@ public sealed class Consumer<TMessage> : IEstablishNewChannel, IConsumer<TMessag
         var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
 
         var oldChannel = _channel;
-        _channel = channel;
-
         if (oldChannel is not null)
             await oldChannel.DisposeAsync().ConfigureAwait(false);
+
+        _channel = channel;
     }
 }
