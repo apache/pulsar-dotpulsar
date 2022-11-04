@@ -48,7 +48,7 @@ The best way to create a minimal reproduction is gradually removing code and dep
 
 Please do:
 
-* **DO** follow our [coding style](docs/coding-style.md) (C# code-specific).
+* **DO** follow our [coding style](/docs/coding-style.md) (C# code-specific).
 * **DO** include tests when adding new features. When fixing bugs, start with
   adding a test that highlights how the current behavior is broken.
 * **DO** keep the discussions focused. When a new or related topic comes up
@@ -128,4 +128,4 @@ The following file header is the used for files in this repo. Please use it for 
  */
 ```
 
-- See [PulsarClient.cs](./src/DotPulsar/PulsarClient.cs) for an example of the header in a C# file.
+- See [PulsarClient.cs](https://github.com/apache/pulsar-dotpulsar/blob/master/src/DotPulsar/PulsarClient.cs) for an example of the header in a C# file.
