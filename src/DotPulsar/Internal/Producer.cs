@@ -46,13 +46,12 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     private readonly IExecute _executor;
     private int _isDisposed;
     private int _producerCount;
-    private ISendChannel<TMessage>? _sendChannel;
     private Exception? _throw;
 
     public Uri ServiceUrl { get; }
     public string Topic { get; }
 
-    public ISendChannel<TMessage> SendChannel { get => _sendChannel ??= new SendChannel<TMessage>(this); }
+    public ISendChannel<TMessage> SendChannel { get; }
 
     public Producer(
         Uri serviceUrl,
@@ -89,6 +88,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         _cts = new CancellationTokenSource();
         _executor = new Executor(Guid.Empty, this, _exceptionHandler);
         _producers = new ConcurrentDictionary<int, SubProducer>();
+        SendChannel = new SendChannel<TMessage>(this);
         _ = Setup();
     }
 

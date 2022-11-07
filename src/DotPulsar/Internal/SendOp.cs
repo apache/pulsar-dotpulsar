@@ -19,7 +19,7 @@ using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 
-public class SendOp
+public sealed class SendOp
 {
     public SendOp(MessageMetadata metadata, ReadOnlySequence<byte> data, TaskCompletionSource<MessageId> receiptTcs, CancellationToken cancellationToken)
     {
