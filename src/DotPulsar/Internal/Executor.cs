@@ -36,24 +36,24 @@ public sealed class Executor : IExecute
 
     public async ValueTask Execute(Action action, CancellationToken cancellationToken)
     {
-        while (!await TryExecuteOnce(action, cancellationToken)) { }
+        while (!await TryExecuteOnce(action, cancellationToken).ConfigureAwait(false)) { }
     }
 
     public async ValueTask Execute(Func<Task> func, CancellationToken cancellationToken)
     {
-        while (!await TryExecuteOnce(func, cancellationToken)) { }
+        while (!await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false)) { }
     }
 
     public async ValueTask Execute(Func<ValueTask> func, CancellationToken cancellationToken)
     {
-        while (!await TryExecuteOnce(func, cancellationToken)) { }
+        while (!await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false)) { }
     }
 
     public async ValueTask<TResult> Execute<TResult>(Func<TResult> func, CancellationToken cancellationToken)
     {
         while (true)
         {
-            var (success, result) = await TryExecuteOnce(func, cancellationToken);
+            var (success, result) = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
             if (success) return result!;
         }
     }
@@ -62,7 +62,7 @@ public sealed class Executor : IExecute
     {
         while (true)
         {
-            var (success, result) = await TryExecuteOnce(func, cancellationToken);
+            var (success, result) = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
             if (success) return result!;
         }
     }
@@ -71,7 +71,7 @@ public sealed class Executor : IExecute
     {
         while (true)
         {
-            var (success, result) = await TryExecuteOnce(func, cancellationToken);
+            var (success, result) = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
             if (success) return result!;
         }
     }
