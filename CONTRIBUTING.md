@@ -22,7 +22,7 @@ Good bug reports make it easier for maintainers to verify and root cause the und
 * Information on the environment: OS/distro, CPU arch, SDK version, etc.
 * Additional information, e.g. are there any known workarounds?
 
-When ready to submit a bug report, please use the [Bug Report issue template](https://github.com/apache/pulsar-dotpulsar/issues/new).
+When ready to submit a bug report, please use the [Bug Report issue template](https://github.com/apache/pulsar-dotpulsar/issues/new?assignees=&labels=&template=01_bug_report.yml).
 
 #### Why are Minimal Reproductions Important?
 

@@ -1,0 +1,30 @@
+name: API or feature suggestion
+description: Propose a feature to dotpulsar
+labels: ["enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to put the feature or suggestion forward!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem? Please describe
+      description: A clear and concise description of what the problem is. E.g., _I'm always frustrated when..._.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Describe the solution you'd like and alternatives you've considered
+      description: |
+        A clear and concise description of what you want to happen. This includes:
+        - Description of what API need to be added or changed.
+        - Code that shows the surface area of the API.
+        - Code that shows real world scenarios, and how they would otherwise be handled.
+        - Details showing the usage/consumption of the proposed new API, and alternatives (e.g., not having this API).
+        - Any other context or screenshots about the feature request here.
+    validations:
+      required: true
+      
