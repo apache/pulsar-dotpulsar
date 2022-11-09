@@ -64,11 +64,8 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
 
         lock (_queue)
         {
-            if (_queue.Count < _maxItems)
-            {
-                var node = _queue.AddLast(item);
-                _cursorNextItemTcs?.TrySetResult(node);
-            }
+            var node = _queue.AddLast(item);
+            _cursorNextItemTcs?.TrySetResult(node);
 
             if (_queue.Count < _maxItems)
             {
