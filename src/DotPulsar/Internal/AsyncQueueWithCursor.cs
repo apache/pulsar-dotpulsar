@@ -36,7 +36,6 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     {
         _pendingLock = new AsyncLock();
         _cursorSemaphore = new SemaphoreSlim(1, 1);
-        // TODO: Figure out if we can use https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcompletionsource?view=net-6.0
         _queueEmptyTcs = new List<TaskCompletionSource<object>>();
         _queue = new LinkedList<T>();
         _maxItems = maxItems;

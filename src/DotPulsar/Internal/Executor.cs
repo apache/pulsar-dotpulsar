@@ -53,8 +53,8 @@ public sealed class Executor : IExecute
     {
         while (true)
         {
-            var (success, result) = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
-            if (success) return result!;
+            var result = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
+            if (result.Success) return result.Result!;
         }
     }
 
@@ -62,8 +62,8 @@ public sealed class Executor : IExecute
     {
         while (true)
         {
-            var (success, result) = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
-            if (success) return result!;
+            var result = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
+            if (result.Success) return result.Result!;
         }
     }
 
@@ -71,8 +71,8 @@ public sealed class Executor : IExecute
     {
         while (true)
         {
-            var (success, result) = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
-            if (success) return result!;
+            var result = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
+            if (result.Success) return result.Result!;
         }
     }
 
@@ -127,12 +127,12 @@ public sealed class Executor : IExecute
         return false;
     }
 
-    public async ValueTask<(bool success,TResult? result)> TryExecuteOnce<TResult>(Func<TResult> func, CancellationToken cancellationToken = default)
+    public async ValueTask<ExecutionResult<TResult>> TryExecuteOnce<TResult>(Func<TResult> func, CancellationToken cancellationToken = default)
     {
         try
         {
             var result = func();
-            return (true, result);
+            return new ExecutionResult<TResult>(true, result);
         }
         catch (Exception ex)
         {
@@ -141,15 +141,15 @@ public sealed class Executor : IExecute
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        return (false, default);
+        return new ExecutionResult<TResult>(false);
     }
 
-    public async ValueTask<(bool success,TResult? result)> TryExecuteOnce<TResult>(Func<Task<TResult>> func, CancellationToken cancellationToken = default)
+    public async ValueTask<ExecutionResult<TResult>> TryExecuteOnce<TResult>(Func<Task<TResult>> func, CancellationToken cancellationToken = default)
     {
         try
         {
             var result = await func().ConfigureAwait(false);
-            return (true, result);
+            return new ExecutionResult<TResult>(true, result);
         }
         catch (Exception ex)
         {
@@ -158,15 +158,15 @@ public sealed class Executor : IExecute
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        return (false, default);
+        return new ExecutionResult<TResult>(false);
     }
 
-    public async ValueTask<(bool success, TResult? result)> TryExecuteOnce<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken = default)
+    public async ValueTask<ExecutionResult<TResult>> TryExecuteOnce<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken = default)
     {
         try
         {
             var result = await func().ConfigureAwait(false);
-            return (true, result);
+            return new ExecutionResult<TResult>(true, result);
         }
         catch (Exception ex)
         {
@@ -175,7 +175,7 @@ public sealed class Executor : IExecute
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        return (false, default);
+        return new ExecutionResult<TResult>(false);
     }
 
     private async ValueTask<bool> Handle(Exception exception, CancellationToken cancellationToken)
