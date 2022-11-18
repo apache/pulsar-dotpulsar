@@ -111,7 +111,7 @@ public sealed class Consumer<TMessage> : IEstablishNewChannel, IConsumer<TMessag
         ThrowIfDisposed();
 
         var command = new CommandRedeliverUnacknowledgedMessages();
-        command.MessageIds.AddRange(messageIds.Select(messageId => messageId.ToMessageIdData()));
+        command.MessageIds.AddRange(messageIds.Select(static messageId => messageId.ToMessageIdData()));
         await _executor.Execute(() => RedeliverUnacknowledgedMessages(command, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 

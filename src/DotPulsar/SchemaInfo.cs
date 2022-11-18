@@ -66,5 +66,5 @@ public sealed class SchemaInfo
     /// <summary>
     /// The properties of the schema.
     /// </summary>
-    public IReadOnlyDictionary<string, string> Properties => PulsarSchema.Properties.ToDictionary(p => p.Key, p => p.Value);
+    public IReadOnlyDictionary<string, string> Properties => PulsarSchema.Properties.ToDictionary(static p => p.Key, static p => p.Value);
 }
