@@ -308,7 +308,7 @@ public sealed class Connection : IConnection
                     continue;
 
                 if (command.CommandType == BaseCommand.Type.Message)
-                    _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
+                    _channelManager.Incoming(command.Message, frame.Slice(commandSize + 4));
                 else if (command.CommandType == BaseCommand.Type.AuthChallenge)
                     _ = Send(new CommandAuthResponse(), cancellationToken).ConfigureAwait(false);
                 else
