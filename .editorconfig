@@ -5,6 +5,7 @@ root = true
 # All files
 [*]
 indent_style = space
+charset = utf-8
 
 # XML project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
@@ -21,7 +22,6 @@ tab_width = 4
 indent_size = 4
 
 # New line preferences
-end_of_line = crlf
 insert_final_newline = true
 ###############################
 # .NET Coding Conventions     #
