@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 namespace DotPulsar.Extensions;
 
 using DotPulsar.Abstractions;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,8 +35,23 @@ public static class ReaderExtensions
     /// </remarks>
     public static async ValueTask<ReaderStateChanged> StateChangedTo(this IReader reader, ReaderState state, CancellationToken cancellationToken = default)
     {
-        var newState = await reader.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
-        return new ReaderStateChanged(reader, newState);
+        var currentState = await reader.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
+        return new ReaderStateChanged(reader, currentState);
+    }
+
+    /// <summary>
+    /// Wait for the state to change to a specific state with a delay.
+    /// </summary>
+    /// <returns>
+    /// The current state.
+    /// </returns>
+    /// <remarks>
+    /// If the state change to a final state, then all awaiting tasks will complete.
+    /// </remarks>
+    public static async ValueTask<ReaderStateChanged> StateChangedTo(this IReader reader, ReaderState state, TimeSpan delay, CancellationToken cancellationToken = default)
+    {
+        var currentState = await reader.OnStateChangeTo(state, delay, cancellationToken).ConfigureAwait(false);
+        return new ReaderStateChanged(reader, currentState);
     }
 
     /// <summary>
@@ -49,7 +65,22 @@ public static class ReaderExtensions
     /// </remarks>
     public static async ValueTask<ReaderStateChanged> StateChangedFrom(this IReader reader, ReaderState state, CancellationToken cancellationToken = default)
     {
-        var newState = await reader.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
-        return new ReaderStateChanged(reader, newState);
+        var currentState = await reader.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
+        return new ReaderStateChanged(reader, currentState);
+    }
+
+    /// <summary>
+    /// Wait for the state to change from a specific state with a delay.
+    /// </summary>
+    /// <returns>
+    /// The current state.
+    /// </returns>
+    /// <remarks>
+    /// If the state change to a final state, then all awaiting tasks will complete.
+    /// </remarks>
+    public static async ValueTask<ReaderStateChanged> StateChangedFrom(this IReader reader, ReaderState state, TimeSpan delay, CancellationToken cancellationToken = default)
+    {
+        var currentState = await reader.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
+        return new ReaderStateChanged(reader, currentState);
     }
 }

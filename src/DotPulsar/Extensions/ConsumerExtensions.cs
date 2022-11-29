@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -70,8 +70,23 @@ public static class ConsumerExtensions
     /// </remarks>
     public static async ValueTask<ConsumerStateChanged> StateChangedTo(this IConsumer consumer, ConsumerState state, CancellationToken cancellationToken = default)
     {
-        var newState = await consumer.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
-        return new ConsumerStateChanged(consumer, newState);
+        var currentState = await consumer.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
+        return new ConsumerStateChanged(consumer, currentState);
+    }
+
+    /// <summary>
+    /// Wait for the state to change to a specific state with a delay.
+    /// </summary>
+    /// <returns>
+    /// The current state.
+    /// </returns>
+    /// <remarks>
+    /// If the state change to a final state, then all awaiting tasks will complete.
+    /// </remarks>
+    public static async ValueTask<ConsumerStateChanged> StateChangedTo(this IConsumer consumer, ConsumerState state, TimeSpan delay, CancellationToken cancellationToken = default)
+    {
+        var currentState = await consumer.OnStateChangeTo(state, delay, cancellationToken).ConfigureAwait(false);
+        return new ConsumerStateChanged(consumer, currentState);
     }
 
     /// <summary>
@@ -85,7 +100,22 @@ public static class ConsumerExtensions
     /// </remarks>
     public static async ValueTask<ConsumerStateChanged> StateChangedFrom(this IConsumer consumer, ConsumerState state, CancellationToken cancellationToken = default)
     {
-        var newState = await consumer.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
-        return new ConsumerStateChanged(consumer, newState);
+        var currentState = await consumer.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
+        return new ConsumerStateChanged(consumer, currentState);
+    }
+
+    /// <summary>
+    /// Wait for the state to change from a specific state with delay.
+    /// </summary>
+    /// <returns>
+    /// The current state.
+    /// </returns>
+    /// <remarks>
+    /// If the state change to a final state, then all awaiting tasks will complete.
+    /// </remarks>
+    public static async ValueTask<ConsumerStateChanged> StateChangedFrom(this IConsumer consumer, ConsumerState state, TimeSpan delay, CancellationToken cancellationToken = default)
+    {
+        var currentState = await consumer.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
+        return new ConsumerStateChanged(consumer, currentState);
     }
 }
