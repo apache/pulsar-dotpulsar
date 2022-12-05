@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 - .NET 7 added as a target framework
 - Delay option for OnStateChangeFrom/To for IState and StateChangedFrom/To for IConsumer, IProducer, and IReader
+- DelayedStateMonitor extension methods for IState with Func and Action callbacks
 
 ### Removed
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -201,24 +201,20 @@ public sealed class ChannelManager : IDisposable
 
     private void Incoming(CommandCloseConsumer command)
     {
-        var channel = _consumerChannels[command.ConsumerId];
-
+        var channel = _consumerChannels.Remove(command.ConsumerId);
         if (channel is null)
             return;
 
-        _ = _consumerChannels.Remove(command.ConsumerId);
         _requestResponseHandler.Incoming(command);
         channel.ClosedByServer();
     }
 
     private void Incoming(CommandCloseProducer command)
     {
-        var channel = _producerChannels[command.ProducerId];
-
+        var channel = _producerChannels.Remove(command.ProducerId);
         if (channel is null)
             return;
 
-        _ = _producerChannels.Remove(command.ProducerId);
         _requestResponseHandler.Incoming(command);
         channel.ClosedByServer();
     }

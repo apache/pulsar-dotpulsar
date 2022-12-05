@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,7 +18,7 @@ using System.Buffers;
 
 public static class Crc32C
 {
-    private const uint _generator = 0x82F63B78u;
+    private const uint Generator = 0x82F63B78u;
 
     private static readonly uint[] _lookup;
 
@@ -33,7 +33,7 @@ public static class Crc32C
             for (var j = 0; j < 16; j++)
             {
                 for (var k = 0; k < 8; k++)
-                    entry = (entry & 1) == 1 ? _generator ^ (entry >> 1) : entry >> 1;
+                    entry = (entry & 1) == 1 ? Generator ^ (entry >> 1) : entry >> 1;
 
                 _lookup[j * 256 + i] = entry;
             }

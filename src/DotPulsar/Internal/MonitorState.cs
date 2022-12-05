@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,10 +26,11 @@ public static class StateMonitor
 
         var state = ProducerState.Disconnected;
 
-        while (!producer.IsFinalState(state))
+        while (!producer.IsFinalState(state) && !handler.CancellationToken.IsCancellationRequested)
         {
             var stateChanged = await producer.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
             state = stateChanged.ProducerState;
+
             try
             {
                 await handler.OnStateChanged(stateChanged, handler.CancellationToken).ConfigureAwait(false);
@@ -47,10 +48,11 @@ public static class StateMonitor
 
         var state = ConsumerState.Disconnected;
 
-        while (!consumer.IsFinalState(state))
+        while (!consumer.IsFinalState(state) && !handler.CancellationToken.IsCancellationRequested)
         {
             var stateChanged = await consumer.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
             state = stateChanged.ConsumerState;
+
             try
             {
                 await handler.OnStateChanged(stateChanged, handler.CancellationToken).ConfigureAwait(false);
@@ -68,10 +70,11 @@ public static class StateMonitor
 
         var state = ReaderState.Disconnected;
 
-        while (!reader.IsFinalState(state))
+        while (!reader.IsFinalState(state) && !handler.CancellationToken.IsCancellationRequested)
         {
             var stateChanged = await reader.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
             state = stateChanged.ReaderState;
+
             try
             {
                 await handler.OnStateChanged(stateChanged, handler.CancellationToken).ConfigureAwait(false);

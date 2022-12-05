@@ -103,4 +103,83 @@ public static class StateExtensions
             }
         }
     }
+
+    /// <summary>
+    /// Will invoke the onStateLeft callback when the state if left (with delay) and onStateReached when it's reached again.
+    /// </summary>
+    /// <returns>
+    /// ValueTask that will run as long as a final state is not entered.
+    /// </returns>
+    /// <remarks>
+    /// If the state change to a final state, then the returned task will complete.
+    /// </remarks>
+    public static async ValueTask DelayedStateMonitor<TEntity, TState>(
+        this TEntity stateImplementer,
+        TState state,
+        TimeSpan delay,
+        Func<TEntity, TState, CancellationToken, ValueTask> onStateLeft,
+        Func<TEntity, TState, CancellationToken, ValueTask> onStateReached,
+        CancellationToken cancellationToken) where TEntity : IState<TState> where TState : notnull
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            var currentState = await stateImplementer.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
+            if (stateImplementer.IsFinalState(currentState))
+                return;
+
+            try
+            {
+                await onStateLeft(stateImplementer, currentState, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignore
+            }
+
+            currentState = await stateImplementer.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
+            if (stateImplementer.IsFinalState(currentState))
+                return;
+
+            try
+            {
+                await onStateReached(stateImplementer, currentState, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignore
+            }
+        }
+    }
+
+    /// <summary>
+    /// Will invoke the onStateLeft callback when the state if left (with delay) and onStateReached when it's reached again.
+    /// </summary>
+    /// <returns>
+    /// ValueTask that will run as long as a final state is not entered.
+    /// </returns>
+    /// <remarks>
+    /// If the state change to a final state, then the returned task will complete.
+    /// </remarks>
+    public static async ValueTask DelayedStateMonitor<TEntity, TState>(
+        this TEntity stateImplementer,
+        TState state,
+        TimeSpan delay,
+        Action<TEntity, TState> onStateLeft,
+        Action<TEntity, TState> onStateReached,
+        CancellationToken cancellationToken) where TEntity : IState<TState> where TState : notnull
+    {
+        ValueTask onStateLeftFunction(TEntity entity, TState state, CancellationToken cancellationToken)
+        {
+            onStateLeft(entity, state);
+            return new ValueTask();
+        }
+
+        ValueTask onStateReachedFunction(TEntity entity, TState state, CancellationToken cancellationToken)
+        {
+            onStateReached(entity, state);
+            return new ValueTask();
+        }
+
+        await stateImplementer.DelayedStateMonitor(state, delay, onStateLeftFunction, onStateReachedFunction, cancellationToken).ConfigureAwait(false);
+    }
 }
