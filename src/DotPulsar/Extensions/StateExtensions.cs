@@ -110,9 +110,6 @@ public static class StateExtensions
     /// <returns>
     /// ValueTask that will run as long as a final state is not entered.
     /// </returns>
-    /// <remarks>
-    /// If the state change to a final state, then the returned task will complete.
-    /// </remarks>
     public static async ValueTask DelayedStateMonitor<TEntity, TState>(
         this TEntity stateImplementer,
         TState state,
@@ -121,8 +118,10 @@ public static class StateExtensions
         Func<TEntity, TState, CancellationToken, ValueTask> onStateReached,
         CancellationToken cancellationToken) where TEntity : IState<TState> where TState : notnull
     {
-        while (!cancellationToken.IsCancellationRequested)
+        while (true)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var currentState = await stateImplementer.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
             if (stateImplementer.IsFinalState(currentState))
                 return;
@@ -157,9 +156,6 @@ public static class StateExtensions
     /// <returns>
     /// ValueTask that will run as long as a final state is not entered.
     /// </returns>
-    /// <remarks>
-    /// If the state change to a final state, then the returned task will complete.
-    /// </remarks>
     public static async ValueTask DelayedStateMonitor<TEntity, TState>(
         this TEntity stateImplementer,
         TState state,
