@@ -110,13 +110,13 @@ public static class StateExtensions
     /// <returns>
     /// ValueTask that will run as long as a final state is not entered.
     /// </returns>
-    public static async ValueTask DelayedStateMonitor<TEntity, TState>(
+    public static async ValueTask DelayedStateMonitor<TEntity, TState, TFaultContext>(
         this TEntity stateImplementer,
         TState state,
         TimeSpan delay,
-        Func<TEntity, TState, CancellationToken, ValueTask> onStateLeft,
-        Func<TEntity, TState, CancellationToken, ValueTask> onStateReached,
-        CancellationToken cancellationToken) where TEntity : IState<TState> where TState : notnull
+        Func<TEntity, TState, CancellationToken, ValueTask<TFaultContext>> onStateLeft,
+        Func<TEntity, TState, TFaultContext, CancellationToken, ValueTask> onStateReached,
+        CancellationToken cancellationToken) where TEntity : IState<TState> where TState : notnull where TFaultContext : class
     {
         while (true)
         {
@@ -126,9 +126,11 @@ public static class StateExtensions
             if (stateImplementer.IsFinalState(currentState))
                 return;
 
+            TFaultContext? faultContext = null;
+
             try
             {
-                await onStateLeft(stateImplementer, currentState, cancellationToken).ConfigureAwait(false);
+                faultContext = await onStateLeft(stateImplementer, currentState, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
@@ -141,7 +143,8 @@ public static class StateExtensions
 
             try
             {
-                await onStateReached(stateImplementer, currentState, cancellationToken).ConfigureAwait(false);
+                if (faultContext is not null)
+                    await onStateReached(stateImplementer, currentState, faultContext, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
@@ -160,17 +163,45 @@ public static class StateExtensions
         this TEntity stateImplementer,
         TState state,
         TimeSpan delay,
+        Func<TEntity, TState, CancellationToken, ValueTask> onStateLeft,
+        Func<TEntity, TState, CancellationToken, ValueTask> onStateReached,
+        CancellationToken cancellationToken) where TEntity : IState<TState> where TState : notnull
+    {
+        async ValueTask<string> onStateLeftFunction(TEntity entity, TState state, CancellationToken cancellationToken)
+        {
+            await onStateLeft(entity, state, cancellationToken).ConfigureAwait(false);
+            return string.Empty;
+        }
+
+        async ValueTask onStateReachedFunction(TEntity entity, TState state, string faultContext, CancellationToken cancellationToken)
+        {
+            await onStateReached(entity, state, cancellationToken).ConfigureAwait(false);
+        }
+
+        await stateImplementer.DelayedStateMonitor(state, delay, onStateLeftFunction, onStateReachedFunction, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Will invoke the onStateLeft callback when the state if left (with delay) and onStateReached when it's reached again.
+    /// </summary>
+    /// <returns>
+    /// ValueTask that will run as long as a final state is not entered.
+    /// </returns>
+    public static async ValueTask DelayedStateMonitor<TEntity, TState>(
+        this TEntity stateImplementer,
+        TState state,
+        TimeSpan delay,
         Action<TEntity, TState> onStateLeft,
         Action<TEntity, TState> onStateReached,
         CancellationToken cancellationToken) where TEntity : IState<TState> where TState : notnull
     {
-        ValueTask onStateLeftFunction(TEntity entity, TState state, CancellationToken cancellationToken)
+        ValueTask<string> onStateLeftFunction(TEntity entity, TState state, CancellationToken cancellationToken)
         {
             onStateLeft(entity, state);
-            return new ValueTask();
+            return new ValueTask<string>(string.Empty);
         }
 
-        ValueTask onStateReachedFunction(TEntity entity, TState state, CancellationToken cancellationToken)
+        ValueTask onStateReachedFunction(TEntity entity, TState state, string faultContext, CancellationToken cancellationToken)
         {
             onStateReached(entity, state);
             return new ValueTask();
