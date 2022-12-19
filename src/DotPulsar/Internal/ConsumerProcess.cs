@@ -21,14 +21,14 @@ using System.Threading.Tasks;
 public sealed class ConsumerProcess : Process
 {
     private readonly IStateManager<ConsumerState> _stateManager;
-    private readonly IEstablishNewChannel _consumer;
+    private readonly IContainsChannel _consumer;
     private readonly bool _isFailoverSubscription;
     private Task? _establishNewChannelTask;
 
     public ConsumerProcess(
         Guid correlationId,
         IStateManager<ConsumerState> stateManager,
-        IEstablishNewChannel consumer,
+        IContainsChannel consumer,
         bool isFailoverSubscription) : base(correlationId)
     {
         _stateManager = stateManager;

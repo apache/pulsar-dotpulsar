@@ -16,19 +16,16 @@ namespace DotPulsar.Internal;
 
 using Abstractions;
 using DotPulsar.Abstractions;
-using DotPulsar.Exceptions;
 using Extensions;
 using Events;
 using Exceptions;
 using PulsarApi;
 using System;
-using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
+public sealed class SubProducer : IContainsChannel, IState<ProducerState>
 {
-    private readonly SemaphoreSlim _newChannelLock;
     private readonly AsyncQueueWithCursor<SendOp> _sendQueue;
     private CancellationTokenSource? _dispatcherCts;
     private Task? _dispatcherTask;
@@ -49,7 +46,6 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
         IProducerChannelFactory factory,
         uint maxPendingMessages)
     {
-        _newChannelLock = new SemaphoreSlim(1, 1);
         _sendQueue = new AsyncQueueWithCursor<SendOp>(maxPendingMessages);
         _correlationId = correlationId;
         _eventRegister = registerEvent;
@@ -80,7 +76,6 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
             return;
 
         _eventRegister.Register(new ProducerDisposed(_correlationId));
-        _newChannelLock.Dispose();
 
         try
         {
@@ -99,7 +94,6 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
 
     public async ValueTask Send(SendOp sendOp, CancellationToken cancellationToken)
     {
-        if (IsFinalState()) throw new ProducerClosedException(); // TODO: This exception might be intended for other purposes.
         await _sendQueue.Enqueue(sendOp, cancellationToken).ConfigureAwait(false);
     }
 
@@ -151,9 +145,8 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
                 ProcessReceipt(responseTask.Result.SendReceipt);
             }, CancellationToken.None).ConfigureAwait(false); // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
 
-            // TODO: Should we crate a new event instead of channel disconnected?
             if (success) continue;
-            _eventRegister.Register(new ChannelDisconnected(_correlationId));
+            _eventRegister.Register(new SendReceiptWrongOrdering(_correlationId));
             break;
         }
     }
@@ -178,35 +171,42 @@ public sealed class SubProducer : IEstablishNewChannel, IState<ProducerState>
     {
         try
         {
-            await _newChannelLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             if (_dispatcherCts is not null && !_dispatcherCts.IsCancellationRequested)
             {
                 _dispatcherCts.Cancel();
                 _dispatcherCts.Dispose();
             }
-
-            await _executor.TryExecuteOnce(() => _dispatcherTask ?? Task.CompletedTask, cancellationToken).ConfigureAwait(false);
-
-            var oldChannel = _channel;
-            // TODO: Not sure we need to actually close the channel?
-            await oldChannel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
-            // TODO: Why does IProducerChannel.DisposeAsync not do anything?
-            await oldChannel.DisposeAsync().ConfigureAwait(false);
-
-            _channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
-
-            _sendQueue.ResetCursor();
-            _dispatcherCts = new CancellationTokenSource();
-            _dispatcherTask = MessageDispatcher(_channel, _dispatcherCts.Token);
         }
         catch (Exception)
         {
             // Ignored
         }
-        finally
+
+        await _executor.TryExecuteOnce(() => _dispatcherTask ?? Task.CompletedTask, cancellationToken).ConfigureAwait(false);
+
+        try
         {
-            _newChannelLock.Release();
+            var oldChannel = _channel;
+            await oldChannel.DisposeAsync().ConfigureAwait(false);
         }
+        catch (Exception)
+        {
+            // Ignored
+        }
+
+        _dispatcherCts = new CancellationTokenSource();
+        _channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
+
+        await _executor.Execute(() =>
+        {
+            _sendQueue.ResetCursor();
+            _dispatcherTask = MessageDispatcher(_channel, _dispatcherCts.Token);
+        }, cancellationToken).ConfigureAwait(false);
+
+    }
+
+    public async ValueTask CloseChannel(CancellationToken cancellationToken)
+    {
+        await _channel.ClosedByClient(cancellationToken).ConfigureAwait(false);
     }
 }

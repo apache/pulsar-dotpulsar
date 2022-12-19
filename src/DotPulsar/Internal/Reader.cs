@@ -23,7 +23,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class Reader<TMessage> : IEstablishNewChannel, IReader<TMessage>
+public sealed class Reader<TMessage> : IContainsChannel, IReader<TMessage>
 {
     private readonly Guid _correlationId;
     private readonly IRegisterEvent _eventRegister;
@@ -130,6 +130,11 @@ public sealed class Reader<TMessage> : IEstablishNewChannel, IReader<TMessage>
             await oldChannel.DisposeAsync().ConfigureAwait(false);
 
         _channel = channel;
+    }
+
+    public async ValueTask CloseChannel(CancellationToken cancellationToken)
+    {
+        await _channel.ClosedByClient(cancellationToken).ConfigureAwait(false);
     }
 
     private void ThrowIfDisposed()

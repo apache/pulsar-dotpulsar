@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,13 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions;
+namespace DotPulsar.Internal.Events;
 
+using DotPulsar.Internal.Abstractions;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-public interface IEstablishNewChannel : IAsyncDisposable
+public sealed class SendReceiptWrongOrdering : IEvent
 {
-    Task EstablishNewChannel(CancellationToken cancellationToken);
+    public SendReceiptWrongOrdering(Guid correlationId)
+        => CorrelationId = correlationId;
+
+    public Guid CorrelationId { get; }
 }

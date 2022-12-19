@@ -12,16 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal;
+namespace DotPulsar.Internal.Abstractions;
 
-public enum ChannelState : byte
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public interface IContainsChannel : IAsyncDisposable
 {
-    ClosedByServer,
-    Connected,
-    Disconnected,
-    WrongAckOrdering,
-    ReachedEndOfTopic,
-    Active,
-    Inactive,
-    Unsubscribed
+    Task EstablishNewChannel(CancellationToken cancellationToken);
+
+    ValueTask CloseChannel(CancellationToken cancellationToken);
 }
