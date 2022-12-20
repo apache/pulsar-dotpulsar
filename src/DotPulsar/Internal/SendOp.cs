@@ -15,11 +15,12 @@
 namespace DotPulsar.Internal;
 
 using PulsarApi;
+using System;
 using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class SendOp
+public sealed class SendOp : IDisposable
 {
     public SendOp(MessageMetadata metadata, ReadOnlySequence<byte> data, TaskCompletionSource<MessageId> receiptTcs, CancellationToken cancellationToken)
     {
@@ -33,4 +34,9 @@ public sealed class SendOp
     public ReadOnlySequence<byte> Data { get; }
     public TaskCompletionSource<MessageId> ReceiptTcs { get; }
     public CancellationToken CancellationToken { get; }
+
+    public void Dispose()
+    {
+        ReceiptTcs.TrySetCanceled();
+    }
 }

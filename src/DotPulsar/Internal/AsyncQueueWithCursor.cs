@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
+public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDisposable
 {
     private readonly AsyncLock _pendingLock;
     private readonly SemaphoreSlim _cursorSemaphore;
@@ -46,7 +46,6 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     /// </summary>
     public async ValueTask Enqueue(T item, CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
         try
         {
             var grant = await _pendingLock.Lock(cancellationToken).ConfigureAwait(false);
@@ -63,6 +62,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
 
         lock (_queue)
         {
+            ThrowIfDisposed();
             var node = _queue.AddLast(item);
             _cursorNextItemTcs?.TrySetResult(node);
 
@@ -78,10 +78,9 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     /// </summary>
     public bool TryPeek(out T? item)
     {
-        ThrowIfDisposed();
-
         lock (_queue)
         {
+            ThrowIfDisposed();
             var node = _queue.First;
             if (node is not null)
             {
@@ -99,10 +98,9 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     /// </summary>
     public void Dequeue()
     {
-        ThrowIfDisposed();
-
         lock (_queue)
         {
+            ThrowIfDisposed();
             if (_currentNode == _queue.First)
                 _currentNode = null;
 
@@ -124,10 +122,9 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     /// </summary>
     public void RemoveCurrentItem()
     {
-        ThrowIfDisposed();
-
         lock (_queue)
         {
+            ThrowIfDisposed();
             if (_currentNode is null) throw new AsyncQueueWithCursorNoItemException();
             var newCurrent = _currentNode.Previous;
             _queue.Remove(_currentNode);
@@ -143,13 +140,13 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     /// <exception cref="OperationCanceledException">If cancellation requested</exception>
     public async ValueTask<T> NextItem(CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
         await _cursorSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
             lock (_queue)
             {
+                ThrowIfDisposed();
                 _currentNode = _currentNode is null || _currentNode.List is null ? _queue.First : _currentNode.Next;
 
                 if (_currentNode is not null) return _currentNode.Value;
@@ -163,12 +160,18 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
 
             lock (_queue)
             {
+                ThrowIfDisposed();
                 _currentNode = result;
             }
             return _currentNode.Value;
         }
         finally
         {
+            if (_cursorNextItemTcs != null && _cursorNextItemTcs.Task.IsCanceled)
+            {
+                throw new TaskCanceledException("The task was cancelled");
+            }
+
             lock (_queue)
             {
                 _cursorNextItemTcs = null;
@@ -182,10 +185,9 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     /// </summary>
     public void ResetCursor()
     {
-        ThrowIfDisposed();
-
         lock (_queue)
         {
+            ThrowIfDisposed();
             _currentNode = null;
             _cursorNextItemTcs?.TrySetCanceled();
         }
@@ -196,10 +198,10 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
     /// </summary>
     public async Task WaitForEmpty(CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
         var tcs = new TaskCompletionSource<object>();
         lock (_queue)
         {
+            ThrowIfDisposed();
             if (_queue.Count == 0) return;
 
             cancellationToken.Register(() => tcs.TrySetCanceled());
@@ -211,13 +213,28 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
-            return;
+        lock (_queue)
+        {
+            if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
+                return;
+        }
 
         _cursorSemaphore.Dispose();
+        _cursorNextItemTcs?.TrySetCanceled(CancellationToken.None);
         ValueTask disposeLock = _pendingLock.DisposeAsync();
         ReleasePendingLockGrant();
         await disposeLock.ConfigureAwait(false);
+        foreach (TaskCompletionSource<object> tcs in _queueEmptyTcs)
+        {
+            tcs.TrySetCanceled(CancellationToken.None);
+        }
+        lock (_queue)
+        {
+            foreach (var item in _queue)
+            {
+                item.Dispose();
+            }
+        }
     }
 
     private void ThrowIfDisposed()
@@ -228,7 +245,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable
 
     private void NotifyQueueEmptyAwaiters()
     {
-        foreach (TaskCompletionSource<object>? tcs in _queueEmptyTcs)
+        foreach (TaskCompletionSource<object> tcs in _queueEmptyTcs)
         {
             tcs.SetResult(0);
         }
