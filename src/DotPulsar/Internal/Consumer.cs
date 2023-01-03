@@ -27,7 +27,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class Consumer<TMessage> : IEstablishNewChannel, IConsumer<TMessage>
+public sealed class Consumer<TMessage> : IContainsChannel, IConsumer<TMessage>
 {
     private readonly Guid _correlationId;
     private readonly IRegisterEvent _eventRegister;
@@ -201,5 +201,10 @@ public sealed class Consumer<TMessage> : IEstablishNewChannel, IConsumer<TMessag
             await oldChannel.DisposeAsync().ConfigureAwait(false);
 
         _channel = channel;
+    }
+
+    public async ValueTask CloseChannel(CancellationToken cancellationToken)
+    {
+        await _channel.ClosedByClient(cancellationToken).ConfigureAwait(false);
     }
 }

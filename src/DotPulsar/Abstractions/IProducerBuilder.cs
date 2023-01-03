@@ -55,6 +55,11 @@ public interface IProducerBuilder<TMessage>
     IProducerBuilder<TMessage> MessageRouter(IMessageRouter messageRouter);
 
     /// <summary>
+    /// Set the max size of the queue holding the messages pending to receive an acknowledgment from the broker. The default is 500.
+    /// </summary>
+    IProducerBuilder<TMessage> MaxPendingMessages(uint maxPendingMessages);
+
+    /// <summary>
     /// Create the producer.
     /// </summary>
     IProducer<TMessage> Create();

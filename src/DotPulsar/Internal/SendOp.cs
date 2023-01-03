@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions;
+namespace DotPulsar.Internal;
 
 using PulsarApi;
 using System;
@@ -20,9 +20,23 @@ using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 
-public interface IProducerChannel : IAsyncDisposable
+public sealed class SendOp : IDisposable
 {
-    Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, TaskCompletionSource<BaseCommand> responseTcs, CancellationToken
-    cancellationToken);
-    ValueTask ClosedByClient(CancellationToken cancellationToken);
+    public SendOp(MessageMetadata metadata, ReadOnlySequence<byte> data, TaskCompletionSource<MessageId> receiptTcs, CancellationToken cancellationToken)
+    {
+        Metadata = metadata;
+        Data = data;
+        ReceiptTcs = receiptTcs;
+        CancellationToken = cancellationToken;
+    }
+
+    public MessageMetadata Metadata { get; }
+    public ReadOnlySequence<byte> Data { get; }
+    public TaskCompletionSource<MessageId> ReceiptTcs { get; }
+    public CancellationToken CancellationToken { get; }
+
+    public void Dispose()
+    {
+        ReceiptTcs.TrySetCanceled();
+    }
 }

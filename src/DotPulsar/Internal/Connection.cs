@@ -233,20 +233,24 @@ public sealed class Connection : IConnection
         return await responseTask.ConfigureAwait(false);
     }
 
-    public async Task<BaseCommand> Send(SendPackage command, CancellationToken cancellationToken)
+    public async Task Send(SendPackage command, TaskCompletionSource<BaseCommand> responseTcs, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
 
-        Task<BaseCommand>? responseTask;
-
         using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
         {
-            responseTask = _channelManager.Outgoing(command.Command!);
+            try
+            {
+                _channelManager.Outgoing(command.Command!, responseTcs);
+            }
+            catch (OperationCanceledException)
+            {
+                responseTcs.TrySetCanceled();
+                throw;
+            }
             var sequence = Serializer.Serialize(command.Command!.AsBaseCommand(), command.Metadata!, command.Payload);
             await _stream.Send(sequence).ConfigureAwait(false);
         }
-
-        return await responseTask.ConfigureAwait(false);
     }
 
     public async Task<BaseCommand> Send(CommandGetOrCreateSchema command, CancellationToken cancellationToken)

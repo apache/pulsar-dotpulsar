@@ -12,19 +12,14 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions;
+namespace DotPulsar.Internal.Exceptions;
 
-using System.Threading;
-using System.Threading.Tasks;
+using DotPulsar.Exceptions;
+using System;
 
-/// <summary>
-/// An abstraction for sending a message.
-/// </summary>
-public interface ISend<TMessage>
+public sealed class ProducerSendReceiptOrderingException : DotPulsarException
 {
-    /// <summary>
-    /// Sends a message with metadata.
-    /// </summary>
-    /// <returns>ValueTask which completes when the Broker acknowledgement has been received.</returns>
-    ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default);
+    public ProducerSendReceiptOrderingException(string message) : base(message) {}
+
+    public ProducerSendReceiptOrderingException(string message, Exception innerException) : base(message, innerException) { }
 }

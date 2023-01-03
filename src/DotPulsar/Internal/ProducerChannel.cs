@@ -63,7 +63,8 @@ public sealed class ProducerChannel : IProducerChannel
 
     public ValueTask DisposeAsync() => new();
 
-    public async Task<CommandSendReceipt> Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, CancellationToken cancellationToken)
+    public async Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, TaskCompletionSource<BaseCommand> responseTcs,
+        CancellationToken cancellationToken)
     {
         var sendPackage = _sendPackagePool.Get();
 
@@ -75,14 +76,7 @@ public sealed class ProducerChannel : IProducerChannel
             if (metadata.SchemaVersion is null && _schemaVersion is not null)
                 metadata.SchemaVersion = _schemaVersion;
 
-            if (sendPackage.Command is null)
-            {
-                sendPackage.Command = new CommandSend
-                {
-                    ProducerId = _id,
-                    NumMessages = 1
-                };
-            }
+            sendPackage.Command ??= new CommandSend { ProducerId = _id, NumMessages = 1 };
 
             sendPackage.Command.SequenceId = metadata.SequenceId;
             sendPackage.Metadata = metadata;
@@ -97,9 +91,7 @@ public sealed class ProducerChannel : IProducerChannel
                 sendPackage.Payload = compressor.Compress(payload);
             }
 
-            var response = await _connection.Send(sendPackage, cancellationToken).ConfigureAwait(false);
-            response.Expect(BaseCommand.Type.SendReceipt);
-            return response.SendReceipt;
+            await _connection.Send(sendPackage, responseTcs, cancellationToken).ConfigureAwait(false);
         }
         finally
         {

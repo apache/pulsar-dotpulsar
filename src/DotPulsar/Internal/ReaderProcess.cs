@@ -21,13 +21,13 @@ using System.Threading.Tasks;
 public sealed class ReaderProcess : Process
 {
     private readonly IStateManager<ReaderState> _stateManager;
-    private readonly IEstablishNewChannel _reader;
+    private readonly IContainsChannel _reader;
     private Task? _establishNewChannelTask;
 
     public ReaderProcess(
         Guid correlationId,
         IStateManager<ReaderState> stateManager,
-        IEstablishNewChannel reader) : base(correlationId)
+        IContainsChannel reader) : base(correlationId)
     {
         _stateManager = stateManager;
         _reader = reader;

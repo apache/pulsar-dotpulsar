@@ -36,76 +36,25 @@ public sealed class Executor : IExecute
 
     public async ValueTask Execute(Action action, CancellationToken cancellationToken)
     {
-        while (true)
-        {
-            try
-            {
-                action();
-                return;
-            }
-            catch (Exception ex)
-            {
-                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                    throw;
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-        }
+        while (!await TryExecuteOnce(action, cancellationToken).ConfigureAwait(false)) { }
     }
 
     public async ValueTask Execute(Func<Task> func, CancellationToken cancellationToken)
     {
-        while (true)
-        {
-            try
-            {
-                await func().ConfigureAwait(false);
-                return;
-            }
-            catch (Exception ex)
-            {
-                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                    throw;
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-        }
+        while (!await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false)) { }
     }
 
     public async ValueTask Execute(Func<ValueTask> func, CancellationToken cancellationToken)
     {
-        while (true)
-        {
-            try
-            {
-                await func().ConfigureAwait(false);
-                return;
-            }
-            catch (Exception ex)
-            {
-                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                    throw;
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-        }
+        while (!await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false)) { }
     }
 
     public async ValueTask<TResult> Execute<TResult>(Func<TResult> func, CancellationToken cancellationToken)
     {
         while (true)
         {
-            try
-            {
-                return func();
-            }
-            catch (Exception ex)
-            {
-                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                    throw;
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
+            var result = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
+            if (result.Success) return result.Result!;
         }
     }
 
@@ -113,17 +62,8 @@ public sealed class Executor : IExecute
     {
         while (true)
         {
-            try
-            {
-                return await func().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                    throw;
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
+            var result = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
+            if (result.Success) return result.Result!;
         }
     }
 
@@ -131,18 +71,111 @@ public sealed class Executor : IExecute
     {
         while (true)
         {
-            try
-            {
-                return await func().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                if (await Handle(ex, cancellationToken).ConfigureAwait(false))
-                    throw;
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
+            var result = await TryExecuteOnce(func, cancellationToken).ConfigureAwait(false);
+            if (result.Success) return result.Result!;
         }
+    }
+
+    public async ValueTask<bool> TryExecuteOnce(Action action, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            action();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                throw;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return false;
+    }
+
+    public async ValueTask<bool> TryExecuteOnce(Func<Task> func, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await func().ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                throw;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return false;
+    }
+
+    public async ValueTask<bool> TryExecuteOnce(Func<ValueTask> func, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await func().ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                throw;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return false;
+    }
+
+    public async ValueTask<ExecutionResult<TResult>> TryExecuteOnce<TResult>(Func<TResult> func, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = func();
+            return new ExecutionResult<TResult>(true, result);
+        }
+        catch (Exception ex)
+        {
+            if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                throw;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return new ExecutionResult<TResult>(false);
+    }
+
+    public async ValueTask<ExecutionResult<TResult>> TryExecuteOnce<TResult>(Func<Task<TResult>> func, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await func().ConfigureAwait(false);
+            return new ExecutionResult<TResult>(true, result);
+        }
+        catch (Exception ex)
+        {
+            if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                throw;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return new ExecutionResult<TResult>(false);
+    }
+
+    public async ValueTask<ExecutionResult<TResult>> TryExecuteOnce<TResult>(Func<ValueTask<TResult>> func, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await func().ConfigureAwait(false);
+            return new ExecutionResult<TResult>(true, result);
+        }
+        catch (Exception ex)
+        {
+            if (await Handle(ex, cancellationToken).ConfigureAwait(false))
+                throw;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return new ExecutionResult<TResult>(false);
     }
 
     private async ValueTask<bool> Handle(Exception exception, CancellationToken cancellationToken)

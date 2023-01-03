@@ -16,18 +16,19 @@ namespace DotPulsar.Internal;
 
 using Abstractions;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 public sealed class ProducerProcess : Process
 {
     private readonly IStateManager<ProducerState> _stateManager;
-    private readonly IEstablishNewChannel _producer;
-    private Task? _establishNewChannelTask;
+    private readonly IContainsChannel _producer;
+    private Task? _reEstablishChannelTask;
 
     public ProducerProcess(
         Guid correlationId,
         IStateManager<ProducerState> stateManager,
-        IEstablishNewChannel producer) : base(correlationId)
+        IContainsChannel producer) : base(correlationId)
     {
         _stateManager = stateManager;
         _producer = producer;
@@ -55,8 +56,9 @@ public sealed class ProducerProcess : Process
         {
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
+            case ChannelState.WrongAckOrdering:
                 _stateManager.SetState(ProducerState.Disconnected);
-                EstablishNewChannel();
+                ReestablishChannel(CancellationTokenSource.Token);
                 return;
             case ChannelState.Connected:
                 _stateManager.SetState(ProducerState.Connected);
@@ -64,10 +66,13 @@ public sealed class ProducerProcess : Process
         }
     }
 
-    private void EstablishNewChannel()
+    private void ReestablishChannel(CancellationToken token)
     {
-        var token = CancellationTokenSource.Token;
-        if (_establishNewChannelTask is null || _establishNewChannelTask.IsCompleted)
-            _establishNewChannelTask = Task.Run(() => _producer.EstablishNewChannel(token).ConfigureAwait(false), token);
+        if (_reEstablishChannelTask is null || _reEstablishChannelTask.IsCompleted)
+        {
+            _reEstablishChannelTask = Task
+                .Run(() => _producer.CloseChannel(token).ConfigureAwait(false), token)
+                .ContinueWith(_ => _producer.EstablishNewChannel(token).ConfigureAwait(false), token);
+        }
     }
 }

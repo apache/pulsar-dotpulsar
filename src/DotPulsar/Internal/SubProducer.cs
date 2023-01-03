@@ -16,47 +16,43 @@ namespace DotPulsar.Internal;
 
 using Abstractions;
 using DotPulsar.Abstractions;
-using DotPulsar.Internal.Extensions;
+using Extensions;
 using Events;
+using Exceptions;
+using PulsarApi;
 using System;
-using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMessage>
+public sealed class SubProducer : IContainsChannel, IState<ProducerState>
 {
+    private readonly AsyncQueueWithCursor<SendOp> _sendQueue;
+    private CancellationTokenSource? _dispatcherCts;
+    private Task? _dispatcherTask;
     private readonly Guid _correlationId;
     private readonly IRegisterEvent _eventRegister;
     private IProducerChannel _channel;
     private readonly IExecute _executor;
     private readonly IStateChanged<ProducerState> _state;
     private readonly IProducerChannelFactory _factory;
-    private readonly ISchema<TMessage> _schema;
     private int _isDisposed;
-
-    public Uri ServiceUrl { get; }
-    public string Topic { get; }
 
     public SubProducer(
         Guid correlationId,
-        Uri serviceUrl,
-        string topic,
         IRegisterEvent registerEvent,
         IProducerChannel initialChannel,
         IExecute executor,
         IStateChanged<ProducerState> state,
         IProducerChannelFactory factory,
-        ISchema<TMessage> schema)
+        uint maxPendingMessages)
     {
+        _sendQueue = new AsyncQueueWithCursor<SendOp>(maxPendingMessages);
         _correlationId = correlationId;
-        ServiceUrl = serviceUrl;
-        Topic = topic;
         _eventRegister = registerEvent;
         _channel = initialChannel;
         _executor = executor;
         _state = state;
         _factory = factory;
-        _schema = schema;
         _isDisposed = 0;
 
         _eventRegister.Register(new ProducerCreated(_correlationId));
@@ -80,30 +76,137 @@ public sealed class SubProducer<TMessage> : IEstablishNewChannel, IProducer<TMes
             return;
 
         _eventRegister.Register(new ProducerDisposed(_correlationId));
+
+        try
+        {
+            _dispatcherCts?.Cancel();
+            _dispatcherCts?.Dispose();
+            await (_dispatcherTask ?? Task.CompletedTask).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Ignored
+        }
+        await _sendQueue.DisposeAsync().ConfigureAwait(false);
         await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
         await _channel.DisposeAsync().ConfigureAwait(false);
     }
 
-    public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
-        => await _executor.Execute(() => InternalSend(metadata.Metadata, _schema.Encode(message), cancellationToken), cancellationToken).ConfigureAwait(false);
-
-    public async ValueTask<MessageId> Send(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
-        => await _executor.Execute(() => InternalSend(metadata, data, cancellationToken), cancellationToken).ConfigureAwait(false);
-
-    private async ValueTask<MessageId> InternalSend(PulsarApi.MessageMetadata metadata, ReadOnlySequence<byte> data, CancellationToken cancellationToken)
+    public async ValueTask Send(SendOp sendOp, CancellationToken cancellationToken)
     {
-        var response = await _channel.Send(metadata, data, cancellationToken).ConfigureAwait(false);
-        return response.MessageId.ToMessageId();
+        await _sendQueue.Enqueue(sendOp, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async ValueTask WaitForSendQueueEmpty(CancellationToken cancellationToken)
+    {
+        await _sendQueue.WaitForEmpty(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task MessageDispatcher(IProducerChannel channel, CancellationToken cancellationToken)
+    {
+        var responseQueue = new AsyncQueue<Task<BaseCommand>>();
+        var responseProcessorTask = ResponseProcessor(responseQueue, cancellationToken);
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            SendOp sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
+
+            if (sendOp.CancellationToken.IsCancellationRequested)
+            {
+                _sendQueue.RemoveCurrentItem();
+                continue;
+            }
+
+            var tcs = new TaskCompletionSource<BaseCommand>();
+            _ = tcs.Task.ContinueWith(task => responseQueue.Enqueue(task),
+                TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
+
+            // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
+            bool success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), CancellationToken.None).ConfigureAwait(false);
+
+            if (success) continue;
+            _eventRegister.Register(new ChannelDisconnected(_correlationId));
+            break;
+        }
+
+        await responseProcessorTask.ConfigureAwait(false);
+    }
+
+    private async ValueTask ResponseProcessor(IDequeue<Task<BaseCommand>> responseQueue, CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            var responseTask = await responseQueue.Dequeue(cancellationToken).ConfigureAwait(false);
+
+            bool success = await _executor.TryExecuteOnce(() =>
+            {
+                if (responseTask.IsFaulted) throw responseTask.Exception!;
+                responseTask.Result.Expect(BaseCommand.Type.SendReceipt);
+                ProcessReceipt(responseTask.Result.SendReceipt);
+            }, CancellationToken.None).ConfigureAwait(false); // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
+
+            if (success) continue;
+            _eventRegister.Register(new SendReceiptWrongOrdering(_correlationId));
+            break;
+        }
+    }
+
+    private void ProcessReceipt(CommandSendReceipt sendReceipt)
+    {
+        ulong receiptSequenceId = sendReceipt.SequenceId;
+
+        if (!_sendQueue.TryPeek(out SendOp? sendOp) || sendOp is null)
+            throw new ProducerSendReceiptOrderingException($"Received sequenceId {receiptSequenceId} but send queue is empty");
+
+        ulong expectedSequenceId = sendOp.Metadata.SequenceId;
+
+        if (receiptSequenceId != expectedSequenceId)
+            throw new ProducerSendReceiptOrderingException($"Received sequenceId {receiptSequenceId}. Expected {expectedSequenceId}");
+
+        _sendQueue.Dequeue();
+        sendOp.ReceiptTcs.TrySetResult(sendReceipt.MessageId.ToMessageId());
     }
 
     public async Task EstablishNewChannel(CancellationToken cancellationToken)
     {
-        var channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (_dispatcherCts is not null && !_dispatcherCts.IsCancellationRequested)
+            {
+                _dispatcherCts.Cancel();
+                _dispatcherCts.Dispose();
+            }
+        }
+        catch (Exception)
+        {
+            // Ignored
+        }
 
-        var oldChannel = _channel;
-        if (oldChannel is not null)
+        await _executor.TryExecuteOnce(() => _dispatcherTask ?? Task.CompletedTask, cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            var oldChannel = _channel;
             await oldChannel.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            // Ignored
+        }
 
-        _channel = channel;
+        _dispatcherCts = new CancellationTokenSource();
+        _channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
+
+        await _executor.Execute(() =>
+        {
+            _sendQueue.ResetCursor();
+            _dispatcherTask = MessageDispatcher(_channel, _dispatcherCts.Token);
+        }, cancellationToken).ConfigureAwait(false);
+
+    }
+
+    public async ValueTask CloseChannel(CancellationToken cancellationToken)
+    {
+        await _channel.ClosedByClient(cancellationToken).ConfigureAwait(false);
     }
 }

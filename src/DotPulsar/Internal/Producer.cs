@@ -17,12 +17,12 @@ namespace DotPulsar.Internal;
 using Abstractions;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
-using DotPulsar.Extensions;
 using DotPulsar.Internal.Extensions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +40,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     private readonly ICompressorFactory? _compressorFactory;
     private readonly ProducerOptions<TMessage> _options;
     private readonly ProcessManager _processManager;
-    private readonly ConcurrentDictionary<int, SubProducer<TMessage>> _producers;
+    private readonly ConcurrentDictionary<int, SubProducer> _producers;
     private readonly IMessageRouter _messageRouter;
     private readonly CancellationTokenSource _cts;
     private readonly IExecute _executor;
@@ -50,6 +50,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
     public Uri ServiceUrl { get; }
     public string Topic { get; }
+
+    public ISendChannel<TMessage> SendChannel { get; }
 
     public Producer(
         Uri serviceUrl,
@@ -85,7 +87,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         _messageRouter = options.MessageRouter;
         _cts = new CancellationTokenSource();
         _executor = new Executor(Guid.Empty, this, _exceptionHandler);
-        _producers = new ConcurrentDictionary<int, SubProducer<TMessage>>();
+        _producers = new ConcurrentDictionary<int, SubProducer>();
+        SendChannel = new SendChannel<TMessage>(this);
         _ = Setup();
     }
 
@@ -111,7 +114,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     {
         var numberOfPartitions = await GetNumberOfPartitions(Topic, _cts.Token).ConfigureAwait(false);
         var isPartitionedTopic = numberOfPartitions != 0;
-        var monitoringTasks = new Task<ProducerStateChanged>[isPartitionedTopic ? numberOfPartitions : 1];
+        var monitoringTasks = new Task<ProducerState>[isPartitionedTopic ? numberOfPartitions : 1];
 
         var topic = Topic;
 
@@ -122,7 +125,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
             var producer = CreateSubProducer(topic);
             _ = _producers.TryAdd(partition, producer);
-            monitoringTasks[partition] = producer.StateChangedFrom(ProducerState.Disconnected, _cts.Token).AsTask();
+            monitoringTasks[partition] = producer.OnStateChangeFrom(ProducerState.Disconnected, _cts.Token).AsTask();
         }
 
         Interlocked.Exchange(ref _producerCount, monitoringTasks.Length);
@@ -139,7 +142,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                 if (!task.IsCompleted)
                     continue;
 
-                var state = task.Result.ProducerState;
+                var state = task.Result;
                 switch (state)
                 {
                     case ProducerState.Connected:
@@ -153,7 +156,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                         return;
                 }
 
-                monitoringTasks[i] = task.Result.Producer.StateChangedFrom(state, _cts.Token).AsTask();
+                monitoringTasks[i] = _producers[i].OnStateChangeFrom(state, _cts.Token).AsTask();
             }
 
             if (connectedProducers == 0)
@@ -165,7 +168,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         }
     }
 
-    private SubProducer<TMessage> CreateSubProducer(string topic)
+    private SubProducer CreateSubProducer(string topic)
     {
         var correlationId = Guid.NewGuid();
         var producerName = _options.ProducerName;
@@ -174,7 +177,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-        var producer = new SubProducer<TMessage>(correlationId, ServiceUrl, topic, _processManager, initialChannel, executor, stateManager, factory, schema);
+        var producer = new SubProducer(correlationId, _processManager, initialChannel, executor, stateManager, factory, _options.MaxPendingMessages);
         var process = new ProducerProcess(correlationId, stateManager, producer);
         _processManager.Add(process);
         process.Start();
@@ -240,6 +243,27 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
     public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
     {
+        var tcs = new TaskCompletionSource<MessageId>();
+        cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
+
+        ValueTask OnMessageSent(MessageId messageId)
+        {
+            tcs.TrySetResult(messageId);
+            return new ValueTask();
+        }
+
+        await InternalSend(metadata, message, true, OnMessageSent, cancellationToken).ConfigureAwait(false);
+
+        return await tcs.Task.ConfigureAwait(false);
+    }
+
+    public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
+    {
+        await InternalSend(metadata, message, false, onMessageSent, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async ValueTask InternalSend(MessageMetadata metadata, TMessage message, bool sendOpCancelable, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
+    {
         ThrowIfDisposed();
 
         var autoAssignSequenceId = metadata.SequenceId == 0;
@@ -259,37 +283,74 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         try
         {
             var partition = await ChoosePartitions(metadata, cancellationToken).ConfigureAwait(false);
-            var producer = _producers[partition];
+            var subProducer = _producers[partition];
             var data = _options.Schema.Encode(message);
 
-            var messageId = await producer.Send(metadata.Metadata, data, cancellationToken).ConfigureAwait(false);
+            var tcs = new TaskCompletionSource<MessageId>();
+            await subProducer.Send(new SendOp(metadata.Metadata, data, tcs, sendOpCancelable ? cancellationToken : CancellationToken.None), cancellationToken).ConfigureAwait(false);
 
-            if (startTimestamp != 0)
-                DotPulsarMeter.MessageSent(startTimestamp, _meterTags);
-
-            if (activity is not null && activity.IsAllDataRequested)
+            _ = tcs.Task.ContinueWith(async task =>
             {
-                activity.SetMessageId(messageId);
-                activity.SetPayloadSize(data.Length);
-                activity.SetStatus(ActivityStatusCode.Ok);
-            }
+                if (startTimestamp != 0)
+                    DotPulsarMeter.MessageSent(startTimestamp, _meterTags);
 
-            return messageId;
+                if (task.IsFaulted || task.IsCanceled)
+                {
+                    FailActivity(task.IsCanceled ? new OperationCanceledException() : task.Exception!, activity);
+
+                    if (autoAssignSequenceId)
+                        metadata.SequenceId = 0;
+                }
+
+                CompleteActivity(task.Result, data.Length, activity);
+                try
+                {
+                    if (onMessageSent is not null)
+                        await onMessageSent.Invoke(task.Result).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }, CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception exception)
         {
-            if (activity is not null && activity.IsAllDataRequested)
-                activity.AddException(exception);
-
-            throw;
-        }
-        finally
-        {
-            activity?.Dispose();
+            FailActivity(exception, activity);
 
             if (autoAssignSequenceId)
                 metadata.SequenceId = 0;
+            throw;
         }
+    }
+
+    public async ValueTask WaitForSendQueueEmpty(CancellationToken cancellationToken)
+    {
+        await Task.WhenAll(_producers.Values.Select(producer => producer.WaitForSendQueueEmpty(cancellationToken).AsTask())).ConfigureAwait(false);
+    }
+
+    private void CompleteActivity(MessageId messageId, long payloadSize, Activity? activity)
+    {
+        if (activity is null) return;
+
+        if (activity.IsAllDataRequested)
+        {
+            activity.SetMessageId(messageId);
+            activity.SetPayloadSize(payloadSize);
+            activity.SetStatus(ActivityStatusCode.Ok);
+        }
+
+        activity.Dispose();
+    }
+
+    private void FailActivity(Exception exception, Activity? activity)
+    {
+        if (activity is null) return;
+
+        if (activity.IsAllDataRequested)
+            activity.AddException(exception);
+
+        activity.Dispose();
     }
 
     private void ThrowIfDisposed()

@@ -12,13 +12,11 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions;
+namespace DotPulsar.Internal.Exceptions;
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-public interface IEstablishNewChannel : IAsyncDisposable
+public sealed class SendChannelCompletedException : InvalidOperationException
 {
-    Task EstablishNewChannel(CancellationToken cancellationToken);
+    public SendChannelCompletedException() : base(typeof(SendChannel<>).FullName) { }
 }

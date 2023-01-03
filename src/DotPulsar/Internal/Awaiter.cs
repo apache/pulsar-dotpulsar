@@ -33,6 +33,11 @@ public sealed class Awaiter<T, TResult> : IDisposable where T : notnull
         return tcs.Task;
     }
 
+    public void AddTaskCompletionSource(T item, TaskCompletionSource<TResult> tcs)
+    {
+        _ = _items.TryAdd(item, tcs);
+    }
+
     public void SetResult(T item, TResult result)
     {
         if (_items.TryRemove(item, out var tcs))

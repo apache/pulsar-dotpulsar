@@ -12,19 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Abstractions;
+namespace DotPulsar.Internal.Abstractions;
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-/// <summary>
-/// An abstraction for sending a message.
-/// </summary>
-public interface ISend<TMessage>
+public interface IContainsChannel : IAsyncDisposable
 {
-    /// <summary>
-    /// Sends a message with metadata.
-    /// </summary>
-    /// <returns>ValueTask which completes when the Broker acknowledgement has been received.</returns>
-    ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken = default);
+    Task EstablishNewChannel(CancellationToken cancellationToken);
+
+    ValueTask CloseChannel(CancellationToken cancellationToken);
 }
