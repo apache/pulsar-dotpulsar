@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -101,6 +101,13 @@ public sealed class PulsarClient : IPulsarClient
             Topic = options.Topic,
             Type = (CommandSubscribe.SubType) options.SubscriptionType
         };
+
+        foreach (var property in options.SubscriptionProperties)
+        {
+            var keyValue = new KeyValue { Key = property.Key, Value = property.Value };
+            subscribe.SubscriptionProperties.Add(keyValue);
+        }
+
         var messagePrefetchCount = options.MessagePrefetchCount;
         var messageFactory = new MessageFactory<TMessage>(options.Schema);
         var batchHandler = new BatchHandler<TMessage>(true, messageFactory);

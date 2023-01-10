@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
+using System.Collections.Generic;
 
 public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
 {
@@ -27,6 +28,7 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
     private uint _messagePrefetchCount;
     private bool _readCompacted;
     private string? _subscriptionName;
+    private readonly Dictionary<string, string> _subscriptionProperties;
     private SubscriptionType _subscriptionType;
     private string? _topic;
     private IHandleStateChanged<ConsumerStateChanged>? _stateChangedHandler;
@@ -39,6 +41,7 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
         _priorityLevel = ConsumerOptions<TMessage>.DefaultPriorityLevel;
         _messagePrefetchCount = ConsumerOptions<TMessage>.DefaultMessagePrefetchCount;
         _readCompacted = ConsumerOptions<TMessage>.DefaultReadCompacted;
+        _subscriptionProperties = new Dictionary<string, string>();
         _subscriptionType = ConsumerOptions<TMessage>.DefaultSubscriptionType;
     }
 
@@ -84,6 +87,12 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
         return this;
     }
 
+    public IConsumerBuilder<TMessage> SubscriptionProperty(string key, string value)
+    {
+        _subscriptionProperties[key] = value;
+        return this;
+    }
+
     public IConsumerBuilder<TMessage> SubscriptionType(SubscriptionType type)
     {
         _subscriptionType = type;
@@ -112,6 +121,7 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
             PriorityLevel = _priorityLevel,
             ReadCompacted = _readCompacted,
             StateChangedHandler = _stateChangedHandler,
+            SubscriptionProperties = _subscriptionProperties,
             SubscriptionType = _subscriptionType
         };
 

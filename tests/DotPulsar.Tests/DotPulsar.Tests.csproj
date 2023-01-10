@@ -12,9 +12,9 @@
     <PackageReference Include="Ductus.FluentDocker" Version="2.10.57" />
     <PackageReference Include="FluentAssertions" Version="6.8.0" />
     <PackageReference Include="IronSnappy" Version="1.3.0" />
-    <PackageReference Include="K4os.Compression.LZ4" Version="1.2.16" />
+    <PackageReference Include="K4os.Compression.LZ4" Version="1.3.5" />
     <PackageReference Include="NSubstitute" Version="4.4.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
       <PrivateAssets>all</PrivateAssets>
@@ -25,7 +25,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="ZstdNet" Version="1.4.5" />
-    <PackageReference Include="ZstdSharp.Port" Version="0.6.5" />
+    <PackageReference Include="ZstdSharp.Port" Version="0.6.7" />
   </ItemGroup>
 
   <ItemGroup>

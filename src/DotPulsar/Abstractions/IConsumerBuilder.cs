@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -53,6 +53,11 @@ public interface IConsumerBuilder<TMessage>
     /// Set the subscription name for this consumer. This is required.
     /// </summary>
     IConsumerBuilder<TMessage> SubscriptionName(string name);
+
+    /// <summary>
+    /// Add/Set a property key/value on the subscription. This is optional.
+    /// </summary>
+    public IConsumerBuilder<TMessage> SubscriptionProperty(string key, string value);
 
     /// <summary>
     /// Set the subscription type for this consumer. The default is 'Exclusive'.

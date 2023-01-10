@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 namespace DotPulsar;
 
 using DotPulsar.Abstractions;
+using System.Collections.Generic;
 
 /// <summary>
 /// The consumer building options.
@@ -56,6 +57,7 @@ public sealed class ConsumerOptions<TMessage>
         MessagePrefetchCount = DefaultMessagePrefetchCount;
         ReadCompacted = DefaultReadCompacted;
         SubscriptionType = DefaultSubscriptionType;
+        SubscriptionProperties = new Dictionary<string, string>();
         SubscriptionName = subscriptionName;
         Topic = topic;
         Schema = schema;
@@ -100,6 +102,11 @@ public sealed class ConsumerOptions<TMessage>
     /// Set the subscription name for this consumer. This is required.
     /// </summary>
     public string SubscriptionName { get; set; }
+
+    /// <summary>
+    /// Add/Set the subscription's properties. This is optional.
+    /// </summary>
+    public Dictionary<string, string> SubscriptionProperties { get; set; }
 
     /// <summary>
     /// Set the subscription type for this consumer. The default is 'Exclusive'.
