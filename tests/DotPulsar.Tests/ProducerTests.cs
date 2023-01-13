@@ -69,6 +69,7 @@ public class ProducerTests
         await using var client = CreateClient();
         string topicName = $"simple-produce-consume{Guid.NewGuid():N}";
         const string content = "test-message";
+        const int msgCount = 3;
 
         //Act
         await using var producer = client.NewProducer(Schema.String)
@@ -81,14 +82,22 @@ public class ProducerTests
             .InitialPosition(SubscriptionInitialPosition.Earliest)
             .Create();
 
-        await producer.SendChannel.Send(content);
-        _testOutputHelper.WriteLine($"Sent a message: {content}");
+        for (var i = 0; i < msgCount; i++)
+        {
+            await producer.SendChannel.Send(content);
+            _testOutputHelper.WriteLine($"Sent a message: {content}");
+        }
 
         producer.SendChannel.Complete();
         await producer.SendChannel.Completion();
 
         //Assert
-        (await consumer.Receive()).Value().Should().Be(content);
+        for (ulong i = 0; i < msgCount; i++)
+        {
+            var received = await consumer.Receive();
+            received.SequenceId.Should().Be(i);
+            received.Value().Should().Be(content);
+        }
     }
 
     [Fact]
