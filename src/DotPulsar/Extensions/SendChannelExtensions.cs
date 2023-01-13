@@ -66,14 +66,16 @@ public static class SendChannelExtensions
     {
         var metadata = _messageMetadataPool.Get();
 
-        try
-        {
-            await sender.Send(metadata, message, onMessageSent, cancellationToken).ConfigureAwait(false);
-        }
-        finally
+        async ValueTask ReleaseMetadataAndCallCallback(MessageId id)
         {
             metadata.Metadata.Properties.Clear();
             _messageMetadataPool.Return(metadata);
+            if (onMessageSent != null)
+            {
+                await onMessageSent(id);
+            }
         }
+
+        await sender.Send(metadata, message, ReleaseMetadataAndCallCallback, cancellationToken).ConfigureAwait(false);
     }
 }
