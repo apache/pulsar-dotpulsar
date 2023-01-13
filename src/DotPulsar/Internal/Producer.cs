@@ -64,14 +64,14 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         _operationName = $"{options.Topic} send";
         _activityTags = new KeyValuePair<string, object?>[]
         {
-                new KeyValuePair<string, object?>("messaging.destination", options.Topic),
-                new KeyValuePair<string, object?>("messaging.destination_kind", "topic"),
-                new KeyValuePair<string, object?>("messaging.system", "pulsar"),
-                new KeyValuePair<string, object?>("messaging.url", serviceUrl),
+                new ("messaging.destination", options.Topic),
+                new ("messaging.destination_kind", "topic"),
+                new ("messaging.system", "pulsar"),
+                new ("messaging.url", serviceUrl),
         };
         _meterTags = new KeyValuePair<string, object?>[]
         {
-                new KeyValuePair<string, object?>("topic", options.Topic)
+                new ("topic", options.Topic)
         };
         _attachTraceInfoToMessages = options.AttachTraceInfoToMessages;
         _sequenceId = new SequenceId(options.InitialSequenceId);

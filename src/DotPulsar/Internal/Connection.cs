@@ -297,7 +297,7 @@ public sealed class Connection : IConnection
         }
     }
 
-    public async Task ProcessIncommingFrames(CancellationToken cancellationToken)
+    public async Task ProcessIncomingFrames(CancellationToken cancellationToken)
     {
         await Task.Yield();
 

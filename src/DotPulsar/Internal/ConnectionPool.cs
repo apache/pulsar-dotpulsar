@@ -162,7 +162,7 @@ public sealed class ConnectionPool : IConnectionPool
         var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _authentication);
         DotPulsarMeter.ConnectionCreated();
         _connections[url] = connection;
-        _ = connection.ProcessIncommingFrames(_cancellationTokenSource.Token).ContinueWith(t => DisposeConnection(url));
+        _ = connection.ProcessIncomingFrames(_cancellationTokenSource.Token).ContinueWith(t => DisposeConnection(url));
         var commandConnect = _commandConnect;
 
         if (url.ProxyThroughServiceUrl)
