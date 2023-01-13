@@ -28,14 +28,7 @@ public class ZstdCompressionTests
     {
         // Arrange
         var couldLoad = ZstdCompression.TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory);
-
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            couldLoad.Should().BeFalse();
-            return;
-        }
-        else
-            couldLoad.Should().BeTrue();
+        couldLoad.Should().BeTrue();
 
         using var compressor = compressorFactory!.Create();
         using var decompressor = decompressorFactory!.Create();
