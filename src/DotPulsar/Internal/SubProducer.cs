@@ -14,12 +14,12 @@
 
 namespace DotPulsar.Internal;
 
-using Abstractions;
 using DotPulsar.Abstractions;
-using Extensions;
-using Events;
-using Exceptions;
-using PulsarApi;
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.Events;
+using DotPulsar.Internal.Exceptions;
+using DotPulsar.Internal.Extensions;
+using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -109,7 +109,7 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            SendOp sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
+            var sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
 
             if (sendOp.CancellationToken.IsCancellationRequested)
             {
@@ -122,7 +122,7 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
                 TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
 
             // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
-            bool success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), CancellationToken.None).ConfigureAwait(false);
+            var success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), CancellationToken.None).ConfigureAwait(false);
 
             if (success) continue;
             _eventRegister.Register(new ChannelDisconnected(_correlationId));
@@ -138,7 +138,7 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
         {
             var responseTask = await responseQueue.Dequeue(cancellationToken).ConfigureAwait(false);
 
-            bool success = await _executor.TryExecuteOnce(() =>
+            var success = await _executor.TryExecuteOnce(() =>
             {
                 if (responseTask.IsFaulted) throw responseTask.Exception!;
                 responseTask.Result.Expect(BaseCommand.Type.SendReceipt);
@@ -153,12 +153,12 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
 
     private void ProcessReceipt(CommandSendReceipt sendReceipt)
     {
-        ulong receiptSequenceId = sendReceipt.SequenceId;
+        var receiptSequenceId = sendReceipt.SequenceId;
 
-        if (!_sendQueue.TryPeek(out SendOp? sendOp) || sendOp is null)
+        if (!_sendQueue.TryPeek(out var sendOp) || sendOp is null)
             throw new ProducerSendReceiptOrderingException($"Received sequenceId {receiptSequenceId} but send queue is empty");
 
-        ulong expectedSequenceId = sendOp.Metadata.SequenceId;
+        var expectedSequenceId = sendOp.Metadata.SequenceId;
 
         if (receiptSequenceId != expectedSequenceId)
             throw new ProducerSendReceiptOrderingException($"Received sequenceId {receiptSequenceId}. Expected {expectedSequenceId}");
@@ -202,7 +202,6 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
             _sendQueue.ResetCursor();
             _dispatcherTask = MessageDispatcher(_channel, _dispatcherCts.Token);
         }, cancellationToken).ConfigureAwait(false);
-
     }
 
     public async ValueTask CloseChannel(CancellationToken cancellationToken)

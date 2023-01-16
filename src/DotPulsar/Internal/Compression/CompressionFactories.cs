@@ -35,25 +35,25 @@ public static class CompressionFactories
 
     private static void LoadSupportForLz4()
     {
-        if (Lz4Compression.TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory))
+        if (Lz4Compression.TryLoading(out var compressorFactory, out var decompressorFactory))
             Add(compressorFactory, decompressorFactory);
     }
 
     private static void LoadSupportForSnappy()
     {
-        if (SnappyCompression.TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory))
+        if (SnappyCompression.TryLoading(out var compressorFactory, out var decompressorFactory))
             Add(compressorFactory, decompressorFactory);
     }
 
     private static void LoadSupportForZlib()
     {
-        if (ZlibCompression.TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory))
+        if (ZlibCompression.TryLoading(out var compressorFactory, out var decompressorFactory))
             Add(compressorFactory, decompressorFactory);
     }
 
     private static void LoadSupportForZstd()
     {
-        if (ZstdSharpCompression.TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory))
+        if (ZstdSharpCompression.TryLoading(out var compressorFactory, out var decompressorFactory))
             Add(compressorFactory, decompressorFactory);
         else if (ZstdCompression.TryLoading(out compressorFactory, out decompressorFactory))
             Add(compressorFactory, decompressorFactory);

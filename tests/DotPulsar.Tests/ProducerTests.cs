@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Tests;
 
-using Abstractions;
+using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 using FluentAssertions;
 using System;
@@ -41,7 +41,7 @@ public class ProducerTests
     {
         //Arrange
         await using var client = CreateClient();
-        string topicName = $"simple-produce-consume{Guid.NewGuid():N}";
+        var topicName = $"simple-produce-consume{Guid.NewGuid():N}";
         const string content = "test-message";
 
         //Act
@@ -67,7 +67,7 @@ public class ProducerTests
     {
         //Arrange
         await using var client = CreateClient();
-        string topicName = $"simple-produce-consume{Guid.NewGuid():N}";
+        var topicName = $"simple-produce-consume{Guid.NewGuid():N}";
         const string content = "test-message";
         const int msgCount = 3;
 
@@ -156,7 +156,7 @@ public class ProducerTests
         //Arrange
         await using var client = CreateClient();
 
-        string topicName = $"round-robin-partitioned-{Guid.NewGuid():N}";
+        var topicName = $"round-robin-partitioned-{Guid.NewGuid():N}";
         const string content = "test-message";
         const int partitions = 3;
         var consumers = new List<IConsumer<string>>();
@@ -188,9 +188,9 @@ public class ProducerTests
 
     private IPulsarClient CreateClient()
         => PulsarClient
-        .Builder()
-        .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
-        .ExceptionHandler(ec => _testOutputHelper.WriteLine($"Exception: {ec.Exception}"))
-        .ServiceUrl(_fixture.ServiceUrl)
-        .Build();
+            .Builder()
+            .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
+            .ExceptionHandler(ec => _testOutputHelper.WriteLine($"Exception: {ec.Exception}"))
+            .ServiceUrl(_fixture.ServiceUrl)
+            .Build();
 }

@@ -17,7 +17,6 @@ namespace DotPulsar.Tests.Internal;
 using DotPulsar.Internal;
 using FluentAssertions;
 using System.Buffers;
-using System.Linq;
 using Xunit;
 
 [Trait("Category", "Unit")]

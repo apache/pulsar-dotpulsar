@@ -14,7 +14,7 @@
 
 namespace DotPulsar;
 
-using Abstractions;
+using DotPulsar.Abstractions;
 using HashDepot;
 using System;
 

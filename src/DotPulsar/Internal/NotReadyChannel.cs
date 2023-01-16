@@ -14,10 +14,10 @@
 
 namespace DotPulsar.Internal;
 
-using Abstractions;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
-using PulsarApi;
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Buffers;
 using System.Threading;
@@ -35,7 +35,7 @@ public sealed class NotReadyChannel<TMessage> : IConsumerChannel<TMessage>, IPro
         => throw GetException();
 
     public Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, TaskCompletionSource<BaseCommand> responseTcs, CancellationToken
-    cancellationToken)
+        cancellationToken)
         => throw GetException();
 
     public Task Send(CommandAck command, CancellationToken cancellationToken)

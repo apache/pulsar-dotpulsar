@@ -71,7 +71,7 @@ public class TokenTests
         await using var producer = CreateProducer(client);
 
         // Act
-        _ = await producer.Send("Test");  // Make sure we have a working connection
+        _ = await producer.Send("Test"); // Make sure we have a working connection
         throwException = true;
         var state = await producer.OnStateChangeTo(ProducerState.Faulted);
 
@@ -121,7 +121,7 @@ public class TokenTests
         await using var producer = CreateProducer(client);
 
         // Act
-        _ = await producer.Send("Test");  // Make sure we have a working connection
+        _ = await producer.Send("Test"); // Make sure we have a working connection
         await tcs.Task;
         var state = await producer.OnStateChangeTo(ProducerState.Connected);
 
@@ -131,18 +131,18 @@ public class TokenTests
 
     private IPulsarClient CreateClient(Func<CancellationToken, ValueTask<string>> tokenSupplier)
         => PulsarClient
-        .Builder()
-        .Authentication(AuthenticationFactory.Token(tokenSupplier))
-        .ExceptionHandler(ec => _testOutputHelper.WriteLine($"Exception: {ec.Exception}"))
-        .ServiceUrl(_fixture.ServiceUrl)
-        .Build();
+            .Builder()
+            .Authentication(AuthenticationFactory.Token(tokenSupplier))
+            .ExceptionHandler(ec => _testOutputHelper.WriteLine($"Exception: {ec.Exception}"))
+            .ServiceUrl(_fixture.ServiceUrl)
+            .Build();
 
     private IProducer<string> CreateProducer(IPulsarClient client)
         => client
-        .NewProducer(Schema.String)
-        .Topic(MyTopic)
-        .StateChangedHandler(Monitor)
-        .Create();
+            .NewProducer(Schema.String)
+            .Topic(MyTopic)
+            .StateChangedHandler(Monitor)
+            .Create();
 
     private void Monitor(ProducerStateChanged stateChanged, CancellationToken _)
     {

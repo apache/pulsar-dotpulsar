@@ -14,12 +14,12 @@
 
 namespace DotPulsar;
 
-using Abstractions;
+using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
+using DotPulsar.Internal;
+using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Compression;
 using DotPulsar.Internal.PulsarApi;
-using Exceptions;
-using Internal;
-using Internal.Abstractions;
 using System;
 using System.Linq;
 using System.Threading;

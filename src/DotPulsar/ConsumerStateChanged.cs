@@ -14,7 +14,7 @@
 
 namespace DotPulsar;
 
-using Abstractions;
+using DotPulsar.Abstractions;
 
 /// <summary>
 /// Representation of a consumer state change.

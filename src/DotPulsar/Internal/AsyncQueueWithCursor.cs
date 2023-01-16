@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Internal;
 
-using Exceptions;
+using DotPulsar.Internal.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -221,7 +221,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
 
         _cursorSemaphore.Dispose();
         _cursorNextItemTcs?.TrySetCanceled(CancellationToken.None);
-        ValueTask disposeLock = _pendingLock.DisposeAsync();
+        var disposeLock = _pendingLock.DisposeAsync();
         ReleasePendingLockGrant();
         await disposeLock.ConfigureAwait(false);
         foreach (TaskCompletionSource<object> tcs in _queueEmptyTcs)

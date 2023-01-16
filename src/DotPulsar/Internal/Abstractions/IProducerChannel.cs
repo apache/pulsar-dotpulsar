@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Internal.Abstractions;
 
-using PulsarApi;
+using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Buffers;
 using System.Threading;
@@ -23,6 +23,6 @@ using System.Threading.Tasks;
 public interface IProducerChannel : IAsyncDisposable
 {
     Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, TaskCompletionSource<BaseCommand> responseTcs, CancellationToken
-    cancellationToken);
+        cancellationToken);
     ValueTask ClosedByClient(CancellationToken cancellationToken);
 }

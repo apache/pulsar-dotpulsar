@@ -47,9 +47,9 @@ public class ChunkingPipelineTests
     }
 
     [Theory]
-    [InlineData(4, 6, 3, 4, 6, 3)]     // No segments can be merged
-    [InlineData(1, 6, 4, 7, 4, null)]  // Can merge a and b
-    [InlineData(4, 6, 1, 4, 7, null)]  // Can merge b and c
+    [InlineData(4, 6, 3, 4, 6, 3)]    // No segments can be merged
+    [InlineData(1, 6, 4, 7, 4, null)] // Can merge a and b
+    [InlineData(4, 6, 1, 4, 7, null)] // Can merge b and c
     public async Task Send_GivenSequenceIsOverChunkSize_ShouldWriteMultipleArrays(int length1, int length2, int length3, int expected1, int expected2, int? expected3)
     {
         //Arrange

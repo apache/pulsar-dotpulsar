@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Internal;
 
-using Exceptions;
+using DotPulsar.Internal.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Threading;

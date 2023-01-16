@@ -14,13 +14,13 @@
 
 namespace DotPulsar.Internal;
 
-using Abstractions;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.Events;
 using DotPulsar.Internal.Extensions;
-using Events;
+using DotPulsar.Internal.PulsarApi;
 using Microsoft.Extensions.ObjectPool;
-using PulsarApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;

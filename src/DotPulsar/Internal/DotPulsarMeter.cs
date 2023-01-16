@@ -68,7 +68,6 @@ public static class DotPulsarMeter
     public static void ProducerDisposed() => Interlocked.Decrement(ref _numberOfProducers);
     private static int GetNumberOfProducers() => Volatile.Read(ref _numberOfProducers);
 
-
     public static bool MessageSentEnabled => _producerSendDuration.Enabled;
     public static void MessageSent(long startTimestamp, KeyValuePair<string, object?>[] tags) =>
         _producerSendDuration.Record(GetMillisecondsTillNow(startTimestamp), tags);

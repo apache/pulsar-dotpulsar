@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Extensions;
 
-using Abstractions;
+using DotPulsar.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Buffers;

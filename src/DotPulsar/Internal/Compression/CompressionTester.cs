@@ -15,7 +15,6 @@
 namespace DotPulsar.Internal.Compression;
 
 using DotPulsar.Internal.Abstractions;
-using System;
 using System.Buffers;
 using System.Linq;
 

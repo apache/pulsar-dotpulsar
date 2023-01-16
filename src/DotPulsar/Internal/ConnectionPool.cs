@@ -14,11 +14,11 @@
 
 namespace DotPulsar.Internal;
 
-using Abstractions;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
-using Extensions;
-using PulsarApi;
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.Extensions;
+using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -149,7 +149,7 @@ public sealed class ConnectionPool : IConnectionPool
     {
         using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
         {
-            if (_connections.TryGetValue(url, out Connection? connection) && connection is not null)
+            if (_connections.TryGetValue(url, out var connection) && connection is not null)
                 return connection;
 
             return await EstablishNewConnection(url, cancellationToken).ConfigureAwait(false);
@@ -175,7 +175,7 @@ public sealed class ConnectionPool : IConnectionPool
 
     private async ValueTask DisposeConnection(PulsarUrl serviceUrl)
     {
-        if (_connections.TryRemove(serviceUrl, out Connection? connection) && connection is not null)
+        if (_connections.TryRemove(serviceUrl, out var connection) && connection is not null)
         {
             await connection.DisposeAsync().ConfigureAwait(false);
             DotPulsarMeter.ConnectionDisposed();

@@ -34,7 +34,7 @@ public struct ConnectRequest : IRequest
 #else
     public bool Equals([AllowNull] IRequest other)
 #endif
-            => other is ConnectRequest;
+        => other is ConnectRequest;
 
     public override int GetHashCode()
         => int.MinValue;
