@@ -437,6 +437,7 @@ public class AsyncQueueWithCursorTests
         }
 
         public void Dispose() { }
+
         public bool Equals(QueueItem? other)
         {
             if (ReferenceEquals(null, other)) return false;
