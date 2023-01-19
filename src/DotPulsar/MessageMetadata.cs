@@ -14,8 +14,8 @@
 
 namespace DotPulsar;
 
-using Internal.Extensions;
-using Internal.PulsarApi;
+using DotPulsar.Internal.Extensions;
+using DotPulsar.Internal.PulsarApi;
 using System;
 
 /// <summary>

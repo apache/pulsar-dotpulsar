@@ -14,8 +14,8 @@
 
 namespace DotPulsar.Extensions;
 
-using Abstractions;
-using Internal;
+using DotPulsar.Abstractions;
+using DotPulsar.Internal;
 using System.Buffers;
 
 /// <summary>

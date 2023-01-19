@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Extensions;
 
-using Abstractions;
+using DotPulsar.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Buffers;
@@ -24,7 +24,6 @@ using System.Threading.Tasks;
 /// <summary>
 /// Extensions for ISendChannel.
 /// </summary>
-
 public static class SendChannelExtensions
 {
     private static readonly ObjectPool<MessageMetadata> _messageMetadataPool;

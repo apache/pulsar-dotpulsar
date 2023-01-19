@@ -16,7 +16,7 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
-using Exceptions;
+using DotPulsar.Internal.Exceptions;
 using System;
 using System.IO;
 using System.Net.Sockets;

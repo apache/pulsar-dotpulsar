@@ -16,7 +16,6 @@
 
 namespace DotPulsar.Tests;
 
-using DotPulsar;
 using FluentAssertions;
 using Xunit;
 

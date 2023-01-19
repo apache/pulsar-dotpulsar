@@ -51,7 +51,7 @@ public class AsyncQueueWithCursorTests
         await sut.Enqueue(expected, CancellationToken.None);
 
         //Act
-        var actual = sut.TryPeek(out QueueItem? result);
+        var actual = sut.TryPeek(out var result);
 
         //Assert
         actual.Should().BeTrue();
@@ -87,7 +87,7 @@ public class AsyncQueueWithCursorTests
         var sut = new AsyncQueueWithCursor<IDisposable>(10);
 
         //Act
-        Action act = () => sut.Dequeue();
+        var act = () => sut.Dequeue();
 
         //Assert
         act.Should().Throw<InvalidOperationException>();
@@ -105,7 +105,7 @@ public class AsyncQueueWithCursorTests
 
         //Act
         await sut.Enqueue(expected, CancellationToken.None);
-        var actual = sut.TryPeek(out QueueItem? result);
+        var actual = sut.TryPeek(out var result);
 
         //Assert
         actual.Should().BeTrue();
@@ -194,8 +194,8 @@ public class AsyncQueueWithCursorTests
         await sut.Enqueue(expected2, CancellationToken.None);
 
         //Act
-        QueueItem actual1 = await sut.NextItem(CancellationToken.None);
-        QueueItem actual2 = await sut.NextItem(CancellationToken.None);
+        var actual1 = await sut.NextItem(CancellationToken.None);
+        var actual2 = await sut.NextItem(CancellationToken.None);
 
         //Assert
         actual1.Should().Be(expected1);
@@ -259,9 +259,9 @@ public class AsyncQueueWithCursorTests
         await sut.NextItem(CancellationToken.None);
 
         //Act
-        QueueItem before = await sut.NextItem(CancellationToken.None);
+        var before = await sut.NextItem(CancellationToken.None);
         sut.ResetCursor();
-        QueueItem after = await sut.NextItem(CancellationToken.None);
+        var after = await sut.NextItem(CancellationToken.None);
 
         //Assert
         before.Should().Be(expected2);
@@ -436,7 +436,8 @@ public class AsyncQueueWithCursorTests
             Number = number;
         }
 
-        public void Dispose() {}
+        public void Dispose() { }
+
         public bool Equals(QueueItem? other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -448,7 +449,7 @@ public class AsyncQueueWithCursorTests
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((QueueItem)obj);
+            return Equals((QueueItem) obj);
         }
         public override int GetHashCode() =>
             Number;

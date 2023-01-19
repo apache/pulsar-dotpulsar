@@ -14,9 +14,9 @@
 
 namespace DotPulsar.Internal;
 
-using Abstractions;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
+using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Extensions;
 using System;
 using System.Collections.Concurrent;
@@ -64,14 +64,14 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         _operationName = $"{options.Topic} send";
         _activityTags = new KeyValuePair<string, object?>[]
         {
-                new ("messaging.destination", options.Topic),
-                new ("messaging.destination_kind", "topic"),
-                new ("messaging.system", "pulsar"),
-                new ("messaging.url", serviceUrl),
+            new("messaging.destination", options.Topic),
+            new("messaging.destination_kind", "topic"),
+            new("messaging.system", "pulsar"),
+            new("messaging.url", serviceUrl),
         };
         _meterTags = new KeyValuePair<string, object?>[]
         {
-                new ("topic", options.Topic)
+            new("topic", options.Topic)
         };
         _attachTraceInfoToMessages = options.AttachTraceInfoToMessages;
         _sequenceId = new SequenceId(options.InitialSequenceId);
@@ -232,7 +232,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         {
             _ = await _state.StateChangedFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
             if (_throw is not null)
-                ExceptionDispatchInfo.Capture(_throw).Throw();  //Retain original stack trace by throwing like this
+                ExceptionDispatchInfo.Capture(_throw).Throw(); //Retain original stack trace by throwing like this
         }
 
         if (_producerCount == 1)

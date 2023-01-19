@@ -14,9 +14,9 @@
 
 namespace DotPulsar.Internal;
 
-using Abstractions;
 using DotPulsar.Abstractions;
-using Events;
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.Events;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

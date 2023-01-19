@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Internal;
 
-using PulsarApi;
+using DotPulsar.Internal.PulsarApi;
 using System.Buffers;
 
 public sealed class SendPackage

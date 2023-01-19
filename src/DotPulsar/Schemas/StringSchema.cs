@@ -92,9 +92,9 @@ public sealed class StringSchema : ISchema<string>
         _encoding = encoding;
 
         var properties = new Dictionary<string, string>
-            {
-                { _charSetKey, GetCharSet(encoding.EncodingName) }
-            };
+        {
+            { _charSetKey, GetCharSet(encoding.EncodingName) }
+        };
 
         SchemaInfo = new SchemaInfo("String", Array.Empty<byte>(), SchemaType.String, properties);
     }

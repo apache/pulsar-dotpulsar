@@ -16,7 +16,7 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
-using PulsarApi;
+using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;

@@ -15,7 +15,7 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
-using Exceptions;
+using DotPulsar.Internal.Exceptions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

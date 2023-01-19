@@ -15,8 +15,8 @@
 namespace DotPulsar.Internal.Extensions;
 
 using DotPulsar.Exceptions;
-using Exceptions;
-using PulsarApi;
+using DotPulsar.Internal.Exceptions;
+using DotPulsar.Internal.PulsarApi;
 
 public static class CommandExtensions
 {

@@ -14,9 +14,9 @@
 
 namespace DotPulsar.Internal;
 
-using Abstractions;
-using Exceptions;
-using Extensions;
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.Exceptions;
+using DotPulsar.Internal.Extensions;
 using System;
 using System.Buffers;
 using System.Collections.Generic;

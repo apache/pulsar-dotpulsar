@@ -15,7 +15,7 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
-using Extensions;
+using DotPulsar.Internal.Extensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

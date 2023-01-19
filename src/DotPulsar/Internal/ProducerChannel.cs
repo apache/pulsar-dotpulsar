@@ -14,10 +14,9 @@
 
 namespace DotPulsar.Internal;
 
-using Abstractions;
-using Extensions;
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.PulsarApi;
 using Microsoft.Extensions.ObjectPool;
-using PulsarApi;
 using System;
 using System.Buffers;
 using System.Threading;

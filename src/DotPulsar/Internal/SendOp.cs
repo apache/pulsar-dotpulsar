@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Internal;
 
-using PulsarApi;
+using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Buffers;
 using System.Threading;

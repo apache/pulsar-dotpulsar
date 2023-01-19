@@ -14,8 +14,8 @@
 
 namespace DotPulsar.Internal;
 
-using Abstractions;
-using PulsarApi;
+using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Diagnostics;
 using System.Threading;

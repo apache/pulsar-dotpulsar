@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Internal.Events;
 
-using Abstractions;
+using DotPulsar.Internal.Abstractions;
 using System;
 
 public sealed class ChannelUnsubscribed : IEvent

@@ -52,13 +52,13 @@ public class IntegrationFixture : IAsyncLifetime
         };
 
         var arguments = "\"" +
-            $"bin/pulsar tokens create-secret-key --output {SecretKeyPath} && " +
-            $"export brokerClientAuthenticationParameters=token:$(bin/pulsar tokens create --secret-key {SecretKeyPath} --subject {UserName}) && " +
-            "export CLIENT_PREFIX_authParams=$brokerClientAuthenticationParameters && " +
-            "bin/apply-config-from-env.py conf/standalone.conf && " +
-            "bin/apply-config-from-env-with-prefix.py CLIENT_PREFIX_ conf/client.conf && " +
-            "bin/pulsar standalone --no-functions-worker"
-            + "\"";
+                        $"bin/pulsar tokens create-secret-key --output {SecretKeyPath} && " +
+                        $"export brokerClientAuthenticationParameters=token:$(bin/pulsar tokens create --secret-key {SecretKeyPath} --subject {UserName}) && " +
+                        "export CLIENT_PREFIX_authParams=$brokerClientAuthenticationParameters && " +
+                        "bin/apply-config-from-env.py conf/standalone.conf && " +
+                        "bin/apply-config-from-env-with-prefix.py CLIENT_PREFIX_ conf/client.conf && " +
+                        "bin/pulsar standalone --no-functions-worker"
+                        + "\"";
 
         _cluster = new Builder()
             .UseContainer()
