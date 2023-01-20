@@ -431,10 +431,7 @@ public class AsyncQueueWithCursorTests
     {
         private int Number { get; }
 
-        public QueueItem(int number)
-        {
-            Number = number;
-        }
+        public QueueItem(int number) => Number = number;
 
         public void Dispose() { }
 
@@ -444,14 +441,9 @@ public class AsyncQueueWithCursorTests
             if (ReferenceEquals(this, other)) return true;
             return Number == other.Number;
         }
-        public override bool Equals(object? obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((QueueItem) obj);
-        }
-        public override int GetHashCode() =>
-            Number;
+
+        public override bool Equals(object? obj) => obj is QueueItem qi && Equals(qi);
+
+        public override int GetHashCode() => Number;
     }
 }
