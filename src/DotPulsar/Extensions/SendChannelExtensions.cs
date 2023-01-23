@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -69,10 +69,9 @@ public static class SendChannelExtensions
         {
             metadata.Metadata.Properties.Clear();
             _messageMetadataPool.Return(metadata);
-            if (onMessageSent != null)
-            {
-                await onMessageSent(id);
-            }
+
+            if (onMessageSent is not null)
+                await onMessageSent(id).ConfigureAwait(false);
         }
 
         await sender.Send(metadata, message, ReleaseMetadataAndCallCallback, cancellationToken).ConfigureAwait(false);

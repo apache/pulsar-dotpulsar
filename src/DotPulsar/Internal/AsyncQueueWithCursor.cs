@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,7 +25,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
     private readonly AsyncLock _pendingLock;
     private readonly SemaphoreSlim _cursorSemaphore;
     private readonly LinkedList<T> _queue;
-    private readonly IList<TaskCompletionSource<object>> _queueEmptyTcs;
+    private readonly List<TaskCompletionSource<object>> _queueEmptyTcs;
     private readonly uint _maxItems;
     private IDisposable? _pendingLockGrant;
     private LinkedListNode<T>? _currentNode;
@@ -67,9 +67,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
             _cursorNextItemTcs?.TrySetResult(node);
 
             if (_queue.Count < _maxItems)
-            {
                 ReleasePendingLockGrant();
-            }
         }
     }
 
@@ -81,6 +79,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
         lock (_queue)
         {
             ThrowIfDisposed();
+
             var node = _queue.First;
             if (node is not null)
             {
@@ -101,6 +100,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
         lock (_queue)
         {
             ThrowIfDisposed();
+
             if (_currentNode == _queue.First)
                 _currentNode = null;
 
@@ -112,7 +112,10 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
             {
                 throw new AsyncQueueWithCursorNoItemException(e);
             }
-            if (_queue.Count == 0) NotifyQueueEmptyAwaiters();
+
+            if (_queue.Count == 0)
+                NotifyQueueEmptyAwaiters();
+
             ReleasePendingLockGrant();
         }
     }
@@ -125,11 +128,16 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
         lock (_queue)
         {
             ThrowIfDisposed();
-            if (_currentNode is null) throw new AsyncQueueWithCursorNoItemException();
+
+            if (_currentNode is null)
+                throw new AsyncQueueWithCursorNoItemException();
+
             var newCurrent = _currentNode.Previous;
             _queue.Remove(_currentNode);
             _currentNode = newCurrent;
-            if (_queue.Count == 0) NotifyQueueEmptyAwaiters();
+
+            if (_queue.Count == 0)
+                NotifyQueueEmptyAwaiters();
         }
     }
 
@@ -147,9 +155,11 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
             lock (_queue)
             {
                 ThrowIfDisposed();
+
                 _currentNode = _currentNode is null || _currentNode.List is null ? _queue.First : _currentNode.Next;
 
-                if (_currentNode is not null) return _currentNode.Value;
+                if (_currentNode is not null)
+                    return _currentNode.Value;
 
                 var tcs = new TaskCompletionSource<LinkedListNode<T>>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _cursorNextItemTcs = tcs;
@@ -163,19 +173,19 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
                 ThrowIfDisposed();
                 _currentNode = result;
             }
+
             return _currentNode.Value;
         }
         finally
         {
-            if (_cursorNextItemTcs != null && _cursorNextItemTcs.Task.IsCanceled)
-            {
+            if (_cursorNextItemTcs is not null && _cursorNextItemTcs.Task.IsCanceled)
                 throw new TaskCanceledException("The task was cancelled");
-            }
 
             lock (_queue)
             {
                 _cursorNextItemTcs = null;
             }
+
             _cursorSemaphore.Release();
         }
     }
@@ -202,7 +212,9 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
         lock (_queue)
         {
             ThrowIfDisposed();
-            if (_queue.Count == 0) return;
+
+            if (_queue.Count == 0)
+                return;
 
             cancellationToken.Register(() => tcs.TrySetCanceled());
             _queueEmptyTcs.Add(tcs);
@@ -224,10 +236,12 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
         var disposeLock = _pendingLock.DisposeAsync();
         ReleasePendingLockGrant();
         await disposeLock.ConfigureAwait(false);
-        foreach (TaskCompletionSource<object> tcs in _queueEmptyTcs)
+
+        foreach (var tcs in _queueEmptyTcs)
         {
             tcs.TrySetCanceled(CancellationToken.None);
         }
+
         lock (_queue)
         {
             foreach (var item in _queue)
@@ -245,10 +259,11 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
 
     private void NotifyQueueEmptyAwaiters()
     {
-        foreach (TaskCompletionSource<object> tcs in _queueEmptyTcs)
+        foreach (var tcs in _queueEmptyTcs)
         {
             tcs.SetResult(0);
         }
+
         _queueEmptyTcs.Clear();
     }
 
@@ -256,7 +271,9 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
     {
         lock (_pendingLock)
         {
-            if (_pendingLockGrant is null) return;
+            if (_pendingLockGrant is null)
+                return;
+
             _pendingLockGrant.Dispose();
             _pendingLockGrant = null;
         }
