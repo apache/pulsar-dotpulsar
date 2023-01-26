@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,11 +28,11 @@ using System.Threading.Tasks;
 
 public sealed class PulsarStream : IPulsarStream
 {
-    private const int _frameSizePrefix = 4;
-    private const int _unknownFrameSize = 0;
-    private const long _pauseAtMoreThan10Mb = 10485760;
-    private const long _resumeAt5MbOrLess = 5242881;
-    private const int _chunkSize = 75000;
+    private const int FrameSizePrefix = 4;
+    private const int UnknownFrameSize = 0;
+    private const long PauseAtMoreThan10Mb = 10485760;
+    private const long ResumeAt5MbOrLess = 5242881;
+    private const int ChunkSize = 75000;
 
     private readonly Stream _stream;
     private readonly ChunkingPipeline _pipeline;
@@ -43,8 +43,8 @@ public sealed class PulsarStream : IPulsarStream
     public PulsarStream(Stream stream)
     {
         _stream = stream;
-        _pipeline = new ChunkingPipeline(stream, _chunkSize);
-        var options = new PipeOptions(pauseWriterThreshold: _pauseAtMoreThan10Mb, resumeWriterThreshold: _resumeAt5MbOrLess);
+        _pipeline = new ChunkingPipeline(stream, ChunkSize);
+        var options = new PipeOptions(pauseWriterThreshold: PauseAtMoreThan10Mb, resumeWriterThreshold: ResumeAt5MbOrLess);
         var pipe = new Pipe(options);
         _reader = pipe.Reader;
         _writer = pipe.Writer;
@@ -119,33 +119,33 @@ public sealed class PulsarStream : IPulsarStream
 
         try
         {
-            var frameSize = _unknownFrameSize;
+            var frameSize = UnknownFrameSize;
             var totalSize = 0;
 
             while (true)
             {
-                var minimumSize = _frameSizePrefix + frameSize;
+                var minimumSize = FrameSizePrefix + frameSize;
                 var readResult = await _reader.ReadAtLeastAsync(minimumSize, cancellationToken).ConfigureAwait(false);
                 var buffer = readResult.Buffer;
 
                 while (true)
                 {
-                    if (buffer.Length < _frameSizePrefix)
+                    if (buffer.Length < FrameSizePrefix)
                         break;
 
-                    if (frameSize == _unknownFrameSize)
+                    if (frameSize == UnknownFrameSize)
                     {
                         frameSize = (int) buffer.ReadUInt32(0, true);
-                        totalSize = _frameSizePrefix + frameSize;
+                        totalSize = FrameSizePrefix + frameSize;
                     }
 
                     if (buffer.Length < totalSize)
                         break;
 
-                    yield return buffer.Slice(_frameSizePrefix, frameSize);
+                    yield return buffer.Slice(FrameSizePrefix, frameSize);
 
                     buffer = buffer.Slice(totalSize);
-                    frameSize = _unknownFrameSize;
+                    frameSize = UnknownFrameSize;
                 }
 
                 if (readResult.IsCompleted)

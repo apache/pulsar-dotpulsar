@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,9 @@
 
 namespace DotPulsar.Exceptions;
 
+/// <summary>
+/// Unable to create producer because backlog quota exceeded
+/// </summary>
 public sealed class ProducerBlockedQuotaExceededException : DotPulsarException
 {
     public ProducerBlockedQuotaExceededException(string message) : base(message) { }

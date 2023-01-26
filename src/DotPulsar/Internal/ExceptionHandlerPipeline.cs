@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,9 +23,13 @@ using System.Threading.Tasks;
 public sealed class ExceptionHandlerPipeline : IHandleException
 {
     private readonly IHandleException[] _handlers;
+    private readonly TimeSpan _retryInterval;
 
-    public ExceptionHandlerPipeline(IEnumerable<IHandleException> handlers)
-        => _handlers = handlers.ToArray();
+    public ExceptionHandlerPipeline(TimeSpan retryInterval, IEnumerable<IHandleException> handlers)
+    {
+        _retryInterval = retryInterval;
+        _handlers = handlers.ToArray();
+    }
 
     public async ValueTask OnException(ExceptionContext exceptionContext)
     {
@@ -35,5 +40,8 @@ public sealed class ExceptionHandlerPipeline : IHandleException
             if (exceptionContext.ExceptionHandled)
                 break;
         }
+
+        if (exceptionContext.Result == FaultAction.Retry)
+            await Task.Delay(_retryInterval, exceptionContext.CancellationToken).ConfigureAwait(false);
     }
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,19 +25,15 @@ using System.Threading.Tasks;
 
 public sealed class DefaultExceptionHandler : IHandleException
 {
-    private readonly TimeSpan _retryInterval;
-
-    public DefaultExceptionHandler(TimeSpan retryInterval)
-        => _retryInterval = retryInterval;
-
-    public async ValueTask OnException(ExceptionContext exceptionContext)
+    public ValueTask OnException(ExceptionContext exceptionContext)
     {
         exceptionContext.Result = DetermineFaultAction(exceptionContext.Exception, exceptionContext.CancellationToken);
-
-        if (exceptionContext.Result == FaultAction.Retry)
-            await Task.Delay(_retryInterval, exceptionContext.CancellationToken).ConfigureAwait(false);
-
         exceptionContext.ExceptionHandled = true;
+#if NET6_0_OR_GREATER
+        return ValueTask.CompletedTask;
+#else
+        return new ValueTask();
+#endif
     }
 
     private static FaultAction DetermineFaultAction(Exception exception, CancellationToken cancellationToken)

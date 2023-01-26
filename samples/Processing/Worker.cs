@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,14 +27,21 @@ public class Worker : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         await using var client = PulsarClient.Builder()
-            .ExceptionHandler(context => _logger.PulsarClientException(context))
+            .ExceptionHandler(_logger.PulsarClientException) // Optional
             .Build(); // Connecting to pulsar://localhost:6650
 
         await using var consumer = client.NewConsumer(Schema.String)
-            .StateChangedHandler(consumerStateChanged => _logger.ConsumerChangedState(consumerStateChanged))
+            .StateChangedHandler(_logger.ConsumerChangedState) // Optional
             .SubscriptionName("MySubscription")
             .Topic("persistent://public/default/mytopic")
             .Create();
+
+        _ = consumer.DelayedStateMonitor( // Recommended way of ignoring the short disconnects expected when working with a distributed system
+            ConsumerState.Active, // Operational state
+            TimeSpan.FromSeconds(5), // The amount of time allowed in non-operational state before we act
+            _logger.ConsumerLostConnection, // Invoked if we are NOT back in operational state after 5 seconds
+            _logger.ConsumerRegainedConnection, // Invoked when we are in operational state again
+            cancellationToken);
 
         await consumer.Process(ProcessMessage, cancellationToken);
     }

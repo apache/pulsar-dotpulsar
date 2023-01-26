@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,9 @@
 
 namespace DotPulsar.Exceptions;
 
+/// <summary>
+/// Not authorized to use resource
+/// </summary>
 public sealed class AuthorizationException : DotPulsarException
 {
     public AuthorizationException(string message) : base(message) { }
