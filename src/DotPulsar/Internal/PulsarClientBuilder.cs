@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,6 +32,7 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
     private Uri _serviceUrl;
     private X509Certificate2? _trustedCertificateAuthority;
     private readonly X509Certificate2Collection _clientCertificates;
+    private bool _checkCertificateRevocation;
     private bool _verifyCertificateAuthority;
     private bool _verifyCertificateName;
     private TimeSpan _closeInactiveConnectionsInterval;
@@ -54,6 +55,7 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
         _retryInterval = TimeSpan.FromSeconds(3);
         _serviceUrl = new Uri($"{Constants.PulsarScheme}://localhost:{Constants.DefaultPulsarPort}");
         _clientCertificates = new X509Certificate2Collection();
+        _checkCertificateRevocation = true;
         _verifyCertificateAuthority = true;
         _verifyCertificateName = false;
         _closeInactiveConnectionsInterval = TimeSpan.FromSeconds(60);
@@ -75,6 +77,12 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
     public IPulsarClientBuilder Authentication(IAuthentication authentication)
     {
         _authentication = authentication;
+        return this;
+    }
+
+    public IPulsarClientBuilder CheckCertificateRevocation(bool checkCertificateRevocation)
+    {
+        _checkCertificateRevocation = checkCertificateRevocation;
         return this;
     }
 
@@ -161,7 +169,7 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
         else
             throw new InvalidSchemeException($"Invalid scheme '{scheme}'. Expected '{Constants.PulsarScheme}' or '{Constants.PulsarSslScheme}'");
 
-        var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
+        var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName, _checkCertificateRevocation);
 
         var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler(_retryInterval) };
         var exceptionHandlerPipeline = new ExceptionHandlerPipeline(exceptionHandlers);

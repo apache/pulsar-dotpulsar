@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,17 +29,20 @@ public sealed class Connector
     private readonly X509Certificate2? _trustedCertificateAuthority;
     private readonly bool _verifyCertificateAuthority;
     private readonly bool _verifyCertificateName;
+    private readonly bool _checkCertificateRevocation;
 
     public Connector(
         X509Certificate2Collection clientCertificates,
         X509Certificate2? trustedCertificateAuthority,
         bool verifyCertificateAuthority,
-        bool verifyCertificateName)
+        bool verifyCertificateName,
+        bool checkCertificateRevocation)
     {
         _clientCertificates = clientCertificates;
         _trustedCertificateAuthority = trustedCertificateAuthority;
         _verifyCertificateAuthority = verifyCertificateAuthority;
         _verifyCertificateName = verifyCertificateName;
+        _checkCertificateRevocation = checkCertificateRevocation;
     }
 
     public async Task<Stream> Connect(Uri serviceUrl)
@@ -89,7 +92,7 @@ public sealed class Connector
         try
         {
             sslStream = new SslStream(stream, false, ValidateServerCertificate, null);
-            await sslStream.AuthenticateAsClientAsync(host, _clientCertificates, SslProtocols.None, true).ConfigureAwait(false);
+            await sslStream.AuthenticateAsClientAsync(host, _clientCertificates, SslProtocols.None, _checkCertificateRevocation).ConfigureAwait(false);
             return sslStream;
         }
         catch

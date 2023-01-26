@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,6 +37,11 @@ public interface IPulsarClientBuilder
     /// Set the authentication provider. This is optional.
     /// </summary>
     IPulsarClientBuilder Authentication(IAuthentication authentication);
+
+    /// <summary>
+    /// Specifies whether the certificate revocation list is checked during authentication. The default is 'true'.
+    /// </summary>
+    IPulsarClientBuilder CheckCertificateRevocation(bool checkCertificateRevocation);
 
     /// <summary>
     /// Set connection encryption policy. The default is 'EnforceUnencrypted' if the ServiceUrl scheme is 'pulsar' and 'EnforceEncrypted' if it's 'pulsar+ssl'.
