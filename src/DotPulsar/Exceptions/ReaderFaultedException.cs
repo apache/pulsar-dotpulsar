@@ -12,19 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Events;
+namespace DotPulsar.Exceptions;
 
-using DotPulsar.Internal.Abstractions;
 using System;
 
-public sealed class ExecutorFaulted : IEvent
+/// <summary>
+/// Thrown when a reader has faulted. See innerException
+/// </summary>
+public sealed class ReaderFaultedException : FaultedException
 {
-    public ExecutorFaulted(Guid correlationId, Exception exception)
-    {
-        CorrelationId = correlationId;
-        Exception = exception;
-    }
-
-    public Guid CorrelationId { get; }
-    public Exception Exception { get; }
+    public ReaderFaultedException() : base("Reader has faulted") { }
+    public ReaderFaultedException(Exception innerException) : base("Reader has faulted", innerException) { }
 }

@@ -12,19 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Events;
+namespace DotPulsar.Exceptions;
 
-using DotPulsar.Internal.Abstractions;
 using System;
 
-public sealed class ExecutorFaulted : IEvent
+/// <summary>
+/// Thrown when a producer has faulted. See innerException
+/// </summary>
+public sealed class ProducerFaultedException : FaultedException
 {
-    public ExecutorFaulted(Guid correlationId, Exception exception)
-    {
-        CorrelationId = correlationId;
-        Exception = exception;
-    }
-
-    public Guid CorrelationId { get; }
-    public Exception Exception { get; }
+    public ProducerFaultedException() : base("Producer has faulted") { }
+    public ProducerFaultedException(Exception innerException) : base("Producer has faulted", innerException) { }
 }

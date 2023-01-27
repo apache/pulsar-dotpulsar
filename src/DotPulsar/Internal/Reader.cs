@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,6 +32,7 @@ public sealed class Reader<TMessage> : IContainsChannel, IReader<TMessage>
     private readonly IStateChanged<ReaderState> _state;
     private readonly IConsumerChannelFactory<TMessage> _factory;
     private int _isDisposed;
+    private Exception? _faultException;
 
     public Uri ServiceUrl { get; }
     public string Topic { get; }
@@ -73,39 +74,35 @@ public sealed class Reader<TMessage> : IContainsChannel, IReader<TMessage>
 
     public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
-
         var getLastMessageId = new CommandGetLastMessageId();
-        return await _executor.Execute(() => GetLastMessageId(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
+        return await _executor.Execute(() => InternalGetLastMessageId(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
-    private async ValueTask<MessageId> GetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
-        => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+    private async ValueTask<MessageId> InternalGetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
+    {
+        Guard();
+        return await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+    }
 
     public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
+        => await _executor.Execute(() => InternalReceive(cancellationToken), cancellationToken).ConfigureAwait(false);
+
+    private async ValueTask<IMessage<TMessage>> InternalReceive(CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
-
-        return await _executor.Execute(() => ReceiveMessage(cancellationToken), cancellationToken).ConfigureAwait(false);
+        Guard();
+        return await _channel.Receive(cancellationToken).ConfigureAwait(false);
     }
-
-    private async ValueTask<IMessage<TMessage>> ReceiveMessage(CancellationToken cancellationToken)
-        => await _channel.Receive(cancellationToken).ConfigureAwait(false);
 
     public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
-
         var seek = new CommandSeek { MessageId = messageId.ToMessageIdData() };
-        await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+        await _executor.Execute(() => InternalSeek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask Seek(ulong publishTime, CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
-
         var seek = new CommandSeek { MessagePublishTime = publishTime };
-        await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+        await _executor.Execute(() => InternalSeek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask DisposeAsync()
@@ -114,12 +111,20 @@ public sealed class Reader<TMessage> : IContainsChannel, IReader<TMessage>
             return;
 
         _eventRegister.Register(new ReaderDisposed(_correlationId));
+        await DisposeChannel().ConfigureAwait(false);
+    }
+
+    private async ValueTask DisposeChannel()
+    {
         await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
         await _channel.DisposeAsync().ConfigureAwait(false);
     }
 
-    private async Task Seek(CommandSeek command, CancellationToken cancellationToken)
-        => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+    private async Task InternalSeek(CommandSeek command, CancellationToken cancellationToken)
+    {
+        Guard();
+        await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+    }
 
     public async Task EstablishNewChannel(CancellationToken cancellationToken)
     {
@@ -133,13 +138,20 @@ public sealed class Reader<TMessage> : IContainsChannel, IReader<TMessage>
     }
 
     public async ValueTask CloseChannel(CancellationToken cancellationToken)
-    {
-        await _channel.ClosedByClient(cancellationToken).ConfigureAwait(false);
-    }
+        => await _channel.ClosedByClient(cancellationToken).ConfigureAwait(false);
 
-    private void ThrowIfDisposed()
+    private void Guard()
     {
         if (_isDisposed != 0)
             throw new ReaderDisposedException(GetType().FullName!);
+
+        if (_faultException is not null)
+            throw new ReaderFaultedException(_faultException);
+    }
+
+    public async ValueTask ChannelFaulted(Exception exception)
+    {
+        _faultException = exception;
+        await DisposeChannel().ConfigureAwait(false);
     }
 }

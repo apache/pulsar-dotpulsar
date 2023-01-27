@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,7 @@ public abstract class Process : IProcess
     protected readonly CancellationTokenSource CancellationTokenSource;
     protected ChannelState ChannelState;
     protected ExecutorState ExecutorState;
+    protected Exception? Exception;
 
     protected Process(Guid correlationId)
     {
@@ -44,8 +45,9 @@ public abstract class Process : IProcess
     {
         switch (e)
         {
-            case ExecutorFaulted _:
+            case ExecutorFaulted executorFaulted:
                 ExecutorState = ExecutorState.Faulted;
+                Exception = executorFaulted.Exception;
                 break;
             case ChannelActivated _:
                 ChannelState = ChannelState.Active;

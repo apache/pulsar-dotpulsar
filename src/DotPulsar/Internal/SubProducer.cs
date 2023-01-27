@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -87,20 +87,17 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
         {
             // Ignored
         }
+
         await _sendQueue.DisposeAsync().ConfigureAwait(false);
         await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
         await _channel.DisposeAsync().ConfigureAwait(false);
     }
 
     public async ValueTask Send(SendOp sendOp, CancellationToken cancellationToken)
-    {
-        await _sendQueue.Enqueue(sendOp, cancellationToken).ConfigureAwait(false);
-    }
+        => await _sendQueue.Enqueue(sendOp, cancellationToken).ConfigureAwait(false);
 
-    public async ValueTask WaitForSendQueueEmpty(CancellationToken cancellationToken)
-    {
-        await _sendQueue.WaitForEmpty(cancellationToken).ConfigureAwait(false);
-    }
+    internal async ValueTask WaitForSendQueueEmpty(CancellationToken cancellationToken)
+        => await _sendQueue.WaitForEmpty(cancellationToken).ConfigureAwait(false);
 
     private async Task MessageDispatcher(IProducerChannel channel, CancellationToken cancellationToken)
     {
@@ -118,13 +115,14 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
             }
 
             var tcs = new TaskCompletionSource<BaseCommand>();
-            _ = tcs.Task.ContinueWith(task => responseQueue.Enqueue(task),
-                TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
+            _ = tcs.Task.ContinueWith(task => responseQueue.Enqueue(task), TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
 
             // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
             var success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), CancellationToken.None).ConfigureAwait(false);
 
-            if (success) continue;
+            if (success)
+                continue;
+
             _eventRegister.Register(new ChannelDisconnected(_correlationId));
             break;
         }
@@ -140,12 +138,16 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
 
             var success = await _executor.TryExecuteOnce(() =>
             {
-                if (responseTask.IsFaulted) throw responseTask.Exception!;
+                if (responseTask.IsFaulted)
+                    throw responseTask.Exception!;
+
                 responseTask.Result.Expect(BaseCommand.Type.SendReceipt);
                 ProcessReceipt(responseTask.Result.SendReceipt);
             }, CancellationToken.None).ConfigureAwait(false); // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
 
-            if (success) continue;
+            if (success)
+                continue;
+
             _eventRegister.Register(new SendReceiptWrongOrdering(_correlationId));
             break;
         }
@@ -205,7 +207,10 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
     }
 
     public async ValueTask CloseChannel(CancellationToken cancellationToken)
+        => await _channel.ClosedByClient(cancellationToken).ConfigureAwait(false);
+
+    public ValueTask ChannelFaulted(Exception exception)
     {
-        await _channel.ClosedByClient(cancellationToken).ConfigureAwait(false);
+        return new ValueTask();
     }
 }

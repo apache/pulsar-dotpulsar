@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,7 +23,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -46,7 +45,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     private readonly IExecute _executor;
     private int _isDisposed;
     private int _producerCount;
-    private Exception? _throw;
+    private Exception? _faultException;
 
     public Uri ServiceUrl { get; }
     public string Topic { get; }
@@ -105,7 +104,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             if (_cts.IsCancellationRequested)
                 return;
 
-            _throw = exception;
+            _faultException = exception;
             _state.SetState(ProducerState.Faulted);
         }
     }
@@ -231,8 +230,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         if (_producerCount == 0)
         {
             _ = await _state.StateChangedFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
-            if (_throw is not null)
-                ExceptionDispatchInfo.Capture(_throw).Throw(); //Retain original stack trace by throwing like this
+            if (_faultException is not null)
+                throw new ProducerFaultedException(_faultException);
         }
 
         if (_producerCount == 1)
@@ -258,9 +257,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     }
 
     public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
-    {
-        await InternalSend(metadata, message, false, onMessageSent, cancellationToken).ConfigureAwait(false);
-    }
+        => await InternalSend(metadata, message, false, onMessageSent, cancellationToken).ConfigureAwait(false);
 
     private async ValueTask InternalSend(MessageMetadata metadata, TMessage message, bool sendOpCancelable, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
     {
@@ -303,6 +300,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                 }
 
                 CompleteActivity(task.Result, data.Length, activity);
+
                 try
                 {
                     if (onMessageSent is not null)
@@ -320,18 +318,18 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
             if (autoAssignSequenceId)
                 metadata.SequenceId = 0;
+
             throw;
         }
     }
 
-    public async ValueTask WaitForSendQueueEmpty(CancellationToken cancellationToken)
-    {
-        await Task.WhenAll(_producers.Values.Select(producer => producer.WaitForSendQueueEmpty(cancellationToken).AsTask())).ConfigureAwait(false);
-    }
+    internal async ValueTask WaitForSendQueueEmpty(CancellationToken cancellationToken)
+        => await Task.WhenAll(_producers.Values.Select(producer => producer.WaitForSendQueueEmpty(cancellationToken).AsTask())).ConfigureAwait(false);
 
     private void CompleteActivity(MessageId messageId, long payloadSize, Activity? activity)
     {
-        if (activity is null) return;
+        if (activity is null)
+            return;
 
         if (activity.IsAllDataRequested)
         {
@@ -345,7 +343,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
     private void FailActivity(Exception exception, Activity? activity)
     {
-        if (activity is null) return;
+        if (activity is null)
+            return;
 
         if (activity.IsAllDataRequested)
             activity.AddException(exception);

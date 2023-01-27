@@ -12,19 +12,15 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Events;
+namespace DotPulsar.Exceptions;
 
-using DotPulsar.Internal.Abstractions;
 using System;
 
-public sealed class ExecutorFaulted : IEvent
+/// <summary>
+/// Base exception for ConsumerFaultedException, ProducerFaultedException, and ReaderFaultedException
+/// </summary>
+public abstract class FaultedException : DotPulsarException
 {
-    public ExecutorFaulted(Guid correlationId, Exception exception)
-    {
-        CorrelationId = correlationId;
-        Exception = exception;
-    }
-
-    public Guid CorrelationId { get; }
-    public Exception Exception { get; }
+    public FaultedException(string message) : base(message) { }
+    public FaultedException(string message, Exception innerException) : base(message, innerException) { }
 }

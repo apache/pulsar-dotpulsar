@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,6 +37,7 @@ public sealed class Consumer<TMessage> : IContainsChannel, IConsumer<TMessage>
     private readonly IStateChanged<ConsumerState> _state;
     private readonly IConsumerChannelFactory<TMessage> _factory;
     private int _isDisposed;
+    private Exception? _faultException;
 
     public Uri ServiceUrl { get; }
     public string SubscriptionName { get; }
@@ -86,33 +87,29 @@ public sealed class Consumer<TMessage> : IContainsChannel, IConsumer<TMessage>
             return;
 
         _eventRegister.Register(new ConsumerDisposed(_correlationId));
+        await DisposeChannel().ConfigureAwait(false);
+    }
+
+    private async ValueTask DisposeChannel()
+    {
         await _channel.ClosedByClient(CancellationToken.None).ConfigureAwait(false);
         await _channel.DisposeAsync().ConfigureAwait(false);
     }
 
     public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
-    {
-        ThrowIfDisposed();
-
-        return await _executor.Execute(() => ReceiveMessage(cancellationToken), cancellationToken).ConfigureAwait(false);
-    }
-
-    private async ValueTask<IMessage<TMessage>> ReceiveMessage(CancellationToken cancellationToken)
-        => await _channel.Receive(cancellationToken).ConfigureAwait(false);
+        => await _executor.Execute(() => InternalReceive(cancellationToken), cancellationToken).ConfigureAwait(false);
 
     public async ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken)
-        => await Acknowledge(messageId, CommandAck.AckType.Individual, cancellationToken).ConfigureAwait(false);
+        => await InternalAcknowledge(messageId, CommandAck.AckType.Individual, cancellationToken).ConfigureAwait(false);
 
     public async ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken)
-        => await Acknowledge(messageId, CommandAck.AckType.Cumulative, cancellationToken).ConfigureAwait(false);
+        => await InternalAcknowledge(messageId, CommandAck.AckType.Cumulative, cancellationToken).ConfigureAwait(false);
 
     public async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
-
         var command = new CommandRedeliverUnacknowledgedMessages();
         command.MessageIds.AddRange(messageIds.Select(messageId => messageId.ToMessageIdData()));
-        await _executor.Execute(() => RedeliverUnacknowledgedMessages(command, cancellationToken), cancellationToken).ConfigureAwait(false);
+        await _executor.Execute(() => InternalRedeliverUnacknowledgedMessages(command, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken)
@@ -120,76 +117,35 @@ public sealed class Consumer<TMessage> : IContainsChannel, IConsumer<TMessage>
 
     public async ValueTask Unsubscribe(CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
-
         var unsubscribe = new CommandUnsubscribe();
-        await _executor.Execute(() => Unsubscribe(unsubscribe, cancellationToken), cancellationToken).ConfigureAwait(false);
+        await _executor.Execute(() => InternalUnsubscribe(unsubscribe, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
-
-    private async ValueTask Unsubscribe(CommandUnsubscribe command, CancellationToken cancellationToken)
-        => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
 
     public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
-
         var seek = new CommandSeek { MessageId = messageId.ToMessageIdData() };
-        await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+        await _executor.Execute(() => InternalSeek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask Seek(ulong publishTime, CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
-
         var seek = new CommandSeek { MessagePublishTime = publishTime };
-        await _executor.Execute(() => Seek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
+        await _executor.Execute(() => InternalSeek(seek, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
-
         var getLastMessageId = new CommandGetLastMessageId();
-        return await _executor.Execute(() => GetLastMessageId(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
+        return await _executor.Execute(() => InternalGetLastMessageId(getLastMessageId, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
-    private async ValueTask<MessageId> GetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
-        => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
-
-    private async Task Seek(CommandSeek command, CancellationToken cancellationToken)
-        => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
-
-    private async ValueTask Acknowledge(MessageId messageId, CommandAck.AckType ackType, CancellationToken cancellationToken)
-    {
-        ThrowIfDisposed();
-
-        var commandAck = _commandAckPool.Get();
-        commandAck.Type = ackType;
-        if (commandAck.MessageIds.Count == 0)
-            commandAck.MessageIds.Add(messageId.ToMessageIdData());
-        else
-            commandAck.MessageIds[0].MapFrom(messageId);
-
-        try
-        {
-            await _executor.Execute(() => Acknowledge(commandAck, cancellationToken), cancellationToken).ConfigureAwait(false);
-        }
-        finally
-        {
-            _commandAckPool.Return(commandAck);
-        }
-    }
-
-    private async ValueTask Acknowledge(CommandAck command, CancellationToken cancellationToken)
-        => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
-
-    private async ValueTask RedeliverUnacknowledgedMessages(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken)
-        => await _channel.Send(command, cancellationToken).ConfigureAwait(false);
-
-    private void ThrowIfDisposed()
+    private void Guard()
     {
         if (_isDisposed != 0)
             throw new ConsumerDisposedException(GetType().FullName!);
+
+        if (_faultException is not null)
+            throw new ConsumerFaultedException(_faultException);
     }
 
     public async Task EstablishNewChannel(CancellationToken cancellationToken)
@@ -204,7 +160,66 @@ public sealed class Consumer<TMessage> : IContainsChannel, IConsumer<TMessage>
     }
 
     public async ValueTask CloseChannel(CancellationToken cancellationToken)
+        => await _channel.ClosedByClient(cancellationToken).ConfigureAwait(false);
+
+    public async ValueTask ChannelFaulted(Exception exception)
     {
-        await _channel.ClosedByClient(cancellationToken).ConfigureAwait(false);
+        _faultException = exception;
+        await DisposeChannel().ConfigureAwait(false);
+    }
+
+    private async ValueTask InternalAcknowledge(CommandAck command, CancellationToken cancellationToken)
+    {
+        Guard();
+        await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async ValueTask InternalRedeliverUnacknowledgedMessages(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken)
+    {
+        Guard();
+        await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async ValueTask<MessageId> InternalGetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
+    {
+        Guard();
+        return await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task InternalSeek(CommandSeek command, CancellationToken cancellationToken)
+    {
+        Guard();
+        await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async ValueTask<IMessage<TMessage>> InternalReceive(CancellationToken cancellationToken)
+    {
+        Guard();
+        return await _channel.Receive(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async ValueTask InternalUnsubscribe(CommandUnsubscribe command, CancellationToken cancellationToken)
+    {
+        Guard();
+        await _channel.Send(command, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async ValueTask InternalAcknowledge(MessageId messageId, CommandAck.AckType ackType, CancellationToken cancellationToken)
+    {
+        var commandAck = _commandAckPool.Get();
+        commandAck.Type = ackType;
+        if (commandAck.MessageIds.Count == 0)
+            commandAck.MessageIds.Add(messageId.ToMessageIdData());
+        else
+            commandAck.MessageIds[0].MapFrom(messageId);
+
+        try
+        {
+            await _executor.Execute(() => InternalAcknowledge(commandAck, cancellationToken), cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _commandAckPool.Return(commandAck);
+        }
     }
 }
