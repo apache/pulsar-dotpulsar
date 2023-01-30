@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -91,11 +92,14 @@ public sealed class MessageProcessor<TMessage> : IDisposable
             StartNewProcessorTask(cancellationToken);
         }
 
-        while (!cancellationToken.IsCancellationRequested && !_consumer.IsFinalState())
+        while (true)
         {
             StartNewProcessorTask(cancellationToken);
             var completedTask = await Task.WhenAny(_processorTasks).ConfigureAwait(false);
+            if (completedTask.IsFaulted)
+                ExceptionDispatchInfo.Capture(completedTask.Exception!.InnerException!).Throw();
             _processorTasks.Remove(completedTask);
+            cancellationToken.ThrowIfCancellationRequested();
         }
     }
 

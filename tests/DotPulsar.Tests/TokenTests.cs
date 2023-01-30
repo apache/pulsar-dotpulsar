@@ -50,7 +50,7 @@ public class TokenTests
         var state = await producer.OnStateChangeTo(ProducerState.Faulted);
 
         // Assert
-        exception.Should().BeOfType<Exception>();
+        exception.Should().BeOfType<ProducerFaultedException>();
         state.Should().Be(ProducerState.Faulted);
     }
 
@@ -96,7 +96,8 @@ public class TokenTests
         var state = await producer.OnStateChangeTo(ProducerState.Faulted);
 
         // Assert
-        exception.Should().BeOfType<AuthenticationException>();
+        exception.Should().BeOfType<ProducerFaultedException>();
+        exception.InnerException.Should().BeOfType<AuthenticationException>();
         state.Should().Be(ProducerState.Faulted);
     }
 

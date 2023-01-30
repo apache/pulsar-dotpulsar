@@ -248,7 +248,11 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         ValueTask OnMessageSent(MessageId messageId)
         {
             tcs.TrySetResult(messageId);
+#if NET6_0_OR_GREATER
+            return ValueTask.CompletedTask;
+#else
             return new ValueTask();
+#endif
         }
 
         await InternalSend(metadata, message, true, OnMessageSent, cancellationToken).ConfigureAwait(false);
