@@ -185,7 +185,14 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
                 _cursorNextItemTcs = null;
             }
 
-            _cursorSemaphore.Release();
+            try
+            {
+                _cursorSemaphore.Release();
+            }
+            catch
+            {
+                // Ignore
+            }
 
             if (shouldThrow)
             {
