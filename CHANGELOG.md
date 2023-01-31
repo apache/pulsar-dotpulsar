@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 - If a consumer, reader, or producer is faulted all method calls will throw a ConsumerFaultedException, ProducerFaultedException, or ReaderFaultedException
 
+### Fixed
+
+- Fixed an issue introduced in `2.8.0`, where send operation would hang, after reestablishing the connection to the broker.
+
 ## [2.9.0] - 2023-01-26
 
 ### Added

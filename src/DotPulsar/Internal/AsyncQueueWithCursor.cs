@@ -178,8 +178,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
         }
         finally
         {
-            if (_cursorNextItemTcs is not null && _cursorNextItemTcs.Task.IsCanceled)
-                throw new TaskCanceledException("The task was cancelled");
+            bool shouldThrow = _cursorNextItemTcs is not null && _cursorNextItemTcs.Task.IsCanceled;
 
             lock (_queue)
             {
@@ -187,6 +186,11 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
             }
 
             _cursorSemaphore.Release();
+
+            if (shouldThrow)
+            {
+                throw new TaskCanceledException("The task was cancelled");
+            }
         }
     }
 
