@@ -150,6 +150,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
     {
         await _cursorSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
+        CancellationTokenRegistration? registration = null;
         try
         {
             lock (_queue)
@@ -163,7 +164,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
 
                 var tcs = new TaskCompletionSource<LinkedListNode<T>>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _cursorNextItemTcs = tcs;
-                cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
+                registration = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
             }
 
             var result = await _cursorNextItemTcs.Task.ConfigureAwait(false);
@@ -182,6 +183,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
 
             lock (_queue)
             {
+                registration?.Dispose();
                 _cursorNextItemTcs = null;
             }
 
