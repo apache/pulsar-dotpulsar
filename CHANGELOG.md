@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ### Fixed
 
-- Fixed a memory leak introduced in 2.8.0 with internal rewrite of producer functionality
+- Fixed another memory leak introduced in 2.8.0 with internal rewrite of producer functionality
 
 ## [2.10.1] - 2023-02-15
 

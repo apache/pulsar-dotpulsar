@@ -255,10 +255,9 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 #endif
         }
 
-        await InternalSend(metadata, message, true, OnMessageSent, cancellationToken).ConfigureAwait(false);
-
         try
         {
+            await InternalSend(metadata, message, true, OnMessageSent, cancellationToken).ConfigureAwait(false);
             return await tcs.Task.ConfigureAwait(false);
         }
         finally
