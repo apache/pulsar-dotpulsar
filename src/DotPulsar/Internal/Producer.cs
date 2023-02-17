@@ -257,9 +257,14 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
         await InternalSend(metadata, message, true, OnMessageSent, cancellationToken).ConfigureAwait(false);
 
-        var messageId = await tcs.Task.ConfigureAwait(false);
-        registration.Dispose();
-        return messageId;
+        try
+        {
+            return await tcs.Task.ConfigureAwait(false);
+        }
+        finally
+        {
+            registration.Dispose();
+        }
     }
 
     public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)

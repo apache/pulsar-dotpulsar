@@ -221,7 +221,8 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
     /// </summary>
     public async Task WaitForEmpty(CancellationToken cancellationToken)
     {
-        var tcs = new TaskCompletionSource<object>();
+        TaskCompletionSource<object> tcs;
+        CancellationTokenRegistration registration;
         lock (_queue)
         {
             ThrowIfDisposed();
@@ -229,11 +230,19 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
             if (_queue.Count == 0)
                 return;
 
-            cancellationToken.Register(() => tcs.TrySetCanceled());
+            tcs = new TaskCompletionSource<object>();
+            registration = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
             _queueEmptyTcs.Add(tcs);
         }
 
-        await tcs.Task.ConfigureAwait(false);
+        try
+        {
+            await tcs.Task.ConfigureAwait(false);
+        }
+        finally
+        {
+            registration.Dispose();
+        }
     }
 
     public async ValueTask DisposeAsync()
