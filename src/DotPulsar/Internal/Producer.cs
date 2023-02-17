@@ -243,7 +243,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
     {
         var tcs = new TaskCompletionSource<MessageId>();
-        cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
+        var registration = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
 
         ValueTask OnMessageSent(MessageId messageId)
         {
@@ -257,7 +257,14 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
         await InternalSend(metadata, message, true, OnMessageSent, cancellationToken).ConfigureAwait(false);
 
-        return await tcs.Task.ConfigureAwait(false);
+        try
+        {
+            return await tcs.Task.ConfigureAwait(false);
+        }
+        finally
+        {
+            registration.Dispose();
+        }
     }
 
     public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
