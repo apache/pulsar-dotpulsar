@@ -25,7 +25,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="ZstdNet" Version="1.4.5" />
-    <PackageReference Include="ZstdSharp.Port" Version="0.6.7" />
+    <PackageReference Include="ZstdSharp.Port" Version="0.7.0" />
   </ItemGroup>
 
   <ItemGroup>
