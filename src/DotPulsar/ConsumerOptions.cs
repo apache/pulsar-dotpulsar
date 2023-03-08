@@ -43,6 +43,11 @@ public sealed class ConsumerOptions<TMessage>
     public static readonly bool DefaultReadCompacted = false;
 
     /// <summary>
+    /// The default of whether to replicate the subscription's state.
+    /// </summary>
+    public static readonly bool DefaultReplicateSubscriptionState = false;
+
+    /// <summary>
     /// The default subscription type.
     /// </summary>
     public static readonly SubscriptionType DefaultSubscriptionType = SubscriptionType.Exclusive;
@@ -56,6 +61,7 @@ public sealed class ConsumerOptions<TMessage>
         PriorityLevel = DefaultPriorityLevel;
         MessagePrefetchCount = DefaultMessagePrefetchCount;
         ReadCompacted = DefaultReadCompacted;
+        ReplicateSubscriptionState = DefaultReplicateSubscriptionState;
         SubscriptionType = DefaultSubscriptionType;
         SubscriptionProperties = new Dictionary<string, string>();
         SubscriptionName = subscriptionName;
@@ -87,6 +93,11 @@ public sealed class ConsumerOptions<TMessage>
     /// Whether to read from the compacted topic. The default is 'false'.
     /// </summary>
     public bool ReadCompacted { get; set; }
+
+    /// <summary>
+    /// Whether to replicate the subscription's state across clusters (when using geo-replication). The default is 'false'.
+    /// </summary>
+    public bool ReplicateSubscriptionState { get; set; }
 
     /// <summary>
     /// Set the schema. This is required.

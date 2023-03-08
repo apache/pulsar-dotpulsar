@@ -97,6 +97,7 @@ public sealed class PulsarClient : IPulsarClient
             InitialPosition = (CommandSubscribe.InitialPositionType) options.InitialPosition,
             PriorityLevel = options.PriorityLevel,
             ReadCompacted = options.ReadCompacted,
+            ReplicateSubscriptionState = options.ReplicateSubscriptionState,
             Subscription = options.SubscriptionName,
             Topic = options.Topic,
             Type = (CommandSubscribe.SubType) options.SubscriptionType

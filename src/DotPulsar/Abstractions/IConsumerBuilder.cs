@@ -45,6 +45,11 @@ public interface IConsumerBuilder<TMessage>
     IConsumerBuilder<TMessage> ReadCompacted(bool readCompacted);
 
     /// <summary>
+    /// Whether to replicate the subscription's state across clusters (when using geo-replication). The default is 'false'.
+    /// </summary>
+    IConsumerBuilder<TMessage> ReplicateSubscriptionState(bool replicateSubscriptionState);
+
+    /// <summary>
     /// Register a state changed handler.
     /// </summary>
     IConsumerBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ConsumerStateChanged> handler);

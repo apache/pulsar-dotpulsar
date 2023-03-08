@@ -27,6 +27,7 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
     private int _priorityLevel;
     private uint _messagePrefetchCount;
     private bool _readCompacted;
+    private bool _replicateSubscriptionState;
     private string? _subscriptionName;
     private readonly Dictionary<string, string> _subscriptionProperties;
     private SubscriptionType _subscriptionType;
@@ -41,6 +42,7 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
         _priorityLevel = ConsumerOptions<TMessage>.DefaultPriorityLevel;
         _messagePrefetchCount = ConsumerOptions<TMessage>.DefaultMessagePrefetchCount;
         _readCompacted = ConsumerOptions<TMessage>.DefaultReadCompacted;
+        _replicateSubscriptionState = ConsumerOptions<TMessage>.DefaultReplicateSubscriptionState;
         _subscriptionProperties = new Dictionary<string, string>();
         _subscriptionType = ConsumerOptions<TMessage>.DefaultSubscriptionType;
     }
@@ -72,6 +74,12 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
     public IConsumerBuilder<TMessage> ReadCompacted(bool readCompacted)
     {
         _readCompacted = readCompacted;
+        return this;
+    }
+
+    public IConsumerBuilder<TMessage> ReplicateSubscriptionState(bool replicateSubscriptionState)
+    {
+        _replicateSubscriptionState = replicateSubscriptionState;
         return this;
     }
 
@@ -120,6 +128,7 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
             MessagePrefetchCount = _messagePrefetchCount,
             PriorityLevel = _priorityLevel,
             ReadCompacted = _readCompacted,
+            ReplicateSubscriptionState = _replicateSubscriptionState,
             StateChangedHandler = _stateChangedHandler,
             SubscriptionProperties = _subscriptionProperties,
             SubscriptionType = _subscriptionType
