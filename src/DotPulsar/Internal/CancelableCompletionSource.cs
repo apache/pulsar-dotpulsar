@@ -22,12 +22,20 @@ public sealed class CancelableCompletionSource<T> : IDisposable
 {
     private readonly TaskCompletionSource<T> _source;
     private CancellationTokenRegistration? _registration;
+    private bool _isDisposed;
+    private readonly object _lock = new();
 
     public CancelableCompletionSource()
         => _source = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public void SetupCancellation(Action callback, CancellationToken token)
-        => _registration = token.Register(callback);
+    {
+        lock (_lock)
+        {
+            if (!_isDisposed)
+                _registration = token.Register(callback);
+        }
+    }
 
     public void SetResult(T result)
         => _ = _source.TrySetResult(result);
@@ -39,7 +47,11 @@ public sealed class CancelableCompletionSource<T> : IDisposable
 
     public void Dispose()
     {
-        _ = _source.TrySetCanceled();
-        _registration?.Dispose();
+        lock (_lock)
+        {
+            _isDisposed = true;
+            _ = _source.TrySetCanceled();
+            _registration?.Dispose();
+        }
     }
 }

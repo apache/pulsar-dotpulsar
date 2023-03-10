@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 public sealed class AsyncLock : IAsyncDisposable
 {
-    private readonly LinkedList<CancelableCompletionSource<IDisposable>> _pending;
+    private readonly LinkedList<LockRequest> _pending;
     private readonly SemaphoreSlim _semaphoreSlim;
     private readonly Releaser _releaser;
     private readonly Task<IDisposable> _completedTask;
@@ -30,7 +30,7 @@ public sealed class AsyncLock : IAsyncDisposable
 
     public AsyncLock()
     {
-        _pending = new LinkedList<CancelableCompletionSource<IDisposable>>();
+        _pending = new LinkedList<LockRequest>();
         _semaphoreSlim = new SemaphoreSlim(1, 1);
         _releaser = new Releaser(Release);
         _completedTask = Task.FromResult((IDisposable) _releaser);
@@ -38,7 +38,7 @@ public sealed class AsyncLock : IAsyncDisposable
 
     public Task<IDisposable> Lock(CancellationToken cancellationToken)
     {
-        LinkedListNode<CancelableCompletionSource<IDisposable>>? node = null;
+        LinkedListNode<LockRequest>? node = null;
 
         lock (_pending)
         {
@@ -51,13 +51,12 @@ public sealed class AsyncLock : IAsyncDisposable
             }
 
             //Lock was not free
-            var ccs = new CancelableCompletionSource<IDisposable>();
-            node = _pending.AddLast(ccs);
+            var lockRequest = new LockRequest();
+            node = _pending.AddLast(lockRequest);
+            lockRequest.Registration = cancellationToken.Register(() => Cancel(node));
         }
 
-        cancellationToken.Register(() => Cancel(node));
-
-        return node.Value.Task;
+        return node.Value.CancelableCompletionSource.Task;
     }
 
     public async ValueTask DisposeAsync()
@@ -79,7 +78,7 @@ public sealed class AsyncLock : IAsyncDisposable
         _semaphoreSlim.Dispose();
     }
 
-    private void Cancel(LinkedListNode<CancelableCompletionSource<IDisposable>> node)
+    private void Cancel(LinkedListNode<LockRequest> node)
     {
         lock (_pending)
         {
@@ -102,7 +101,7 @@ public sealed class AsyncLock : IAsyncDisposable
             var node = _pending.First;
             if (node is not null)
             {
-                node.Value.SetResult(_releaser);
+                node.Value.CancelableCompletionSource.SetResult(_releaser);
                 node.Value.Dispose();
                 _pending.RemoveFirst();
                 return;
@@ -128,5 +127,21 @@ public sealed class AsyncLock : IAsyncDisposable
 
         public void Dispose()
             => _release();
+    }
+
+    private class LockRequest : IDisposable
+    {
+        public CancelableCompletionSource<IDisposable> CancelableCompletionSource { get; }
+        public CancellationTokenRegistration? Registration { private get; set; }
+
+        public LockRequest()
+        {
+            CancelableCompletionSource = new CancelableCompletionSource<IDisposable>();
+        }
+
+        public void Dispose() {
+            CancelableCompletionSource.Dispose();
+            Registration?.Dispose();
+        }
     }
 }
