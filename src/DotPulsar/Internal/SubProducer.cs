@@ -104,30 +104,47 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
         var responseQueue = new AsyncQueue<Task<BaseCommand>>();
         var responseProcessorTask = ResponseProcessor(responseQueue, cancellationToken);
 
-        while (!cancellationToken.IsCancellationRequested)
+        try
         {
-            var sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
-
-            if (sendOp.CancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                _sendQueue.RemoveCurrentItem();
-                continue;
+                var sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
+
+                if (sendOp.CancellationToken.IsCancellationRequested)
+                {
+                    _sendQueue.RemoveCurrentItem();
+                    continue;
+                }
+
+                var tcs = new TaskCompletionSource<BaseCommand>();
+                _ = tcs.Task.ContinueWith(task =>
+                {
+                    try
+                    {
+                        responseQueue.Enqueue(task);
+                    }
+                    catch
+                    {
+                        // Ignore
+                    }
+                }, TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
+
+                // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
+                var success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), CancellationToken.None).ConfigureAwait(false);
+
+                if (success)
+                    continue;
+
+                _eventRegister.Register(new ChannelDisconnected(_correlationId));
+                break;
             }
 
-            var tcs = new TaskCompletionSource<BaseCommand>();
-            _ = tcs.Task.ContinueWith(task => responseQueue.Enqueue(task), TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
-
-            // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
-            var success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), CancellationToken.None).ConfigureAwait(false);
-
-            if (success)
-                continue;
-
-            _eventRegister.Register(new ChannelDisconnected(_correlationId));
-            break;
+            await responseProcessorTask.ConfigureAwait(false);
         }
-
-        await responseProcessorTask.ConfigureAwait(false);
+        finally
+        {
+            responseQueue.Dispose();
+        }
     }
 
     private async ValueTask ResponseProcessor(IDequeue<Task<BaseCommand>> responseQueue, CancellationToken cancellationToken)

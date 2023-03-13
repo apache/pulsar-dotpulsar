@@ -55,7 +55,7 @@ public sealed class AsyncLock : IAsyncDisposable
             node = _pending.AddLast(ccs);
         }
 
-        cancellationToken.Register(() => Cancel(node));
+        node.Value.SetupCancellation(() => Cancel(node), cancellationToken);
 
         return node.Value.Task;
     }

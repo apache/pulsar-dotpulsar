@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 - 'ReplicateSubscriptionState' can now be set when creating a consumer. The default is 'false'
 
+### Fixed
+
+- Fixed a memory leak related to internal locking mechanism
+
 ## [2.10.2] - 2023-02-17
 
 ### Fixed
