@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -82,8 +82,11 @@ public class IntegrationFixture : IAsyncLifetime
     public Task InitializeAsync()
     {
         _cluster.StateChange += (sender, args) => _messageSink.OnMessage(new DiagnosticMessage($"The Pulsar cluster changed state to: {args.State}"));
+        _messageSink.OnMessage(new DiagnosticMessage("Starting container service"));
         _cluster.Start();
+        _messageSink.OnMessage(new DiagnosticMessage("Container service started. Waiting for message in logs"));
         _cluster.WaitForMessageInLogs("Successfully updated the policies on namespace public/default", int.MaxValue);
+        _messageSink.OnMessage(new DiagnosticMessage("Got message, will now get endpoint"));
         var endpoint = _cluster.ToHostExposedEndpoint($"{Port}/tcp");
         _messageSink.OnMessage(new DiagnosticMessage($"Endpoint opened at {endpoint}"));
         ServiceUrl = new Uri($"pulsar://localhost:{endpoint.Port}");
