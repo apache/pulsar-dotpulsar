@@ -62,7 +62,7 @@ public class IntegrationFixture : IAsyncLifetime
 
         _cluster = new Builder()
             .UseContainer()
-            .UseImage("apachepulsar/pulsar:2.10.3")
+            .UseImage("apachepulsar/pulsar:2.11.0")
             .WithEnvironment(environmentVariables)
             .ExposePort(Port)
             .Command("/bin/bash -c", arguments)
@@ -85,7 +85,7 @@ public class IntegrationFixture : IAsyncLifetime
         _messageSink.OnMessage(new DiagnosticMessage("Starting container service"));
         _cluster.Start();
         _messageSink.OnMessage(new DiagnosticMessage("Container service started. Waiting for message in logs"));
-        _cluster.WaitForMessageInLogs("Successfully updated the policies on namespace public/default", int.MaxValue);
+        _cluster.WaitForMessageInLogs("[test-user] Created namespace public/default", int.MaxValue);
         _messageSink.OnMessage(new DiagnosticMessage("Got message, will now get endpoint"));
         var endpoint = _cluster.ToHostExposedEndpoint($"{Port}/tcp");
         _messageSink.OnMessage(new DiagnosticMessage($"Endpoint opened at {endpoint}"));
