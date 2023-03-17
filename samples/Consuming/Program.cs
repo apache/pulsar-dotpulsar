@@ -52,8 +52,9 @@ internal static class Program
         {
             await foreach (var message in consumer.Messages(cancellationToken))
             {
-                Console.WriteLine($"Received: {message.Value()}");
-                await consumer.Acknowledge(message, cancellationToken);
+                Console.WriteLine($"Received: {message?.Value()}");
+                if (message is not null)
+                    await consumer.Acknowledge(message, cancellationToken);
             }
         }
         catch (OperationCanceledException) { }

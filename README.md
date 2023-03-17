@@ -58,6 +58,7 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 - [X] Consumer subscription types exclusive, shared, failover, and key shared
 - [X] Consumer receive and single + cumulative acknowledge
 - [X] Consumer and Reader seek on message-id and publish time
+- [X] Consumer for partitioned topics
 - [X] Consumer unsubscribe
 - [X] Consume compacted topics
 - [X] Reader API
