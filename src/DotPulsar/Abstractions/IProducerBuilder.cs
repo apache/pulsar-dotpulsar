@@ -35,6 +35,12 @@ public interface IProducerBuilder<TMessage>
     IProducerBuilder<TMessage> InitialSequenceId(ulong initialSequenceId);
 
     /// <summary>
+    /// Set the producer access mode. The default is 'Shared'.
+    /// </summary>
+    /// <returns></returns>
+    IProducerBuilder<TMessage> ProducerAccessMode(ProducerAccessMode producerAccessMode);
+
+    /// <summary>
     /// Set the producer name. This is optional.
     /// </summary>
     IProducerBuilder<TMessage> ProducerName(string name);

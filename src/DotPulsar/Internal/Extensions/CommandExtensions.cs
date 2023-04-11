@@ -67,6 +67,7 @@ public static class CommandExtensions
             ServerError.ProducerBlockedQuotaExceededError => new ProducerBlockedQuotaExceededException($"{message}. Error code: {error}"),
             ServerError.ProducerBlockedQuotaExceededException => new ProducerBlockedQuotaExceededException($"{message}. Error code: {error}"),
             ServerError.ProducerBusy => new ProducerBusyException(message),
+            ServerError.ProducerFenced => new ProducerFencedException(message),
             ServerError.ServiceNotReady => new ServiceNotReadyException(message),
             ServerError.SubscriptionNotFound => new SubscriptionNotFoundException(message),
             ServerError.TooManyRequests => new TooManyRequestsException(message),
