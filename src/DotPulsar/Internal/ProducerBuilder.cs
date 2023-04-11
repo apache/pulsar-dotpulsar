@@ -22,6 +22,7 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
     private readonly IPulsarClient _pulsarClient;
     private readonly ISchema<TMessage> _schema;
     private string? _producerName;
+    private ProducerAccessMode _producerAccessMode;
     private bool _attachTraceInfoToMessages;
     private CompressionType _compressionType;
     private ulong _initialSequenceId;
@@ -38,7 +39,9 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
         _compressionType = ProducerOptions<TMessage>.DefaultCompressionType;
         _initialSequenceId = ProducerOptions<TMessage>.DefaultInitialSequenceId;
         _maxPendingMessages = 500;
+        _producerAccessMode = ProducerOptions<TMessage>.DefaultProducerAccessMode;
     }
+
 
     public IProducerBuilder<TMessage> AttachTraceInfoToMessages(bool attachTraceInfoToMessages)
     {
@@ -55,6 +58,12 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
     public IProducerBuilder<TMessage> InitialSequenceId(ulong initialSequenceId)
     {
         _initialSequenceId = initialSequenceId;
+        return this;
+    }
+
+    public IProducerBuilder<TMessage> ProducerAccessMode(ProducerAccessMode producerAccessMode)
+    {
+        _producerAccessMode = producerAccessMode;
         return this;
     }
 
@@ -98,6 +107,7 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
 
         var options = new ProducerOptions<TMessage>(_topic!, _schema)
         {
+            ProducerAccessMode = _producerAccessMode,
             AttachTraceInfoToMessages = _attachTraceInfoToMessages,
             CompressionType = _compressionType,
             InitialSequenceId = _initialSequenceId,

@@ -172,7 +172,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var correlationId = Guid.NewGuid();
         var producerName = _options.ProducerName;
         var schema = _options.Schema;
-        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, schema.SchemaInfo, _compressorFactory);
+        var producerAccessMode = (DotPulsar.Internal.PulsarApi.ProducerAccessMode) _options.ProducerAccessMode;
+        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory);
         var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);

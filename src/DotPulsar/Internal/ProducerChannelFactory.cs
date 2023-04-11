@@ -36,6 +36,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         IConnectionPool connectionPool,
         string topic,
         string? producerName,
+        ProducerAccessMode producerAccessMode,
         SchemaInfo schemaInfo,
         ICompressorFactory? compressorFactory)
     {
@@ -46,6 +47,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         _commandProducer = new CommandProducer
         {
             ProducerName = producerName,
+            ProducerAccessMode = producerAccessMode,
             Topic = topic
         };
 
