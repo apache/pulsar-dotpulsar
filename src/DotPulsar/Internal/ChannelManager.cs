@@ -59,7 +59,7 @@ public sealed class ChannelManager : IDisposable
 
             channel.Connected();
 
-            return new ProducerResponse(producerId, result.Result.ProducerSuccess.ProducerName);
+            return new ProducerResponse(result.Result.ProducerSuccess.TopicEpoch, producerId, result.Result.ProducerSuccess.ProducerName);
         }, TaskContinuationOptions.OnlyOnRanToCompletion);
     }
 

@@ -31,12 +31,15 @@ public sealed class ProducerChannel : IProducerChannel
     private readonly ICompressorFactory? _compressorFactory;
     private readonly byte[]? _schemaVersion;
 
+    public ulong? TopicEpoch { get; }
+
     public ProducerChannel(
         ulong id,
         string name,
         IConnection connection,
         ICompressorFactory? compressorFactory,
-        byte[]? schemaVersion)
+        byte[]? schemaVersion,
+        ulong topicEpoch)
     {
         var sendPackagePolicy = new DefaultPooledObjectPolicy<SendPackage>();
         _sendPackagePool = new DefaultObjectPool<SendPackage>(sendPackagePolicy);
@@ -45,6 +48,7 @@ public sealed class ProducerChannel : IProducerChannel
         _connection = connection;
         _compressorFactory = compressorFactory;
         _schemaVersion = schemaVersion;
+        TopicEpoch = topicEpoch;
     }
 
     public async ValueTask ClosedByClient(CancellationToken cancellationToken)

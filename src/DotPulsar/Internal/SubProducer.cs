@@ -203,6 +203,7 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
 
         await _executor.TryExecuteOnce(() => _dispatcherTask ?? Task.CompletedTask, cancellationToken).ConfigureAwait(false);
 
+        ulong? topicEpoch = _channel.TopicEpoch;
         try
         {
             var oldChannel = _channel;
@@ -214,7 +215,7 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
         }
 
         _dispatcherCts = new CancellationTokenSource();
-        _channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
+        _channel = await _executor.Execute(() => _factory.Create(topicEpoch, cancellationToken), cancellationToken).ConfigureAwait(false);
 
         await _executor.Execute(() =>
         {
