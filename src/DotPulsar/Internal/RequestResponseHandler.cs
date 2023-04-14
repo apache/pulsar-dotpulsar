@@ -18,6 +18,7 @@ using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
 using DotPulsar.Internal.Requests;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 public sealed class RequestResponseHandler : IDisposable
@@ -53,6 +54,17 @@ public sealed class RequestResponseHandler : IDisposable
     {
         command.RequestId = _requestId.FetchNext();
         var request = StandardRequest.WithProducerId(command.RequestId, command.ProducerId);
+        return _requests.CreateTask(request);
+    }
+
+    public Task<BaseCommand> ExpectAdditionalResponse(CommandProducer command)
+    {
+        var request = StandardRequest.WithProducerId(command.RequestId, command.ProducerId);
+        if (_requests.Keys.Any(x => x.Equals(request)))
+        {
+            // TODO: Can this ever happen?
+            throw new Exception("Badness 2000");
+        }
         return _requests.CreateTask(request);
     }
 

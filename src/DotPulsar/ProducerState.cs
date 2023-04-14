@@ -30,6 +30,11 @@ public enum ProducerState : byte
     Connected,
 
     /// <summary>
+    /// The producer is connected but waiting for exclusive access.
+    /// </summary>
+    WaitingForExclusive,
+
+    /// <summary>
     /// The producer is disconnected.
     /// </summary>
     Disconnected,

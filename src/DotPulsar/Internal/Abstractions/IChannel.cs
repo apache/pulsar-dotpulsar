@@ -21,6 +21,7 @@ public interface IChannel
     void Received(MessagePackage message);
     void Activated();
     void ClosedByServer();
+    void WaitingForExclusive();
     void Connected();
     void Deactivated();
     void Disconnected();

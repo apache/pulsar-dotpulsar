@@ -23,5 +23,6 @@ public enum ChannelState : byte
     ReachedEndOfTopic,
     Active,
     Inactive,
+    WaitingForExclusive,
     Unsubscribed
 }
