@@ -60,7 +60,6 @@ public sealed class ProducerProcess : Process
         {
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
-            case ChannelState.WrongAckOrdering:
                 _stateManager.SetState(ProducerState.Disconnected);
                 _actionQueue.Enqueue(async x =>
                 {

@@ -62,8 +62,6 @@ public abstract class Process : IProcess
                 ChannelState = ChannelState.Inactive;
                 break;
             case SendReceiptWrongOrdering _:
-                ChannelState = ChannelState.WrongAckOrdering;
-                break;
             case ChannelDisconnected _:
                 ChannelState = ChannelState.Disconnected;
                 break;
