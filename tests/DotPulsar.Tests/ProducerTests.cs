@@ -100,6 +100,75 @@ public class ProducerTests
         }
     }
 
+    [Theory]
+    [InlineData(ProducerAccessMode.Shared, ProducerState.Connected)]
+    [InlineData(ProducerAccessMode.Exclusive, ProducerState.Faulted)]
+    [InlineData(ProducerAccessMode.WaitForExclusive, ProducerState.WaitingForExclusive)]
+    public async Task TwoProducers_WhenConnectingSecond_ThenGoToExpectedState(ProducerAccessMode accessMode, ProducerState expectedState)
+    {
+        //Arrange
+        await using var client = CreateClient();
+        var topicName = $"producer-access-mode{Guid.NewGuid():N}";
+        var cts = new CancellationTokenSource();
+
+        await using var producer1 = client.NewProducer(Schema.String)
+            .ProducerAccessMode(accessMode)
+            .Topic(topicName)
+            .Create();
+        await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
+
+        //Act
+        cts.CancelAfter(TimeSpan.FromSeconds(5));
+        await using var producer2 = client.NewProducer(Schema.String)
+            .ProducerAccessMode(accessMode)
+            .Topic(topicName)
+            .Create();
+
+        var result = await producer2.OnStateChangeTo(expectedState, cts.Token);
+
+        //Assert
+        result.Should().Be(expectedState);
+    }
+
+    [Fact]
+    public async Task TwoProducers_WhenUsingExclusiveWithFencing_ThenExcludeExisting()
+    {
+        //Arrange
+        await using var client = CreateClient();
+        var topicName = $"producer-access-mode{Guid.NewGuid():N}";
+        var cts = new CancellationTokenSource();
+
+        await using var producer1 = client.NewProducer(Schema.String)
+            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 1 changed to state: {x.ProducerState}"))
+            .ProducerAccessMode(ProducerAccessMode.ExclusiveWithFencing)
+            .Topic(topicName)
+            .Create();
+        await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
+
+        //Act
+        cts.CancelAfter(TimeSpan.FromSeconds(5));
+        await using var producer2 = client.NewProducer(Schema.String)
+            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 2 changed to state: {x.ProducerState}"))
+            .ProducerAccessMode(ProducerAccessMode.ExclusiveWithFencing)
+            .Topic(topicName)
+            .Create();
+        await producer2.OnStateChangeTo(ProducerState.Connected, cts.Token);
+        try
+        {
+            // We need to send a message to trigger the disconnect
+            await producer1.Send(topicName, cts.Token);
+        }
+        catch
+        {
+            //Ignore
+        }
+
+        var result = await producer1.OnStateChangeTo(ProducerState.Faulted, cts.Token);
+
+        //Assert
+        result.Should().Be(ProducerState.Faulted);
+    }
+
     [Fact]
     public async Task SinglePartition_WhenSendMessages_ThenGetMessagesFromSinglePartition()
     {
