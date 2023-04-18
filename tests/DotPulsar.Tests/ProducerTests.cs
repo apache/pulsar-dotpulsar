@@ -27,6 +27,7 @@ using Xunit.Abstractions;
 [Collection("Integration"), Trait("Category", "Integration")]
 public class ProducerTests
 {
+    private static readonly TimeSpan TestTimeout = TimeSpan.FromSeconds(10);
     private readonly IntegrationFixture _fixture;
     private readonly ITestOutputHelper _testOutputHelper;
 
@@ -109,7 +110,7 @@ public class ProducerTests
         //Arrange
         await using var client = CreateClient();
         var topicName = $"producer-access-mode{Guid.NewGuid():N}";
-        var cts = new CancellationTokenSource();
+        var cts = new CancellationTokenSource(TestTimeout);
 
         await using var producer1 = client.NewProducer(Schema.String)
             .ProducerAccessMode(accessMode)
@@ -118,7 +119,6 @@ public class ProducerTests
         await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
 
         //Act
-        cts.CancelAfter(TimeSpan.FromSeconds(5));
         await using var producer2 = client.NewProducer(Schema.String)
             .ProducerAccessMode(accessMode)
             .Topic(topicName)
@@ -136,7 +136,7 @@ public class ProducerTests
         //Arrange
         await using var client = CreateClient();
         var topicName = $"producer-access-mode{Guid.NewGuid():N}";
-        var cts = new CancellationTokenSource();
+        var cts = new CancellationTokenSource(TestTimeout);
 
         await using var producer1 = client.NewProducer(Schema.String)
             .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 1 changed to state: {x.ProducerState}"))
@@ -146,7 +146,6 @@ public class ProducerTests
         await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
 
         //Act
-        cts.CancelAfter(TimeSpan.FromSeconds(5));
         await using var producer2 = client.NewProducer(Schema.String)
             .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 2 changed to state: {x.ProducerState}"))
             .ProducerAccessMode(ProducerAccessMode.ExclusiveWithFencing)
@@ -167,6 +166,39 @@ public class ProducerTests
 
         //Assert
         result.Should().Be(ProducerState.Faulted);
+    }
+
+    [Theory]
+    [InlineData(ProducerAccessMode.Exclusive, ProducerAccessMode.Shared, ProducerState.Connected, ProducerState.Disconnected)]
+    [InlineData(ProducerAccessMode.Shared, ProducerAccessMode.Exclusive, ProducerState.Connected, ProducerState.Faulted)]
+    [InlineData(ProducerAccessMode.Shared, ProducerAccessMode.WaitForExclusive, ProducerState.Connected, ProducerState.WaitingForExclusive)]
+    [InlineData(ProducerAccessMode.Exclusive, ProducerAccessMode.WaitForExclusive, ProducerState.Connected, ProducerState.WaitingForExclusive)]
+
+    public async Task TwoProducers_WhenUsingDifferentAccessModes_ThenGoToExpectedStates(ProducerAccessMode accessMode1, ProducerAccessMode accessMode2, ProducerState producerState1, ProducerState producerState2)
+    {
+        //Arrange
+        await using var client = CreateClient();
+        var topicName = $"producer-access-mode{Guid.NewGuid():N}";
+        var cts = new CancellationTokenSource(TestTimeout);
+
+        await using var producer1 = client.NewProducer(Schema.String)
+            .ProducerAccessMode(accessMode1)
+            .Topic(topicName)
+            .Create();
+        await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
+
+        //Act
+        await using var producer2 = client.NewProducer(Schema.String)
+            .ProducerAccessMode(accessMode2)
+            .Topic(topicName)
+            .Create();
+
+        var result1 = await producer1.OnStateChangeTo(producerState1, cts.Token);
+        var result2 = await producer2.OnStateChangeTo(producerState2, cts.Token);
+
+        //Assert
+        result1.Should().Be(producerState1);
+        result2.Should().Be(producerState2);
     }
 
     [Fact]
