@@ -67,6 +67,7 @@ public static class SendChannelExtensions
 
         async ValueTask ReleaseMetadataAndCallCallback(MessageId id)
         {
+            metadata.Metadata.SequenceId = 0;
             metadata.Metadata.Properties.Clear();
             _messageMetadataPool.Return(metadata);
 
