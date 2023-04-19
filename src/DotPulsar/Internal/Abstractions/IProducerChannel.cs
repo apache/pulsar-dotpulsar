@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 
 public interface IProducerChannel : IAsyncDisposable
 {
+    ulong? TopicEpoch { get; }
     Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, TaskCompletionSource<BaseCommand> responseTcs, CancellationToken cancellationToken);
     ValueTask ClosedByClient(CancellationToken cancellationToken);
 }

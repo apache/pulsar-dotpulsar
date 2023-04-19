@@ -130,6 +130,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         Interlocked.Exchange(ref _producerCount, monitoringTasks.Length);
 
         var connectedProducers = 0;
+        bool[] waitingForExclusive = new bool[isPartitionedTopic ? numberOfPartitions : 1];
 
         while (true)
         {
@@ -146,9 +147,13 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                 {
                     case ProducerState.Connected:
                         ++connectedProducers;
+                        waitingForExclusive[i] = false;
                         break;
                     case ProducerState.Disconnected:
                         --connectedProducers;
+                        break;
+                    case ProducerState.WaitingForExclusive:
+                        waitingForExclusive[i] = true;
                         break;
                     case ProducerState.Faulted:
                         _state.SetState(ProducerState.Faulted);
@@ -158,10 +163,12 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                 monitoringTasks[i] = _producers[i].OnStateChangeFrom(state, _cts.Token).AsTask();
             }
 
-            if (connectedProducers == 0)
-                _state.SetState(ProducerState.Disconnected);
-            else if (connectedProducers == monitoringTasks.Length)
+            if (connectedProducers == monitoringTasks.Length)
                 _state.SetState(ProducerState.Connected);
+            else if (connectedProducers == 0 && waitingForExclusive.All(x => x != true))
+                _state.SetState(ProducerState.Disconnected);
+            else if (waitingForExclusive.Any(x => x))
+                _state.SetState(ProducerState.WaitingForExclusive);
             else
                 _state.SetState(ProducerState.PartiallyConnected);
         }
@@ -172,7 +179,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var correlationId = Guid.NewGuid();
         var producerName = _options.ProducerName;
         var schema = _options.Schema;
-        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, schema.SchemaInfo, _compressorFactory);
+        var producerAccessMode = (DotPulsar.Internal.PulsarApi.ProducerAccessMode) _options.ProducerAccessMode;
+        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory);
         var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);

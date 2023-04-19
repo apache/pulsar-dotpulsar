@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,18 +12,12 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal;
+namespace DotPulsar.Exceptions;
 
-public sealed class ProducerResponse
+/// <summary>
+/// Producer is fenced. E.g. if Exclusive producer is connected.
+/// </summary>
+public sealed class ProducerFencedException : DotPulsarException
 {
-    public ProducerResponse(ulong producerId, string producerName, ulong topicEpoch)
-    {
-        ProducerId = producerId;
-        ProducerName = producerName;
-        TopicEpoch = topicEpoch;
-    }
-
-    public ulong ProducerId { get; }
-    public string ProducerName { get; }
-    public ulong TopicEpoch { get; }
+    public ProducerFencedException(string message) : base(message) { }
 }

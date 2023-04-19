@@ -46,6 +46,7 @@ public sealed class DefaultExceptionHandler : IHandleException
             ConsumerNotFoundException _ => FaultAction.Retry,
             ConsumerBusyException _ => FaultAction.Retry,
             ProducerBusyException _ => FaultAction.Retry,
+            ProducerFencedException _ => FaultAction.Rethrow,
             ConnectionDisposedException _ => FaultAction.Retry,
             AsyncLockDisposedException _ => FaultAction.Retry,
             PulsarStreamDisposedException _ => FaultAction.Retry,

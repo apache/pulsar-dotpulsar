@@ -73,6 +73,9 @@ public abstract class Process : IProcess
             case ChannelUnsubscribed _:
                 ChannelState = ChannelState.Unsubscribed;
                 break;
+            case ProducerWaitingForExclusive _:
+                ChannelState = ChannelState.WaitingForExclusive;
+                break;
         }
 
         CalculateState();

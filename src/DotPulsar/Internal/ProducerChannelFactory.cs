@@ -36,6 +36,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         IConnectionPool connectionPool,
         string topic,
         string? producerName,
+        ProducerAccessMode producerAccessMode,
         SchemaInfo schemaInfo,
         ICompressorFactory? compressorFactory)
     {
@@ -46,6 +47,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         _commandProducer = new CommandProducer
         {
             ProducerName = producerName,
+            ProducerAccessMode = producerAccessMode,
             Topic = topic
         };
 
@@ -53,13 +55,14 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         _schema = schemaInfo.PulsarSchema;
     }
 
-    public async Task<IProducerChannel> Create(CancellationToken cancellationToken)
+    public async Task<IProducerChannel> Create(ulong? topicEpoch, CancellationToken cancellationToken)
     {
+        if (topicEpoch.HasValue) _commandProducer.TopicEpoch = topicEpoch.Value;
         var connection = await _connectionPool.FindConnectionForTopic(_commandProducer.Topic, cancellationToken).ConfigureAwait(false);
         var channel = new Channel(_correlationId, _eventRegister, new AsyncQueue<MessagePackage>());
         var response = await connection.Send(_commandProducer, channel, cancellationToken).ConfigureAwait(false);
         var schemaVersion = await GetSchemaVersion(connection, cancellationToken).ConfigureAwait(false);
-        return new ProducerChannel(response.ProducerId, response.ProducerName, connection, _compressorFactory, schemaVersion);
+        return new ProducerChannel(response.ProducerId, response.ProducerName, connection, _compressorFactory, schemaVersion, response.TopicEpoch);
     }
 
     private async ValueTask<byte[]?> GetSchemaVersion(IConnection connection, CancellationToken cancellationToken)

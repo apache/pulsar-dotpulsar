@@ -56,6 +56,12 @@ public sealed class RequestResponseHandler : IDisposable
         return _requests.CreateTask(request);
     }
 
+    public Task<BaseCommand> ExpectAdditionalResponse(CommandProducer command)
+    {
+        var request = StandardRequest.WithProducerId(command.RequestId, command.ProducerId);
+        return _requests.CreateTask(request);
+    }
+
     public Task<BaseCommand> Outgoing(CommandCloseProducer command)
     {
         command.RequestId = _requestId.FetchNext();

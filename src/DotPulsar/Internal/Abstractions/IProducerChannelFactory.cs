@@ -19,5 +19,5 @@ using System.Threading.Tasks;
 
 public interface IProducerChannelFactory
 {
-    Task<IProducerChannel> Create(CancellationToken cancellationToken = default);
+    Task<IProducerChannel> Create(ulong? topicEpoch, CancellationToken cancellationToken = default);
 }

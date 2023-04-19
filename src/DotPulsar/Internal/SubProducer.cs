@@ -24,7 +24,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class SubProducer : IContainsChannel, IState<ProducerState>
+public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState>
 {
     private readonly AsyncQueueWithCursor<SendOp> _sendQueue;
     private CancellationTokenSource? _dispatcherCts;
@@ -203,6 +203,7 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
 
         await _executor.TryExecuteOnce(() => _dispatcherTask ?? Task.CompletedTask, cancellationToken).ConfigureAwait(false);
 
+        ulong? topicEpoch = _channel.TopicEpoch;
         try
         {
             var oldChannel = _channel;
@@ -213,9 +214,12 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
             // Ignored
         }
 
-        _dispatcherCts = new CancellationTokenSource();
-        _channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
+        _channel = await _executor.Execute(() => _factory.Create(topicEpoch, cancellationToken), cancellationToken).ConfigureAwait(false);
+    }
 
+    public async Task ActivateChannel(CancellationToken cancellationToken)
+    {
+        _dispatcherCts = new CancellationTokenSource();
         await _executor.Execute(() =>
         {
             _sendQueue.ResetCursor();
