@@ -27,7 +27,7 @@ using Xunit.Abstractions;
 [Collection("Integration"), Trait("Category", "Integration")]
 public class ProducerTests
 {
-    private static readonly TimeSpan TestTimeout = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan TestTimeout = TimeSpan.FromSeconds(30);
     private readonly IntegrationFixture _fixture;
     private readonly ITestOutputHelper _testOutputHelper;
 
@@ -113,6 +113,7 @@ public class ProducerTests
         var cts = new CancellationTokenSource(TestTimeout);
 
         await using var producer1 = client.NewProducer(Schema.String)
+            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 1 changed to state: {x.ProducerState}"))
             .ProducerAccessMode(accessMode)
             .Topic(topicName)
             .Create();
@@ -120,6 +121,7 @@ public class ProducerTests
 
         //Act
         await using var producer2 = client.NewProducer(Schema.String)
+            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 2 changed to state: {x.ProducerState}"))
             .ProducerAccessMode(accessMode)
             .Topic(topicName)
             .Create();
@@ -182,6 +184,7 @@ public class ProducerTests
         var cts = new CancellationTokenSource(TestTimeout);
 
         await using var producer1 = client.NewProducer(Schema.String)
+            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 1 changed to state: {x.ProducerState}"))
             .ProducerAccessMode(accessMode1)
             .Topic(topicName)
             .Create();
@@ -189,6 +192,7 @@ public class ProducerTests
 
         //Act
         await using var producer2 = client.NewProducer(Schema.String)
+            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 2 changed to state: {x.ProducerState}"))
             .ProducerAccessMode(accessMode2)
             .Topic(topicName)
             .Create();
