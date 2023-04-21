@@ -36,6 +36,7 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
     private readonly IStateChanged<ProducerState> _state;
     private readonly IProducerChannelFactory _factory;
     private int _isDisposed;
+    private ulong? _topicEpoch;
 
     public SubProducer(
         Guid correlationId,
@@ -203,7 +204,6 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
 
         await _executor.TryExecuteOnce(() => _dispatcherTask ?? Task.CompletedTask, cancellationToken).ConfigureAwait(false);
 
-        ulong? topicEpoch = _channel.TopicEpoch;
         try
         {
             var oldChannel = _channel;
@@ -214,11 +214,12 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
             // Ignored
         }
 
-        _channel = await _executor.Execute(() => _factory.Create(topicEpoch, cancellationToken), cancellationToken).ConfigureAwait(false);
+        _channel = await _executor.Execute(() => _factory.Create(_topicEpoch, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task ActivateChannel(CancellationToken cancellationToken)
+    public async Task ActivateChannel(ulong topicEpoch, CancellationToken cancellationToken)
     {
+        _topicEpoch = topicEpoch;
         _dispatcherCts = new CancellationTokenSource();
         await _executor.Execute(() =>
         {

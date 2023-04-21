@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,16 +12,20 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal;
+namespace DotPulsar.Internal.Events;
 
-public sealed class ProducerResponse
+using DotPulsar.Internal.Abstractions;
+using System;
+
+public sealed class ProducerChannelConnected : IEvent
 {
-    public ProducerResponse(ulong producerId, string producerName)
+    public ProducerChannelConnected(Guid correlationId, ulong topicEpoch)
     {
-        ProducerId = producerId;
-        ProducerName = producerName;
+        CorrelationId = correlationId;
+        TopicEpoch = topicEpoch;
     }
 
-    public ulong ProducerId { get; }
-    public string ProducerName { get; }
+    public Guid CorrelationId { get; }
+
+    public ulong TopicEpoch { get; }
 }

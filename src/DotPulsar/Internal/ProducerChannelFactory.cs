@@ -57,12 +57,19 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
 
     public async Task<IProducerChannel> Create(ulong? topicEpoch, CancellationToken cancellationToken)
     {
-        if (topicEpoch.HasValue) _commandProducer.TopicEpoch = topicEpoch.Value;
-        var connection = await _connectionPool.FindConnectionForTopic(_commandProducer.Topic, cancellationToken).ConfigureAwait(false);
-        var channel = new Channel(_correlationId, _eventRegister, new AsyncQueue<MessagePackage>());
-        var response = await connection.Send(_commandProducer, channel, cancellationToken).ConfigureAwait(false);
-        var schemaVersion = await GetSchemaVersion(connection, cancellationToken).ConfigureAwait(false);
-        return new ProducerChannel(response.ProducerId, response.ProducerName, connection, _compressorFactory, schemaVersion, response.TopicEpoch);
+        try
+        {
+            if (topicEpoch.HasValue) _commandProducer.TopicEpoch = topicEpoch.Value;
+            var connection = await _connectionPool.FindConnectionForTopic(_commandProducer.Topic, cancellationToken).ConfigureAwait(false);
+            var channel = new Channel(_correlationId, _eventRegister, new AsyncQueue<MessagePackage>());
+            var response = await connection.Send(_commandProducer, channel, cancellationToken).ConfigureAwait(false);
+            var schemaVersion = await GetSchemaVersion(connection, cancellationToken).ConfigureAwait(false);
+            return new ProducerChannel(response.ProducerId, response.ProducerName, connection, _compressorFactory, schemaVersion);
+        }
+        finally
+        {
+            _commandProducer.ResetTopicEpoch();
+        }
     }
 
     private async ValueTask<byte[]?> GetSchemaVersion(IConnection connection, CancellationToken cancellationToken)

@@ -19,5 +19,5 @@ using System.Threading.Tasks;
 
 public interface IContainsProducerChannel : IContainsChannel
 {
-    Task ActivateChannel(CancellationToken cancellationToken);
+    Task ActivateChannel(ulong topicEpoch, CancellationToken cancellationToken);
 }

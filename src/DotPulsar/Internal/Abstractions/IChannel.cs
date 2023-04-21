@@ -23,6 +23,7 @@ public interface IChannel
     void ClosedByServer();
     void WaitingForExclusive();
     void Connected();
+    void ProducerConnected(ulong topicEpoch);
     void Deactivated();
     void Disconnected();
     void ReachedEndOfTopic();

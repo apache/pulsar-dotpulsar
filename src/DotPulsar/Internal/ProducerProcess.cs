@@ -70,7 +70,7 @@ public sealed class ProducerProcess : Process
             case ChannelState.Connected:
                 _actionQueue.Enqueue(async x =>
                 {
-                    await _producer.ActivateChannel(x).ConfigureAwait(false);
+                    await _producer.ActivateChannel(TopicEpoch, x).ConfigureAwait(false);
                     _stateManager.SetState(ProducerState.Connected);
                 });
                 return;
