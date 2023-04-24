@@ -146,13 +146,17 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                 switch (state)
                 {
                     case ProducerState.Connected:
-                        ++connectedProducers;
-                        waitingForExclusive[i] = false;
+                        if (waitingForExclusive[i])
+                            waitingForExclusive[i] = false;
+                        else
+                            ++connectedProducers;
                         break;
                     case ProducerState.Disconnected:
                         --connectedProducers;
+                        waitingForExclusive[i] = false;
                         break;
                     case ProducerState.WaitingForExclusive:
+                        ++connectedProducers;
                         waitingForExclusive[i] = true;
                         break;
                     case ProducerState.Faulted:
@@ -163,10 +167,10 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                 monitoringTasks[i] = _producers[i].OnStateChangeFrom(state, _cts.Token).AsTask();
             }
 
-            if (connectedProducers == monitoringTasks.Length)
-                _state.SetState(ProducerState.Connected);
-            else if (connectedProducers == 0 && waitingForExclusive.All(x => x != true))
+            if (connectedProducers == 0)
                 _state.SetState(ProducerState.Disconnected);
+            else if (connectedProducers == monitoringTasks.Length && waitingForExclusive.All(x => x != true))
+                _state.SetState(ProducerState.Connected);
             else if (waitingForExclusive.Any(x => x))
                 _state.SetState(ProducerState.WaitingForExclusive);
             else
