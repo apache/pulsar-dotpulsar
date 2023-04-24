@@ -217,9 +217,9 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
         _channel = await _executor.Execute(() => _factory.Create(_topicEpoch, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task ActivateChannel(ulong topicEpoch, CancellationToken cancellationToken)
+    public async Task ActivateChannel(ulong? topicEpoch, CancellationToken cancellationToken)
     {
-        _topicEpoch = topicEpoch;
+        _topicEpoch ??= topicEpoch;
         _dispatcherCts = new CancellationTokenSource();
         await _executor.Execute(() =>
         {

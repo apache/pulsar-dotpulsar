@@ -32,11 +32,10 @@ public abstract class Process : IProcess
         ChannelState = ChannelState.Disconnected;
         ExecutorState = ExecutorState.Ok;
         CorrelationId = correlationId;
-        TopicEpoch = 0;
     }
 
     public Guid CorrelationId { get; }
-    protected ulong TopicEpoch { get; private set; }
+    protected ulong? TopicEpoch { get; private set; }
 
     public void Start()
         => CalculateState();
