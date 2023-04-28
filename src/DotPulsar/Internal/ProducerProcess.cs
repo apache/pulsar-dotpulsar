@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Internal;
 
+using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using System;
 using System.Threading;
@@ -52,8 +53,9 @@ public sealed class ProducerProcess : Process
 
         if (ExecutorState == ExecutorState.Faulted)
         {
-            var formerState = _stateManager.SetState(ProducerState.Faulted);
-            if (formerState != ProducerState.Faulted)
+            ProducerState newState = Exception! is ProducerFencedException ? ProducerState.Fenced : ProducerState.Faulted;
+            var formerState = _stateManager.SetState(newState);
+            if (formerState != ProducerState.Faulted && formerState != ProducerState.Fenced)
                 _actionQueue.Enqueue(async _ => await _producer.ChannelFaulted(Exception!));
             return;
         }

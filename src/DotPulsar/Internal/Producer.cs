@@ -74,7 +74,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         };
         _attachTraceInfoToMessages = options.AttachTraceInfoToMessages;
         _sequenceId = new SequenceId(options.InitialSequenceId);
-        _state = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+        _state = CreateStateManager();
         ServiceUrl = serviceUrl;
         Topic = options.Topic;
         _isDisposed = 0;
@@ -159,8 +159,9 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                         ++connectedProducers;
                         waitingForExclusive[i] = true;
                         break;
+                    case ProducerState.Fenced:
                     case ProducerState.Faulted:
-                        _state.SetState(ProducerState.Faulted);
+                        _state.SetState(state);
                         return;
                 }
 
@@ -185,7 +186,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var schema = _options.Schema;
         var producerAccessMode = (DotPulsar.Internal.PulsarApi.ProducerAccessMode) _options.ProducerAccessMode;
         var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory);
-        var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+        var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
         var producer = new SubProducer(correlationId, _processManager, initialChannel, executor, stateManager, factory, _options.MaxPendingMessages);
@@ -290,6 +291,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         if (IsFinalState())
             switch (_state.CurrentState)
             {
+                case ProducerState.Fenced:
+                    throw new ProducerFencedException("Cannot produce to a fenced producer");
                 case ProducerState.Faulted:
                     throw new ProducerFaultedException();
                 case ProducerState.Closed:
@@ -395,6 +398,9 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         if (_isDisposed != 0)
             throw new ProducerDisposedException(GetType().FullName!);
     }
+
+    private StateManager<ProducerState> CreateStateManager()
+        => new (ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted, ProducerState.Fenced);
 
     public void Register(IEvent @event) { }
 }
