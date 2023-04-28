@@ -52,7 +52,9 @@ public sealed class ProducerProcess : Process
 
         if (ExecutorState == ExecutorState.Faulted)
         {
-            _stateManager.SetState(ProducerState.Faulted);
+            var formerState = _stateManager.SetState(ProducerState.Faulted);
+            if (formerState != ProducerState.Faulted)
+                _actionQueue.Enqueue(async _ => await _producer.ChannelFaulted(Exception!));
             return;
         }
 

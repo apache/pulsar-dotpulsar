@@ -269,7 +269,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
         try
         {
-            await InternalSend(metadata, message, true, OnMessageSent, cancellationToken).ConfigureAwait(false);
+            await InternalSend(metadata, message, true, OnMessageSent, x => tcs.TrySetException(x), cancellationToken).ConfigureAwait(false);
             return await tcs.Task.ConfigureAwait(false);
         }
         finally
@@ -279,11 +279,23 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     }
 
     public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
-        => await InternalSend(metadata, message, false, onMessageSent, cancellationToken).ConfigureAwait(false);
+        => await InternalSend(metadata, message, false, onMessageSent, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-    private async ValueTask InternalSend(MessageMetadata metadata, TMessage message, bool sendOpCancelable, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
+    private async ValueTask InternalSend(MessageMetadata metadata, TMessage message, bool sendOpCancelable, Func<MessageId, ValueTask>? onMessageSent = default, Action<Exception>? onFailed = default, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
+
+        // TODO: Do we want to have specific error messages on the exceptions here, or maybe a completely separate exception?
+        // TODO: Should we get the exception from the sub producer here somehow, or should we just remove this and let the Guard in the SubProducer handle it?
+        if (IsFinalState())
+            switch (_state.CurrentState)
+            {
+                case ProducerState.Faulted:
+                    throw new ProducerFaultedException();
+                case ProducerState.Closed:
+                default:
+                    throw new ProducerClosedException();
+            }
 
         var autoAssignSequenceId = metadata.SequenceId == 0;
         if (autoAssignSequenceId)
@@ -315,10 +327,14 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
                 if (task.IsFaulted || task.IsCanceled)
                 {
-                    FailActivity(task.IsCanceled ? new OperationCanceledException() : task.Exception!, activity);
+                    Exception exception = task.IsCanceled ? new OperationCanceledException() : task.Exception!;
+                    FailActivity(exception, activity);
 
                     if (autoAssignSequenceId)
                         metadata.SequenceId = 0;
+
+                    onFailed?.Invoke(exception);
+                    return;
                 }
 
                 CompleteActivity(task.Result, data.Length, activity);
