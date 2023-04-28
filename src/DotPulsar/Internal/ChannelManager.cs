@@ -262,7 +262,6 @@ public sealed class ChannelManager : IDisposable
     {
         _ = _requestResponseHandler.ExpectAdditionalResponse(command).ContinueWith(response =>
         {
-            // TODO: It is a bit unclear if this could ever fault or receive an error from the server
             if (response.IsCanceled || response.IsFaulted || response.Result.CommandType == BaseCommand.Type.Error)
             {
                 _producerChannels[command.ProducerId]?.Disconnected();

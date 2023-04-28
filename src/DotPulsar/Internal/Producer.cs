@@ -286,20 +286,6 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     {
         ThrowIfDisposed();
 
-        // TODO: Do we want to have specific error messages on the exceptions here, or maybe a completely separate exception?
-        // TODO: Should we get the exception from the sub producer here somehow, or should we just remove this and let the Guard in the SubProducer handle it?
-        if (IsFinalState())
-            switch (_state.CurrentState)
-            {
-                case ProducerState.Fenced:
-                    throw new ProducerFencedException("Cannot produce to a fenced producer");
-                case ProducerState.Faulted:
-                    throw new ProducerFaultedException();
-                case ProducerState.Closed:
-                default:
-                    throw new ProducerClosedException();
-            }
-
         var autoAssignSequenceId = metadata.SequenceId == 0;
         if (autoAssignSequenceId)
             metadata.SequenceId = _sequenceId.FetchNext();
