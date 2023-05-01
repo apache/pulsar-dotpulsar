@@ -12,12 +12,20 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions;
+namespace DotPulsar.Internal.Events;
 
-using System.Threading;
-using System.Threading.Tasks;
+using DotPulsar.Internal.Abstractions;
+using System;
 
-public interface IContainsProducerChannel : IContainsChannel
+public sealed class ProducerChannelConnected : IEvent
 {
-    Task ActivateChannel(ulong? topicEpoch, CancellationToken cancellationToken);
+    public ProducerChannelConnected(Guid correlationId, ulong topicEpoch)
+    {
+        CorrelationId = correlationId;
+        TopicEpoch = topicEpoch;
+    }
+
+    public Guid CorrelationId { get; }
+
+    public ulong TopicEpoch { get; }
 }

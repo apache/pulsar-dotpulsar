@@ -9,10 +9,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 ### Added
 
 - Support `ProducerAccessMode` to prevent multiple producers on a single topic.
+- Added `Fenced` state for producers which is a final state. 
 
 ### Fixed
 
 - Fixed issue with `Send` extension methods that do include `MessageMetadata` in the parameter list. The issue prevents more than two messages from being published on namespaces where deduplication is enabled.
+- Calling `await send(...)` on a Producer did not correctly terminate with an exception when a send operation failed, e.g. because the producer faulted.
 
 ## [2.11.0] - 2023-03-13
 

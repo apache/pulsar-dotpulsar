@@ -103,7 +103,7 @@ public class ProducerTests
 
     [Theory]
     [InlineData(ProducerAccessMode.Shared, ProducerState.Connected)]
-    [InlineData(ProducerAccessMode.Exclusive, ProducerState.Faulted)]
+    [InlineData(ProducerAccessMode.Exclusive, ProducerState.Fenced)]
     [InlineData(ProducerAccessMode.WaitForExclusive, ProducerState.WaitingForExclusive)]
     public async Task TwoProducers_WhenConnectingSecond_ThenGoToExpectedState(ProducerAccessMode accessMode, ProducerState expectedState)
     {
@@ -164,15 +164,15 @@ public class ProducerTests
             //Ignore
         }
 
-        var result = await producer1.OnStateChangeTo(ProducerState.Faulted, cts.Token);
+        var result = await producer1.OnStateChangeTo(ProducerState.Fenced, cts.Token);
 
         //Assert
-        result.Should().Be(ProducerState.Faulted);
+        result.Should().Be(ProducerState.Fenced);
     }
 
     [Theory]
     [InlineData(ProducerAccessMode.Exclusive, ProducerAccessMode.Shared, ProducerState.Connected, ProducerState.Disconnected)]
-    [InlineData(ProducerAccessMode.Shared, ProducerAccessMode.Exclusive, ProducerState.Connected, ProducerState.Faulted)]
+    [InlineData(ProducerAccessMode.Shared, ProducerAccessMode.Exclusive, ProducerState.Connected, ProducerState.Fenced)]
     [InlineData(ProducerAccessMode.Shared, ProducerAccessMode.WaitForExclusive, ProducerState.Connected, ProducerState.WaitingForExclusive)]
     [InlineData(ProducerAccessMode.Exclusive, ProducerAccessMode.WaitForExclusive, ProducerState.Connected, ProducerState.WaitingForExclusive)]
 

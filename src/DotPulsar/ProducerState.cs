@@ -30,11 +30,6 @@ public enum ProducerState : byte
     Connected,
 
     /// <summary>
-    /// The producer is connected but waiting for exclusive access.
-    /// </summary>
-    WaitingForExclusive,
-
-    /// <summary>
     /// The producer is disconnected.
     /// </summary>
     Disconnected,
@@ -47,5 +42,15 @@ public enum ProducerState : byte
     /// <summary>
     /// Some of the sub-producers are disconnected.
     /// </summary>
-    PartiallyConnected
+    PartiallyConnected,
+
+    /// <summary>
+    /// The producer is connected but waiting for exclusive access.
+    /// </summary>
+    WaitingForExclusive,
+
+    /// <summary>
+    /// The producer has been fenced by the broker. This is a final state.
+    /// </summary>
+    Fenced
 }

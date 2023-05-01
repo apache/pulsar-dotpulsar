@@ -61,6 +61,9 @@ public sealed class Channel : IChannel
     public void Connected()
         => _eventRegister.Register(new ChannelConnected(_correlationId));
 
+    public void ProducerConnected(ulong topicEpoch)
+        => _eventRegister.Register(new ProducerChannelConnected(_correlationId, topicEpoch));
+
     public void Deactivated()
         => _eventRegister.Register(new ChannelDeactivated(_correlationId));
 

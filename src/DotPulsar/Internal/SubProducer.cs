@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Events;
 using DotPulsar.Internal.Exceptions;
@@ -36,6 +37,8 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
     private readonly IStateChanged<ProducerState> _state;
     private readonly IProducerChannelFactory _factory;
     private int _isDisposed;
+    private ulong? _topicEpoch;
+    private Exception? _faultException;
 
     public SubProducer(
         Guid correlationId,
@@ -76,7 +79,11 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
             return;
 
         _eventRegister.Register(new ProducerDisposed(_correlationId));
+        await InternalDispose().ConfigureAwait(false);
+    }
 
+    private async ValueTask InternalDispose()
+    {
         try
         {
             _dispatcherCts?.Cancel();
@@ -94,10 +101,16 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
     }
 
     public async ValueTask Send(SendOp sendOp, CancellationToken cancellationToken)
-        => await _sendQueue.Enqueue(sendOp, cancellationToken).ConfigureAwait(false);
+    {
+        Guard();
+        await _sendQueue.Enqueue(sendOp, cancellationToken).ConfigureAwait(false);
+    }
 
     internal async ValueTask WaitForSendQueueEmpty(CancellationToken cancellationToken)
-        => await _sendQueue.WaitForEmpty(cancellationToken).ConfigureAwait(false);
+    {
+        Guard();
+        await _sendQueue.WaitForEmpty(cancellationToken).ConfigureAwait(false);
+    }
 
     private async Task MessageDispatcher(IProducerChannel channel, CancellationToken cancellationToken)
     {
@@ -203,7 +216,6 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
 
         await _executor.TryExecuteOnce(() => _dispatcherTask ?? Task.CompletedTask, cancellationToken).ConfigureAwait(false);
 
-        ulong? topicEpoch = _channel.TopicEpoch;
         try
         {
             var oldChannel = _channel;
@@ -214,11 +226,12 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
             // Ignored
         }
 
-        _channel = await _executor.Execute(() => _factory.Create(topicEpoch, cancellationToken), cancellationToken).ConfigureAwait(false);
+        _channel = await _executor.Execute(() => _factory.Create(_topicEpoch, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task ActivateChannel(CancellationToken cancellationToken)
+    public async Task ActivateChannel(ulong? topicEpoch, CancellationToken cancellationToken)
     {
+        _topicEpoch ??= topicEpoch;
         _dispatcherCts = new CancellationTokenSource();
         await _executor.Execute(() =>
         {
@@ -230,8 +243,20 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
     public async ValueTask CloseChannel(CancellationToken cancellationToken)
         => await _channel.ClosedByClient(cancellationToken).ConfigureAwait(false);
 
-    public ValueTask ChannelFaulted(Exception exception)
+    public async ValueTask ChannelFaulted(Exception exception)
     {
-        return new ValueTask();
+        _faultException = exception;
+        await InternalDispose().ConfigureAwait(false);
+    }
+
+    private void Guard()
+    {
+        if (_isDisposed != 0)
+            throw new ProducerDisposedException(GetType().FullName!);
+
+        if (_faultException is ProducerFencedException)
+            throw _faultException;
+        if (_faultException is not null)
+            throw new ProducerFaultedException(_faultException);
     }
 }

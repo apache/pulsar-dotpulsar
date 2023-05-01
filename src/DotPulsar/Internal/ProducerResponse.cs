@@ -16,14 +16,12 @@ namespace DotPulsar.Internal;
 
 public sealed class ProducerResponse
 {
-    public ProducerResponse(ulong producerId, string producerName, ulong topicEpoch)
+    public ProducerResponse(ulong producerId, string producerName)
     {
         ProducerId = producerId;
         ProducerName = producerName;
-        TopicEpoch = topicEpoch;
     }
 
     public ulong ProducerId { get; }
     public string ProducerName { get; }
-    public ulong TopicEpoch { get; }
 }
