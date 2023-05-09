@@ -97,7 +97,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Daniel Blankensteiner** - *Initial work* - [Danske Commodities](https://github.com/danske-commodities)
+* **Daniel Blankensteiner** - *Initial work* - [Danske Commodities](https://github.com/DanskeCommodities)
 
 See also the list of [contributors](https://github.com/apache/pulsar-dotpulsar/contributors) who participated in this project.
 
