@@ -55,8 +55,14 @@ public sealed class Channel : IChannel
         _eventRegister.Register(new ChannelClosedByServer(_correlationId));
     }
 
+    public void WaitingForExclusive()
+        => _eventRegister.Register(new ProducerWaitingForExclusive(_correlationId));
+
     public void Connected()
         => _eventRegister.Register(new ChannelConnected(_correlationId));
+
+    public void ProducerConnected(ulong topicEpoch)
+        => _eventRegister.Register(new ProducerChannelConnected(_correlationId, topicEpoch));
 
     public void Deactivated()
         => _eventRegister.Register(new ChannelDeactivated(_correlationId));

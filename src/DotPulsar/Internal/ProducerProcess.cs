@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Internal;
 
+using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using System;
 using System.Threading;
@@ -22,20 +23,24 @@ using System.Threading.Tasks;
 public sealed class ProducerProcess : Process
 {
     private readonly IStateManager<ProducerState> _stateManager;
-    private readonly IContainsChannel _producer;
-    private Task? _reEstablishChannelTask;
+    private readonly IContainsProducerChannel _producer;
+    private readonly AsyncQueue<Func<CancellationToken, Task>> _actionQueue;
+    private readonly Task _actionProcessorTask;
 
     public ProducerProcess(
         Guid correlationId,
         IStateManager<ProducerState> stateManager,
-        IContainsChannel producer) : base(correlationId)
+        IContainsProducerChannel producer) : base(correlationId)
     {
         _stateManager = stateManager;
         _producer = producer;
+        _actionQueue = new AsyncQueue<Func<CancellationToken, Task>>();
+        _actionProcessorTask = ProcessActions(CancellationTokenSource.Token);
     }
 
     public override async ValueTask DisposeAsync()
     {
+        await _actionProcessorTask.ConfigureAwait(false);
         _stateManager.SetState(ProducerState.Closed);
         CancellationTokenSource.Cancel();
         await _producer.DisposeAsync().ConfigureAwait(false);
@@ -48,7 +53,10 @@ public sealed class ProducerProcess : Process
 
         if (ExecutorState == ExecutorState.Faulted)
         {
-            _stateManager.SetState(ProducerState.Faulted);
+            ProducerState newState = Exception! is ProducerFencedException ? ProducerState.Fenced : ProducerState.Faulted;
+            var formerState = _stateManager.SetState(newState);
+            if (formerState != ProducerState.Faulted && formerState != ProducerState.Fenced)
+                _actionQueue.Enqueue(async _ => await _producer.ChannelFaulted(Exception!));
             return;
         }
 
@@ -56,23 +64,39 @@ public sealed class ProducerProcess : Process
         {
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
-            case ChannelState.WrongAckOrdering:
                 _stateManager.SetState(ProducerState.Disconnected);
-                ReestablishChannel(CancellationTokenSource.Token);
+                _actionQueue.Enqueue(async x =>
+                {
+                    await _producer.CloseChannel(x).ConfigureAwait(false);
+                    await _producer.EstablishNewChannel(x).ConfigureAwait(false);
+                });
                 return;
             case ChannelState.Connected:
-                _stateManager.SetState(ProducerState.Connected);
+                _actionQueue.Enqueue(async x =>
+                {
+                    await _producer.ActivateChannel(TopicEpoch, x).ConfigureAwait(false);
+                    _stateManager.SetState(ProducerState.Connected);
+                });
+                return;
+            case ChannelState.WaitingForExclusive:
+                _stateManager.SetState(ProducerState.WaitingForExclusive);
                 return;
         }
     }
 
-    private void ReestablishChannel(CancellationToken token)
+    private async Task ProcessActions(CancellationToken cancellationToken)
     {
-        if (_reEstablishChannelTask is null || _reEstablishChannelTask.IsCompleted)
+        while (!cancellationToken.IsCancellationRequested)
         {
-            _reEstablishChannelTask = Task
-                .Run(() => _producer.CloseChannel(token).ConfigureAwait(false), token)
-                .ContinueWith(_ => _producer.EstablishNewChannel(token).ConfigureAwait(false), token);
+            try
+            {
+                var func = await _actionQueue.Dequeue(cancellationToken).ConfigureAwait(false);
+                await func.Invoke(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignore
+            }
         }
     }
 }

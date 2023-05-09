@@ -14,8 +14,8 @@ Have a look at the [changelog](CHANGELOG.md).
 
 Let's take a look at a "Hello world" example, where we first produce a message and then consume it. Note that the topic and subscription will be created if they don't exist.
 
-First, we need a Pulsar setup. Have a look [here](https://pulsar.apache.org/docs/en/standalone-docker/) to see how to setup a local standalone Pulsar instance.
-Install the NuGet package [DotPulsar](https://www.nuget.org/packages/DotPulsar/) and copy/paste the code below (you will be needing using declarations for 'DotPulsar' and 'DotPulsar.Extensions').
+First, we need a Pulsar setup. See [Pulsar docs](https://pulsar.apache.org/docs/getting-started-home/) for how to set up a local standalone Pulsar instance.
+Install the NuGet package [DotPulsar](https://www.nuget.org/packages/DotPulsar/) and copy/paste the code below (you will need to use declarations for 'DotPulsar' and 'DotPulsar.Extensions').
 
 ```csharp
 const string myTopic = "persistent://public/default/mytopic";
@@ -50,17 +50,16 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 - [X] Automatic reconnect
 - [X] TLS connections
 - [X] Pulsar Proxy
-- [X] Producer send with custom metadata
-- [X] Producer send with event time, sequence id, and delayed message delivery
-- [X] Producer send with key and ordering key
-- [X] Producer for partitioned topics
-- [X] Consumer subscription with initial position and priority level
-- [X] Consumer subscription types exclusive, shared, failover, and key shared
-- [X] Consumer receive and single + cumulative acknowledge
-- [X] Consumer and Reader seek on message-id and publish time
-- [X] Consumer for partitioned topics
-- [X] Consumer unsubscribe
-- [X] Consume compacted topics
+- [X] Producer - send with custom metadata
+- [X] Producer - send with event time, sequence id, and delayed message delivery
+- [X] Producer - send with key and ordering key
+- [X] Producer - partitioned topics
+- [X] Consumer - subscription with initial position and priority level
+- [X] Consumer - subscription types exclusive, shared, failover, and key shared
+- [X] Consumer - receive and single + cumulative acknowledge
+- [X] Consumer/Reader - seek on message-id and publish time
+- [X] Consumer - unsubscribe
+- [X] Consumer - compacted topics
 - [X] Reader API
 - [X] Read/Consume/Acknowledge batched messages
 - [X] Telemetry
@@ -84,13 +83,15 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
     - Time (using TimeSpan)
     - Timestamp and Date (using DateTime)
 
+For a horizontal comparison with more language-specific clients, see [Client Feature Matrix](https://pulsar.apache.org/client-feature-matrix/).
+
 ## Roadmap
 
 Help prioritizing the roadmap is most welcome, so please reach out and tell us what you want and need.
 
 ## Join Our Community
 
-Apache Pulsar has a [Slack instance](https://pulsar.apache.org/contact/) and there you'll find us in the #dev-dotpulsar channel.
+Apache Pulsar has a [Slack instance](https://pulsar.apache.org/contact/), and there you'll find us in the #dev-dotpulsar channel.
 
 ## Versioning
 
@@ -98,9 +99,11 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Daniel Blankensteiner** - *Initial work* - [Danske Commodities](https://github.com/danske-commodities)
+* **Daniel Blankensteiner** - *Initial work* - [Danske Commodities](https://github.com/DanskeCommodities)
 
-See also the list of [contributors](https://github.com/apache/pulsar-dotpulsar/contributors) who participated in this project.
+Contributions are welcomed and greatly appreciated. See also the list of [contributors](https://github.com/apache/pulsar-dotpulsar/contributors) who participated in this project.
+
+If your contribution adds Pulsar features for C# clients, you need to update both the [Pulsar docs](https://pulsar.apache.org/docs/client-libraries/) and the [Client Feature Matrix](https://pulsar.apache.org/client-feature-matrix/). See [Contribution Guide](https://pulsar.apache.org/contribute/site-intro/#pages) for more details.
 
 ## License
 

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,19 +14,10 @@
 
 namespace DotPulsar.Internal.Abstractions;
 
-using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-public interface IChannel
+public interface IContainsProducerChannel : IContainsChannel
 {
-    void Received(MessagePackage message);
-    void Activated();
-    void ClosedByServer();
-    void WaitingForExclusive();
-    void Connected();
-    void ProducerConnected(ulong topicEpoch);
-    void Deactivated();
-    void Disconnected();
-    void ReachedEndOfTopic();
-    void Unsubscribed();
-    IDisposable SenderLock();
+    Task ActivateChannel(ulong? topicEpoch, CancellationToken cancellationToken);
 }

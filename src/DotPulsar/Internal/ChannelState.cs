@@ -19,9 +19,9 @@ public enum ChannelState : byte
     ClosedByServer,
     Connected,
     Disconnected,
-    WrongAckOrdering,
     ReachedEndOfTopic,
     Active,
     Inactive,
+    WaitingForExclusive,
     Unsubscribed
 }

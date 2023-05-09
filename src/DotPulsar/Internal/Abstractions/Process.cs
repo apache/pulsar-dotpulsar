@@ -35,6 +35,7 @@ public abstract class Process : IProcess
     }
 
     public Guid CorrelationId { get; }
+    protected ulong? TopicEpoch { get; private set; }
 
     public void Start()
         => CalculateState();
@@ -58,12 +59,14 @@ public abstract class Process : IProcess
             case ChannelConnected _:
                 ChannelState = ChannelState.Connected;
                 break;
+            case ProducerChannelConnected producerChannelConnected:
+                TopicEpoch = producerChannelConnected.TopicEpoch;
+                ChannelState = ChannelState.Connected;
+                break;
             case ChannelDeactivated _:
                 ChannelState = ChannelState.Inactive;
                 break;
             case SendReceiptWrongOrdering _:
-                ChannelState = ChannelState.WrongAckOrdering;
-                break;
             case ChannelDisconnected _:
                 ChannelState = ChannelState.Disconnected;
                 break;
@@ -72,6 +75,9 @@ public abstract class Process : IProcess
                 break;
             case ChannelUnsubscribed _:
                 ChannelState = ChannelState.Unsubscribed;
+                break;
+            case ProducerWaitingForExclusive _:
+                ChannelState = ChannelState.WaitingForExclusive;
                 break;
         }
 

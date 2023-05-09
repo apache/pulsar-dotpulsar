@@ -32,6 +32,11 @@ public sealed class ProducerOptions<TMessage>
     public static readonly ulong DefaultInitialSequenceId = 0;
 
     /// <summary>
+    /// The default producer access mode.
+    /// </summary>
+    public static readonly ProducerAccessMode DefaultProducerAccessMode = ProducerAccessMode.Shared;
+
+    /// <summary>
     /// Initializes a new instance using the specified topic.
     /// </summary>
     public ProducerOptions(string topic, ISchema<TMessage> schema)
@@ -39,6 +44,7 @@ public sealed class ProducerOptions<TMessage>
         AttachTraceInfoToMessages = false;
         CompressionType = DefaultCompressionType;
         InitialSequenceId = DefaultInitialSequenceId;
+        ProducerAccessMode = DefaultProducerAccessMode;
         Topic = topic;
         Schema = schema;
         MessageRouter = new RoundRobinPartitionRouter();
@@ -58,6 +64,11 @@ public sealed class ProducerOptions<TMessage>
     /// Set the initial sequence id. The default is 0.
     /// </summary>
     public ulong InitialSequenceId { get; set; }
+
+    /// <summary>
+    /// Set the producer access mode. The default is 'Shared'
+    /// </summary>
+    public ProducerAccessMode ProducerAccessMode { get; set; }
 
     /// <summary>
     /// Set the producer name. This is optional.

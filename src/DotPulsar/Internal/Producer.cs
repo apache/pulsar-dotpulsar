@@ -74,7 +74,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         };
         _attachTraceInfoToMessages = options.AttachTraceInfoToMessages;
         _sequenceId = new SequenceId(options.InitialSequenceId);
-        _state = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+        _state = CreateStateManager();
         ServiceUrl = serviceUrl;
         Topic = options.Topic;
         _isDisposed = 0;
@@ -130,6 +130,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         Interlocked.Exchange(ref _producerCount, monitoringTasks.Length);
 
         var connectedProducers = 0;
+        bool[] waitingForExclusive = new bool[isPartitionedTopic ? numberOfPartitions : 1];
 
         while (true)
         {
@@ -145,13 +146,22 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                 switch (state)
                 {
                     case ProducerState.Connected:
-                        ++connectedProducers;
+                        if (waitingForExclusive[i])
+                            waitingForExclusive[i] = false;
+                        else
+                            ++connectedProducers;
                         break;
                     case ProducerState.Disconnected:
                         --connectedProducers;
+                        waitingForExclusive[i] = false;
                         break;
+                    case ProducerState.WaitingForExclusive:
+                        ++connectedProducers;
+                        waitingForExclusive[i] = true;
+                        break;
+                    case ProducerState.Fenced:
                     case ProducerState.Faulted:
-                        _state.SetState(ProducerState.Faulted);
+                        _state.SetState(state);
                         return;
                 }
 
@@ -160,8 +170,10 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
             if (connectedProducers == 0)
                 _state.SetState(ProducerState.Disconnected);
-            else if (connectedProducers == monitoringTasks.Length)
+            else if (connectedProducers == monitoringTasks.Length && waitingForExclusive.All(x => x != true))
                 _state.SetState(ProducerState.Connected);
+            else if (waitingForExclusive.Any(x => x))
+                _state.SetState(ProducerState.WaitingForExclusive);
             else
                 _state.SetState(ProducerState.PartiallyConnected);
         }
@@ -172,8 +184,9 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var correlationId = Guid.NewGuid();
         var producerName = _options.ProducerName;
         var schema = _options.Schema;
-        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, schema.SchemaInfo, _compressorFactory);
-        var stateManager = new StateManager<ProducerState>(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted);
+        var producerAccessMode = (DotPulsar.Internal.PulsarApi.ProducerAccessMode) _options.ProducerAccessMode;
+        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory);
+        var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
         var producer = new SubProducer(correlationId, _processManager, initialChannel, executor, stateManager, factory, _options.MaxPendingMessages);
@@ -257,7 +270,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
         try
         {
-            await InternalSend(metadata, message, true, OnMessageSent, cancellationToken).ConfigureAwait(false);
+            await InternalSend(metadata, message, true, OnMessageSent, x => tcs.TrySetException(x), cancellationToken).ConfigureAwait(false);
             return await tcs.Task.ConfigureAwait(false);
         }
         finally
@@ -267,9 +280,9 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     }
 
     public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
-        => await InternalSend(metadata, message, false, onMessageSent, cancellationToken).ConfigureAwait(false);
+        => await InternalSend(metadata, message, false, onMessageSent, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-    private async ValueTask InternalSend(MessageMetadata metadata, TMessage message, bool sendOpCancelable, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
+    private async ValueTask InternalSend(MessageMetadata metadata, TMessage message, bool sendOpCancelable, Func<MessageId, ValueTask>? onMessageSent = default, Action<Exception>? onFailed = default, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
 
@@ -303,10 +316,14 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
                 if (task.IsFaulted || task.IsCanceled)
                 {
-                    FailActivity(task.IsCanceled ? new OperationCanceledException() : task.Exception!, activity);
+                    Exception exception = task.IsCanceled ? new OperationCanceledException() : task.Exception!;
+                    FailActivity(exception, activity);
 
                     if (autoAssignSequenceId)
                         metadata.SequenceId = 0;
+
+                    onFailed?.Invoke(exception);
+                    return;
                 }
 
                 CompleteActivity(task.Result, data.Length, activity);
@@ -367,6 +384,9 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         if (_isDisposed != 0)
             throw new ProducerDisposedException(GetType().FullName!);
     }
+
+    private StateManager<ProducerState> CreateStateManager()
+        => new (ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted, ProducerState.Fenced);
 
     public void Register(IEvent @event) { }
 }

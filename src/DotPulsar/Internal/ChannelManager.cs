@@ -57,9 +57,17 @@ public sealed class ChannelManager : IDisposable
                 result.Result.Error.Throw();
             }
 
-            channel.Connected();
+            if (response.Result.ProducerSuccess.ProducerReady)
+            {
+                channel.ProducerConnected(response.Result.ProducerSuccess.TopicEpoch);
+            }
+            else
+            {
+                channel.WaitingForExclusive();
+                HandleAdditionalProducerSuccess(command, channel.ProducerConnected);
+            }
 
-            return new ProducerResponse(producerId, result.Result.ProducerSuccess.ProducerName);
+            return new ProducerResponse(producerId, response.Result.ProducerSuccess.ProducerName);
         }, TaskContinuationOptions.OnlyOnRanToCompletion);
     }
 
@@ -248,5 +256,23 @@ public sealed class ChannelManager : IDisposable
             throw new OperationCanceledException();
 
         return channel.SenderLock();
+    }
+
+    private void HandleAdditionalProducerSuccess(CommandProducer command, Action<ulong> successAction)
+    {
+        _ = _requestResponseHandler.ExpectAdditionalResponse(command).ContinueWith(response =>
+        {
+            if (response.IsCanceled || response.IsFaulted || response.Result.CommandType == BaseCommand.Type.Error)
+            {
+                _producerChannels[command.ProducerId]?.Disconnected();
+                return;
+            }
+            if (!response.Result.ProducerSuccess.ProducerReady)
+            {
+                HandleAdditionalProducerSuccess(command, successAction);
+                return;
+            }
+            successAction.Invoke(response.Result.ProducerSuccess.TopicEpoch);
+        });
     }
 }
