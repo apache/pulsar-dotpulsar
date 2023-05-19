@@ -52,5 +52,10 @@ public enum ConsumerState : byte
     /// <summary>
     /// The consumer has unsubscribed. This is a final state.
     /// </summary>
-    Unsubscribed
+    Unsubscribed,
+
+    /// <summary>
+    /// When the topic is a partition topic and some of the SubConsumers are active.
+    /// </summary>
+    PartiallyActive
 }
