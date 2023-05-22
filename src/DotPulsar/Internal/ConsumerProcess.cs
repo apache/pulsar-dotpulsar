@@ -16,16 +16,13 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.Abstractions;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 public sealed class ConsumerProcess : Process
 {
     private readonly IStateManager<ConsumerState> _stateManager;
     private readonly IContainsChannel _consumer;
-    private readonly AsyncQueue<Func<CancellationToken, Task>> _actionQueue;
     private readonly bool _isFailoverSubscription;
-    private readonly Task _actionProcessorTask;
 
     public ConsumerProcess(
         Guid correlationId,
@@ -35,14 +32,12 @@ public sealed class ConsumerProcess : Process
     {
         _stateManager = stateManager;
         _consumer = consumer;
-        _actionQueue = new AsyncQueue<Func<CancellationToken, Task>>();
         _isFailoverSubscription = isFailoverSubscription;
-        _actionProcessorTask = ProcessActions(CancellationTokenSource.Token);
     }
 
     public override async ValueTask DisposeAsync()
     {
-        await _actionProcessorTask.ConfigureAwait(false);
+        await base.DisposeAsync().ConfigureAwait(false);
         _stateManager.SetState(ConsumerState.Closed);
         CancellationTokenSource.Cancel();
         await _consumer.DisposeAsync().ConfigureAwait(false);
@@ -57,7 +52,7 @@ public sealed class ConsumerProcess : Process
         {
             var formerState = _stateManager.SetState(ConsumerState.Faulted);
             if (formerState != ConsumerState.Faulted)
-                _actionQueue.Enqueue(async _ => await _consumer.ChannelFaulted(Exception!) );
+                ActionQueue.Enqueue(async _ => await _consumer.ChannelFaulted(Exception!) );
             return;
         }
 
@@ -72,7 +67,7 @@ public sealed class ConsumerProcess : Process
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
                 _stateManager.SetState(ConsumerState.Disconnected);
-                _actionQueue.Enqueue(async x =>
+                ActionQueue.Enqueue(async x =>
                 {
                     await _consumer.CloseChannel(x).ConfigureAwait(false);
                     await _consumer.EstablishNewChannel(x).ConfigureAwait(false);
@@ -88,22 +83,6 @@ public sealed class ConsumerProcess : Process
             case ChannelState.Unsubscribed:
                 _stateManager.SetState(ConsumerState.Unsubscribed);
                 return;
-        }
-    }
-
-    private async Task ProcessActions(CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            try
-            {
-                var func = await _actionQueue.Dequeue(cancellationToken).ConfigureAwait(false);
-                await func.Invoke(cancellationToken).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ignore
-            }
         }
     }
 }

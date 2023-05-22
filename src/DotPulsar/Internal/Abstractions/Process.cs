@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 public abstract class Process : IProcess
 {
     protected readonly CancellationTokenSource CancellationTokenSource;
+    protected readonly AsyncQueue<Func<CancellationToken, Task>> ActionQueue;
+    private Task? _actionProcessorTask;
     protected ChannelState ChannelState;
     protected ExecutorState ExecutorState;
     protected Exception? Exception;
@@ -29,6 +31,7 @@ public abstract class Process : IProcess
     protected Process(Guid correlationId)
     {
         CancellationTokenSource = new CancellationTokenSource();
+        ActionQueue = new AsyncQueue<Func<CancellationToken, Task>>();
         ChannelState = ChannelState.Disconnected;
         ExecutorState = ExecutorState.Ok;
         CorrelationId = correlationId;
@@ -38,9 +41,18 @@ public abstract class Process : IProcess
     protected ulong? TopicEpoch { get; private set; }
 
     public void Start()
-        => CalculateState();
+    {
+        _actionProcessorTask = ProcessActions(CancellationTokenSource.Token);
+        CalculateState();
+    }
 
-    public abstract ValueTask DisposeAsync();
+    public virtual async ValueTask DisposeAsync()
+    {
+        if (_actionProcessorTask != null)
+        {
+            await _actionProcessorTask.ConfigureAwait(false);
+        }
+    }
 
     public void Handle(IEvent e)
     {
@@ -85,4 +97,20 @@ public abstract class Process : IProcess
     }
 
     protected abstract void CalculateState();
+
+    private async Task ProcessActions(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                var func = await ActionQueue.Dequeue(cancellationToken).ConfigureAwait(false);
+                await func.Invoke(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignore
+            }
+        }
+    }
 }

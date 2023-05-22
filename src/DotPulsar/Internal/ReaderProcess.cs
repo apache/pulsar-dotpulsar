@@ -16,15 +16,12 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.Abstractions;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 public sealed class ReaderProcess : Process
 {
     private readonly IStateManager<ReaderState> _stateManager;
     private readonly IContainsChannel _reader;
-    private readonly AsyncQueue<Func<CancellationToken, Task>> _actionQueue;
-    private readonly Task _actionProcessorTask;
 
     public ReaderProcess(
         Guid correlationId,
@@ -33,13 +30,11 @@ public sealed class ReaderProcess : Process
     {
         _stateManager = stateManager;
         _reader = reader;
-        _actionQueue = new AsyncQueue<Func<CancellationToken, Task>>();
-        _actionProcessorTask = ProcessActions(CancellationTokenSource.Token);
     }
 
     public override async ValueTask DisposeAsync()
     {
-        await _actionProcessorTask.ConfigureAwait(false);
+        await base.DisposeAsync().ConfigureAwait(false);
         _stateManager.SetState(ReaderState.Closed);
         CancellationTokenSource.Cancel();
         await _reader.DisposeAsync().ConfigureAwait(false);
@@ -55,7 +50,7 @@ public sealed class ReaderProcess : Process
             _stateManager.SetState(ReaderState.Faulted);
             var formerState = _stateManager.SetState(ReaderState.Faulted);
             if (formerState != ReaderState.Faulted)
-                _actionQueue.Enqueue(async _ => await _reader.ChannelFaulted(Exception!) );
+                ActionQueue.Enqueue(async _ => await _reader.ChannelFaulted(Exception!) );
             return;
         }
 
@@ -64,7 +59,7 @@ public sealed class ReaderProcess : Process
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
                 _stateManager.SetState(ReaderState.Disconnected);
-                _actionQueue.Enqueue(async x =>
+                ActionQueue.Enqueue(async x =>
                 {
                     await _reader.CloseChannel(x).ConfigureAwait(false);
                     await _reader.EstablishNewChannel(x).ConfigureAwait(false);
@@ -76,22 +71,6 @@ public sealed class ReaderProcess : Process
             case ChannelState.ReachedEndOfTopic:
                 _stateManager.SetState(ReaderState.ReachedEndOfTopic);
                 return;
-        }
-    }
-
-    private async Task ProcessActions(CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            try
-            {
-                var func = await _actionQueue.Dequeue(cancellationToken).ConfigureAwait(false);
-                await func.Invoke(cancellationToken).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ignore
-            }
         }
     }
 }
