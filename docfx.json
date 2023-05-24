@@ -28,23 +28,27 @@
       },
       {
         "files": [
-          "articles/**.md",
-          "articles/**/toc.yml",
           "toc.yml",
-          "*.md"
+          "CHANGELOG.md",
+          "CONTRIBUTING.md",
+          "index.md"
         ]
       }
     ],
     "resource": [
       {
         "files": [
-          "images/**"
+          "assets/**"
         ]
       }
     ],
     "dest": "_site",
-    "globalMetadataFiles": [],
-    "fileMetadataFiles": [],
+    "globalMetadata": {
+      "_appTitle": "Official DotPulsar Documentation",
+      "_appFooter": "Copyright &copy; 2019-2023 The Apache Software Foundation. All Rights Reserved. Apache, Pulsar, Apache Pulsar, and the Apache feather logo are trademarks or registered trademarks of The Apache Software Foundation.",
+      "_appLogoPath": "assets/pulsar.svg",
+      "_appFaviconPath": "assets/favicon.ico"
+    },
     "template": [
       "default",
       "modern"
