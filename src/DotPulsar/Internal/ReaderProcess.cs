@@ -47,7 +47,6 @@ public sealed class ReaderProcess : Process
 
         if (ExecutorState == ExecutorState.Faulted)
         {
-            _stateManager.SetState(ReaderState.Faulted);
             var formerState = _stateManager.SetState(ReaderState.Faulted);
             if (formerState != ReaderState.Faulted)
                 ActionQueue.Enqueue(async _ => await _reader.ChannelFaulted(Exception!) );
