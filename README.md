@@ -107,4 +107,4 @@ If your contribution adds Pulsar features for C# clients, you need to update bot
 
 ## License
 
-This project is licensed under the Apache License Version 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under [Apache License, Version 2.0](https://apache.org/licenses/LICENSE-2.0).

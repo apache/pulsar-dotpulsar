@@ -31,9 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - name: checkout
-        uses: actions/checkout@main
-
+      - uses: actions/checkout@v3
       - name: Setup dotnet
         uses: actions/setup-dotnet@v2
         with:
@@ -51,8 +49,21 @@ jobs:
           zip -r artifacts.zip artifacts
 
       - name: upload artifacts
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: artifacts
           path: artifacts.zip
+
+  doc-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '7.0.x'
+      - run: dotnet tool update -g docfx
+      - run: dotnet restore
+      - run: docfx docfx.json

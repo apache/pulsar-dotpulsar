@@ -291,3 +291,11 @@ Temporary Items
 # VSCode
 .devcontainer
 .vscode
+
+# docfx
+/**/DROP/
+/**/TEMP/
+/**/packages/
+/**/bin/
+/**/obj/
+_site
