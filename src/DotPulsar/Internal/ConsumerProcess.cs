@@ -23,7 +23,6 @@ public sealed class ConsumerProcess : Process
     private readonly IStateManager<ConsumerState> _stateManager;
     private readonly IContainsChannel _consumer;
     private readonly bool _isFailoverSubscription;
-    private Task? _establishNewChannelTask;
 
     public ConsumerProcess(
         Guid correlationId,
@@ -38,6 +37,7 @@ public sealed class ConsumerProcess : Process
 
     public override async ValueTask DisposeAsync()
     {
+        await base.DisposeAsync().ConfigureAwait(false);
         _stateManager.SetState(ConsumerState.Closed);
         CancellationTokenSource.Cancel();
         await _consumer.DisposeAsync().ConfigureAwait(false);
@@ -52,7 +52,7 @@ public sealed class ConsumerProcess : Process
         {
             var formerState = _stateManager.SetState(ConsumerState.Faulted);
             if (formerState != ConsumerState.Faulted)
-                Task.Run(() => _consumer.ChannelFaulted(Exception!));
+                ActionQueue.Enqueue(async _ => await _consumer.ChannelFaulted(Exception!) );
             return;
         }
 
@@ -67,7 +67,11 @@ public sealed class ConsumerProcess : Process
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
                 _stateManager.SetState(ConsumerState.Disconnected);
-                EstablishNewChannel();
+                ActionQueue.Enqueue(async x =>
+                {
+                    await _consumer.CloseChannel(x).ConfigureAwait(false);
+                    await _consumer.EstablishNewChannel(x).ConfigureAwait(false);
+                });
                 return;
             case ChannelState.Connected:
                 if (!_isFailoverSubscription)
@@ -80,12 +84,5 @@ public sealed class ConsumerProcess : Process
                 _stateManager.SetState(ConsumerState.Unsubscribed);
                 return;
         }
-    }
-
-    private void EstablishNewChannel()
-    {
-        var token = CancellationTokenSource.Token;
-        if (_establishNewChannelTask is null || _establishNewChannelTask.IsCompleted)
-            _establishNewChannelTask = Task.Run(() => _consumer.EstablishNewChannel(token).ConfigureAwait(false), token);
     }
 }

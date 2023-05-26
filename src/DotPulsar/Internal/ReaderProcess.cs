@@ -22,7 +22,6 @@ public sealed class ReaderProcess : Process
 {
     private readonly IStateManager<ReaderState> _stateManager;
     private readonly IContainsChannel _reader;
-    private Task? _establishNewChannelTask;
 
     public ReaderProcess(
         Guid correlationId,
@@ -35,6 +34,7 @@ public sealed class ReaderProcess : Process
 
     public override async ValueTask DisposeAsync()
     {
+        await base.DisposeAsync().ConfigureAwait(false);
         _stateManager.SetState(ReaderState.Closed);
         CancellationTokenSource.Cancel();
         await _reader.DisposeAsync().ConfigureAwait(false);
@@ -50,7 +50,7 @@ public sealed class ReaderProcess : Process
             _stateManager.SetState(ReaderState.Faulted);
             var formerState = _stateManager.SetState(ReaderState.Faulted);
             if (formerState != ReaderState.Faulted)
-                Task.Run(() => _reader.ChannelFaulted(Exception!));
+                ActionQueue.Enqueue(async _ => await _reader.ChannelFaulted(Exception!) );
             return;
         }
 
@@ -59,7 +59,11 @@ public sealed class ReaderProcess : Process
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
                 _stateManager.SetState(ReaderState.Disconnected);
-                EstablishNewChannel();
+                ActionQueue.Enqueue(async x =>
+                {
+                    await _reader.CloseChannel(x).ConfigureAwait(false);
+                    await _reader.EstablishNewChannel(x).ConfigureAwait(false);
+                });
                 return;
             case ChannelState.Connected:
                 _stateManager.SetState(ReaderState.Connected);
@@ -68,12 +72,5 @@ public sealed class ReaderProcess : Process
                 _stateManager.SetState(ReaderState.ReachedEndOfTopic);
                 return;
         }
-    }
-
-    private void EstablishNewChannel()
-    {
-        var token = CancellationTokenSource.Token;
-        if (_establishNewChannelTask is null || _establishNewChannelTask.IsCompleted)
-            _establishNewChannelTask = Task.Run(() => _reader.EstablishNewChannel(token).ConfigureAwait(false), token);
     }
 }
