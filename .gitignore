@@ -292,10 +292,7 @@ Temporary Items
 .devcontainer
 .vscode
 
-# docfx
-/**/DROP/
-/**/TEMP/
-/**/packages/
-/**/bin/
-/**/obj/
-_site
+# DocFX
+docfx_project/api/.manifest
+docfx_project/api/*.yml
+docs

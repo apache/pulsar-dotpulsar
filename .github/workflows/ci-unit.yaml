@@ -66,4 +66,4 @@ jobs:
           dotnet-version: '7.0.x'
       - run: dotnet tool update -g docfx
       - run: dotnet restore
-      - run: docfx docfx.json
+      - run: docfx docfx_project/docfx.json
