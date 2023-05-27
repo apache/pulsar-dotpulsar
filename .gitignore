@@ -291,8 +291,3 @@ Temporary Items
 # VSCode
 .devcontainer
 .vscode
-
-# DocFX
-docfx_project/api/.manifest
-docfx_project/api/*.yml
-docs

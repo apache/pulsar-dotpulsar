@@ -48,7 +48,7 @@ The best way to create a minimal reproduction is gradually removing code and dep
 
 Please do:
 
-* **DO** follow our [coding style](/docs/coding-style.md) (C# code-specific).
+* **DO** follow our [coding style](/dev-docs/coding-style.md) (C# code-specific).
 * **DO** include tests when adding new features. When fixing bugs, start with
   adding a test that highlights how the current behavior is broken.
 * **DO** keep the discussions focused. When a new or related topic comes up

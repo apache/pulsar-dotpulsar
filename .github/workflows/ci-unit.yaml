@@ -66,6 +66,6 @@ jobs:
           dotnet-version: '7.0.x'
       - name: Build docs with docfx
         run: |
-        dotnet tool update -g docfx
-        dotnet build -p:TargetFramework=net7.0
-        docfx docfx_project/docfx.json
+          dotnet tool update -g docfx
+          dotnet build -p:TargetFramework=net7.0
+          docfx docs/docfx.json
