@@ -48,7 +48,7 @@ The best way to create a minimal reproduction is gradually removing code and dep
 
 Please do:
 
-* **DO** follow our [coding style](/docs/coding-style.md) (C# code-specific).
+* **DO** follow our [coding style](/dev-docs/coding-style.md) (C# code-specific).
 * **DO** include tests when adding new features. When fixing bugs, start with
   adding a test that highlights how the current behavior is broken.
 * **DO** keep the discussions focused. When a new or related topic comes up
@@ -83,7 +83,7 @@ We use and recommend the following workflow:
    - State in the description what issue or improvement your change is addressing.
    - Check if all the Continuous Integration checks are passing.
 8. Wait for feedback or approval of your changes from the maintainers.
-   - Should you receive feedback. The maintainer will apply the label 'WIP' to indicate that you should incorporate the changes. 
+   - Should you receive feedback. The maintainer will apply the label 'WIP' to indicate that you should incorporate the changes.
 9. If all looks good, and all checks are green, your PR will be merged.
    - The next official build will automatically include your change.
    - You can delete the branch you used for making the change.

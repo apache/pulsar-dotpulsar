@@ -1,14 +1,12 @@
 ﻿# DotPulsar
 
-![CI - Unit](https://github.com/apache/pulsar-dotpulsar/workflows/CI%20-%20Unit/badge.svg)
-
 The official .NET client library for [Apache Pulsar](https://pulsar.apache.org/).
 
 DotPulsar is written entirely in C# and implements Apache Pulsar's [binary protocol](https://pulsar.apache.org/docs/en/develop-binary-protocol/).
 
 ## What's new?
 
-Have a look at the [changelog](CHANGELOG.md).
+Have a look at the [changelog](https://github.com/apache/pulsar-dotpulsar/blob/master/CHANGELOG.md).
 
 ## Getting Started
 
@@ -49,37 +47,37 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 
 ## Supported features
 
-- [X] Service discovery
-- [X] Automatic reconnect
-- [X] TLS connections
-- [X] Pulsar Proxy
-- [X] Producer - send with custom metadata
-- [X] Producer - send with event time, sequence id, and delayed message delivery
-- [X] Producer - send with key and ordering key
-- [X] Producer - partitioned topics
-- [X] Consumer - subscription with initial position and priority level
-- [X] Consumer - subscription types exclusive, shared, failover, and key shared
-- [X] Consumer - receive and single + cumulative acknowledge
-- [X] Consumer/Reader - seek on message-id and publish time
-- [X] Consumer - unsubscribe
-- [X] Consumer - compacted topics
-- [X] Reader API
-- [X] Read/Consume/Acknowledge batched messages
-- [X] Telemetry
+- Service discovery
+- Automatic reconnect
+- TLS connections
+- Pulsar Proxy
+- Producer - send with custom metadata
+- Producer - send with event time, sequence id, and delayed message delivery
+- Producer - send with key and ordering key
+- Producer - partitioned topics
+- Consumer - subscription with initial position and priority level
+- Consumer - subscription types exclusive, shared, failover, and key shared
+- Consumer - receive and single + cumulative acknowledge
+- Consumer/Reader - seek on message-id and publish time
+- Consumer - unsubscribe
+- Consumer - compacted topics
+- Reader API
+- Read/Consume/Acknowledge batched messages
+- Telemetry
     - [Tracing](https://github.com/apache/pulsar-dotpulsar/wiki/Tracing)
     - [Metrics](https://github.com/apache/pulsar-dotpulsar/wiki/Metrics)
-- [X] Authentication
+- Authentication
     - TLS Authentication
     - JSON Web Token Authentication
     - Custom Authentication
-- [X] [Message compression](https://github.com/apache/pulsar-dotpulsar/wiki/Compression)
+- [Message compression](https://github.com/apache/pulsar-dotpulsar/wiki/Compression)
     - LZ4
     - ZLIB
     - ZSTD
     - SNAPPY
-- [X] Schemas
+- Schemas
     - Boolean
-    - Bytes (using byte[] and ReadOnlySequence\<byte\>)
+    - Bytes (using `byte[]` and `ReadOnlySequence<byte>`)
     - String (UTF-8, UTF-16, and US-ASCII)
     - INT8, INT16, INT32, and INT64
     - Float and Double
@@ -87,10 +85,6 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
     - Timestamp and Date (using DateTime)
 
 For a horizontal comparison with more language-specific clients, see [Client Feature Matrix](https://pulsar.apache.org/client-feature-matrix/).
-
-## Roadmap
-
-Help prioritizing the roadmap is most welcome, so please reach out and tell us what you want and need.
 
 ## Join Our Community
 
@@ -100,11 +94,11 @@ Apache Pulsar has a [Slack instance](https://pulsar.apache.org/contact/), and th
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/apache/pulsar-dotpulsar/tags).
 
-## Authors
+## Contribution
 
 * **Daniel Blankensteiner** - *Initial work* - [Danske Commodities](https://github.com/DanskeCommodities)
 
-Contributions are welcomed and greatly appreciated. See also the list of [contributors](https://github.com/apache/pulsar-dotpulsar/contributors) who participated in this project. Read the [CONTRIBUTING](CONTRIBUTING.md) guide for how to participate.
+Contributions are welcomed and greatly appreciated. See also the list of [contributors](https://github.com/apache/pulsar-dotpulsar/contributors) who participated in this project. Read the [CONTRIBUTING](https://github.com/apache/pulsar-dotpulsar/blob/master/CONTRIBUTING.md) guide for how to participate.
 
 If your contribution adds Pulsar features for C# clients, you need to update both the [Pulsar docs](https://pulsar.apache.org/docs/client-libraries/) and the [Client Feature Matrix](https://pulsar.apache.org/client-feature-matrix/). See [Contribution Guide](https://pulsar.apache.org/contribute/site-intro/#pages) for more details.
 
