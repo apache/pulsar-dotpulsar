@@ -21,7 +21,7 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>    
+  <ItemGroup>
     <PackageReference Include="HashDepot" Version="2.0.3" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.5" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
@@ -39,7 +39,7 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
   </ItemGroup>
-    
+
   <ItemGroup>
     <None Include="PackageIcon.png" Pack="true" PackagePath="/" Visible="False" />
   </ItemGroup>

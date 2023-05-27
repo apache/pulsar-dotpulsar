@@ -3,8 +3,9 @@
     {
       "src": [
         {
+          "src": "..",
           "files": [
-            "src/DotPulsar/bin/**/*.dll"
+            "src/DotPulsar/bin/**/net7.0/DotPulsar.dll"
           ]
         }
       ],
@@ -29,8 +30,6 @@
       {
         "files": [
           "toc.yml",
-          "CHANGELOG.md",
-          "CONTRIBUTING.md",
           "index.md"
         ]
       }

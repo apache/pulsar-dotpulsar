@@ -15,25 +15,28 @@ Have a look at the [changelog](CHANGELOG.md).
 Let's take a look at a "Hello world" example, where we first produce a message and then consume it. Note that the topic and subscription will be created if they don't exist.
 
 First, we need a Pulsar setup. See [Pulsar docs](https://pulsar.apache.org/docs/getting-started-home/) for how to set up a local standalone Pulsar instance.
-Install the NuGet package [DotPulsar](https://www.nuget.org/packages/DotPulsar/) and copy/paste the code below (you will need to use declarations for 'DotPulsar' and 'DotPulsar.Extensions').
+
+Install the NuGet package [DotPulsar](https://www.nuget.org/packages/DotPulsar/) and run the follow code example:
 
 ```csharp
+using DotPulsar;
+using DotPulsar.Extensions;
+
 const string myTopic = "persistent://public/default/mytopic";
 
-await using var client = PulsarClient.Builder()
-                                     .Build(); // Connecting to pulsar://localhost:6650
+// connecting to pulsar://localhost:6650
+await using var client = PulsarClient.Builder().Build();
 
-await using var producer = client.NewProducer(Schema.String)
-                                 .Topic(myTopic)
-                                 .Create();
+// produce a message
+await using var producer = client.NewProducer(Schema.String).Topic(myTopic).Create();
+await producer.Send("Hello World");
 
-_ = await producer.Send("Hello World"); // Send a message and ignore the returned MessageId
-
+// consume messages
 await using var consumer = client.NewConsumer(Schema.String)
-                                 .SubscriptionName("MySubscription")
-                                 .Topic(myTopic)
-                                 .InitialPosition(SubscriptionInitialPosition.Earliest)
-                                 .Create();
+    .SubscriptionName("MySubscription")
+    .Topic(myTopic)
+    .InitialPosition(SubscriptionInitialPosition.Earliest)
+    .Create();
 
 await foreach (var message in consumer.Messages())
 {
@@ -101,7 +104,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 * **Daniel Blankensteiner** - *Initial work* - [Danske Commodities](https://github.com/DanskeCommodities)
 
-Contributions are welcomed and greatly appreciated. See also the list of [contributors](https://github.com/apache/pulsar-dotpulsar/contributors) who participated in this project.
+Contributions are welcomed and greatly appreciated. See also the list of [contributors](https://github.com/apache/pulsar-dotpulsar/contributors) who participated in this project. Read the [CONTRIBUTING](CONTRIBUTING.md) guide for how to participate.
 
 If your contribution adds Pulsar features for C# clients, you need to update both the [Pulsar docs](https://pulsar.apache.org/docs/client-libraries/) and the [Client Feature Matrix](https://pulsar.apache.org/client-feature-matrix/). See [Contribution Guide](https://pulsar.apache.org/contribute/site-intro/#pages) for more details.
 

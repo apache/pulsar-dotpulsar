@@ -83,7 +83,7 @@ We use and recommend the following workflow:
    - State in the description what issue or improvement your change is addressing.
    - Check if all the Continuous Integration checks are passing.
 8. Wait for feedback or approval of your changes from the maintainers.
-   - Should you receive feedback. The maintainer will apply the label 'WIP' to indicate that you should incorporate the changes. 
+   - Should you receive feedback. The maintainer will apply the label 'WIP' to indicate that you should incorporate the changes.
 9. If all looks good, and all checks are green, your PR will be merged.
    - The next official build will automatically include your change.
    - You can delete the branch you used for making the change.

@@ -64,6 +64,8 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: '7.0.x'
-      - run: dotnet tool update -g docfx
-      - run: dotnet restore
-      - run: docfx docfx_project/docfx.json
+      - name: Build docs with docfx
+        run: |
+        dotnet tool update -g docfx
+        dotnet build -p:TargetFramework=net7.0
+        docfx docfx_project/docfx.json
