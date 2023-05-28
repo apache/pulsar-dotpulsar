@@ -68,4 +68,4 @@ jobs:
         run: |
           dotnet tool update -g docfx
           dotnet build -p:TargetFramework=net7.0
-          docfx docs/docfx.json
+          docfx docs/api/docfx.json
