@@ -1,5 +1,9 @@
+﻿###############
+#    folder   #
 ###############
-#  temp file  #
-###############
-*.yml
-.manifest
+/**/DROP/
+/**/TEMP/
+/**/packages/
+/**/bin/
+/**/obj/
+_site

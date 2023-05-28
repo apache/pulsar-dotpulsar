@@ -56,7 +56,7 @@ But it will enforce small things, like an empty space at the end of each cs file
 1. In the commit window, click the gear icon.
 2. Make sure only the "Cleanup 'DotPulsar: Full Cleanup' profile" is checked. ("Check TODO" can be left on or off according to your preference)
 
-![riderAutoCleanOnCommit](/docs/assets/riderAutoCleanOnCommit.gif)
+![riderAutoCleanOnCommit](/docs/dev/assets/riderAutoCleanOnCommit.gif)
 
 <!-- TOC --><a name="visual-studio-with-resharper"></a>
 ### Visual Studio with Resharper
@@ -67,7 +67,7 @@ But it will enforce small things, like an empty space at the end of each cs file
 4. Goto Profiles and make sure the profile 'DotPulsar: Full Cleanup' is set as the default
 5. Save
 
-![vs2022WithReSharper](/docs/assets/vs2022WithReSharper.gif)
+![vs2022WithReSharper](/docs/dev/assets/vs2022WithReSharper.gif)
 
 <!-- TOC --><a name="visual-studio"></a>
 ### Visual Studio.
@@ -79,7 +79,7 @@ To get Visual Studio to automatically enforce the code style on file save, do th
 3. Check the box "Run Code Cleanup profile on Save"
 4. click ok
 
-![vs2022CleanOnSave](/docs/assets/vs2022CleanOnSave.gif)
+![vs2022CleanOnSave](/docs/dev/assets/vs2022CleanOnSave.gif)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
