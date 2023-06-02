@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 public abstract class Process : IProcess
 {
-    protected readonly CancellationTokenSource CancellationTokenSource;
+    private readonly CancellationTokenSource _cancellationTokenSource;
     protected readonly AsyncQueue<Func<CancellationToken, Task>> ActionQueue;
     private Task? _actionProcessorTask;
     protected ChannelState ChannelState;
@@ -30,7 +30,7 @@ public abstract class Process : IProcess
 
     protected Process(Guid correlationId)
     {
-        CancellationTokenSource = new CancellationTokenSource();
+        _cancellationTokenSource = new CancellationTokenSource();
         ActionQueue = new AsyncQueue<Func<CancellationToken, Task>>();
         ChannelState = ChannelState.Disconnected;
         ExecutorState = ExecutorState.Ok;
@@ -42,12 +42,13 @@ public abstract class Process : IProcess
 
     public void Start()
     {
-        _actionProcessorTask = ProcessActions(CancellationTokenSource.Token);
+        _actionProcessorTask = ProcessActions(_cancellationTokenSource.Token);
         CalculateState();
     }
 
     public virtual async ValueTask DisposeAsync()
     {
+        _cancellationTokenSource.Cancel();
         if (_actionProcessorTask != null)
         {
             await _actionProcessorTask.ConfigureAwait(false);

@@ -39,7 +39,6 @@ public sealed class ConsumerProcess : Process
     {
         await base.DisposeAsync().ConfigureAwait(false);
         _stateManager.SetState(ConsumerState.Closed);
-        CancellationTokenSource.Cancel();
         await _consumer.DisposeAsync().ConfigureAwait(false);
     }
 

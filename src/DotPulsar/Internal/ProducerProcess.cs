@@ -37,7 +37,6 @@ public sealed class ProducerProcess : Process
     {
         await base.DisposeAsync().ConfigureAwait(false);
         _stateManager.SetState(ProducerState.Closed);
-        CancellationTokenSource.Cancel();
         await _producer.DisposeAsync().ConfigureAwait(false);
     }
 
