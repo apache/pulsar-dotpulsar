@@ -36,7 +36,6 @@ public sealed class ReaderProcess : Process
     {
         await base.DisposeAsync().ConfigureAwait(false);
         _stateManager.SetState(ReaderState.Closed);
-        CancellationTokenSource.Cancel();
         await _reader.DisposeAsync().ConfigureAwait(false);
     }
 
