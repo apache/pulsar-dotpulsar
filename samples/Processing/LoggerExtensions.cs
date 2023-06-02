@@ -74,7 +74,7 @@ public static partial class LoggerExtensions
     public static ValueTask ConsumerRegainedConnection(this ILogger logger, IConsumer consumer, ConsumerState state, string ticketId, CancellationToken cancellationToken)
     {
         logger.ConsumerRegainedConnection(consumer.Topic);
-        return ValueTask.CompletedTask;  // If an alert has been opened, this is where we can close it again
+        return ValueTask.CompletedTask; // If an alert has been opened, this is where we can close it again
     }
 
     [LoggerMessage(EventId = 4, Level = LogLevel.Warning, Message = "The consumer for topic '{topic}' has regained the connection")]

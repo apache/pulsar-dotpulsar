@@ -47,7 +47,7 @@ public sealed class ProducerProcess : Process
 
         if (ExecutorState == ExecutorState.Faulted)
         {
-            ProducerState newState = Exception! is ProducerFencedException ? ProducerState.Fenced : ProducerState.Faulted;
+            var newState = Exception! is ProducerFencedException ? ProducerState.Fenced : ProducerState.Faulted;
             var formerState = _stateManager.SetState(newState);
             if (formerState != ProducerState.Faulted && formerState != ProducerState.Fenced)
                 ActionQueue.Enqueue(async _ => await _producer.ChannelFaulted(Exception!));
