@@ -44,7 +44,6 @@ public sealed class DefaultExceptionHandler : IHandleException
             ServiceNotReadyException _ => FaultAction.Retry,
             MetadataException _ => FaultAction.Rethrow,
             ConsumerNotFoundException _ => FaultAction.Retry,
-            ConsumerNotActiveException _ => FaultAction.Retry,
             ConsumerBusyException _ => FaultAction.Retry,
             ProducerBusyException _ => FaultAction.Retry,
             ProducerFencedException _ => FaultAction.Rethrow,

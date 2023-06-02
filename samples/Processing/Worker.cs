@@ -28,7 +28,7 @@ public class Worker : BackgroundService
     {
         await using var client = PulsarClient.Builder()
             .ExceptionHandler(_logger.PulsarClientException) // Optional
-            .Build(); // Connecting to pulsar://localhost:6650
+            .Build();                                        // Connecting to pulsar://localhost:6650
 
         await using var consumer = client.NewConsumer(Schema.String)
             .StateChangedHandler(_logger.ConsumerChangedState) // Optional
@@ -36,10 +36,10 @@ public class Worker : BackgroundService
             .Topic("persistent://public/default/mytopic")
             .Create();
 
-        _ = consumer.DelayedStateMonitor( // Recommended way of ignoring the short disconnects expected when working with a distributed system
-            ConsumerState.Active, // Operational state
-            TimeSpan.FromSeconds(5), // The amount of time allowed in non-operational state before we act
-            _logger.ConsumerLostConnection, // Invoked if we are NOT back in operational state after 5 seconds
+        _ = consumer.DelayedStateMonitor(       // Recommended way of ignoring the short disconnects expected when working with a distributed system
+            ConsumerState.Active,               // Operational state
+            TimeSpan.FromSeconds(5),            // The amount of time allowed in non-operational state before we act
+            _logger.ConsumerLostConnection,     // Invoked if we are NOT back in operational state after 5 seconds
             _logger.ConsumerRegainedConnection, // Invoked when we are in operational state again
             cancellationToken);
 

@@ -130,7 +130,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         Interlocked.Exchange(ref _producerCount, monitoringTasks.Length);
 
         var connectedProducers = 0;
-        bool[] waitingForExclusive = new bool[isPartitionedTopic ? numberOfPartitions : 1];
+        var waitingForExclusive = new bool[isPartitionedTopic ? numberOfPartitions : 1];
 
         while (true)
         {
@@ -386,7 +386,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     }
 
     private StateManager<ProducerState> CreateStateManager()
-        => new (ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted, ProducerState.Fenced);
+        => new(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted, ProducerState.Fenced);
 
     public void Register(IEvent @event) { }
 }

@@ -70,32 +70,6 @@ public class ConsumerTests
         consumed.Should().BeEquivalentTo(produced);
     }
 
-    [Fact]
-    public async Task PartitionConsume_WhenGetLastMessageId_ThenShouldThrowException()
-    {
-        //Arrange
-        var testRunId = Guid.NewGuid().ToString("N");
-        const int partitions = 3;
-        var topicName = $"consumer-tests-{testRunId}";
-
-        _fixture.CreatePartitionedTopic($"persistent://public/default/{topicName}", partitions);
-
-        //Act 
-        await using var client = PulsarClient.Builder()
-            .ServiceUrl(_fixture.ServiceUrl)
-            .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
-            .Build();
-
-        var consumer = client.NewConsumer(Schema.ByteArray)
-            .ConsumerName($"consumer-{testRunId}")
-            .InitialPosition(SubscriptionInitialPosition.Earliest)
-            .SubscriptionName($"subscription-{testRunId}")
-            .Topic(topicName)
-            .Create();
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-        Assert.ThrowsAsync<NotImplementedException>(async () => await consumer.GetLastMessageId(cts.Token));
-    }
-
     private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<byte[]> producer, int numberOfMessages, CancellationToken ct)
     {
         var messageIds = new MessageId[numberOfMessages];

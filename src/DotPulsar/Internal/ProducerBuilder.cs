@@ -42,7 +42,6 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
         _producerAccessMode = ProducerOptions<TMessage>.DefaultProducerAccessMode;
     }
 
-
     public IProducerBuilder<TMessage> AttachTraceInfoToMessages(bool attachTraceInfoToMessages)
     {
         _attachTraceInfoToMessages = attachTraceInfoToMessages;

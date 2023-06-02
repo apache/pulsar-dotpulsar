@@ -179,7 +179,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
         }
         finally
         {
-            bool shouldThrow = _cursorNextItemTcs is not null && _cursorNextItemTcs.Task.IsCanceled;
+            var shouldThrow = _cursorNextItemTcs is not null && _cursorNextItemTcs.Task.IsCanceled;
 
             lock (_queue)
             {

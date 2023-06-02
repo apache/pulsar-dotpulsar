@@ -6,8 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ## [UnReleased]
 
-- Support for consuming partitioned topics
-
 ### Fixed
 
 - Fixed issue preventing reader to correctly go into `Faulted` state.
