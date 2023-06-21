@@ -263,4 +263,18 @@ public sealed class ConnectionPool : IConnectionPool
         public override string ToString()
             => $"{nameof(Physical)}: {Physical}, {nameof(Logical)}: {Logical}, {nameof(ProxyThroughServiceUrl)}: {ProxyThroughServiceUrl}";
     }
+
+    public async ValueTask<uint> GetNumberOfPartitions(String topic, CancellationToken cancellationToken = default)
+    {
+        var connection = await FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
+        var commandPartitionedMetadata = new PulsarApi.CommandPartitionedTopicMetadata { Topic = topic };
+        var response = await connection.Send(commandPartitionedMetadata, cancellationToken).ConfigureAwait(false);
+
+        response.Expect(PulsarApi.BaseCommand.Type.PartitionedMetadataResponse);
+
+        if (response.PartitionMetadataResponse.Response == PulsarApi.CommandPartitionedTopicMetadataResponse.LookupType.Failed)
+            response.PartitionMetadataResponse.Throw();
+
+        return response.PartitionMetadataResponse.Partitions;
+    }
 }

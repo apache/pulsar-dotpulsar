@@ -19,6 +19,7 @@ using DotPulsar.Extensions;
 using FluentAssertions;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -288,6 +289,135 @@ public class ProducerTests
         {
             (await consumers[i].Receive()).Value().Should().Be($"{content}-{i}");
         }
+    }
+
+    [Fact]
+    public async Task Send_WhenProducingMessagesForOnePartition_ShouldPartitionOnlyBeNegativeOne()
+    {
+        //Arrange
+        var testRunId = Guid.NewGuid().ToString("N");
+        const int numberOfMessages = 10;
+        var topic = $"persistent://public/default/producer-test-{testRunId}";
+
+        await using var client = PulsarClient.Builder()
+            .ServiceUrl(_fixture.ServiceUrl)
+            .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
+            .Build();
+
+        await using var consumer = client.NewConsumer(Schema.ByteArray)
+            .ConsumerName($"consumer-{testRunId}")
+            .InitialPosition(SubscriptionInitialPosition.Earliest)
+            .SubscriptionName($"subscription-{testRunId}")
+            .Topic(topic)
+            .Create();
+
+        await using var producer = client.NewProducer(Schema.ByteArray)
+            .ProducerName($"producer-{testRunId}")
+            .Topic(topic)
+            .Create();
+
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+
+        //Act
+        var produced = await ProduceMessages(producer, numberOfMessages, cts.Token);
+        var consumed = await ConsumeMessages(consumer, numberOfMessages, cts.Token);
+
+        //Assert
+        var foundNonNegativeOne = false;
+        foreach (var messageId in produced)
+        {
+            if (messageId.Partition.Equals(-1) != true)
+                foundNonNegativeOne = true;
+        }
+        foreach (var messageId in consumed)
+        {
+            if (messageId.Partition.Equals(-1) != true)
+                foundNonNegativeOne = true;
+        }
+
+        foundNonNegativeOne.Should().Be(false);
+    }
+
+    [Fact]
+    public async Task Send_WhenProducingMessagesForFourPartitions_ShouldPartitionBeDifferentThanNegativeOne()
+    {
+        //Arrange
+        var testRunId = Guid.NewGuid().ToString("N");
+        const int numberOfMessages = 10;
+        const int partitions = 4;
+        var topicName = $"producer-with-4-partitions-test";
+
+        _fixture.CreatePartitionedTopic($"persistent://public/default/{topicName}", partitions);
+
+        await using var client = PulsarClient.Builder()
+            .ServiceUrl(_fixture.ServiceUrl)
+            .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
+            .Build();
+
+        await using var consumer = client.NewConsumer(Schema.ByteArray)
+            .ConsumerName($"consumer-{testRunId}")
+            .InitialPosition(SubscriptionInitialPosition.Earliest)
+            .SubscriptionName($"subscription-{testRunId}")
+            .Topic(topicName)
+            .Create();
+
+        await using var producer = client.NewProducer(Schema.ByteArray)
+            .ProducerName($"producer-{testRunId}")
+            .Topic(topicName)
+            .Create();
+
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+
+        //Act
+        var produced = await ProduceMessages(producer, numberOfMessages, cts.Token);
+        var consumed = await ConsumeMessages(consumer, numberOfMessages, cts.Token);
+
+        //Assert
+        var foundNonNegativeOne = false;
+        foreach (var messageId in produced)
+        {
+            if (!messageId.Partition.Equals(-1))
+                foundNonNegativeOne = true;
+        }
+        foreach (var messageId in consumed)
+        {
+            if (!messageId.Partition.Equals(-1))
+                foundNonNegativeOne = true;
+        }
+
+        foundNonNegativeOne.Should().Be(true);
+    }
+
+    private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<byte[]> producer, int numberOfMessages, CancellationToken ct)
+    {
+        var messageIds = new MessageId[numberOfMessages];
+
+        for (var i = 0; i < numberOfMessages; ++i)
+        {
+            var data = Encoding.UTF8.GetBytes($"Sent #{i} at {DateTimeOffset.UtcNow:s}");
+            messageIds[i] = await producer.Send(data, ct);
+        }
+
+        return messageIds;
+    }
+
+    private static async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer<byte[]> consumer, int numberOfMessages, CancellationToken ct)
+    {
+        var messageIds = new List<MessageId>(numberOfMessages);
+
+        await foreach (var message in consumer.Messages(ct))
+        {
+            messageIds.Add(message.MessageId);
+
+            if (messageIds.Count != numberOfMessages)
+                continue;
+
+            await consumer.AcknowledgeCumulative(message, ct);
+
+            break;
+        }
+
+        return messageIds;
     }
 
     private IPulsarClient CreateClient()

@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 /// <summary>
 /// A consumer abstraction.
 /// </summary>
-public interface IConsumer : IGetLastMessageId, ISeek, IState<ConsumerState>, IAsyncDisposable
+public interface IConsumer : IGetLastMessageId, IGetLastMessageIds, ISeek, IState<ConsumerState>, IAsyncDisposable
 {
     /// <summary>
     /// Acknowledge the consumption of a single message using the MessageId.

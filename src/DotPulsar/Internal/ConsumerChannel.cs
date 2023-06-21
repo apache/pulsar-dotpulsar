@@ -34,6 +34,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
     private readonly IMessageFactory<TMessage> _messageFactory;
     private readonly IDecompress?[] _decompressors;
     private readonly AsyncLock _lock;
+    private readonly string _topic;
     private uint _sendWhenZero;
     private bool _firstFlow;
 
@@ -44,13 +45,15 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
         IConnection connection,
         BatchHandler<TMessage> batchHandler,
         IMessageFactory<TMessage> messageFactory,
-        IEnumerable<IDecompressorFactory> decompressorFactories)
+        IEnumerable<IDecompressorFactory> decompressorFactories,
+        string topic)
     {
         _id = id;
         _queue = queue;
         _connection = connection;
         _batchHandler = batchHandler;
         _messageFactory = messageFactory;
+        _topic = topic;
 
         _decompressors = new IDecompress[5];
 
@@ -132,7 +135,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
                     }
                 }
 
-                return _messageFactory.Create(messageId.ToMessageId(), redeliveryCount, data, metadata);
+                return _messageFactory.Create(messageId.ToMessageId(_topic), redeliveryCount, data, metadata);
             }
         }
     }
@@ -181,7 +184,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
         command.ConsumerId = _id;
         var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
         response.Expect(BaseCommand.Type.GetLastMessageIdResponse);
-        return response.GetLastMessageIdResponse.LastMessageId.ToMessageId();
+        return response.GetLastMessageIdResponse.LastMessageId.ToMessageId(_topic);
     }
 
     public async ValueTask DisposeAsync()

@@ -41,6 +41,8 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
     private ulong? _topicEpoch;
     private Exception? _faultException;
 
+    public string Topic { get; }
+
     public SubProducer(
         Guid correlationId,
         IRegisterEvent registerEvent,
@@ -49,7 +51,8 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
         IStateChanged<ProducerState> state,
         IProducerChannelFactory factory,
         int partition,
-        uint maxPendingMessages)
+        uint maxPendingMessages,
+        string topic)
     {
         _sendQueue = new AsyncQueueWithCursor<SendOp>(maxPendingMessages);
         _correlationId = correlationId;
@@ -59,6 +62,7 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
         _state = state;
         _factory = factory;
         _partition = partition;
+        Topic = topic;
         _isDisposed = 0;
 
         _eventRegister.Register(new ProducerCreated(_correlationId));
@@ -201,7 +205,7 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
         _sendQueue.Dequeue();
 
         var srMsgId = sendReceipt.MessageId;
-        var messageId = _partition == -1 ? srMsgId.ToMessageId() : new MessageId(srMsgId.LedgerId, srMsgId.EntryId, _partition, srMsgId.BatchIndex);
+        var messageId = new MessageId(srMsgId.LedgerId, srMsgId.EntryId, _partition, srMsgId.BatchIndex, Topic);
         sendOp.ReceiptTcs.TrySetResult(messageId);
     }
 

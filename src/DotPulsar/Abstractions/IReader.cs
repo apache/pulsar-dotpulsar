@@ -19,7 +19,7 @@ using System;
 /// <summary>
 /// A reader abstraction.
 /// </summary>
-public interface IReader : IGetLastMessageId, ISeek, IState<ReaderState>, IAsyncDisposable
+public interface IReader : IGetLastMessageId, IGetLastMessageIds, ISeek, IState<ReaderState>, IAsyncDisposable
 {
     /// <summary>
     /// The reader's service url.

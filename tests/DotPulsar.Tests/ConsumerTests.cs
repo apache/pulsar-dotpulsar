@@ -19,71 +19,202 @@ using DotPulsar.Extensions;
 using FluentAssertions;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
 public class ConsumerTests
 {
     private readonly IntegrationFixture _fixture;
+    private readonly ITestOutputHelper _testOutputHelper;
 
-    public ConsumerTests(IntegrationFixture fixture)
+    public ConsumerTests(IntegrationFixture fixture, ITestOutputHelper testOutputHelper)
     {
         _fixture = fixture;
+        _testOutputHelper = testOutputHelper;
     }
 
-    [Theory]
-    [InlineData(10000)]
-    public async Task Messages_GivenTopicWithMessages_ShouldConsumeAll(int numberOfMessages)
+    [Fact]
+    public async Task GetLastMessageId_GivenNonPartitionedTopic_ShouldGetMessageIdFromPartition()
     {
         //Arrange
-        var testRunId = Guid.NewGuid().ToString("N");
+        const string topicName = "persistent://public/default/consumer-getlastmessageid-given-non-partitioned-topic";
+        const string subscriptionName = "subscription-given-given-partitioned-topic";
+        const string consumerName = $"consumer-given-partitioned-topic";
+        const string content = "test-message";
+        const int numberOfMessages = 6;
 
-        var topic = $"persistent://public/default/consumer-tests-{testRunId}";
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, SubscriptionInitialPosition.Earliest, topicName, consumerName, subscriptionName);
+        await using var producer = CreateProducer(client, topicName);
 
-        await using var client = PulsarClient.Builder()
-            .ServiceUrl(_fixture.ServiceUrl)
-            .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
-            .Build();
+        MessageId expected = null!;
+        for (var i = 0; i < numberOfMessages; i++)
+        {
+            var messageId = await producer.Send(content);
+            if (i >= 5)
+            {
+                expected = messageId;
+            }
+        }
 
-        await using var consumer = client.NewConsumer(Schema.ByteArray)
-            .ConsumerName($"consumer-{testRunId}")
-            .InitialPosition(SubscriptionInitialPosition.Earliest)
-            .SubscriptionName($"subscription-{testRunId}")
-            .Topic(topic)
-            .Create();
+        //Act
+        var actual = await consumer.GetLastMessageId();
 
-        await using var producer = client.NewProducer(Schema.ByteArray)
-            .ProducerName($"producer-{testRunId}")
-            .Topic(topic)
-            .Create();
+        //Assert
+        actual.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public async Task GetLastMessageId_GivenPartitionedTopic_ShouldThrowException()
+    {
+        //Arrange
+        const string topicName = "persistent://public/default/consumer-getlastmessageid-given-partitioned-topic";
+        const string subscriptionName = "subscription-given-given-partitioned-topic";
+        const string consumerName = "consumer-given-partitioned-topic";
+        const int partitions = 3;
+        _fixture.CreatePartitionedTopic(topicName, partitions);
+
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, SubscriptionInitialPosition.Earliest, topicName, consumerName, subscriptionName);
+
+        //Act
+        var exception = await Record.ExceptionAsync(() => consumer.GetLastMessageId().AsTask());
+
+        //Assert
+        exception.Should().BeOfType<NotSupportedException>();
+    }
+
+    [Fact]
+    public async Task GetLastMessageIds_GivenNonPartitionedTopic_ShouldGetMessageIdFromPartition()
+    {
+        //Arrange
+        const string topicName = "consumer-getlastmessageids-given-non-partitioned-topic";
+        const string subscriptionName = "subscription-should_have-3-topics";
+        const string consumerName = "consumer-should_have-3-topics";
+        const string content = "test-message";
+        const int numberOfMessages = 6;
+
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, SubscriptionInitialPosition.Earliest, topicName, consumerName, subscriptionName);
+        await using var producer = CreateProducer(client, topicName);
+
+        var expected = new List<MessageId>();
+        for (var i = 0; i < numberOfMessages; i++)
+        {
+            var messageId = await producer.Send(content);
+            if (i >= 5)
+            {
+                expected.Add(messageId);
+            }
+        }
+
+        //Act
+        var actual = await consumer.GetLastMessageIds();
+
+        //Assert
+        actual.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public async Task GetLastMessageIds_GivenPartitionedTopic_ShouldGetMessageIdFromAllPartitions()
+    {
+        //Arrange
+        const string topicName = "consumer-getlastmessageids-given-partitioned-topic";
+        const string subscriptionName = "subscription-should_have-3-topics";
+        const string consumerName = "consumer-should_have-3-topics";
+        const string content = "test-message";
+        const int numberOfMessages = 6;
+        const int partitions = 3;
+        _fixture.CreatePartitionedTopic($"persistent://public/default/{topicName}", partitions);
+
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, SubscriptionInitialPosition.Earliest, topicName, consumerName, subscriptionName);
+        await using var producer = CreateProducer(client, topicName);
+
+        var expected = new List<MessageId>();
+        for (var i = 0; i < numberOfMessages; i++)
+        {
+            var messageId = await producer.Send(content);
+            if (i >= 3)
+            {
+                expected.Add(messageId);
+            }
+        }
+
+        //Act
+        var actual = await consumer.GetLastMessageIds();
+
+        //Assert
+        actual.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public async Task Receive_GivenNonPartitionedTopic_ShouldReceiveAll()
+    {
+        //Arrange
+        const string topicName = "persistent://public/default/consumer-given-topic-with-messages";
+        const string subscriptionName = "subscription-given-topic-with-messages";
+        const string consumerName = "consumer-given-topic-with-messages";
+        const string content = "test-message";
+        const int numberOfMessages = 10000;
+
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, SubscriptionInitialPosition.Earliest, topicName, consumerName, subscriptionName);
+        await using var producer = CreateProducer(client, topicName);
 
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         //Act
-        var produced = await ProduceMessages(producer, numberOfMessages, cts.Token);
+        var produced = await ProduceMessages(producer, numberOfMessages, cts.Token, content);
         var consumed = await ConsumeMessages(consumer, numberOfMessages, cts.Token);
 
         //Assert
         consumed.Should().BeEquivalentTo(produced);
     }
 
-    private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<byte[]> producer, int numberOfMessages, CancellationToken ct)
+    [Fact]
+    public async Task Receive_GivenPartitionedTopic_ShouldReceiveAll()
+    {
+        //Arrange
+        const string subscriptionName = "subscription-given-non-partitioned-topic-with-messages";
+        const string consumerName = "consumer-given-non-partitioned-topic-with-messages";
+        const string topicName = "consumer-with-3-partitions-test";
+        const string content = "test-message";
+        const int numberOfMessages = 10000;
+        const int partitions = 3;
+
+        _fixture.CreatePartitionedTopic($"persistent://public/default/{topicName}", partitions);
+
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, SubscriptionInitialPosition.Earliest, topicName, consumerName, subscriptionName);
+        await using var producer = CreateProducer(client, topicName);
+
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+
+        //Act
+        var produced = await ProduceMessages(producer, numberOfMessages, cts.Token, content);
+        var consumed = await ConsumeMessages(consumer, numberOfMessages, cts.Token);
+
+        //Assert
+        consumed.Should().BeEquivalentTo(produced);
+    }
+
+    private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<string> producer, int numberOfMessages, CancellationToken ct, string content)
     {
         var messageIds = new MessageId[numberOfMessages];
 
         for (var i = 0; i < numberOfMessages; ++i)
         {
-            var data = Encoding.UTF8.GetBytes($"Sent #{i} at {DateTimeOffset.UtcNow:s}");
-            messageIds[i] = await producer.Send(data, ct);
+            messageIds[i] = await producer.Send(content, ct);
         }
 
         return messageIds;
     }
 
-    private static async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer<byte[]> consumer, int numberOfMessages, CancellationToken ct)
+    private static async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer<string> consumer, int numberOfMessages, CancellationToken ct)
     {
         var messageIds = new List<MessageId>(numberOfMessages);
 
@@ -101,4 +232,26 @@ public class ConsumerTests
 
         return messageIds;
     }
+
+    private IProducer<string> CreateProducer(IPulsarClient pulsarClient, string topicName) => pulsarClient.NewProducer(Schema.String)
+        .Topic(topicName)
+        .Create();
+
+    private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, SubscriptionInitialPosition subscriptionInitialPosition,
+        string topicName,
+        string consumerName,
+        string subscriptionName) => pulsarClient.NewConsumer(Schema.String)
+        .ConsumerName(consumerName)
+        .InitialPosition(subscriptionInitialPosition)
+        .SubscriptionName(subscriptionName)
+        .Topic(topicName)
+        .Create();
+
+    private IPulsarClient CreateClient()
+        => PulsarClient
+            .Builder()
+            .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
+            .ExceptionHandler(ec => _testOutputHelper.WriteLine($"Exception: {ec.Exception}"))
+            .ServiceUrl(_fixture.ServiceUrl)
+            .Build();
 }

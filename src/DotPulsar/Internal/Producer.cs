@@ -111,7 +111,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
     private async Task Monitor()
     {
-        var numberOfPartitions = await GetNumberOfPartitions(_cts.Token).ConfigureAwait(false);
+        var numberOfPartitions = await _connectionPool.GetNumberOfPartitions(Topic, _cts.Token).ConfigureAwait(false);
         var isPartitionedTopic = numberOfPartitions != 0;
         var monitoringTasks = new Task<ProducerState>[isPartitionedTopic ? numberOfPartitions : 1];
 
@@ -189,27 +189,12 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-        var producer = new SubProducer(correlationId, _processManager, initialChannel, executor, stateManager, factory, partition, _options.MaxPendingMessages);
+        var producer = new SubProducer(correlationId, _processManager, initialChannel, executor, stateManager, factory, partition, _options.MaxPendingMessages, topic);
         var process = new ProducerProcess(correlationId, stateManager, producer);
         _processManager.Add(process);
         process.Start();
         return producer;
     }
-
-    private async Task<uint> GetNumberOfPartitions(CancellationToken cancellationToken)
-    {
-        var connection = await _connectionPool.FindConnectionForTopic(Topic, cancellationToken).ConfigureAwait(false);
-        var commandPartitionedMetadata = new PulsarApi.CommandPartitionedTopicMetadata { Topic = Topic };
-        var response = await connection.Send(commandPartitionedMetadata, cancellationToken).ConfigureAwait(false);
-
-        response.Expect(PulsarApi.BaseCommand.Type.PartitionedMetadataResponse);
-
-        if (response.PartitionMetadataResponse.Response == PulsarApi.CommandPartitionedTopicMetadataResponse.LookupType.Failed)
-            response.PartitionMetadataResponse.Throw();
-
-        return response.PartitionMetadataResponse.Partitions;
-    }
-
     public bool IsFinalState()
         => _state.IsFinalState();
 

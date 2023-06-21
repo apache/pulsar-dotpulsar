@@ -12,15 +12,20 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions;
+namespace DotPulsar.Abstractions;
 
-using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-public interface IConnectionPool : IAsyncDisposable
+/// <summary>
+/// An abstraction for getting the last message ids.
+/// </summary>
+public interface IGetLastMessageIds
 {
-    ValueTask<IConnection> FindConnectionForTopic(string topic, CancellationToken cancellationToken = default);
-
-    ValueTask<uint> GetNumberOfPartitions(String topic, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Provides the latest message ID for all the topic(s).
+    /// </summary>
+    /// <returns>List of MessageId from all the topic(s)</returns>
+    ValueTask<IEnumerable<MessageId>> GetLastMessageIds(CancellationToken cancellationToken = default);
 }

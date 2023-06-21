@@ -42,12 +42,13 @@ public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
     /// <summary>
     /// Initializes a new instance using the specified ledgerId, entryId, partition and batchIndex.
     /// </summary>
-    public MessageId(ulong ledgerId, ulong entryId, int partition, int batchIndex)
+    public MessageId(ulong ledgerId, ulong entryId, int partition, int batchIndex, string topic = "")
     {
         LedgerId = ledgerId;
         EntryId = entryId;
         Partition = partition;
         BatchIndex = batchIndex;
+        Topic = topic;
     }
 
     /// <summary>
@@ -70,6 +71,11 @@ public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
     /// </summary>
     public int BatchIndex { get; }
 
+    /// <summary>
+    /// Return the full topic name of a message.
+    /// </summary>
+    public string Topic { get; }
+
     public int CompareTo(MessageId? other)
     {
         if (other is null)
@@ -84,6 +90,10 @@ public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
             return result;
 
         result = Partition.CompareTo(other.Partition);
+        if (result != 0)
+            return result;
+
+        result = String.Compare(Topic, other.Topic, StringComparison.Ordinal);
         if (result != 0)
             return result;
 
@@ -106,7 +116,7 @@ public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
         => o is MessageId id && Equals(id);
 
     public bool Equals(MessageId? other)
-        => other is not null && LedgerId == other.LedgerId && EntryId == other.EntryId && Partition == other.Partition && BatchIndex == other.BatchIndex;
+        => other is not null && LedgerId == other.LedgerId && EntryId == other.EntryId && Partition == other.Partition && BatchIndex == other.BatchIndex && Topic == other.Topic;
 
     public static bool operator ==(MessageId x, MessageId y)
         => ReferenceEquals(x, y) || (x is not null && x.Equals(y));
@@ -115,10 +125,14 @@ public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
         => !(x == y);
 
     public override int GetHashCode()
-        => HashCode.Combine(LedgerId, EntryId, Partition, BatchIndex);
+        => HashCode.Combine(LedgerId, EntryId, Partition, BatchIndex, Topic);
 
     public override string ToString()
-        => $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}";
+    {
+        if (Topic == string.Empty)
+            return $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}";
+        return $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}:{Topic}";
+    }
 
     internal MessageIdData ToMessageIdData()
     {
