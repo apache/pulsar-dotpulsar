@@ -36,6 +36,7 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
     private readonly IExecute _executor;
     private readonly IStateChanged<ProducerState> _state;
     private readonly IProducerChannelFactory _factory;
+    private readonly int _partition;
     private int _isDisposed;
     private ulong? _topicEpoch;
     private Exception? _faultException;
@@ -47,6 +48,7 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
         IExecute executor,
         IStateChanged<ProducerState> state,
         IProducerChannelFactory factory,
+        int partition,
         uint maxPendingMessages)
     {
         _sendQueue = new AsyncQueueWithCursor<SendOp>(maxPendingMessages);
@@ -56,6 +58,7 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
         _executor = executor;
         _state = state;
         _factory = factory;
+        _partition = partition;
         _isDisposed = 0;
 
         _eventRegister.Register(new ProducerCreated(_correlationId));
@@ -196,7 +199,10 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
             throw new ProducerSendReceiptOrderingException($"Received sequenceId {receiptSequenceId}. Expected {expectedSequenceId}");
 
         _sendQueue.Dequeue();
-        sendOp.ReceiptTcs.TrySetResult(sendReceipt.MessageId.ToMessageId());
+
+        var srMsgId = sendReceipt.MessageId;
+        var messageId = _partition == -1 ? srMsgId.ToMessageId() : new MessageId(srMsgId.LedgerId, srMsgId.EntryId, _partition, srMsgId.BatchIndex);
+        sendOp.ReceiptTcs.TrySetResult(messageId);
     }
 
     public async Task EstablishNewChannel(CancellationToken cancellationToken)

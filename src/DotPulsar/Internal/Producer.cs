@@ -122,7 +122,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             if (isPartitionedTopic)
                 topic = $"{Topic}-partition-{partition}";
 
-            var producer = CreateSubProducer(topic);
+            var producer = CreateSubProducer(topic, isPartitionedTopic ? partition : -1);
             _ = _producers.TryAdd(partition, producer);
             monitoringTasks[partition] = producer.OnStateChangeFrom(ProducerState.Disconnected, _cts.Token).AsTask();
         }
@@ -179,17 +179,17 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         }
     }
 
-    private SubProducer CreateSubProducer(string topic)
+    private SubProducer CreateSubProducer(string topic, int partition)
     {
         var correlationId = Guid.NewGuid();
         var producerName = _options.ProducerName;
         var schema = _options.Schema;
-        var producerAccessMode = (DotPulsar.Internal.PulsarApi.ProducerAccessMode) _options.ProducerAccessMode;
+        var producerAccessMode = (PulsarApi.ProducerAccessMode) _options.ProducerAccessMode;
         var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory);
         var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-        var producer = new SubProducer(correlationId, _processManager, initialChannel, executor, stateManager, factory, _options.MaxPendingMessages);
+        var producer = new SubProducer(correlationId, _processManager, initialChannel, executor, stateManager, factory, partition, _options.MaxPendingMessages);
         var process = new ProducerProcess(correlationId, stateManager, producer);
         _processManager.Add(process);
         process.Start();
