@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,6 +30,15 @@ public sealed class MessageMetadata
         => Metadata = new Internal.PulsarApi.MessageMetadata();
 
     internal Internal.PulsarApi.MessageMetadata Metadata { get; }
+
+    /// <summary>
+    /// Manually set the compression information.
+    /// </summary>
+    public void SetCompressionInfo(CompressionType compressionType, uint uncompressedSize)
+    {
+        Metadata.Compression = (Internal.PulsarApi.CompressionType) compressionType;
+        Metadata.UncompressedSize = uncompressedSize;
+    }
 
     /// <summary>
     /// The delivery time of the message as unix time in milliseconds.

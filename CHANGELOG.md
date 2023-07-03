@@ -4,23 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [UnReleased]
-
-### Fixed
-
-- Fixed issue preventing reader to correctly go into `Faulted` state.
-
-## [2.12.0] - ?
+## [Unreleased]
 
 ### Added
 
-- Support `ProducerAccessMode` to prevent multiple producers on a single topic.
-- Added `Fenced` state for producers which is a final state. 
+- Support for `ProducerAccessMode` to prevent multiple producers on a single topic
+- A new `Fenced` state for producers which is a final state
+- The ability to explicitly set compression information on an outcoming message using `MessageMetadata`
 
 ### Fixed
 
-- Fixed issue with `Send` extension methods that do include `MessageMetadata` in the parameter list. The issue prevents more than two messages from being published on namespaces where deduplication is enabled.
-- Calling `await send(...)` on a Producer did not correctly terminate with an exception when a send operation failed, e.g. because the producer faulted.
+- Issue preventing readers from correctly go into `Faulted` state
+- The `Send` extension methods that includes `MessageMetadata` which prevented more than two messages from being published on namespaces with deduplication enableded
+- Calling `await Send(...)` on a producer did not correctly terminate with an exception when a send operation failed (e.g. because the producer faulted)
 
 ## [2.11.0] - 2023-03-13
 

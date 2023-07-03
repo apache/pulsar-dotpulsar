@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -62,10 +62,11 @@ public sealed class ProducerChannel : IProducerChannel
 
     public ValueTask DisposeAsync() => new();
 
-    public async Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, TaskCompletionSource<BaseCommand> responseTcs,
-        CancellationToken cancellationToken)
+    public async Task Send(MessageMetadata metadata, ReadOnlySequence<byte> payload, TaskCompletionSource<BaseCommand> responseTcs, CancellationToken cancellationToken)
     {
         var sendPackage = _sendPackagePool.Get();
+        var resetSchema = false;
+        var resetCompression = false;
 
         try
         {
@@ -73,14 +74,17 @@ public sealed class ProducerChannel : IProducerChannel
             metadata.ProducerName = _name;
 
             if (metadata.SchemaVersion is null && _schemaVersion is not null)
+            {
                 metadata.SchemaVersion = _schemaVersion;
+                resetSchema = true;
+            }
 
             sendPackage.Command ??= new CommandSend { ProducerId = _id, NumMessages = 1 };
 
             sendPackage.Command.SequenceId = metadata.SequenceId;
             sendPackage.Metadata = metadata;
 
-            if (_compressorFactory is null)
+            if (_compressorFactory is null || metadata.Compression != CompressionType.None)
                 sendPackage.Payload = payload;
             else
             {
@@ -88,12 +92,22 @@ public sealed class ProducerChannel : IProducerChannel
                 sendPackage.Metadata.UncompressedSize = (uint) payload.Length;
                 using var compressor = _compressorFactory.Create();
                 sendPackage.Payload = compressor.Compress(payload);
+                resetCompression = true;
             }
 
             await _connection.Send(sendPackage, responseTcs, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
+            if (resetSchema)
+                metadata.SchemaVersion = null;
+
+            if (resetCompression)
+            {
+                metadata.Compression = CompressionType.None;
+                metadata.UncompressedSize = 0;
+            }
+
             _sendPackagePool.Return(sendPackage);
         }
     }
