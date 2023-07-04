@@ -10,12 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 - Support for `ProducerAccessMode` to prevent multiple producers on a single topic
 - A new `Fenced` state for producers which is a final state
-- The ability to explicitly set compression information on an outcoming message using `MessageMetadata`
+- The ability to explicitly set compression information on an outgoing message using `MessageMetadata`
 
 ### Fixed
 
-- Issue preventing readers from correctly go into `Faulted` state
-- The `Send` extension methods that includes `MessageMetadata` which prevented more than two messages from being published on namespaces with deduplication enableded
+- Issue preventing readers from correctly going into the `Faulted` state
+- The `Send` extension methods that include `MessageMetadata`, which prevented more than two messages from being published on namespaces with deduplication enabled
 - Calling `await Send(...)` on a producer did not correctly terminate with an exception when a send operation failed (e.g. because the producer faulted)
 - The 'Partition' in 'MessageId' will now be set to the correct partition when producing to partitioned topics
 
