@@ -15,9 +15,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 ### Fixed
 
 - Issue preventing readers from correctly going into the `Faulted` state
-- The `Send` extension methods that include `MessageMetadata`, which prevented more than two messages from being published on namespaces with deduplication enabled
 - Calling `await Send(...)` on a producer did not correctly terminate with an exception when a send operation failed (e.g. because the producer faulted)
 - The 'Partition' in 'MessageId' will now be set to the correct partition when producing to partitioned topics
+
+## [2.11.1] - 2023-07-05
+
+### Fixed
+
+- Fixed issue with `Send` extension methods that do include `MessageMetadata` in the parameter list. The issue prevents more than two messages from being published on namespaces where deduplication is enabled.
 
 ## [2.11.0] - 2023-03-13
 
