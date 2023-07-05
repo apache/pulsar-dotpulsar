@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.11.1] - 2023-07-05
+
+### Fixed
+
+- Fixed issue with `Send` extension methods that do include `MessageMetadata` in the parameter list. The issue prevents more than two messages from being published on namespaces where deduplication is enabled.
+
 ## [2.11.0] - 2023-03-13
 
 ### Added

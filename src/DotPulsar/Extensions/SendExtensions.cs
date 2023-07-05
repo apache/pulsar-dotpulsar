@@ -71,6 +71,7 @@ public static class SendExtensions
         }
         finally
         {
+            metadata.Metadata.SequenceId = 0;
             metadata.Metadata.Properties.Clear();
             _messageMetadataPool.Return(metadata);
         }
