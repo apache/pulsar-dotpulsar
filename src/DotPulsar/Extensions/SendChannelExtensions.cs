@@ -15,7 +15,7 @@
 namespace DotPulsar.Extensions;
 
 using DotPulsar.Abstractions;
-using Microsoft.Extensions.ObjectPool;
+using DotPulsar.Internal;
 using System;
 using System.Buffers;
 using System.Threading;
@@ -26,14 +26,6 @@ using System.Threading.Tasks;
 /// </summary>
 public static class SendChannelExtensions
 {
-    private static readonly ObjectPool<MessageMetadata> _messageMetadataPool;
-
-    static SendChannelExtensions()
-    {
-        var messageMetadataPolicy = new DefaultPooledObjectPolicy<MessageMetadata>();
-        _messageMetadataPool = new DefaultObjectPool<MessageMetadata>(messageMetadataPolicy);
-    }
-
     /// <summary>
     /// Sends a message.
     /// </summary>
@@ -63,13 +55,11 @@ public static class SendChannelExtensions
     /// </summary>
     public static async ValueTask Send<TMessage>(this ISendChannel<TMessage> sender, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
     {
-        var metadata = _messageMetadataPool.Get();
+        var metadata = MessageMetadataObjectPool.Get();
 
         async ValueTask ReleaseMetadataAndCallCallback(MessageId id)
         {
-            metadata.Metadata.SequenceId = 0;
-            metadata.Metadata.Properties.Clear();
-            _messageMetadataPool.Return(metadata);
+            MessageMetadataObjectPool.Return(metadata);
 
             if (onMessageSent is not null)
                 await onMessageSent(id).ConfigureAwait(false);
