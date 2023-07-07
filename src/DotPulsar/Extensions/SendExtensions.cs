@@ -15,7 +15,7 @@
 namespace DotPulsar.Extensions;
 
 using DotPulsar.Abstractions;
-using Microsoft.Extensions.ObjectPool;
+using DotPulsar.Internal;
 using System;
 using System.Buffers;
 using System.Threading;
@@ -26,14 +26,6 @@ using System.Threading.Tasks;
 /// </summary>
 public static class SendExtensions
 {
-    private static readonly ObjectPool<MessageMetadata> _messageMetadataPool;
-
-    static SendExtensions()
-    {
-        var messageMetadataPolicy = new DefaultPooledObjectPolicy<MessageMetadata>();
-        _messageMetadataPool = new DefaultObjectPool<MessageMetadata>(messageMetadataPolicy);
-    }
-
     /// <summary>
     /// Sends a message.
     /// </summary>
@@ -63,7 +55,7 @@ public static class SendExtensions
     /// </summary>
     public static async ValueTask<MessageId> Send<TMessage>(this ISend<TMessage> sender, TMessage message, CancellationToken cancellationToken = default)
     {
-        var metadata = _messageMetadataPool.Get();
+        var metadata = MessageMetadataObjectPool.Get();
 
         try
         {
@@ -71,9 +63,7 @@ public static class SendExtensions
         }
         finally
         {
-            metadata.Metadata.SequenceId = 0;
-            metadata.Metadata.Properties.Clear();
-            _messageMetadataPool.Return(metadata);
+            MessageMetadataObjectPool.Return(metadata);
         }
     }
 }
