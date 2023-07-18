@@ -63,11 +63,11 @@ public sealed class PingPongHandler : IAsyncDisposable
             var elapsed = TimeSpan.FromSeconds((now - lastCommand) / Stopwatch.Frequency);
             if (elapsed >= _keepAliveInterval)
             {
-                Task.Factory.StartNew(() => SendPing());
-                _timer.Change(_keepAliveInterval, TimeSpan.Zero);
+                _connection.DisposeAsync();
+                return;
             }
-            else
-                _timer.Change(_keepAliveInterval.Subtract(elapsed), TimeSpan.Zero);
+            Task.Factory.StartNew(() => SendPing());
+            _timer.Change(_keepAliveInterval, TimeSpan.Zero);
         }
         catch
         {
