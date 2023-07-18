@@ -24,26 +24,23 @@ using System.Threading.Tasks;
 public sealed class PingPongHandler : IAsyncDisposable
 {
     private readonly IConnection _connection;
-    private readonly TimeSpan _keepAliveInterval;
     private readonly Timer _timer;
     private readonly CommandPing _ping;
     private readonly CommandPong _pong;
-    private long _lastCommand;
+    private volatile bool _waitForPongResponse;
 
     public PingPongHandler(IConnection connection, TimeSpan keepAliveInterval)
     {
         _connection = connection;
-        _keepAliveInterval = keepAliveInterval;
         _timer = new Timer(Watch);
-        _timer.Change(_keepAliveInterval, TimeSpan.Zero);
+        _timer.Change(keepAliveInterval, keepAliveInterval);
         _ping = new CommandPing();
         _pong = new CommandPong();
-        _lastCommand = Stopwatch.GetTimestamp();
     }
 
     public bool Incoming(BaseCommand.Type commandType)
     {
-        Interlocked.Exchange(ref _lastCommand, Stopwatch.GetTimestamp());
+        _waitForPongResponse = false;
 
         if (commandType == BaseCommand.Type.Ping)
         {
@@ -58,16 +55,13 @@ public sealed class PingPongHandler : IAsyncDisposable
     {
         try
         {
-            var lastCommand = Interlocked.Read(ref _lastCommand);
-            var now = Stopwatch.GetTimestamp();
-            var elapsed = TimeSpan.FromSeconds((now - lastCommand) / Stopwatch.Frequency);
-            if (elapsed >= _keepAliveInterval)
+            if (_waitForPongResponse)
             {
                 _connection.DisposeAsync();
                 return;
             }
             Task.Factory.StartNew(() => SendPing());
-            _timer.Change(_keepAliveInterval, TimeSpan.Zero);
+            _waitForPongResponse = true;
         }
         catch
         {
