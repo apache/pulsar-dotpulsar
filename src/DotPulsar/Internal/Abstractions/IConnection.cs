@@ -42,4 +42,6 @@ public interface IConnection : IAsyncDisposable
     Task Send(SendPackage command, TaskCompletionSource<BaseCommand> responseTcs, CancellationToken cancellationToken);
     Task<BaseCommand> Send(CommandGetOrCreateSchema command, CancellationToken cancellationToken);
     Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken);
+
+    void MarkInactive();
 }

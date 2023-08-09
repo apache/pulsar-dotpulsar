@@ -50,11 +50,7 @@ public class PingPongHandlerTest
     {
         public volatile bool IsDispose;
         public Action PingCallback = (() => { });
-        public ValueTask DisposeAsync()
-        {
-            this.IsDispose = true;
-            return ValueTask.CompletedTask;
-        }
+        public ValueTask DisposeAsync() => throw new System.NotImplementedException();
         public ValueTask<bool> HasChannels(CancellationToken cancellationToken) =>
             throw new System.NotImplementedException();
         public Task<ProducerResponse> Send(CommandProducer command, IChannel channel, CancellationToken cancellationToken) =>
@@ -94,5 +90,9 @@ public class PingPongHandlerTest
             throw new System.NotImplementedException();
         public Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken) =>
             throw new System.NotImplementedException();
+        public void MarkInactive()
+        {
+            this.IsDispose = true;
+        }
     }
 }

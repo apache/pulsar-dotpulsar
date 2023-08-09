@@ -159,7 +159,10 @@ public sealed class ConnectionPool : IConnectionPool
     private async Task<Connection> EstablishNewConnection(PulsarUrl url, CancellationToken cancellationToken)
     {
         var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
-        var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _authentication);
+        var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _authentication, async connection =>
+        {
+            await DisposeConnection(connection);
+        });
         DotPulsarMeter.ConnectionCreated();
         _connections[url] = connection;
         _ = connection.ProcessIncomingFrames(_cancellationTokenSource.Token).ContinueWith(t => DisposeConnection(url));
@@ -173,12 +176,17 @@ public sealed class ConnectionPool : IConnectionPool
         return connection;
     }
 
+    private async ValueTask DisposeConnection(Connection connection)
+    {
+        await connection.DisposeAsync().ConfigureAwait(false);
+        DotPulsarMeter.ConnectionDisposed();
+    }
+
     private async ValueTask DisposeConnection(PulsarUrl serviceUrl)
     {
         if (_connections.TryRemove(serviceUrl, out var connection) && connection is not null)
         {
-            await connection.DisposeAsync().ConfigureAwait(false);
-            DotPulsarMeter.ConnectionDisposed();
+            await DisposeConnection(connection);
         }
     }
 

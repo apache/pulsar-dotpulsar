@@ -67,7 +67,7 @@ public sealed class PingPongHandler : IAsyncDisposable
             {
                 if (_waitForPong)
                 {
-                    _connection.DisposeAsync();
+                    _connection.MarkInactive();
                     return;
                 }
                 Task.Factory.StartNew(() =>
