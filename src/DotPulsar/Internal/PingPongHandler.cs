@@ -24,23 +24,28 @@ using System.Threading.Tasks;
 public sealed class PingPongHandler : IAsyncDisposable
 {
     private readonly IConnection _connection;
+    private readonly TimeSpan _keepAliveInterval;
     private readonly Timer _timer;
     private readonly CommandPing _ping;
     private readonly CommandPong _pong;
-    private volatile bool _waitForPongResponse;
+    private long _lastCommand;
+    private bool _waitForPong;
 
     public PingPongHandler(IConnection connection, TimeSpan keepAliveInterval)
     {
         _connection = connection;
+        _keepAliveInterval = keepAliveInterval;
         _timer = new Timer(Watch);
-        _timer.Change(keepAliveInterval, keepAliveInterval);
+        _timer.Change(_keepAliveInterval, TimeSpan.Zero);
         _ping = new CommandPing();
         _pong = new CommandPong();
+        _lastCommand = Stopwatch.GetTimestamp();
     }
 
     public bool Incoming(BaseCommand.Type commandType)
     {
-        _waitForPongResponse = false;
+        Interlocked.Exchange(ref _lastCommand, Stopwatch.GetTimestamp());
+        _waitForPong = false;
 
         if (commandType == BaseCommand.Type.Ping)
         {
@@ -55,13 +60,25 @@ public sealed class PingPongHandler : IAsyncDisposable
     {
         try
         {
-            if (_waitForPongResponse)
+            var lastCommand = Interlocked.Read(ref _lastCommand);
+            var now = Stopwatch.GetTimestamp();
+            var elapsed = TimeSpan.FromSeconds((now - lastCommand) / Stopwatch.Frequency);
+            if (elapsed >= _keepAliveInterval)
             {
-                _connection.DisposeAsync();
-                return;
+                if (_waitForPong)
+                {
+                    _connection.DisposeAsync();
+                    return;
+                }
+                Task.Factory.StartNew(() =>
+                {
+                    _waitForPong = true;
+                    return SendPing();
+                });
+                _timer.Change(_keepAliveInterval, TimeSpan.Zero);
             }
-            Task.Factory.StartNew(() => SendPing());
-            _waitForPongResponse = true;
+            else
+                _timer.Change(_keepAliveInterval.Subtract(elapsed), TimeSpan.Zero);
         }
         catch
         {
