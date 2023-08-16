@@ -2,12 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
 ### Added
 
+- Added Partitioned topic support for the Consumer and Reader
+- MessageId now includes an extra field for setting the topic
 - Support for `ProducerAccessMode` to prevent multiple producers on a single topic
 - A new `Fenced` state for producers which is a final state
 - The ability to explicitly set compression information on an outgoing message using `MessageMetadata`
@@ -17,6 +19,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 - Issue preventing readers from correctly going into the `Faulted` state
 - Calling `await Send(...)` on a producer did not correctly terminate with an exception when a send operation failed (e.g. because the producer faulted)
 - The 'Partition' in 'MessageId' will now be set to the correct partition when producing to partitioned topics
+
+### Deprecated
+
+- GetLastMessageId of the Consumer and Reader is deprecated, and soon to be removed. Please use GetLastMessageIds instead.
 
 ## [2.11.1] - 2023-07-05
 

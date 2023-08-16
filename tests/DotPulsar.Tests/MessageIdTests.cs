@@ -36,6 +36,19 @@ public class MessageIdTests
     }
 
     [Fact]
+    public void CompareTo_GivenTheSameValuesWithTopic_ShouldBeEqual()
+    {
+        var m1 = new MessageId(1, 2, 3, 4, "persistent://public/default/my-topic-partition-0");
+        var m2 = new MessageId(1, 2, 3, 4, "persistent://public/default/my-topic-partition-0");
+
+        m1.CompareTo(m2).Should().Be(0);
+        (m1 < m2).Should().BeFalse();
+        (m1 > m2).Should().BeFalse();
+        (m1 >= m2).Should().BeTrue();
+        (m1 <= m2).Should().BeTrue();
+    }
+
+    [Fact]
     public void CompareTo_GivenAllNull_ShouldBeEqual()
     {
         MessageId m1 = null;
@@ -117,6 +130,17 @@ public class MessageIdTests
         (m1 != m2).Should().BeFalse();
     }
 
+    [Fact]
+    public void Equals_GivenTheSameValuesWithTopic_ShouldBeEqual()
+    {
+        var m1 = new MessageId(1, 2, 3, 4, "persistent://public/default/my-topic-partition-0");
+        var m2 = new MessageId(1, 2, 3, 4, "persistent://public/default/my-topic-partition-0");
+
+        m1.Equals(m2).Should().BeTrue();
+        (m1 == m2).Should().BeTrue();
+        (m1 != m2).Should().BeFalse();
+    }
+
     [Theory]
     [InlineData(0, 2, 3, 4)] // LegerId not the same
     [InlineData(1, 0, 3, 4)] // EntryId not the same
@@ -126,6 +150,22 @@ public class MessageIdTests
     {
         var m1 = new MessageId(ledgerId, entryId, partition, batchIndex);
         var m2 = new MessageId(1, 2, 3, 4);
+
+        m1.Equals(m2).Should().BeFalse();
+        (m1 == m2).Should().BeFalse();
+        (m1 != m2).Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(0, 2, 3, 4, "persistent://public/default/my-topic-partition-1")] // LegerId not the same
+    [InlineData(1, 0, 3, 4, "persistent://public/default/my-topic-partition-1")] // EntryId not the same
+    [InlineData(1, 2, 0, 4, "persistent://public/default/my-topic-partition-1")] // Partition not the same
+    [InlineData(1, 2, 3, 0, "persistent://public/default/my-topic-partition-1")] // BatchIndex not the same
+    [InlineData(1, 2, 3, 4, "persistent://public/default/my-topic-partition-0")] // Topic not the same
+    public void Equals_GivenDifferentValuesWithTopic_ShouldNotBeEqual(ulong ledgerId, ulong entryId, int partition, int batchIndex, string topic)
+    {
+        var m1 = new MessageId(ledgerId, entryId, partition, batchIndex, topic);
+        var m2 = new MessageId(1, 2, 3, 4, "persistent://public/default/my-topic-partition-1");
 
         m1.Equals(m2).Should().BeFalse();
         (m1 == m2).Should().BeFalse();

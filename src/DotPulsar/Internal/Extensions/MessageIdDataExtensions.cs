@@ -18,8 +18,8 @@ using DotPulsar.Internal.PulsarApi;
 
 public static class MessageIdDataExtensions
 {
-    public static MessageId ToMessageId(this MessageIdData messageIdData)
-        => new(messageIdData.LedgerId, messageIdData.EntryId, messageIdData.Partition, messageIdData.BatchIndex);
+    public static MessageId ToMessageId(this MessageIdData messageIdData, string topic)
+        => new(messageIdData.LedgerId, messageIdData.EntryId, messageIdData.Partition, messageIdData.BatchIndex, topic);
 
     public static void MapFrom(this MessageIdData destination, MessageId source)
     {

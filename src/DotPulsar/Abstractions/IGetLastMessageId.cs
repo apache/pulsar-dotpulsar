@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Abstractions;
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,5 +26,6 @@ public interface IGetLastMessageId
     /// <summary>
     /// Get the MessageId of the last message on the topic.
     /// </summary>
+    [Obsolete("GetLastMessageId is obsolete. Please use GetLastMessageIds instead.")]
     ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken = default);
 }
