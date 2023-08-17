@@ -338,7 +338,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     internal async ValueTask WaitForSendQueueEmpty(CancellationToken cancellationToken)
         => await Task.WhenAll(_producers.Values.Select(producer => producer.WaitForSendQueueEmpty(cancellationToken).AsTask())).ConfigureAwait(false);
 
-    private void CompleteActivity(MessageId messageId, long payloadSize, Activity? activity)
+    private static void CompleteActivity(MessageId messageId, long payloadSize, Activity? activity)
     {
         if (activity is null)
             return;
@@ -353,7 +353,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         activity.Dispose();
     }
 
-    private void FailActivity(Exception exception, Activity? activity)
+    private static void FailActivity(Exception exception, Activity? activity)
     {
         if (activity is null)
             return;
@@ -370,7 +370,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             throw new ProducerDisposedException(GetType().FullName!);
     }
 
-    private StateManager<ProducerState> CreateStateManager()
+    private static StateManager<ProducerState> CreateStateManager()
         => new(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted, ProducerState.Fenced);
 
     public void Register(IEvent @event) { }

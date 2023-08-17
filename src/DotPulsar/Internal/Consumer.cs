@@ -399,15 +399,10 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         return subConsumer;
     }
 
-    private string GetPartitionedTopicName(int partitionNumber)
-    {
-        return $"{Topic}-partition-{partitionNumber}";
-    }
+    private string GetPartitionedTopicName(int partitionNumber) => $"{Topic}-partition-{partitionNumber}";
 
-    private StateManager<ConsumerState> CreateStateManager()
-    {
-        return new StateManager<ConsumerState>(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
-    }
+    private static StateManager<ConsumerState> CreateStateManager()
+        => new(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
 
     private async Task Guard(CancellationToken cancellationToken)
     {

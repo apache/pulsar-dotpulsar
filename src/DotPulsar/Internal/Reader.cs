@@ -256,10 +256,8 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         }
     }
 
-    private StateManager<ReaderState> CreateStateManager()
-    {
-        return new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
-    }
+    private static StateManager<ReaderState> CreateStateManager()
+        => new(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
 
     private SubReader<TMessage> CreateSubReader(string topic)
     {
@@ -291,10 +289,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         return subReader;
     }
 
-    private string GetPartitionedTopicName(int partitionNumber)
-    {
-        return $"{Topic}-partition-{partitionNumber}";
-    }
+    private string GetPartitionedTopicName(int partitionNumber) => $"{Topic}-partition-{partitionNumber}";
 
     private async Task Guard(CancellationToken cancellationToken)
     {

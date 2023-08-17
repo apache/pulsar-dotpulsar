@@ -29,82 +29,206 @@ using Xunit;
 public class StateExtensionsTests
 {
     [Theory, Tests.AutoData]
-    public async Task OnStateChangeTo_WhenChangingToFinalStateInitially_ShouldReturnFinalState([Frozen] IState<ProducerState> sut)
+    public async Task OnStateChangeTo_WhenChangingToFinalStateInitially_ShouldReturnFinalState([Frozen] IState<ProducerState> uut)
     {
         // Arrange
         const ProducerState expected = ProducerState.Faulted;
-        sut.OnStateChangeTo(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Returns(expected);
-        sut.IsFinalState(expected).Returns(true);
+        uut.OnStateChangeTo(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Returns(expected);
+        uut.IsFinalState(expected).Returns(true);
 
         // Act
-        var actual = await sut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
+        var actual = await uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
 
         // Assert
         actual.Should().Be(expected);
     }
 
     [Theory, Tests.AutoData]
-    public async Task OnStateChangeTo_WhenChangingToFinalStateWhileWaitingForDelay_ShouldReturnFinalState([Frozen] IState<ProducerState> sut)
+    public async Task OnStateChangeTo_WhenChangingToFinalStateWhileWaitingForDelay_ShouldReturnFinalState([Frozen] IState<ProducerState> uut)
     {
         // Arrange
         const ProducerState expected = ProducerState.Faulted;
-        sut.OnStateChangeTo(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Returns(ProducerState.Disconnected);
-        sut.IsFinalState(ProducerState.Disconnected).Returns(false);
-        sut.OnStateChangeFrom(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Returns(expected);
-        sut.IsFinalState(expected).Returns(true);
+        uut.OnStateChangeTo(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Returns(ProducerState.Disconnected);
+        uut.IsFinalState(ProducerState.Disconnected).Returns(false);
+        uut.OnStateChangeFrom(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Returns(expected);
+        uut.IsFinalState(expected).Returns(true);
 
         // Act
-        var actual = await sut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
+        var actual = await uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
 
         // Assert
         actual.Should().Be(expected);
     }
 
     [Theory, Tests.AutoData]
-    public async Task OnStateChangeTo_WhenTheDelayIsExceeded_ShouldReturnState([Frozen] IState<ProducerState> sut)
+    public async Task OnStateChangeTo_WhenTheDelayIsExceeded_ShouldReturnState([Frozen] IState<ProducerState> uut)
     {
         // Arrange
         const ProducerState expected = ProducerState.Disconnected;
-        sut.OnStateChangeTo(expected, Arg.Any<CancellationToken>()).Returns(expected);
-        sut.IsFinalState(expected).Returns(false);
-        sut.OnStateChangeFrom(expected, Arg.Any<CancellationToken>()).Throws<OperationCanceledException>();
+        uut.OnStateChangeTo(expected, Arg.Any<CancellationToken>()).Returns(expected);
+        uut.IsFinalState(expected).Returns(false);
+        uut.OnStateChangeFrom(expected, Arg.Any<CancellationToken>()).Throws<OperationCanceledException>();
 
         // Act
-        var actual = await sut.OnStateChangeTo(expected, TimeSpan.FromSeconds(1));
+        var actual = await uut.OnStateChangeTo(expected, TimeSpan.FromSeconds(1));
 
         // Assert
         actual.Should().Be(expected);
     }
 
     [Theory, Tests.AutoData]
-    public async Task OnStateChangeTo_WhenCancellationTokenIsCancelledInitially_ShouldThrowException([Frozen] IState<ProducerState> sut)
+    public async Task OnStateChangeTo_WhenCancellationTokenIsCancelledInitially_ShouldThrowException([Frozen] IState<ProducerState> uut)
     {
         // Arrange
         var cts = new CancellationTokenSource();
         cts.Cancel();
-        sut.OnStateChangeTo(ProducerState.Disconnected, cts.Token).Throws<OperationCanceledException>();
+        uut.OnStateChangeTo(ProducerState.Disconnected, cts.Token).Throws<OperationCanceledException>();
 
         // Act
-        var exception = await Record.ExceptionAsync(() => sut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1), cts.Token).AsTask());
+        var exception = await Record.ExceptionAsync(() => uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1), cts.Token).AsTask());
 
         // Assert
         exception.Should().BeOfType<OperationCanceledException>();
     }
 
     [Theory, Tests.AutoData]
-    public async Task OnStateChangeTo_WhenCancellationTokenIsCancelledWhileWaitingForDelay_ShouldThrowException([Frozen] IState<ProducerState> sut)
+    public async Task OnStateChangeTo_WhenCancellationTokenIsCancelledWhileWaitingForDelay_ShouldThrowException([Frozen] IState<ProducerState> uut)
     {
         // Arrange
         var cts = new CancellationTokenSource();
         cts.Cancel();
-        sut.OnStateChangeTo(ProducerState.Disconnected, cts.Token).Returns(ProducerState.Disconnected);
-        sut.IsFinalState(ProducerState.Disconnected).Returns(false);
-        sut.OnStateChangeFrom(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Throws<OperationCanceledException>();
+        uut.OnStateChangeTo(ProducerState.Disconnected, cts.Token).Returns(ProducerState.Disconnected);
+        uut.IsFinalState(ProducerState.Disconnected).Returns(false);
+        uut.OnStateChangeFrom(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Throws<OperationCanceledException>();
 
         // Act
-        var exception = await Record.ExceptionAsync(() => sut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1), cts.Token).AsTask());
+        var exception = await Record.ExceptionAsync(() => uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1), cts.Token).AsTask());
 
         // Assert
         exception.Should().BeOfType<OperationCanceledException>();
+    }
+
+    [Theory, Tests.AutoData]
+    public async Task OnStateChangeFrom_WhenChangingToFinalStateInitially_ShouldReturnFinalState([Frozen] IState<ProducerState> uut)
+    {
+        // Arrange
+        const ProducerState expected = ProducerState.Faulted;
+        uut.OnStateChangeFrom(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Returns(expected);
+        uut.IsFinalState(expected).Returns(true);
+
+        // Act
+        var actual = await uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    [Theory, Tests.AutoData]
+    public async Task OnStateChangeFrom_WhenChangingToFinalStateWhileWaitingForDelay_ShouldReturnFinalState([Frozen] IState<ProducerState> uut)
+    {
+        // Arrange
+        const ProducerState expected = ProducerState.Faulted;
+        uut.OnStateChangeFrom(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Returns(ProducerState.Disconnected);
+        uut.IsFinalState(ProducerState.Disconnected).Returns(false);
+        uut.OnStateChangeTo(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Returns(expected);
+        uut.IsFinalState(expected).Returns(true);
+
+        // Act
+        var actual = await uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    [Theory, Tests.AutoData]
+    public async Task OnStateChangeFrom_WhenTheDelayIsExceeded_ShouldReturnState([Frozen] IState<ProducerState> uut)
+    {
+        // Arrange
+        const ProducerState expected = ProducerState.Disconnected;
+        uut.OnStateChangeFrom(ProducerState.Connected, Arg.Any<CancellationToken>()).Returns(expected);
+        uut.IsFinalState(expected).Returns(false);
+        uut.OnStateChangeTo(ProducerState.Connected, Arg.Any<CancellationToken>()).Throws<OperationCanceledException>();
+
+        // Act
+        var actual = await uut.OnStateChangeFrom(ProducerState.Connected, TimeSpan.FromSeconds(1));
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    [Theory, Tests.AutoData]
+    public async Task OnStateChangeFrom_WhenCancellationTokenIsCancelledInitially_ShouldThrowException([Frozen] IState<ProducerState> uut)
+    {
+        // Arrange
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+        uut.OnStateChangeFrom(ProducerState.Disconnected, cts.Token).Throws<OperationCanceledException>();
+
+        // Act
+        var exception = await Record.ExceptionAsync(() => uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1), cts.Token).AsTask());
+
+        // Assert
+        exception.Should().BeOfType<OperationCanceledException>();
+    }
+
+    [Theory, Tests.AutoData]
+    public async Task OnStateChangeFrom_WhenCancellationTokenIsCancelledWhileWaitingForDelay_ShouldThrowException([Frozen] IState<ProducerState> uut)
+    {
+        // Arrange
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+        uut.OnStateChangeFrom(ProducerState.Disconnected, cts.Token).Returns(ProducerState.Disconnected);
+        uut.IsFinalState(ProducerState.Disconnected).Returns(false);
+        uut.OnStateChangeTo(ProducerState.Disconnected, Arg.Any<CancellationToken>()).Throws<OperationCanceledException>();
+
+        // Act
+        var exception = await Record.ExceptionAsync(() => uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1), cts.Token).AsTask());
+
+        // Assert
+        exception.Should().BeOfType<OperationCanceledException>();
+    }
+
+    [Theory, Tests.AutoData]
+    public async Task DelayedStateMonitor_WhenChangingToFinalStateInitially_ShouldInvokeOnStateLeft([Frozen] IState<ProducerState> uut)
+    {
+        // Arrange
+        const ProducerState expected = ProducerState.Faulted;
+        uut.OnStateChangeFrom(ProducerState.Connected, Arg.Any<CancellationToken>()).Returns(expected);
+        uut.IsFinalState(expected).Returns(true);
+        ProducerState? stateLeft = null;
+        ProducerState? stateReached = null;
+        void onStateLeft(IState<ProducerState> _, ProducerState state) => stateLeft = state;
+        void onStateReached(IState<ProducerState> _, ProducerState state) => stateReached = state;
+
+        // Act
+        await uut.DelayedStateMonitor(ProducerState.Connected, TimeSpan.FromSeconds(1), onStateLeft, onStateReached);
+
+        // Assert
+        stateLeft.HasValue.Should().BeTrue();
+        stateLeft!.Value.Should().Be(expected);
+        stateReached.HasValue.Should().BeFalse();
+    }
+
+    [Theory, Tests.AutoData]
+    public async Task DelayedStateMonitor_WhenChangingToFinalStateWhileWaiting_ShouldInvokeOnStateLeft([Frozen] IState<ProducerState> uut)
+    {
+        // Arrange
+        const ProducerState expected = ProducerState.Disconnected;
+        uut.OnStateChangeFrom(ProducerState.Connected, Arg.Any<CancellationToken>()).Returns(expected);
+        uut.IsFinalState(ProducerState.Disconnected).Returns(false);
+        uut.OnStateChangeTo(ProducerState.Connected, Arg.Any<CancellationToken>()).Returns(x => throw new OperationCanceledException(), x => ProducerState.Faulted);
+        uut.IsFinalState(ProducerState.Faulted).Returns(true);
+        ProducerState? stateLeft = null;
+        ProducerState? stateReached = null;
+        void onStateLeft(IState<ProducerState> _, ProducerState state) => stateLeft = state;
+        void onStateReached(IState<ProducerState> _, ProducerState state) => stateReached = state;
+
+        // Act
+        await uut.DelayedStateMonitor(ProducerState.Connected, TimeSpan.FromSeconds(1), onStateLeft, onStateReached);
+
+        // Assert
+        stateLeft.HasValue.Should().BeTrue();
+        stateLeft!.Value.Should().Be(expected);
+        stateReached.HasValue.Should().BeFalse();
     }
 }

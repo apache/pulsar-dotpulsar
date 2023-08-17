@@ -99,7 +99,7 @@ public static class StateExtensions
                 if (cancellationToken.IsCancellationRequested)
                     throw;
 
-                return state;
+                return currentState;
             }
         }
     }
@@ -116,15 +116,13 @@ public static class StateExtensions
         TimeSpan delay,
         Func<TEntity, TState, CancellationToken, ValueTask<TFaultContext>> onStateLeft,
         Func<TEntity, TState, TFaultContext, CancellationToken, ValueTask> onStateReached,
-        CancellationToken cancellationToken) where TEntity : IState<TState> where TState : notnull where TFaultContext : class
+        CancellationToken cancellationToken = default) where TEntity : IState<TState> where TState : notnull where TFaultContext : class
     {
         while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var currentState = await stateImplementer.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
-            if (stateImplementer.IsFinalState(currentState))
-                return;
 
             TFaultContext? faultContext = null;
 
@@ -137,7 +135,11 @@ public static class StateExtensions
                 // Ignore
             }
 
+            if (stateImplementer.IsFinalState(currentState))
+                return;
+
             currentState = await stateImplementer.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
+
             if (stateImplementer.IsFinalState(currentState))
                 return;
 
@@ -165,7 +167,7 @@ public static class StateExtensions
         TimeSpan delay,
         Func<TEntity, TState, CancellationToken, ValueTask> onStateLeft,
         Func<TEntity, TState, CancellationToken, ValueTask> onStateReached,
-        CancellationToken cancellationToken) where TEntity : IState<TState> where TState : notnull
+        CancellationToken cancellationToken = default) where TEntity : IState<TState> where TState : notnull
     {
         async ValueTask<string> onStateLeftFunction(TEntity entity, TState state, CancellationToken cancellationToken)
         {
@@ -193,7 +195,7 @@ public static class StateExtensions
         TimeSpan delay,
         Action<TEntity, TState> onStateLeft,
         Action<TEntity, TState> onStateReached,
-        CancellationToken cancellationToken) where TEntity : IState<TState> where TState : notnull
+        CancellationToken cancellationToken = default) where TEntity : IState<TState> where TState : notnull
     {
         ValueTask<string> onStateLeftFunction(TEntity entity, TState state, CancellationToken cancellationToken)
         {

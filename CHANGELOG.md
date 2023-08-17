@@ -8,17 +8,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Added
 
-- Added Partitioned topic support for the Consumer and Reader
+- Added partitioned topic support for the Consumer and Reader
 - MessageId now includes an extra field for setting the topic
 - Support for `ProducerAccessMode` to prevent multiple producers on a single topic
 - A new `Fenced` state for producers which is a final state
 - The ability to explicitly set compression information on an outgoing message using `MessageMetadata`
+
+### Changed
+
+- The DelayedStateMonitor extension method now invokes onStateLeft when the initial state change is to a final state
 
 ### Fixed
 
 - Issue preventing readers from correctly going into the `Faulted` state
 - Calling `await Send(...)` on a producer did not correctly terminate with an exception when a send operation failed (e.g. because the producer faulted)
 - The 'Partition' in 'MessageId' will now be set to the correct partition when producing to partitioned topics
+- The OnStateChangeFrom extension method with delay functionality returned the inputted state but should return the current state
+- The DelayedStateMonitor extension method invoked onStateLeft with the inputted state but should have invoked it with the current state
 
 ### Deprecated
 
