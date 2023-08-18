@@ -20,6 +20,7 @@ using DotPulsar.Internal.Compression;
 using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -92,10 +93,11 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     {
         await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
         _numberOfPartitions = Convert.ToInt32(await _connectionPool.GetNumberOfPartitions(Topic, _cts.Token).ConfigureAwait(false));
-
         _isPartitioned = _numberOfPartitions != 0;
-
         _receiveTaskQueueForSubReaders = new Task<IMessage<TMessage>>[_numberOfPartitions];
+        var readerStateTasks = new Task<ReaderState>[_numberOfPartitions];
+        ReaderState[] subReaderStates;
+
         for (var i = 0; i < _receiveTaskQueueForSubReaders.Length; i++)
         {
             _receiveTaskQueueForSubReaders[i] = _emptyTaskCompletionSource.Task;
@@ -105,21 +107,56 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         {
             _subReaderIndex = -1;
             _subReaders = new SubReader<TMessage>[_numberOfPartitions];
-
+            subReaderStates = new ReaderState[_numberOfPartitions];
             for (var partition = 0; partition < _numberOfPartitions; partition++)
             {
                 var partitionedTopicName = GetPartitionedTopicName(partition);
                 _subReaders[partition] = CreateSubReader(partitionedTopicName);
+                readerStateTasks[partition] = _subReaders[partition].OnStateChangeFrom(ReaderState.Disconnected, _cts.Token).AsTask();
             }
         }
         else
         {
             _subReaderIndex = 0;
+            readerStateTasks = new Task<ReaderState>[1];
+            subReaderStates = new ReaderState[1];
             _subReaders = new SubReader<TMessage>[1];
             _subReaders[0] = CreateSubReader(Topic);
+            readerStateTasks[0] = _subReaders[0].OnStateChangeFrom(ReaderState.Disconnected, _cts.Token).AsTask();
         }
         _allSubReadersAreReady = true;
         _semaphoreSlim.Release();
+
+        while (true)
+        {
+            await Task.WhenAny(readerStateTasks).ConfigureAwait(false);
+
+            for (var i = 0; i < readerStateTasks.Length; ++i)
+            {
+                var task = readerStateTasks[i];
+                if (!task.IsCompleted)
+                    continue;
+
+                var state = task.Result;
+                subReaderStates[i] = state;
+
+                readerStateTasks[i] = _subReaders[i].OnStateChangeFrom(state, _cts.Token).AsTask();
+            }
+
+            if (subReaderStates.Any(x => x == ReaderState.Faulted))
+                _state.SetState(ReaderState.Faulted);
+            else if (subReaderStates.All(x => x == ReaderState.Connected))
+                _state.SetState(ReaderState.Connected);
+            else if (subReaderStates.All(x => x == ReaderState.Disconnected))
+                _state.SetState(ReaderState.Disconnected);
+            else if (subReaderStates.All(x => x == ReaderState.ReachedEndOfTopic))
+                _state.SetState(ReaderState.ReachedEndOfTopic);
+            else if (subReaderStates.Length > 1) //States for a partitioned topic
+            {
+                if (subReaderStates.Any(x => x == ReaderState.Connected) && subReaderStates.Any(x => x == ReaderState.Disconnected))
+                    _state.SetState(ReaderState.PartiallyConnected);
+            }
+        }
     }
 
     public async ValueTask<ReaderState> OnStateChangeTo(ReaderState state, CancellationToken cancellationToken)
@@ -250,6 +287,11 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
             return;
 
+        _cts.Cancel();
+        _cts.Dispose();
+
+        _state.SetState(ReaderState.Closed);
+
         foreach (var subConsumer in _subReaders)
         {
             await subConsumer.DisposeAsync().ConfigureAwait(false);
@@ -281,8 +323,6 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
         var subReader = new SubReader<TMessage>(correlationId, ServiceUrl, topic, _processManager, initialChannel, executor, stateManager, factory);
-        if (_readerOptions.StateChangedHandler is not null)
-            _ = StateMonitor.MonitorReader(subReader, _readerOptions.StateChangedHandler);
         var process = new ReaderProcess(correlationId, stateManager, subReader);
         _processManager.Add(process);
         process.Start();
