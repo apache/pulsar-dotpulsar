@@ -8,11 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Added
 
-- Added partitioned topic support for the Consumer and Reader
-- MessageId now includes an extra field for setting the topic
+- Added partitioned topic support for the Consumer and Reader (was already implemented for the Producer)
+- MessageId now includes an extra field for the topic
 - Support for `ProducerAccessMode` to prevent multiple producers on a single topic
 - A new `Fenced` state for producers which is a final state
-- The ability to explicitly set compression information on an outgoing message using `MessageMetadata`
+- The ability to explicitly set compression information on an outgoing message using `MessageMetadata` (for sending pre-compressed messages)
 
 ### Changed
 

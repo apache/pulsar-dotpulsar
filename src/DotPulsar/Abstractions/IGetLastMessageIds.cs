@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,8 +24,7 @@ using System.Threading.Tasks;
 public interface IGetLastMessageIds
 {
     /// <summary>
-    /// Provides the latest message ID for all the topic(s).
+    /// Get the message ids of the last messages on the topic. Non-partitioned topics will only return one message id.
     /// </summary>
-    /// <returns>List of MessageId from all the topic(s)</returns>
     ValueTask<IEnumerable<MessageId>> GetLastMessageIds(CancellationToken cancellationToken = default);
 }
