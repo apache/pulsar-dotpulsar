@@ -18,6 +18,7 @@ using DotPulsar.Internal;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
 using NSubstitute;
+using NSubstitute.ClearExtensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,20 +30,15 @@ public class PingPongHandlerTest
     [Fact]
     public async Task Watch_GivenConnectionNotAlive_ShouldDisposeConnection()
     {
-        var countDown = new CountdownEvent(1);
         var connection = Substitute.For<IConnection>();
         var keepAliveInterval = TimeSpan.FromSeconds(1);
-        connection.When(c => c.MarkInactive()).Do(c => countDown.Signal());
         var pingPongHandler = new PingPongHandler(connection, keepAliveInterval);
 
-        // Wait for the first Ping
-        // The ping arrive time should be at (keepAliveInterval, 2*keepAliveInterval)
-        countDown.Wait(2 * keepAliveInterval);
-        pingPongHandler.Incoming(BaseCommand.Type.Pong);
+        connection.When(c => c.Send(Arg.Any<CommandPing>(), Arg.Any<CancellationToken>())).Do(c => pingPongHandler.Incoming(BaseCommand.Type.Pong));
+        await Task.Delay(3 * keepAliveInterval);
         connection.DidNotReceive().MarkInactive();
 
-        // Wait for the second Ping, but we don't reply with Pong.
-        // The connection disposed time should be at (2*keepAliveInterval, 3*keepAliveInterval)
+        connection.ClearSubstitute();
         await Task.Delay(3 * keepAliveInterval);
         connection.Received().MarkInactive();
     }
