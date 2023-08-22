@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -50,7 +50,7 @@ public sealed class ProducerProcess : Process
             var newState = Exception! is ProducerFencedException ? ProducerState.Fenced : ProducerState.Faulted;
             var formerState = _stateManager.SetState(newState);
             if (formerState != ProducerState.Faulted && formerState != ProducerState.Fenced)
-                ActionQueue.Enqueue(async _ => await _producer.ChannelFaulted(Exception!));
+                ActionQueue.Enqueue(async _ => await _producer.ChannelFaulted(Exception!).ConfigureAwait(false));
             return;
         }
 

@@ -51,7 +51,7 @@ public sealed class ConsumerProcess : Process
         {
             var formerState = _stateManager.SetState(ConsumerState.Faulted);
             if (formerState != ConsumerState.Faulted)
-                ActionQueue.Enqueue(async _ => await _consumer.ChannelFaulted(Exception!));
+                ActionQueue.Enqueue(async _ => await _consumer.ChannelFaulted(Exception!).ConfigureAwait(false));
             return;
         }
 
