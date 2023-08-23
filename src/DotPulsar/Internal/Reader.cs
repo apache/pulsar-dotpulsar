@@ -37,9 +37,9 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     private readonly SemaphoreSlim _semaphoreSlim;
     private SubReader<TMessage>[] _subReaders;
     private bool _allSubReadersAreReady;
-    private Task<IMessage<TMessage>>[] _receiveTaskQueueForSubReaders;
+    private Task<IMessage<TMessage>>[] _receiveTasks;
     private int _subReaderIndex;
-    private bool _isPartitioned;
+    private bool _isPartitionedTopic;
     private int _numberOfPartitions;
     private int _isDisposed;
     private Exception? _faultException;
@@ -62,7 +62,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         _exceptionHandler = exceptionHandler;
         _semaphoreSlim = new SemaphoreSlim(1);
         _state = CreateStateManager();
-        _receiveTaskQueueForSubReaders = Array.Empty<Task<IMessage<TMessage>>>();
+        _receiveTasks = Array.Empty<Task<IMessage<TMessage>>>();
         _cts = new CancellationTokenSource();
         _executor = new Executor(Guid.Empty, _processManager, _exceptionHandler);
         _isDisposed = 0;
@@ -91,71 +91,55 @@ public sealed class Reader<TMessage> : IReader<TMessage>
 
     private async Task Monitor()
     {
-        await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
+        await _semaphoreSlim.WaitAsync(_cts.Token).ConfigureAwait(false);
+
         _numberOfPartitions = Convert.ToInt32(await _connectionPool.GetNumberOfPartitions(Topic, _cts.Token).ConfigureAwait(false));
-        _isPartitioned = _numberOfPartitions != 0;
-        _receiveTaskQueueForSubReaders = new Task<IMessage<TMessage>>[_numberOfPartitions];
-        var readerStateTasks = new Task<ReaderState>[_numberOfPartitions];
-        ReaderState[] subReaderStates;
+        _isPartitionedTopic = _numberOfPartitions != 0;
+        var numberOfSubReaders = _isPartitionedTopic ? _numberOfPartitions : 1;
+        _receiveTasks = new Task<IMessage<TMessage>>[numberOfSubReaders];
+        _subReaders = new SubReader<TMessage>[numberOfSubReaders];
+        var monitoringTasks = new Task<ReaderState>[numberOfSubReaders];
+        var states = new ReaderState[numberOfSubReaders];
+        _subReaderIndex = _isPartitionedTopic ? -1 : 0;
 
-        for (var i = 0; i < _receiveTaskQueueForSubReaders.Length; i++)
+        for (var i = 0; i < numberOfSubReaders; i++)
         {
-            _receiveTaskQueueForSubReaders[i] = _emptyTaskCompletionSource.Task;
+            _receiveTasks[i] = _emptyTaskCompletionSource.Task;
+            var topicName = _isPartitionedTopic ? GetPartitionedTopicName(i) : Topic;
+            _subReaders[i] = CreateSubReader(topicName);
+            monitoringTasks[i] = _subReaders[i].OnStateChangeFrom(ReaderState.Disconnected, _cts.Token).AsTask();
         }
 
-        if (_isPartitioned)
-        {
-            _subReaderIndex = -1;
-            _subReaders = new SubReader<TMessage>[_numberOfPartitions];
-            subReaderStates = new ReaderState[_numberOfPartitions];
-            for (var partition = 0; partition < _numberOfPartitions; partition++)
-            {
-                var partitionedTopicName = GetPartitionedTopicName(partition);
-                _subReaders[partition] = CreateSubReader(partitionedTopicName);
-                readerStateTasks[partition] = _subReaders[partition].OnStateChangeFrom(ReaderState.Disconnected, _cts.Token).AsTask();
-            }
-        }
-        else
-        {
-            _subReaderIndex = 0;
-            readerStateTasks = new Task<ReaderState>[1];
-            subReaderStates = new ReaderState[1];
-            _subReaders = new SubReader<TMessage>[1];
-            _subReaders[0] = CreateSubReader(Topic);
-            readerStateTasks[0] = _subReaders[0].OnStateChangeFrom(ReaderState.Disconnected, _cts.Token).AsTask();
-        }
         _allSubReadersAreReady = true;
         _semaphoreSlim.Release();
 
         while (true)
         {
-            await Task.WhenAny(readerStateTasks).ConfigureAwait(false);
+            await Task.WhenAny(monitoringTasks).ConfigureAwait(false);
 
-            for (var i = 0; i < readerStateTasks.Length; ++i)
+            for (var i = 0; i < numberOfSubReaders; ++i)
             {
-                var task = readerStateTasks[i];
+                var task = monitoringTasks[i];
                 if (!task.IsCompleted)
                     continue;
 
                 var state = task.Result;
-                subReaderStates[i] = state;
-
-                readerStateTasks[i] = _subReaders[i].OnStateChangeFrom(state, _cts.Token).AsTask();
+                states[i] = state;
+                monitoringTasks[i] = _subReaders[i].OnStateChangeFrom(state, _cts.Token).AsTask();
             }
 
-            if (subReaderStates.Any(x => x == ReaderState.Faulted))
+            if (!_isPartitionedTopic)
+                _state.SetState(states[0]);
+            else if (states.Any(x => x == ReaderState.Faulted))
                 _state.SetState(ReaderState.Faulted);
-            else if (subReaderStates.All(x => x == ReaderState.Connected))
+            else if (states.All(x => x == ReaderState.Connected))
                 _state.SetState(ReaderState.Connected);
-            else if (subReaderStates.All(x => x == ReaderState.Disconnected))
-                _state.SetState(ReaderState.Disconnected);
-            else if (subReaderStates.All(x => x == ReaderState.ReachedEndOfTopic))
+            else if (states.All(x => x == ReaderState.ReachedEndOfTopic))
                 _state.SetState(ReaderState.ReachedEndOfTopic);
-            else if (subReaderStates.Length > 1) //States for a partitioned topic
-            {
-                if (subReaderStates.Any(x => x == ReaderState.Connected) && subReaderStates.Any(x => x == ReaderState.Disconnected))
-                    _state.SetState(ReaderState.PartiallyConnected);
-            }
+            else if (states.All(x => x == ReaderState.Disconnected))
+                _state.SetState(ReaderState.Disconnected);
+            else
+                _state.SetState(ReaderState.PartiallyConnected);
         }
     }
 
@@ -176,7 +160,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitioned)
+        if (!_isPartitionedTopic)
             return await _subReaders[_subReaderIndex].GetLastMessageId(cancellationToken).ConfigureAwait(false);
         throw new NotSupportedException("GetLastMessageId can't be used on partitioned topics. Please use GetLastMessageIds");
     }
@@ -185,7 +169,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitioned)
+        if (!_isPartitionedTopic)
             return new[] { await _subReaders[_subReaderIndex].GetLastMessageId(cancellationToken).ConfigureAwait(false) };
 
         var getLastMessageIdsTasks = new List<Task<MessageId>>(_numberOfPartitions);
@@ -212,7 +196,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitioned)
+        if (!_isPartitionedTopic)
             return await _subReaders[_subReaderIndex].Receive(cancellationToken).ConfigureAwait(false);
 
         var iterations = 0;
@@ -223,24 +207,24 @@ public sealed class Reader<TMessage> : IReader<TMessage>
             if (_subReaderIndex == _subReaders.Length)
                 _subReaderIndex = 0;
 
-            var receiveTask = _receiveTaskQueueForSubReaders[_subReaderIndex];
+            var receiveTask = _receiveTasks[_subReaderIndex];
             if (receiveTask == _emptyTaskCompletionSource.Task)
             {
                 var receiveTaskValueTask = _subReaders[_subReaderIndex].Receive(cancellationToken);
                 if (receiveTaskValueTask.IsCompleted)
                     return receiveTaskValueTask.Result;
-                _receiveTaskQueueForSubReaders[_subReaderIndex] = receiveTaskValueTask.AsTask();
+                _receiveTasks[_subReaderIndex] = receiveTaskValueTask.AsTask();
             }
             else
             {
                 if (receiveTask.IsCompleted)
                 {
-                    _receiveTaskQueueForSubReaders[_subReaderIndex] = _emptyTaskCompletionSource.Task;
+                    _receiveTasks[_subReaderIndex] = _emptyTaskCompletionSource.Task;
                     return receiveTask.Result;
                 }
             }
             if (iterations == _subReaders.Length)
-                await Task.WhenAny(_receiveTaskQueueForSubReaders).ConfigureAwait(false);
+                await Task.WhenAny(_receiveTasks).ConfigureAwait(false);
         }
     }
 
@@ -248,7 +232,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitioned)
+        if (!_isPartitionedTopic)
         {
             await _subReaders[_subReaderIndex].Seek(messageId, cancellationToken).ConfigureAwait(false);
             return;
@@ -267,7 +251,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitioned)
+        if (!_isPartitionedTopic)
         {
             await _subReaders[_subReaderIndex].Seek(publishTime, cancellationToken).ConfigureAwait(false);
             return;
