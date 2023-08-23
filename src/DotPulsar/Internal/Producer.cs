@@ -113,24 +113,21 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     {
         var numberOfPartitions = await _connectionPool.GetNumberOfPartitions(Topic, _cts.Token).ConfigureAwait(false);
         var isPartitionedTopic = numberOfPartitions != 0;
-        var monitoringTasks = new Task<ProducerState>[isPartitionedTopic ? numberOfPartitions : 1];
+        var numberOfSubProducers = isPartitionedTopic ? numberOfPartitions : 1;
+        var monitoringTasks = new Task<ProducerState>[numberOfSubProducers];
+        var states = new ProducerState[numberOfSubProducers];
 
         var topic = Topic;
 
-        for (var partition = 0; partition < monitoringTasks.Length; ++partition)
+        for (var i = 0; i < numberOfSubProducers; ++i)
         {
-            if (isPartitionedTopic)
-                topic = $"{Topic}-partition-{partition}";
-
-            var producer = CreateSubProducer(topic, isPartitionedTopic ? partition : -1);
-            _ = _producers.TryAdd(partition, producer);
-            monitoringTasks[partition] = producer.OnStateChangeFrom(ProducerState.Disconnected, _cts.Token).AsTask();
+            var topicName = isPartitionedTopic ? GetPartitionedTopicName(i) : Topic;
+            var producer = CreateSubProducer(topic, isPartitionedTopic ? i : -1);
+            _ = _producers.TryAdd(i, producer);
+            monitoringTasks[i] = producer.OnStateChangeFrom(ProducerState.Disconnected, _cts.Token).AsTask();
         }
 
         Interlocked.Exchange(ref _producerCount, monitoringTasks.Length);
-
-        var connectedProducers = 0;
-        var waitingForExclusive = new bool[isPartitionedTopic ? numberOfPartitions : 1];
 
         while (true)
         {
@@ -143,39 +140,24 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                     continue;
 
                 var state = task.Result;
-                switch (state)
-                {
-                    case ProducerState.Connected:
-                        if (waitingForExclusive[i])
-                            waitingForExclusive[i] = false;
-                        else
-                            ++connectedProducers;
-                        break;
-                    case ProducerState.Disconnected:
-                        --connectedProducers;
-                        waitingForExclusive[i] = false;
-                        break;
-                    case ProducerState.WaitingForExclusive:
-                        ++connectedProducers;
-                        waitingForExclusive[i] = true;
-                        break;
-                    case ProducerState.Fenced:
-                    case ProducerState.Faulted:
-                        _state.SetState(state);
-                        return;
-                }
-
+                states[i] = state;
                 monitoringTasks[i] = _producers[i].OnStateChangeFrom(state, _cts.Token).AsTask();
             }
 
-            if (connectedProducers == 0)
-                _state.SetState(ProducerState.Disconnected);
-            else if (connectedProducers == monitoringTasks.Length && waitingForExclusive.All(x => x != true))
+            if (!isPartitionedTopic)
+                _state.SetState(states[0]);
+            else if (states.Any(x => x == ProducerState.Faulted))
+                _state.SetState(ProducerState.Faulted);
+            else if (states.Any(x => x == ProducerState.Fenced))
+                _state.SetState(ProducerState.Fenced);
+            else if (states.All(x => x == ProducerState.Connected))
                 _state.SetState(ProducerState.Connected);
-            else if (waitingForExclusive.Any(x => x))
-                _state.SetState(ProducerState.WaitingForExclusive);
-            else
+            else if (states.All(x => x == ProducerState.Disconnected))
+                _state.SetState(ProducerState.Disconnected);
+            else if (states.Any(x => x == ProducerState.Disconnected))
                 _state.SetState(ProducerState.PartiallyConnected);
+            else
+                _state.SetState(ProducerState.WaitingForExclusive);
         }
     }
 
@@ -372,6 +354,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
     private static StateManager<ProducerState> CreateStateManager()
         => new(ProducerState.Disconnected, ProducerState.Closed, ProducerState.Faulted, ProducerState.Fenced);
+
+    private string GetPartitionedTopicName(int partitionNumber) => $"{Topic}-partition-{partitionNumber}";
 
     public void Register(IEvent @event) { }
 }
