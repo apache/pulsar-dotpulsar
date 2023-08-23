@@ -276,6 +276,9 @@ public sealed class Reader<TMessage> : IReader<TMessage>
 
         _state.SetState(ReaderState.Closed);
 
+        if (_subReaders is null)
+            return;
+
         foreach (var subConsumer in _subReaders)
         {
             await subConsumer.DisposeAsync().ConfigureAwait(false);

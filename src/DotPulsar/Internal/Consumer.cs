@@ -174,6 +174,9 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
         _state.SetState(ConsumerState.Closed);
 
+        if (_subConsumers is null)
+            return;
+
         foreach (var subConsumer in _subConsumers)
         {
             await subConsumer.DisposeAsync().ConfigureAwait(false);

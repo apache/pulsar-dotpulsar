@@ -117,12 +117,10 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var monitoringTasks = new Task<ProducerState>[numberOfSubProducers];
         var states = new ProducerState[numberOfSubProducers];
 
-        var topic = Topic;
-
         for (var i = 0; i < numberOfSubProducers; ++i)
         {
             var topicName = isPartitionedTopic ? GetPartitionedTopicName(i) : Topic;
-            var producer = CreateSubProducer(topic, isPartitionedTopic ? i : -1);
+            var producer = CreateSubProducer(topicName, isPartitionedTopic ? i : -1);
             _ = _producers.TryAdd(i, producer);
             monitoringTasks[i] = producer.OnStateChangeFrom(ProducerState.Disconnected, _cts.Token).AsTask();
         }
