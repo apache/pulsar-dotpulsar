@@ -40,6 +40,11 @@ public enum ReaderState : byte
     Faulted,
 
     /// <summary>
+    /// Some of the sub-readers are disconnected.
+    /// </summary>
+    PartiallyConnected,
+
+    /// <summary>
     /// The reader has reached the end of the topic. This is a final state.
     /// </summary>
     ReachedEndOfTopic

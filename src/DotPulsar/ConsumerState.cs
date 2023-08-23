@@ -40,6 +40,11 @@ public enum ConsumerState : byte
     Faulted,
 
     /// <summary>
+    /// Some of the sub-consumers are disconnected.
+    /// </summary>
+    PartiallyConnected,
+
+    /// <summary>
     /// The consumer is connected and inactive. The subscription type is 'Failover' and this consumer is not the active consumer.
     /// </summary>
     Inactive,

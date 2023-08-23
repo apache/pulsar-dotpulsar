@@ -20,6 +20,7 @@ using DotPulsar.Internal.Compression;
 using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -100,6 +101,8 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         _numberOfPartitions = Convert.ToInt32(await _connectionPool.GetNumberOfPartitions(Topic, _cts.Token).ConfigureAwait(false));
         _isPartitioned = _numberOfPartitions != 0;
         _receiveTaskQueueForSubConsumers = new Task<IMessage<TMessage>>[_numberOfPartitions];
+        var consumerStateTasks = new Task<ConsumerState>[_numberOfPartitions];
+        ConsumerState[] subConsumerStates;
 
         for (var i = 0; i < _receiveTaskQueueForSubConsumers.Length; i++)
         {
@@ -110,20 +113,62 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         {
             _subConsumerIndex = -1;
             _subConsumers = new SubConsumer<TMessage>[_numberOfPartitions];
+            subConsumerStates = new ConsumerState[_numberOfPartitions];
             for (var partition = 0; partition < _numberOfPartitions; partition++)
             {
                 var partitionedTopicName = GetPartitionedTopicName(partition);
                 _subConsumers[partition] = CreateSubConsumer(partitionedTopicName);
+                consumerStateTasks[partition] = _subConsumers[partition].OnStateChangeFrom(ConsumerState.Disconnected, _cts.Token).AsTask();
             }
         }
         else
         {
             _subConsumerIndex = 0;
+            consumerStateTasks = new Task<ConsumerState>[1];
+            subConsumerStates = new ConsumerState[1];
             _subConsumers = new SubConsumer<TMessage>[1];
             _subConsumers[0] = CreateSubConsumer(Topic);
+            consumerStateTasks[0] = _subConsumers[0].OnStateChangeFrom(ConsumerState.Disconnected, _cts.Token).AsTask();
         }
         _allSubConsumersAreReady = true;
         _semaphoreSlim.Release();
+
+        while (true)
+        {
+            await Task.WhenAny(consumerStateTasks).ConfigureAwait(false);
+
+            for (var i = 0; i < consumerStateTasks.Length; ++i)
+            {
+                var task = consumerStateTasks[i];
+                if (!task.IsCompleted)
+                    continue;
+
+                var state = task.Result;
+                subConsumerStates[i] = state;
+
+                consumerStateTasks[i] = _subConsumers[i].OnStateChangeFrom(state, _cts.Token).AsTask();
+            }
+
+            if (subConsumerStates.Any(x => x == ConsumerState.Faulted))
+                _state.SetState(ConsumerState.Faulted);
+            else if (subConsumerStates.All(x => x == ConsumerState.Active))
+                _state.SetState(ConsumerState.Active);
+            else if (subConsumerStates.All(x => x == ConsumerState.Disconnected))
+                _state.SetState(ConsumerState.Disconnected);
+            else if (subConsumerStates.All(x => x == ConsumerState.Inactive))
+                _state.SetState(ConsumerState.Inactive);
+            else if (subConsumerStates.All(x => x == ConsumerState.ReachedEndOfTopic))
+                _state.SetState(ConsumerState.ReachedEndOfTopic);
+            else if (subConsumerStates.Length > 1) //States for a partitioned topic
+            {
+                if (subConsumerStates.Any(x => x == ConsumerState.Active) && subConsumerStates.Any(x => x == ConsumerState.Disconnected) ||
+                    subConsumerStates.Any(x => x == ConsumerState.Disconnected) && subConsumerStates.Any(x => x == ConsumerState.Inactive) ||
+                    subConsumerStates.Any(x => x == ConsumerState.Inactive) && subConsumerStates.Any(x => x == ConsumerState.Active) && subConsumerStates.Any(x => x == ConsumerState.Disconnected))
+                    _state.SetState(ConsumerState.PartiallyConnected);
+                if (subConsumerStates.Any(x => x == ConsumerState.Active) && subConsumerStates.Any(x => x == ConsumerState.Inactive))
+                    _state.SetState(ConsumerState.Inactive);
+            }
+        }
     }
 
     public async ValueTask<ConsumerState> OnStateChangeTo(ConsumerState state, CancellationToken cancellationToken)
@@ -142,6 +187,11 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     {
         if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
             return;
+
+        _cts.Cancel();
+        _cts.Dispose();
+
+        _state.SetState(ConsumerState.Closed);
 
         foreach (var subConsumer in _subConsumers)
         {
@@ -386,13 +436,8 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-
         var subConsumer = new SubConsumer<TMessage>(correlationId, ServiceUrl, _consumerOptions.SubscriptionName, topic,
             _processManager, initialChannel, executor, stateManager, consumerChannelFactory);
-
-        if (_consumerOptions.StateChangedHandler is not null)
-            _ = StateMonitor.MonitorConsumer(subConsumer, _consumerOptions.StateChangedHandler);
-
         var process = new ConsumerProcess(correlationId, stateManager, subConsumer, _consumerOptions.SubscriptionType == SubscriptionType.Failover);
         _processManager.Add(process);
         process.Start();
