@@ -30,8 +30,9 @@ public sealed class PingPongHandler : IAsyncDisposable
     private readonly CommandPong _pong;
     private long _lastCommand;
     private bool _waitForPong;
+    private readonly Action _inactiveCallback;
 
-    public PingPongHandler(IConnection connection, TimeSpan keepAliveInterval)
+    public PingPongHandler(IConnection connection, TimeSpan keepAliveInterval, Action inactiveCallback)
     {
         _connection = connection;
         _keepAliveInterval = keepAliveInterval;
@@ -40,6 +41,7 @@ public sealed class PingPongHandler : IAsyncDisposable
         _ping = new CommandPing();
         _pong = new CommandPong();
         _lastCommand = Stopwatch.GetTimestamp();
+        _inactiveCallback = inactiveCallback;
     }
 
     public bool Incoming(BaseCommand.Type commandType)
@@ -67,7 +69,7 @@ public sealed class PingPongHandler : IAsyncDisposable
             {
                 if (_waitForPong)
                 {
-                    _connection.MarkInactive();
+                    _inactiveCallback();
                     return;
                 }
                 Task.Factory.StartNew(() =>

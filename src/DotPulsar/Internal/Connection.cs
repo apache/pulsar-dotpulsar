@@ -32,16 +32,19 @@ public sealed class Connection : IConnection
     private readonly IPulsarStream _stream;
     private readonly IAuthentication? _authentication;
     private int _isDisposed;
-    private readonly Func<Connection, ValueTask>? _inactiveCallback;
+    private readonly TaskCompletionSource<IConnection> _inactiveTaskSource;
 
-    public Connection(IPulsarStream stream, TimeSpan keepAliveInterval, IAuthentication? authentication, Func<Connection, ValueTask>? inactiveCallback)
+    public Connection(IPulsarStream stream, TimeSpan keepAliveInterval, IAuthentication? authentication)
     {
         _lock = new AsyncLock();
         _channelManager = new ChannelManager();
-        _pingPongHandler = new PingPongHandler(this, keepAliveInterval);
+        _inactiveTaskSource = new TaskCompletionSource<IConnection>();
+        _pingPongHandler = new PingPongHandler(this, keepAliveInterval, () =>
+        {
+            _inactiveTaskSource.TrySetResult(this);
+        });
         _stream = stream;
         _authentication = authentication;
-        _inactiveCallback = inactiveCallback;
     }
 
     public async ValueTask<bool> HasChannels(CancellationToken cancellationToken)
@@ -338,12 +341,9 @@ public sealed class Connection : IConnection
         await _stream.DisposeAsync().ConfigureAwait(false);
     }
 
-    public async void MarkInactive()
+    public Task<IConnection> WaitForInactive()
     {
-        if (_inactiveCallback != null)
-        {
-            await _inactiveCallback(this);
-        }
+        return _inactiveTaskSource.Task;
     }
 
     private void ThrowIfDisposed()

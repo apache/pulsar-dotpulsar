@@ -159,10 +159,7 @@ public sealed class ConnectionPool : IConnectionPool
     private async Task<Connection> EstablishNewConnection(PulsarUrl url, CancellationToken cancellationToken)
     {
         var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
-        var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _authentication, async connection =>
-        {
-            await DisposeConnection(connection);
-        });
+        var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _authentication);
         DotPulsarMeter.ConnectionCreated();
         _connections[url] = connection;
         _ = connection.ProcessIncomingFrames(_cancellationTokenSource.Token).ContinueWith(t => DisposeConnection(url));
@@ -176,7 +173,7 @@ public sealed class ConnectionPool : IConnectionPool
         return connection;
     }
 
-    private async ValueTask DisposeConnection(Connection connection)
+    private async ValueTask DisposeConnection(IConnection connection)
     {
         await connection.DisposeAsync().ConfigureAwait(false);
         DotPulsarMeter.ConnectionDisposed();
@@ -213,7 +210,28 @@ public sealed class ConnectionPool : IConnectionPool
         {
             try
             {
-                await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
+                var timeoutTask = Task.Delay(interval, cancellationToken);
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    var task = await Task.WhenAny(_connections.Values.Select(c => c.WaitForInactive()).Append(timeoutTask)).ConfigureAwait(false);
+                    if (task == timeoutTask)
+                    {
+                        break;
+                    }
+                    // There are some inactive connections.
+                    foreach (var serviceUrl in _connections.Keys)
+                    {
+                        var connection = _connections[serviceUrl];
+                        if (connection is null)
+                            continue;
+
+                        var inactiveTask = connection.WaitForInactive();
+                        if (inactiveTask.IsCompleted)
+                        {
+                            await DisposeConnection(serviceUrl).ConfigureAwait(false);
+                        }
+                    }
+                }
 
                 using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
                 {

@@ -17,6 +17,7 @@ namespace DotPulsar.Tests.Internal;
 using DotPulsar.Internal;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
+using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ClearExtensions;
 using System;
@@ -32,14 +33,15 @@ public class PingPongHandlerTest
     {
         var connection = Substitute.For<IConnection>();
         var keepAliveInterval = TimeSpan.FromSeconds(1);
-        var pingPongHandler = new PingPongHandler(connection, keepAliveInterval);
+        var isActive = true;
+        var pingPongHandler = new PingPongHandler(connection, keepAliveInterval, () => isActive = false);
 
         connection.When(c => c.Send(Arg.Any<CommandPing>(), Arg.Any<CancellationToken>())).Do(c => pingPongHandler.Incoming(BaseCommand.Type.Pong));
         await Task.Delay(3 * keepAliveInterval);
-        connection.DidNotReceive().MarkInactive();
+        isActive.Should().BeTrue();
 
         connection.ClearSubstitute();
         await Task.Delay(3 * keepAliveInterval);
-        connection.Received().MarkInactive();
+        isActive.Should().BeFalse();
     }
 }
