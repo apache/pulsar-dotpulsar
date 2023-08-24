@@ -89,7 +89,7 @@ public interface IPulsarClientBuilder
     IPulsarClientBuilder VerifyCertificateName(bool verifyCertificateName);
 
     /// <summary>
-    /// The time to wait before checking for inactive connections that can be closed. The default is 60 seconds.
+    /// The time to wait before closing inactive connections. The default is 60 seconds.
     /// </summary>
     IPulsarClientBuilder CloseInactiveConnectionsInterval(TimeSpan interval);
 

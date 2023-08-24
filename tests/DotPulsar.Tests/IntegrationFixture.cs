@@ -62,7 +62,7 @@ public class IntegrationFixture : IAsyncLifetime
 
         _cluster = new Builder()
             .UseContainer()
-            .UseImage("apachepulsar/pulsar:2.11.0")
+            .UseImage("apachepulsar/pulsar:3.1.0")
             .WithEnvironment(environmentVariables)
             .ExposePort(Port)
             .Command("/bin/bash -c", arguments)

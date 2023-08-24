@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - The 'Partition' in 'MessageId' will now be set to the correct partition when producing to partitioned topics
 - The OnStateChangeFrom extension method with delay functionality returned the inputted state but should return the current state
 - The DelayedStateMonitor extension method invoked onStateLeft with the inputted state but should have invoked it with the current state
+- Consumers, Producers, and Readers will now disconnect if the server does not reply to a ping
 
 ### Deprecated
 
