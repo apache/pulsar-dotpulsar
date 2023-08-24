@@ -32,12 +32,17 @@ public sealed class Connection : IConnection
     private readonly IPulsarStream _stream;
     private readonly IAuthentication? _authentication;
     private int _isDisposed;
+    private readonly TaskCompletionSource<IConnection> _inactiveTaskSource;
 
     public Connection(IPulsarStream stream, TimeSpan keepAliveInterval, IAuthentication? authentication)
     {
         _lock = new AsyncLock();
         _channelManager = new ChannelManager();
-        _pingPongHandler = new PingPongHandler(this, keepAliveInterval);
+        _inactiveTaskSource = new TaskCompletionSource<IConnection>();
+        _pingPongHandler = new PingPongHandler(this, keepAliveInterval, () =>
+        {
+            _inactiveTaskSource.TrySetResult(this);
+        });
         _stream = stream;
         _authentication = authentication;
     }
@@ -334,6 +339,11 @@ public sealed class Connection : IConnection
         await _lock.DisposeAsync().ConfigureAwait(false);
         _channelManager.Dispose();
         await _stream.DisposeAsync().ConfigureAwait(false);
+    }
+
+    public Task<IConnection> WaitForInactive()
+    {
+        return _inactiveTaskSource.Task;
     }
 
     private void ThrowIfDisposed()
