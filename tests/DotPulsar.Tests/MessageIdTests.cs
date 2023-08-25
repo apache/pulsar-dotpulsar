@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -193,6 +193,44 @@ public class MessageIdTests
         (m1 == m2).Should().BeFalse();
         m1.Equals(m2).Should().BeFalse();
         (m1 != m2).Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("0.0.0.0")] // Wrong separator
+    [InlineData("A:0:0:0")] // Ledger id is not a number
+    [InlineData("0:A:0:0")] // Entry id is not a number
+    [InlineData("0:0:A:0")] // Partition id is not a number
+    [InlineData("0:0:0:A")] // Batch index is not a number
+    [InlineData(":::")] // Missing all
+    [InlineData(":0:0:0")] // Missing ledger id
+    [InlineData("0::0:0")] // Missing entry id
+    [InlineData("0:0::0")] // Missing partion
+    [InlineData("0:0:0:")] // Missing batch index
+    public void TryParse_GivenInvalidString_ShouldReturnFalse(string input)
+    {
+        // Arrange
+        var expected = MessageId.Earliest;
+
+        // Act
+        var result = MessageId.TryParse(input, out var actual);
+
+        // Assert
+        result.Should().BeFalse();
+        actual.Should().Be(expected);
+    }
+
+    [Fact]
+    public void TryParse_GivenValidString_ShouldReturnTrue()
+    {
+        // Arrange
+        var expected = new MessageId(1, 2, 3, 4, "topic");
+
+        // Act
+        var result = MessageId.TryParse(expected.ToString(), out var actual);
+
+        // Assert
+        result.Should().BeTrue();
+        actual.Should().Be(expected);
     }
 }
 

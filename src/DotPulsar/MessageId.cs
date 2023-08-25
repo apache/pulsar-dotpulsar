@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,7 +40,7 @@ public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
     public static MessageId Latest { get; }
 
     /// <summary>
-    /// Initializes a new instance using the specified ledgerId, entryId, partition and batchIndex.
+    /// Initializes a new instance using the specified ledgerId, entryId, partition, and batchIndex.
     /// </summary>
     public MessageId(ulong ledgerId, ulong entryId, int partition, int batchIndex, string topic = "")
     {
@@ -132,6 +132,76 @@ public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
         if (Topic == string.Empty)
             return $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}";
         return $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}:{Topic}";
+    }
+
+    private static bool TryParse(ReadOnlySpan<char> s, out int result)
+    {
+#if NETSTANDARD2_0
+        return Int32.TryParse(s.ToString(), out result);
+#else
+        return Int32.TryParse(s, out result);
+#endif
+    }
+
+    private static bool TryParse(ReadOnlySpan<char> s, out ulong result)
+    {
+#if NETSTANDARD2_0
+        return UInt64.TryParse(s.ToString(), out result);
+#else
+        return UInt64.TryParse(s, out result);
+#endif
+    }
+
+    /// <summary>
+    /// Converts a string into a MessageId
+    /// </summary>
+    /// <returns>True is successfull and false if not</returns>
+    public static bool TryParse(string s, out MessageId result)
+    {
+        result = Earliest;
+        var input = s.AsMemory();
+        var startOfNextEntry = 0;
+        var index = 0;
+        var field = 0;
+        ulong ledgerId = 0;
+        ulong entryId = 0;
+        int partition = 0;
+        int batchIndex = 0;
+        var topic = string.Empty;
+
+        while (index <= s.Length)
+        {
+            if (index == s.Length || s[index] == ':')
+            {
+                var length = index - startOfNextEntry;
+                if (length == 0)
+                    return false;
+
+                var value = input.Slice(startOfNextEntry, length);
+                if (field == 0 && !TryParse(value.Span, out ledgerId))
+                    return false;
+                else if (field == 1 && !TryParse(value.Span, out entryId))
+                    return false;
+                else if (field == 2 && !TryParse(value.Span, out partition))
+                    return false;
+                else if (field == 3)
+                {
+                    if (!TryParse(value.Span, out batchIndex))
+                        return false;
+                    if (index + 1 < s.Length)
+                        topic = s.Substring(index + 1);
+                    break;
+                }
+
+                startOfNextEntry = index + 1;
+                ++field;
+            }
+
+            ++index;
+        }
+
+        result = new MessageId(ledgerId, entryId, partition, batchIndex, topic);
+        return true;
     }
 
     internal MessageIdData ToMessageIdData()
