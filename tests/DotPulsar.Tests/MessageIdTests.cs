@@ -194,6 +194,28 @@ public class MessageIdTests
         m1.Equals(m2).Should().BeFalse();
         (m1 != m2).Should().BeTrue();
     }
+
+    [Theory]
+    [InlineData("0:2:3:4:persistent://public/default/my-topic-partition-1")]
+    [InlineData("0:2:3:4:dsjkadjksajdkasjkd")]
+    [InlineData("0:2:3:4")]
+    public void TryParse_GivenMessageIdAsString_ShouldBeTrue(string messageIdAsString)
+    {
+        var success = MessageId.TryParse(messageIdAsString, out var messageId);
+        success.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("1:2:3:4:")]
+    [InlineData("-1:2:3:4:persistent://public/default/my-topic-partition-1")]
+    [InlineData("1:-2:3:4:persistent://public/default/my-topic-partition-1")]
+    [InlineData("1:2:2147483648:4:persistent://public/default/my-topic-partition-1")]
+    [InlineData("1:2:3:2147483648:persistent://public/default/my-topic-partition-1")]
+    public void TryParse_GivenMessageIdAsString_ShouldBeFalse(string messageIdAsString)
+    {
+        var success = MessageId.TryParse(messageIdAsString, out var messageId);
+        success.Should().BeFalse();
+    }
 }
 
 #nullable enable

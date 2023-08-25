@@ -17,6 +17,9 @@ namespace DotPulsar;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 /// <summary>
 /// Unique identifier of a single message.
@@ -132,6 +135,74 @@ public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
         if (Topic == string.Empty)
             return $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}";
         return $"{LedgerId}:{EntryId}:{Partition}:{BatchIndex}:{Topic}";
+    }
+
+    /// <summary>
+    /// Converts the string representation of a message id to its object equivalent. A return value indicates whether the conversion succeeded.
+    /// </summary>
+    /// <param name="messageIdAsString">A string containing a message id to convert.</param>
+    /// <param name="result">
+    /// When this method returns, contains the MessageId equivalent of the string contained in messageIdAsString, if the conversion succeeded, or MessageId.Earliest if the conversion failed.
+    /// The conversion fails if the messageIdAsString parameter is null or Empty, or is not of the correct format.
+    /// This parameter is passed uninitialized; any value originally supplied in result will be overwritten.
+    /// </param>
+    /// <returns> true if the string was converted successfully; otherwise, false. </returns>
+    public static bool TryParse(string messageIdAsString, out MessageId result)
+    {
+        result = Earliest;
+        ReadOnlyMemory<char> readOnlyMemory = new ReadOnlyMemory<char>(messageIdAsString.ToCharArray());
+        bool ledgerIdSuccess = false;
+        bool entryIdSuccess = false;
+        bool partitionSuccess = false;
+        bool batchIndexSuccess = false;
+        ulong ledgerId = 0;
+        ulong entryId = 0;
+        int partition = 0;
+        int batchIndex = 0;
+
+        var startOfNextEntry = 0;
+        var index = 0;
+        while (index <= readOnlyMemory.Length)
+        {
+            if (index == readOnlyMemory.Length || readOnlyMemory.Span[index].Equals(':'))
+            {
+                var length = index - startOfNextEntry;
+                if (index == 1)
+                {
+                    ledgerIdSuccess = UInt64.TryParse(readOnlyMemory.Slice(startOfNextEntry, length).ToString(), out ledgerId);
+                }
+                if (index == 3)
+                {
+                    entryIdSuccess = UInt64.TryParse(readOnlyMemory.Slice(startOfNextEntry, length).ToString(), out entryId);
+                }
+                if (index == 5)
+                {
+                    partitionSuccess = Int32.TryParse(readOnlyMemory.Slice(startOfNextEntry, length).ToString(), out partition);
+                }
+                if (index == 7)
+                {
+                    batchIndexSuccess = Int32.TryParse(readOnlyMemory.Slice(startOfNextEntry, length).ToString(), out batchIndex);
+                }
+                startOfNextEntry = index + 1;
+            }
+            ++index;
+        }
+
+        if (ledgerIdSuccess && entryIdSuccess && partitionSuccess && batchIndexSuccess && readOnlyMemory.Length == 7)
+        {
+            result = new MessageId(ledgerId, entryId, partition, batchIndex);
+            return true;
+        }
+        if (ledgerIdSuccess && entryIdSuccess && partitionSuccess && batchIndexSuccess)
+        {
+            var topic = messageIdAsString.Substring(8);
+            if (string.IsNullOrWhiteSpace(topic))
+                return false;
+
+            result = new MessageId(ledgerId, entryId, partition, batchIndex, topic);
+            return true;
+        }
+        return false;
     }
 
     internal MessageIdData ToMessageIdData()
