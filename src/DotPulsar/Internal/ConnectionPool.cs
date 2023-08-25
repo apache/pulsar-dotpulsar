@@ -160,7 +160,7 @@ public sealed class ConnectionPool : IConnectionPool
     {
         var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
         var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _authentication);
-        connection.WaitForInactive().ContinueWith(async t => { await DisposeConnection(url); }, cancellationToken);
+        _ = connection.WaitForInactive().ContinueWith(async _ => await DisposeConnection(url).ConfigureAwait(false), cancellationToken);
         DotPulsarMeter.ConnectionCreated();
         _connections[url] = connection;
         _ = connection.ProcessIncomingFrames(_cancellationTokenSource.Token).ContinueWith(t => DisposeConnection(url));
