@@ -153,12 +153,20 @@ public sealed class MessageId : IEquatable<MessageId>, IComparable<MessageId>
     }
 
     /// <summary>
-    /// Converts a string into a MessageId
+    /// Converts the string representation of a message id to its object equivalent. A return value indicates whether the conversion succeeded.
     /// </summary>
-    /// <returns>True is successfull and false if not</returns>
+    /// <param name="s">A string containing a message id to convert.</param>
+    /// <param name="result">
+    /// When this method returns, contains the MessageId equivalent of the string contained in s, if the conversion succeeded, or MessageId.Earliest if the conversion failed.
+    /// The conversion fails if the s parameter is null or Empty, or is not of the correct format.
+    /// This parameter is passed uninitialized; any value originally supplied in result will be overwritten.
+    /// </param>
+    /// <returns> true if the string was converted successfully; otherwise, false. </returns>
     public static bool TryParse(string s, out MessageId result)
     {
         result = Earliest;
+        if (string.IsNullOrWhiteSpace(s))
+            return false;
         var input = s.AsMemory();
         var startOfNextEntry = 0;
         var index = 0;
