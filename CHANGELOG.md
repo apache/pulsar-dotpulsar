@@ -4,16 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.0.0] - 2023-08-30
 
 ### Added
 
 - Added partitioned topic support for the Consumer and Reader (was already implemented for the Producer)
-- MessageId now includes an extra field for the topic
-- A TryParse method is added to MessageId. Therefore, it is now possible to parse a string into a MessageId object
-- Support for `ProducerAccessMode` to prevent multiple producers on a single topic
-- A new `Fenced` state for producers which is a final state
+- The Reader and Consumer have a new 'PartiallyConnected' state (the Producer already had this state)
+- The Producer has a new `Fenced` state (which is a final state)
+- Support for `ProducerAccessMode` was added to prevent multiple producers on a single topic
 - The ability to explicitly set compression information on an outgoing message using `MessageMetadata` (for sending pre-compressed messages)
+- MessageId now includes an extra field for the topic
+- A TryParse method was added to MessageId for converting a string (from ToString) to a MessageId
 
 ### Changed
 
