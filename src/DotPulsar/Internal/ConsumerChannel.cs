@@ -184,7 +184,13 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
         command.ConsumerId = _id;
         var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
         response.Expect(BaseCommand.Type.GetLastMessageIdResponse);
-        return response.GetLastMessageIdResponse.LastMessageId.ToMessageId(_topic);
+        var messageIdData = response.GetLastMessageIdResponse.LastMessageId;
+        if (messageIdData.LedgerId == MessageId.Earliest.LedgerId &&
+            messageIdData.EntryId == MessageId.Earliest.EntryId &&
+            messageIdData.Partition == MessageId.Earliest.Partition &&
+            messageIdData.BatchIndex == MessageId.Earliest.BatchIndex)
+            return MessageId.Earliest;
+        return messageIdData.ToMessageId(_topic);
     }
 
     public async ValueTask DisposeAsync()
