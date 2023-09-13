@@ -148,7 +148,7 @@ public sealed class SubReader<TMessage> : IContainsChannel, IReader<TMessage>
             throw new ReaderDisposedException(GetType().FullName!);
 
         if (_faultException is not null)
-            throw new ReaderFaultedException(_faultException);
+            throw _faultException;
     }
 
     public async ValueTask ChannelFaulted(Exception exception)
