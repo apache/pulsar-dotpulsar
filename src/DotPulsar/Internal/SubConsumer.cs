@@ -145,7 +145,7 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
             throw new ConsumerDisposedException(GetType().FullName!);
 
         if (_faultException is not null)
-            throw new ConsumerFaultedException(_faultException);
+            throw _faultException;
     }
 
     public async Task EstablishNewChannel(CancellationToken cancellationToken)

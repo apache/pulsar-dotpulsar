@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - When calling GetLastMessageId(s) on a Reader or Consumer, it returns a MessageId without the topic field if
   MessageId.Earliest is found.
 
+### Fixed
+
+- Fixed issue with DotPulsar client not handling connection faults for consumers and readers.
+
 ## [3.0.0] - 2023-08-30
 
 ### Added

@@ -15,6 +15,7 @@
 namespace DotPulsar.Tests;
 
 using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
 using FluentAssertions;
 using System;
@@ -200,6 +201,77 @@ public class ConsumerTests
 
         //Assert
         consumed.Should().BeEquivalentTo(produced);
+    }
+
+    [Fact]
+    public async Task Receive_WhenFaultedAfterInvokingReceive_ShouldThrowConsumerFaultedException()
+    {
+        //Arrange
+        var semaphoreSlim = new SemaphoreSlim(1);
+        await using var
+            client = PulsarClient.Builder().ExceptionHandler(context =>
+                {
+                    semaphoreSlim.WaitAsync();
+                    context.Result = FaultAction.Rethrow;
+                    context.ExceptionHandled = true;
+                })
+                .ServiceUrl(new Uri("pulsar://localhost:9512")) //point to a cluster that does not exists.
+                .Build();
+
+        await using var consumer = client.NewConsumer(Schema.String)
+            .StateChangedHandler(changed =>
+            {
+                var topic = changed.Consumer.Topic;
+                var state = changed.ConsumerState;
+                _testOutputHelper.WriteLine($"The consumer for topic '{topic}' changed state to '{state}'");
+            })
+            .SubscriptionName("MySubscription")
+            .Topic("persistent://public/default/mytopic")
+            .Create();
+
+        var receiveTask = consumer.Receive().AsTask();
+        semaphoreSlim.Release();
+
+        //Act
+        var exception = await Record.ExceptionAsync(() => receiveTask);
+
+        //Assert
+        exception.Should().BeOfType<ConsumerFaultedException>();
+    }
+
+    [Fact]
+    public async Task Receive_WhenFaultedBeforeInvokingReceive_ShouldThrowConsumerFaultedException()
+    {
+        //Arrange
+        var cts = new CancellationTokenSource();
+
+        await using var
+            client = PulsarClient.Builder().ExceptionHandler(context =>
+                {
+                    context.Result = FaultAction.Rethrow;
+                    context.ExceptionHandled = true;
+                })
+                .ServiceUrl(new Uri("pulsar://localhost:9512")) //point to a cluster that does not exists.
+                .Build();
+
+        await using var consumer = client.NewConsumer(Schema.String)
+            .StateChangedHandler(changed =>
+            {
+                var topic = changed.Consumer.Topic;
+                var state = changed.ConsumerState;
+                _testOutputHelper.WriteLine($"The consumer for topic '{topic}' changed state to '{state}'");
+            })
+            .SubscriptionName("MySubscription")
+            .Topic("persistent://public/default/mytopic")
+            .Create();
+
+        await consumer.OnStateChangeTo(ConsumerState.Faulted, cts.Token);
+
+        //Act
+        var exception = await Record.ExceptionAsync(() => consumer.Receive().AsTask());
+
+        //Assert
+        exception.Should().BeOfType<ConsumerFaultedException>();
     }
 
     private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<string> producer, int numberOfMessages, CancellationToken ct, string content)

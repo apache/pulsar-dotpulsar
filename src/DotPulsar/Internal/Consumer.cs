@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Compression;
 using DotPulsar.Internal.PulsarApi;
@@ -82,6 +83,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     {
         try
         {
+            await _semaphoreSlim.WaitAsync(_cts.Token).ConfigureAwait(false);
             await _executor.Execute(Monitor, _cts.Token).ConfigureAwait(false);
         }
         catch (Exception exception)
@@ -91,13 +93,12 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
             _faultException = exception;
             _state.SetState(ConsumerState.Faulted);
+            _semaphoreSlim.Release();
         }
     }
 
     private async Task Monitor()
     {
-        await _semaphoreSlim.WaitAsync(_cts.Token).ConfigureAwait(false);
-
         _numberOfPartitions = Convert.ToInt32(await _connectionPool.GetNumberOfPartitions(Topic, _cts.Token).ConfigureAwait(false));
         _isPartitionedTopic = _numberOfPartitions != 0;
         var numberOfSubConsumers = _isPartitionedTopic ? _numberOfPartitions : 1;
@@ -444,5 +445,8 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
             await _semaphoreSlim.WaitAsync(cancellationToken).ConfigureAwait(false);
             _semaphoreSlim.Release();
         }
+
+        if (_faultException is not null)
+            throw new ConsumerFaultedException(_faultException);
     }
 }
