@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -208,26 +208,15 @@ public class ConsumerTests
     {
         //Arrange
         var semaphoreSlim = new SemaphoreSlim(1);
-        await using var
-            client = PulsarClient.Builder().ExceptionHandler(context =>
-                {
-                    semaphoreSlim.WaitAsync();
-                    context.Result = FaultAction.Rethrow;
-                    context.ExceptionHandled = true;
-                })
-                .ServiceUrl(new Uri("pulsar://localhost:9512")) //point to a cluster that does not exists.
-                .Build();
+        await using var client = PulsarClient.Builder().ExceptionHandler(context =>
+        {
+            semaphoreSlim.WaitAsync();
+            context.Result = FaultAction.Rethrow;
+            context.ExceptionHandled = true;
+        })
+        .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var consumer = client.NewConsumer(Schema.String)
-            .StateChangedHandler(changed =>
-            {
-                var topic = changed.Consumer.Topic;
-                var state = changed.ConsumerState;
-                _testOutputHelper.WriteLine($"The consumer for topic '{topic}' changed state to '{state}'");
-            })
-            .SubscriptionName("MySubscription")
-            .Topic("persistent://public/default/mytopic")
-            .Create();
+        await using var consumer = CreateConsumer(client, SubscriptionInitialPosition.Earliest, "persistent://a/b/c", "cn", "sn");
 
         var receiveTask = consumer.Receive().AsTask();
         semaphoreSlim.Release();
@@ -243,29 +232,16 @@ public class ConsumerTests
     public async Task Receive_WhenFaultedBeforeInvokingReceive_ShouldThrowConsumerFaultedException()
     {
         //Arrange
-        var cts = new CancellationTokenSource();
+        await using var client = PulsarClient.Builder().ExceptionHandler(context =>
+        {
+            context.Result = FaultAction.Rethrow;
+            context.ExceptionHandled = true;
+        })
+        .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var
-            client = PulsarClient.Builder().ExceptionHandler(context =>
-                {
-                    context.Result = FaultAction.Rethrow;
-                    context.ExceptionHandled = true;
-                })
-                .ServiceUrl(new Uri("pulsar://localhost:9512")) //point to a cluster that does not exists.
-                .Build();
+        await using var consumer = CreateConsumer(client, SubscriptionInitialPosition.Earliest, "persistent://a/b/c", "cn", "sn");
 
-        await using var consumer = client.NewConsumer(Schema.String)
-            .StateChangedHandler(changed =>
-            {
-                var topic = changed.Consumer.Topic;
-                var state = changed.ConsumerState;
-                _testOutputHelper.WriteLine($"The consumer for topic '{topic}' changed state to '{state}'");
-            })
-            .SubscriptionName("MySubscription")
-            .Topic("persistent://public/default/mytopic")
-            .Create();
-
-        await consumer.OnStateChangeTo(ConsumerState.Faulted, cts.Token);
+        await consumer.OnStateChangeTo(ConsumerState.Faulted);
 
         //Act
         var exception = await Record.ExceptionAsync(() => consumer.Receive().AsTask());
@@ -305,18 +281,30 @@ public class ConsumerTests
         return messageIds;
     }
 
-    private IProducer<string> CreateProducer(IPulsarClient pulsarClient, string topicName) => pulsarClient.NewProducer(Schema.String)
+    private void LogState(ConsumerStateChanged stateChange)
+        => _testOutputHelper.WriteLine($"The consumer for topic '{stateChange.Consumer.Topic}' changed state to '{stateChange.ConsumerState}'");
+
+    private void LogState(ProducerStateChanged stateChange)
+        => _testOutputHelper.WriteLine($"The producer for topic '{stateChange.Producer.Topic}' changed state to '{stateChange.ProducerState}'");
+
+    private IProducer<string> CreateProducer(IPulsarClient pulsarClient, string topicName)
+        => pulsarClient.NewProducer(Schema.String)
         .Topic(topicName)
+        .StateChangedHandler(LogState)
         .Create();
 
-    private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, SubscriptionInitialPosition subscriptionInitialPosition,
+    private IConsumer<string> CreateConsumer(
+        IPulsarClient pulsarClient,
+        SubscriptionInitialPosition subscriptionInitialPosition,
         string topicName,
         string consumerName,
-        string subscriptionName) => pulsarClient.NewConsumer(Schema.String)
+        string subscriptionName)
+        => pulsarClient.NewConsumer(Schema.String)
         .ConsumerName(consumerName)
         .InitialPosition(subscriptionInitialPosition)
         .SubscriptionName(subscriptionName)
         .Topic(topicName)
+        .StateChangedHandler(LogState)
         .Create();
 
     private IPulsarClient CreateClient()

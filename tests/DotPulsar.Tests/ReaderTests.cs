@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -210,26 +210,15 @@ public class ReaderTests
     {
         //Arrange
         var semaphoreSlim = new SemaphoreSlim(1);
-        await using var
-            client = PulsarClient.Builder().ExceptionHandler(context =>
-                {
-                    semaphoreSlim.WaitAsync();
-                    context.Result = FaultAction.Rethrow;
-                    context.ExceptionHandled = true;
-                })
-                .ServiceUrl(new Uri("pulsar://localhost:9512")) //point to a cluster that does not exists.
-                .Build();
+        await using var client = PulsarClient.Builder().ExceptionHandler(context =>
+        {
+            semaphoreSlim.WaitAsync();
+            context.Result = FaultAction.Rethrow;
+            context.ExceptionHandled = true;
+        })
+        .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var reader = client.NewReader(Schema.String)
-            .StartMessageId(MessageId.Earliest)
-            .StateChangedHandler(changed =>
-            {
-                var topic = changed.Reader.Topic;
-                var state = changed.ReaderState;
-                _testOutputHelper.WriteLine($"The consumer for topic '{topic}' changed state to '{state}'");
-            })
-            .Topic("persistent://public/default/mytopic")
-            .Create();
+        await using var reader = CreateReader(client, MessageId.Earliest, "persistent://a/b/c");
 
         var receiveTask = reader.Receive().AsTask();
         semaphoreSlim.Release();
@@ -245,29 +234,16 @@ public class ReaderTests
     public async Task Receive_WhenFaultedBeforeInvokingReceive_ShouldThrowConsumerFaultedException()
     {
         //Arrange
-        var cts = new CancellationTokenSource();
+        await using var client = PulsarClient.Builder().ExceptionHandler(context =>
+        {
+            context.Result = FaultAction.Rethrow;
+            context.ExceptionHandled = true;
+        })
+        .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var
-            client = PulsarClient.Builder().ExceptionHandler(context =>
-                {
-                    context.Result = FaultAction.Rethrow;
-                    context.ExceptionHandled = true;
-                })
-                .ServiceUrl(new Uri("pulsar://localhost:9512")) //point to a cluster that does not exists.
-                .Build();
+        await using var reader = CreateReader(client, MessageId.Earliest, "persistent://a/b/c");
 
-        await using var reader = client.NewReader(Schema.String)
-            .StartMessageId(MessageId.Earliest)
-            .StateChangedHandler(changed =>
-            {
-                var topic = changed.Reader.Topic;
-                var state = changed.ReaderState;
-                _testOutputHelper.WriteLine($"The reader for topic '{topic}' changed state to '{state}'");
-            })
-            .Topic("persistent://public/default/mytopic")
-            .Create();
-
-        await reader.OnStateChangeTo(ReaderState.Faulted, cts.Token);
+        await reader.OnStateChangeTo(ReaderState.Faulted);
 
         //Act
         var exception = await Record.ExceptionAsync(() => reader.Receive().AsTask());
@@ -276,13 +252,21 @@ public class ReaderTests
         exception.Should().BeOfType<ReaderFaultedException>();
     }
 
+    private void LogState(ReaderStateChanged stateChange)
+        => _testOutputHelper.WriteLine($"The reader for topic '{stateChange.Reader.Topic}' changed state to '{stateChange.ReaderState}'");
+
+    private void LogState(ProducerStateChanged stateChange)
+        => _testOutputHelper.WriteLine($"The producer for topic '{stateChange.Producer.Topic}' changed state to '{stateChange.ProducerState}'");
+
     private IProducer<String> CreateProducer(IPulsarClient pulsarClient, string topicName) => pulsarClient.NewProducer(Schema.String)
         .Topic(topicName)
+        .StateChangedHandler(LogState)
         .Create();
 
     private IReader<String> CreateReader(IPulsarClient pulsarClient, MessageId messageId, string topicName) => pulsarClient.NewReader(Schema.String)
         .StartMessageId(messageId)
         .Topic(topicName)
+        .StateChangedHandler(LogState)
         .Create();
 
     private IPulsarClient CreateClient()
