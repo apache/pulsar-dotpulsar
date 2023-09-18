@@ -82,8 +82,7 @@ public sealed class SubReader<TMessage> : IContainsChannel, IReader<TMessage>
     private async ValueTask<MessageId> InternalGetLastMessageId(CommandGetLastMessageId command, CancellationToken cancellationToken)
     {
         Guard();
-        var messageId = await _channel.Send(command, cancellationToken).ConfigureAwait(false);
-        return new MessageId(messageId.LedgerId, messageId.EntryId, messageId.Partition, messageId.BatchIndex, Topic);
+        return await _channel.Send(command, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)

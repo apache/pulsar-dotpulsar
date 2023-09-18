@@ -38,6 +38,21 @@ public class ReaderTests
     }
 
     [Fact]
+    public async Task GetLastMessageId_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest()
+    {
+        //Arrange
+        const string topicName = $"reader-{nameof(GetLastMessageId_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest)}";
+        await using var client = CreateClient();
+        await using var reader = CreateReader(client, MessageId.Earliest, topicName);
+
+        //Act
+        var actual = await reader.GetLastMessageId();
+
+        //Assert
+        actual.Should().BeEquivalentTo(MessageId.Earliest);
+    }
+
+    [Fact]
     public async Task GetLastMessageId_GivenNonPartitionedTopic_ShouldGetMessageId()
     {
         //Arrange
@@ -82,6 +97,22 @@ public class ReaderTests
 
         //Assert
         exception.Should().BeOfType<NotSupportedException>();
+    }
+
+    [Fact]
+    public async Task GetLastMessageIds_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest()
+    {
+        //Arrange
+        const string topicName = $"reader-{nameof(GetLastMessageIds_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest)}";
+        await using var client = CreateClient();
+        await using var reader = CreateReader(client, MessageId.Earliest, topicName);
+        var expected = new List<MessageId>() { MessageId.Earliest };
+
+        //Act
+        var actual = await reader.GetLastMessageIds();
+
+        //Assert
+        actual.Should().BeEquivalentTo(expected);
     }
 
     [Fact]

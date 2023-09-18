@@ -38,6 +38,23 @@ public class ConsumerTests
     }
 
     [Fact]
+    public async Task GetLastMessageId_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest()
+    {
+        //Arrange
+        const string topicName = $"consumer-{nameof(GetLastMessageId_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest)}";
+        const string subscriptionName = "subscription-given-given-empty-topic";
+        const string consumerName = $"consumer-given-empty-topic";
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, SubscriptionInitialPosition.Earliest, topicName, consumerName, subscriptionName);
+
+        //Act
+        var actual = await consumer.GetLastMessageId();
+
+        //Assert
+        actual.Should().BeEquivalentTo(MessageId.Earliest);
+    }
+
+    [Fact]
     public async Task GetLastMessageId_GivenNonPartitionedTopic_ShouldGetMessageIdFromPartition()
     {
         //Arrange
@@ -144,6 +161,24 @@ public class ConsumerTests
                 expected.Add(messageId);
             }
         }
+
+        //Act
+        var actual = await consumer.GetLastMessageIds();
+
+        //Assert
+        actual.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public async Task GetLastMessageIds_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest()
+    {
+        //Arrange
+        const string topicName = $"consumer-{nameof(GetLastMessageIds_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest)}";
+        const string subscriptionName = "subscription-given-given-empty-topic";
+        const string consumerName = $"consumer-given-empty-topic";
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, SubscriptionInitialPosition.Earliest, topicName, consumerName, subscriptionName);
+        var expected = new List<MessageId>() { MessageId.Earliest };
 
         //Act
         var actual = await consumer.GetLastMessageIds();
