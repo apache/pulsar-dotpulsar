@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,7 @@ public class AsyncLockTests
     public async Task Lock_GivenLockIsFree_ShouldReturnCompletedTask()
     {
         //Arrange
-        var sut = new AsyncLock();
+        await using var sut = new AsyncLock();
 
         //Act
         var actual = sut.Lock(CancellationToken.None);
@@ -37,16 +37,15 @@ public class AsyncLockTests
         actual.IsCompleted.Should().BeTrue();
 
         //Annihilate 
-        actual.Result.Dispose();
-        await sut.DisposeAsync().ConfigureAwait(false);
+        (await actual).Dispose();
     }
 
     [Fact]
     public async Task Lock_GivenLockIsTaken_ShouldReturnIncompletedTask()
     {
         //Arrange
-        var sut = new AsyncLock();
-        var alreadyTaken = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
+        await using var sut = new AsyncLock();
+        var alreadyTaken = await sut.Lock(CancellationToken.None);
 
         //Act
         var actual = sut.Lock(CancellationToken.None);
@@ -56,8 +55,7 @@ public class AsyncLockTests
 
         //Annihilate
         alreadyTaken.Dispose();
-        actual.Result.Dispose();
-        await sut.DisposeAsync().ConfigureAwait(false);
+        (await actual).Dispose();
     }
 
     [Fact]
@@ -65,10 +63,10 @@ public class AsyncLockTests
     {
         //Arrange
         var sut = new AsyncLock();
-        await sut.DisposeAsync().ConfigureAwait(false);
+        await sut.DisposeAsync();
 
         //Act
-        var exception = await Record.ExceptionAsync(() => sut.Lock(CancellationToken.None)).ConfigureAwait(false);
+        var exception = await Record.ExceptionAsync(() => sut.Lock(CancellationToken.None));
 
         //Assert
         exception.Should().BeOfType<AsyncLockDisposedException>();
@@ -79,18 +77,18 @@ public class AsyncLockTests
     {
         //Arrange
         var sut = new AsyncLock();
-        var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
+        var gotLock = await sut.Lock(CancellationToken.None);
         var awaiting = sut.Lock(CancellationToken.None);
-        _ = Task.Run(async () => await sut.DisposeAsync().ConfigureAwait(false));
+        _ = Task.Run(async () => await sut.DisposeAsync());
 
         //Act
-        var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
+        var exception = await Record.ExceptionAsync(() => awaiting);
 
         //Assert
         exception.Should().BeOfType<TaskCanceledException>();
 
         //Annihilate
-        await sut.DisposeAsync().ConfigureAwait(false);
+        await sut.DisposeAsync();
         gotLock.Dispose();
     }
 
@@ -100,12 +98,12 @@ public class AsyncLockTests
         //Arrange
         var cts = new CancellationTokenSource();
         var sut = new AsyncLock();
-        var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
+        var gotLock = await sut.Lock(CancellationToken.None);
         var awaiting = sut.Lock(cts.Token);
 
         //Act
         cts.Cancel();
-        var exception = await Record.ExceptionAsync(() => awaiting).ConfigureAwait(false);
+        var exception = await Record.ExceptionAsync(() => awaiting);
 
         //Assert
         exception.Should().BeOfType<TaskCanceledException>();
@@ -113,7 +111,7 @@ public class AsyncLockTests
         //Annihilate
         cts.Dispose();
         gotLock.Dispose();
-        await sut.DisposeAsync().ConfigureAwait(false);
+        await sut.DisposeAsync();
     }
 
     [Fact]
@@ -121,19 +119,19 @@ public class AsyncLockTests
     {
         //Arrange
         var sut = new AsyncLock();
-        var gotLock = await sut.Lock(CancellationToken.None).ConfigureAwait(false);
-        var disposeTask = Task.Run(async () => await sut.DisposeAsync().ConfigureAwait(false));
+        var gotLock = await sut.Lock(CancellationToken.None);
+        var disposeTask = Task.Run(async () => await sut.DisposeAsync());
         Assert.False(disposeTask.IsCompleted);
 
         //Act
         gotLock.Dispose();
-        await disposeTask.ConfigureAwait(false);
+        await disposeTask;
 
         //Assert
         disposeTask.IsCompleted.Should().BeTrue();
 
         //Annihilate
-        await sut.DisposeAsync().ConfigureAwait(false);
+        await sut.DisposeAsync();
     }
 
     [Fact]
@@ -143,8 +141,8 @@ public class AsyncLockTests
         var sut = new AsyncLock();
 
         //Act
-        await sut.DisposeAsync().ConfigureAwait(false);
-        var exception = await Record.ExceptionAsync(() => sut.DisposeAsync().AsTask()).ConfigureAwait(false); // xUnit can't record ValueTask yet
+        await sut.DisposeAsync();
+        var exception = await Record.ExceptionAsync(() => sut.DisposeAsync().AsTask()); // xUnit can't record ValueTask yet
 
         //Assert
         exception.Should().BeNull();

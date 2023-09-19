@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,7 +33,7 @@ public class AsyncQueueTests
         queue.Enqueue(expected);
 
         //Act
-        var actual = await dequeueTask.ConfigureAwait(false);
+        var actual = await dequeueTask;
 
         //Assert
         actual.Should().Be(expected);
@@ -51,7 +51,7 @@ public class AsyncQueueTests
         queue.Enqueue(expected);
 
         //Act
-        var actual = await queue.Dequeue().ConfigureAwait(false);
+        var actual = await queue.Dequeue();
 
         //Assert
         actual.Should().Be(expected);
@@ -72,8 +72,8 @@ public class AsyncQueueTests
         queue.Enqueue(expected2);
 
         //Act
-        var actual1 = await dequeue1.ConfigureAwait(false);
-        var actual2 = await dequeue2.ConfigureAwait(false);
+        var actual1 = await dequeue1;
+        var actual2 = await dequeue2;
 
         //Assert
         actual1.Should().Be(expected1);
@@ -93,8 +93,8 @@ public class AsyncQueueTests
         queue.Enqueue(expected2);
 
         //Act
-        var actual1 = await queue.Dequeue().ConfigureAwait(false);
-        var actual2 = await queue.Dequeue().ConfigureAwait(false);
+        var actual1 = await queue.Dequeue();
+        var actual2 = await queue.Dequeue();
 
         //Assert
         actual1.Should().Be(expected1);
@@ -117,12 +117,12 @@ public class AsyncQueueTests
         //Act
         source1.Cancel();
         queue.Enqueue(excepted);
-        var exception = await Record.ExceptionAsync(() => task1).ConfigureAwait(false);
-        await task2.ConfigureAwait(false);
+        var exception = await Record.ExceptionAsync(() => task1);
+        var actual = await task2;
 
         //Assert
         exception.Should().BeOfType<TaskCanceledException>();
-        task2.Result.Should().Be(excepted);
+        actual.Should().Be(excepted);
 
         //Annihilate
         source1.Dispose();

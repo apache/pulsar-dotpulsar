@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -95,9 +95,7 @@ public sealed class Connection : IConnection
 
         if (_authentication is not null)
         {
-            if (command.Response is null)
-                command.Response = new AuthData();
-
+            command.Response ??= new AuthData();
             command.Response.AuthMethodName = _authentication.AuthenticationMethodName;
             command.Response.Data = await _authentication.GetAuthenticationData(cancellationToken).ConfigureAwait(false);
         }

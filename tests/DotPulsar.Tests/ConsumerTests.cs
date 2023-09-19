@@ -204,7 +204,7 @@ public class ConsumerTests
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         //Act
-        var produced = await ProduceMessages(producer, numberOfMessages, cts.Token, content);
+        var produced = await ProduceMessages(producer, numberOfMessages, content, cts.Token);
         var consumed = await ConsumeMessages(consumer, numberOfMessages, cts.Token);
 
         //Assert
@@ -231,7 +231,7 @@ public class ConsumerTests
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         //Act
-        var produced = await ProduceMessages(producer, numberOfMessages, cts.Token, content);
+        var produced = await ProduceMessages(producer, numberOfMessages, content, cts.Token);
         var consumed = await ConsumeMessages(consumer, numberOfMessages, cts.Token);
 
         //Assert
@@ -285,7 +285,7 @@ public class ConsumerTests
         exception.Should().BeOfType<ConsumerFaultedException>();
     }
 
-    private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<string> producer, int numberOfMessages, CancellationToken ct, string content)
+    private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<string> producer, int numberOfMessages, string content, CancellationToken ct)
     {
         var messageIds = new MessageId[numberOfMessages];
 

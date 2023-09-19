@@ -170,7 +170,7 @@ public class AsyncQueueWithCursorTests
         //Act
         var pendingEnqueue = sut.Enqueue(Substitute.For<IDisposable>(), cts.Token).AsTask();
         cts.Cancel();
-        var exception = await Record.ExceptionAsync(() => pendingEnqueue).ConfigureAwait(false);
+        var exception = await Record.ExceptionAsync(() => pendingEnqueue);
 
         //Assert
         exception.Should().BeOfType<TaskCanceledException>();
