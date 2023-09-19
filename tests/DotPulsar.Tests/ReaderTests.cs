@@ -237,7 +237,7 @@ public class ReaderTests
     }
 
     [Fact]
-    public async Task Receive_WhenFaultedAfterInvokingReceive_ShouldThrowConsumerFaultedException()
+    public async Task Receive_WhenFaultedAfterInvokingReceive_ShouldThrowReaderFaultedException()
     {
         //Arrange
         var semaphoreSlim = new SemaphoreSlim(1);
@@ -262,7 +262,7 @@ public class ReaderTests
     }
 
     [Fact]
-    public async Task Receive_WhenFaultedBeforeInvokingReceive_ShouldThrowConsumerFaultedException()
+    public async Task Receive_WhenFaultedBeforeInvokingReceive_ShouldThrowReaderFaultedException()
     {
         //Arrange
         await using var client = PulsarClient.Builder().ExceptionHandler(context =>
