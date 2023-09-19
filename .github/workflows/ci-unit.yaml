@@ -40,7 +40,7 @@ jobs:
 
       - name: run unit tests
         run: |
-          echo 'Dotnet Version: ${{ steps.setupstep.outputs.dotnet-version }}
+          echo 'Dotnet Version: ${{ steps.setupstep.outputs.dotnet-version }}'
           dotnet test ./tests/DotPulsar.Tests/DotPulsar.Tests.csproj --logger "trx;verbosity=detailed"
 
       - name: package artifacts
@@ -70,7 +70,7 @@ jobs:
           dotnet-version: '7.0.x'
       - name: Build docs with docfx
         run: |
-          echo 'Dotnet Version: ${{ steps.setupstep.outputs.dotnet-version }}
+          echo 'Dotnet Version: ${{ steps.setupstep.outputs.dotnet-version }}'
           dotnet tool update -g docfx
           dotnet build -p:TargetFramework=net7.0
           docfx docs/api/docfx.json
