@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Tests;
+namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
@@ -41,9 +41,8 @@ public class ReaderTests
     public async Task GetLastMessageId_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest()
     {
         //Arrange
-        const string topicName = $"reader-{nameof(GetLastMessageId_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest)}";
         await using var client = CreateClient();
-        await using var reader = CreateReader(client, MessageId.Earliest, topicName);
+        await using var reader = CreateReader(client, MessageId.Earliest);
 
         //Act
         var actual = await reader.GetLastMessageId();
@@ -56,8 +55,7 @@ public class ReaderTests
     public async Task GetLastMessageId_GivenNonPartitionedTopic_ShouldGetMessageId()
     {
         //Arrange
-        const string topicName = "persistent://public/default/reader-non-partitioned-topic-get-last-MessageId";
-        const string content = "test-message";
+        var topicName = CreateTopicName();
         const int numberOfMessages = 6;
 
         await using var client = CreateClient();
@@ -67,7 +65,7 @@ public class ReaderTests
         MessageId expected = null!;
         for (var i = 0; i < numberOfMessages; i++)
         {
-            var messageId = await producer.Send(content);
+            var messageId = await producer.Send("test-message");
             if (i >= 5)
             {
                 expected = messageId;
@@ -85,7 +83,7 @@ public class ReaderTests
     public async Task GetLastMessageId_GivenPartitionedTopic_ShouldThrowException()
     {
         //Arrange
-        const string topicName = "persistent://public/default/reader-partitioned-topic-get-last-MessageId";
+        var topicName = CreateTopicName();
         const int partitions = 3;
         _fixture.CreatePartitionedTopic(topicName, partitions);
 
@@ -103,9 +101,8 @@ public class ReaderTests
     public async Task GetLastMessageIds_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest()
     {
         //Arrange
-        const string topicName = $"reader-{nameof(GetLastMessageIds_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest)}";
         await using var client = CreateClient();
-        await using var reader = CreateReader(client, MessageId.Earliest, topicName);
+        await using var reader = CreateReader(client, MessageId.Earliest);
         var expected = new List<MessageId>() { MessageId.Earliest };
 
         //Act
@@ -119,8 +116,7 @@ public class ReaderTests
     public async Task GetLastMessageIds_GivenNonPartitionedTopic_ShouldGetMessageIdFromPartition()
     {
         //Arrange
-        const string topicName = "reader-non-partitioned-topic-get-last-MessageIds";
-        const string content = "test-message";
+        var topicName = CreateTopicName();
         const int numberOfMessages = 6;
 
         await using var client = CreateClient();
@@ -130,7 +126,7 @@ public class ReaderTests
         var expected = new List<MessageId>();
         for (var i = 0; i < numberOfMessages; i++)
         {
-            var messageId = await producer.Send(content);
+            var messageId = await producer.Send("test-message");
             if (i >= 5)
             {
                 expected.Add(messageId);
@@ -147,11 +143,10 @@ public class ReaderTests
     public async Task GetLastMessageIds_GivenPartitionedTopic_ShouldGetMessageIdsFromPartitions()
     {
         //Arrange
-        const string topicName = "reader-partitioned-topic-get-last-MessageIds";
-        const string content = "test-message";
+        var topicName = CreateTopicName();
         const int numberOfMessages = 6;
         const int partitions = 3;
-        _fixture.CreatePartitionedTopic($"persistent://public/default/{topicName}", partitions);
+        _fixture.CreatePartitionedTopic(topicName, partitions);
 
         await using var client = CreateClient();
         await using var reader = CreateReader(client, MessageId.Earliest, topicName);
@@ -160,7 +155,7 @@ public class ReaderTests
         var expected = new List<MessageId>();
         for (var i = 0; i < numberOfMessages; i++)
         {
-            var messageId = await producer.Send(content);
+            var messageId = await producer.Send("test-message");
             if (i >= 3)
             {
                 expected.Add(messageId);
@@ -178,7 +173,7 @@ public class ReaderTests
     public async Task Receive_GivenNonPartitionedTopic_ShouldReceiveAll()
     {
         //Arrange
-        const string topicName = "Receive_GivenNonPartitionedTopicWithMessages_ShouldReceiveAll";
+        var topicName = CreateTopicName();
         const int numberOfMessages = 10;
 
         await using var client = CreateClient();
@@ -208,10 +203,10 @@ public class ReaderTests
     public async Task Receive_GivenPartitionedTopic_ShouldReceiveAll()
     {
         //Arrange
-        const string topicName = "reader-with-3-partitions-test";
+        var topicName = CreateTopicName();
         const int numberOfMessages = 50;
         const int partitions = 3;
-        _fixture.CreatePartitionedTopic($"persistent://public/default/{topicName}", partitions);
+        _fixture.CreatePartitionedTopic(topicName, partitions);
 
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, topicName);
@@ -249,7 +244,7 @@ public class ReaderTests
         })
         .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var reader = CreateReader(client, MessageId.Earliest, "persistent://a/b/c");
+        await using var reader = CreateReader(client, MessageId.Earliest, CreateTopicName());
 
         var receiveTask = reader.Receive().AsTask();
         semaphoreSlim.Release();
@@ -272,7 +267,7 @@ public class ReaderTests
         })
         .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var reader = CreateReader(client, MessageId.Earliest, "persistent://a/b/c");
+        await using var reader = CreateReader(client, MessageId.Earliest, CreateTopicName());
 
         await reader.OnStateChangeTo(ReaderState.Faulted);
 
@@ -289,14 +284,18 @@ public class ReaderTests
     private void LogState(ProducerStateChanged stateChange)
         => _testOutputHelper.WriteLine($"The producer for topic '{stateChange.Producer.Topic}' changed state to '{stateChange.ProducerState}'");
 
-    private IProducer<String> CreateProducer(IPulsarClient pulsarClient, string topicName) => pulsarClient.NewProducer(Schema.String)
-        .Topic(topicName)
+    private static string CreateTopicName() => $"persistent://public/default/{Guid.NewGuid():N}";
+
+    private IProducer<string> CreateProducer(IPulsarClient pulsarClient, string? topicName = null)
+        => pulsarClient.NewProducer(Schema.String)
+        .Topic(topicName is null ? CreateTopicName() : topicName)
         .StateChangedHandler(LogState)
         .Create();
 
-    private IReader<String> CreateReader(IPulsarClient pulsarClient, MessageId messageId, string topicName) => pulsarClient.NewReader(Schema.String)
+    private IReader<string> CreateReader(IPulsarClient pulsarClient, MessageId messageId, string? topicName = null)
+        => pulsarClient.NewReader(Schema.String)
         .StartMessageId(messageId)
-        .Topic(topicName)
+        .Topic(topicName is null ? CreateTopicName() : topicName)
         .StateChangedHandler(LogState)
         .Create();
 

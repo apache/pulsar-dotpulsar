@@ -25,14 +25,14 @@ using Xunit;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
-public class TokenTests
+public class PulsarClientTests
 {
     private const string MyTopic = "persistent://public/default/mytopic";
 
     private readonly IntegrationFixture _fixture;
     private readonly ITestOutputHelper _testOutputHelper;
 
-    public TokenTests(IntegrationFixture fixture, ITestOutputHelper outputHelper)
+    public PulsarClientTests(IntegrationFixture fixture, ITestOutputHelper outputHelper)
     {
         _fixture = fixture;
         _testOutputHelper = outputHelper;
@@ -142,22 +142,9 @@ public class TokenTests
         => client
             .NewProducer(Schema.String)
             .Topic(MyTopic)
-            .StateChangedHandler(Monitor)
+            .StateChangedHandler(LogState)
             .Create();
 
-    private void Monitor(ProducerStateChanged stateChanged, CancellationToken _)
-    {
-        var stateMessage = stateChanged.ProducerState switch
-        {
-            ProducerState.Connected => "is connected",
-            ProducerState.Disconnected => "is disconnected",
-            ProducerState.PartiallyConnected => "is partially connected",
-            ProducerState.Closed => "has closed",
-            ProducerState.Faulted => "has faulted",
-            _ => $"has an unknown state '{stateChanged.ProducerState}'"
-        };
-
-        var topic = stateChanged.Producer.Topic;
-        _testOutputHelper.WriteLine($"The producer for topic '{topic}' {stateMessage}");
-    }
+    private void LogState(ProducerStateChanged stateChange)
+        => _testOutputHelper.WriteLine($"The producer for topic '{stateChange.Producer.Topic}' changed state to '{stateChange.ProducerState}'");
 }

@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Tests;
+namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 using FluentAssertions;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -42,48 +41,32 @@ public class ProducerTests
     public async Task SimpleProduceConsume_WhenSendingMessagesToProducer_ThenReceiveMessagesFromConsumer()
     {
         //Arrange
-        await using var client = CreateClient();
-        var topicName = $"simple-produce-consume{Guid.NewGuid():N}";
         const string content = "test-message";
+        var topicName = CreateTopicName();
+        await using var client = CreateClient();
+        await using var producer = CreateProducer(client, topicName);
+        await using var consumer = CreateConsumer(client, topicName);
 
         //Act
-        await using var producer = client.NewProducer(Schema.String)
-            .Topic(topicName)
-            .Create();
-
-        await using var consumer = client.NewConsumer(Schema.String)
-            .Topic(topicName)
-            .SubscriptionName("test-sub")
-            .InitialPosition(SubscriptionInitialPosition.Earliest)
-            .Create();
-
         await producer.Send(content);
-        _testOutputHelper.WriteLine($"Sent a message: {content}");
+        var message = await consumer.Receive();
 
         //Assert
-        (await consumer.Receive()).Value().Should().Be(content);
+        message.Value().Should().Be(content);
     }
 
     [Fact]
     public async Task SimpleProduceConsume_WhenSendingWithChannel_ThenReceiveMessagesFromConsumer()
     {
         //Arrange
-        await using var client = CreateClient();
-        var topicName = $"simple-produce-consume{Guid.NewGuid():N}";
         const string content = "test-message";
+        var topicName = CreateTopicName();
+        await using var client = CreateClient();
+        await using var producer = CreateProducer(client, topicName);
+        await using var consumer = CreateConsumer(client, topicName);
         const int msgCount = 3;
 
         //Act
-        await using var producer = client.NewProducer(Schema.String)
-            .Topic(topicName)
-            .Create();
-
-        await using var consumer = client.NewConsumer(Schema.String)
-            .Topic(topicName)
-            .SubscriptionName("test-sub")
-            .InitialPosition(SubscriptionInitialPosition.Earliest)
-            .Create();
-
         for (var i = 0; i < msgCount; i++)
         {
             await producer.SendChannel.Send(content);
@@ -109,28 +92,19 @@ public class ProducerTests
     public async Task TwoProducers_WhenConnectingSecond_ThenGoToExpectedState(ProducerAccessMode accessMode, ProducerState expectedState)
     {
         //Arrange
-        await using var client = CreateClient();
         var topicName = $"producer-access-mode{Guid.NewGuid():N}";
         var cts = new CancellationTokenSource(TestTimeout);
-
-        await using var producer1 = client.NewProducer(Schema.String)
-            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 1 changed to state: {x.ProducerState}"))
-            .ProducerAccessMode(accessMode)
-            .Topic(topicName)
-            .Create();
-        await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
+        await using var client = CreateClient();
 
         //Act
-        await using var producer2 = client.NewProducer(Schema.String)
-            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 2 changed to state: {x.ProducerState}"))
-            .ProducerAccessMode(accessMode)
-            .Topic(topicName)
-            .Create();
+        await using var producer1 = CreateProducer(client, topicName, accessMode);
+        _ = await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
 
-        var result = await producer2.OnStateChangeTo(expectedState, cts.Token);
+        await using var producer2 = CreateProducer(client, topicName, accessMode);
+        var actualState = await producer2.OnStateChangeTo(expectedState, cts.Token);
 
         //Assert
-        result.Should().Be(expectedState);
+        actualState.Should().Be(expectedState);
     }
 
     [Fact]
@@ -138,23 +112,16 @@ public class ProducerTests
     {
         //Arrange
         await using var client = CreateClient();
-        var topicName = $"producer-access-mode{Guid.NewGuid():N}";
+        var topicName = CreateTopicName();
         var cts = new CancellationTokenSource(TestTimeout);
 
-        await using var producer1 = client.NewProducer(Schema.String)
-            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 1 changed to state: {x.ProducerState}"))
-            .ProducerAccessMode(ProducerAccessMode.ExclusiveWithFencing)
-            .Topic(topicName)
-            .Create();
+        await using var producer1 = CreateProducer(client, topicName, ProducerAccessMode.ExclusiveWithFencing);
         await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
 
         //Act
-        await using var producer2 = client.NewProducer(Schema.String)
-            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 2 changed to state: {x.ProducerState}"))
-            .ProducerAccessMode(ProducerAccessMode.ExclusiveWithFencing)
-            .Topic(topicName)
-            .Create();
+        await using var producer2 = CreateProducer(client, topicName, ProducerAccessMode.ExclusiveWithFencing);
         await producer2.OnStateChangeTo(ProducerState.Connected, cts.Token);
+
         try
         {
             // We need to send a message to trigger the disconnect
@@ -179,23 +146,15 @@ public class ProducerTests
     public async Task TwoProducers_WhenUsingDifferentAccessModes_ThenGoToExpectedStates(ProducerAccessMode accessMode1, ProducerAccessMode accessMode2, ProducerState producerState1, ProducerState producerState2)
     {
         //Arrange
-        await using var client = CreateClient();
-        var topicName = $"producer-access-mode{Guid.NewGuid():N}";
+        var topicName = CreateTopicName();
         var cts = new CancellationTokenSource(TestTimeout);
+        await using var client = CreateClient();
 
-        await using var producer1 = client.NewProducer(Schema.String)
-            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 1 changed to state: {x.ProducerState}"))
-            .ProducerAccessMode(accessMode1)
-            .Topic(topicName)
-            .Create();
+        await using var producer1 = CreateProducer(client, topicName, accessMode1);
         await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
 
         //Act
-        await using var producer2 = client.NewProducer(Schema.String)
-            .StateChangedHandler(x => _testOutputHelper.WriteLine($"Producer 2 changed to state: {x.ProducerState}"))
-            .ProducerAccessMode(accessMode2)
-            .Topic(topicName)
-            .Create();
+        await using var producer2 = CreateProducer(client, topicName, accessMode2);
 
         var result1 = await producer1.OnStateChangeTo(producerState1, cts.Token);
         var result2 = await producer2.OnStateChangeTo(producerState2, cts.Token);
@@ -212,19 +171,15 @@ public class ProducerTests
         const string content = "test-message";
         const int partitions = 3;
         const int msgCount = 3;
-        var topicName = $"single-partitioned-{Guid.NewGuid():N}";
-        _fixture.CreatePartitionedTopic($"persistent://public/default/{topicName}", partitions);
+        var topicName = CreateTopicName();
+        _fixture.CreatePartitionedTopic(topicName, partitions);
         await using var client = CreateClient();
 
         //Act
         var consumers = new List<IConsumer<string>>();
         for (var i = 0; i < partitions; ++i)
         {
-            consumers.Add(client.NewConsumer(Schema.String)
-                .Topic($"{topicName}-partition-{i}")
-                .SubscriptionName("test-sub")
-                .InitialPosition(SubscriptionInitialPosition.Earliest)
-                .Create());
+            consumers.Add(CreateConsumer(client, $"{topicName}-partition-{i}"));
         }
 
         for (var i = 0; i < partitions; ++i)
@@ -261,25 +216,19 @@ public class ProducerTests
         //Arrange
         await using var client = CreateClient();
 
-        var topicName = $"round-robin-partitioned-{Guid.NewGuid():N}";
+        var topicName = CreateTopicName();
         const string content = "test-message";
         const int partitions = 3;
         var consumers = new List<IConsumer<string>>();
 
-        _fixture.CreatePartitionedTopic($"persistent://public/default/{topicName}", partitions);
+        _fixture.CreatePartitionedTopic(topicName, partitions);
 
         //Act
-        await using var producer = client.NewProducer(Schema.String)
-            .Topic(topicName)
-            .Create();
+        await using var producer = CreateProducer(client, topicName);
 
         for (var i = 0; i < partitions; ++i)
         {
-            consumers.Add(client.NewConsumer(Schema.String)
-                .Topic($"{topicName}-partition-{i}")
-                .SubscriptionName("test-sub")
-                .InitialPosition(SubscriptionInitialPosition.Earliest)
-                .Create());
+            consumers.Add(CreateConsumer(client, $"{topicName}-partition-{i}"));
             await producer.Send($"{content}-{i}");
             _testOutputHelper.WriteLine($"Sent a message to consumer [{i}]");
         }
@@ -295,26 +244,12 @@ public class ProducerTests
     public async Task Send_WhenProducingMessagesForOnePartition_ShouldPartitionOnlyBeNegativeOne()
     {
         //Arrange
-        var testRunId = Guid.NewGuid().ToString("N");
         const int numberOfMessages = 10;
-        var topic = $"persistent://public/default/producer-test-{testRunId}";
+        var topicName = CreateTopicName();
 
-        await using var client = PulsarClient.Builder()
-            .ServiceUrl(_fixture.ServiceUrl)
-            .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
-            .Build();
-
-        await using var consumer = client.NewConsumer(Schema.ByteArray)
-            .ConsumerName($"consumer-{testRunId}")
-            .InitialPosition(SubscriptionInitialPosition.Earliest)
-            .SubscriptionName($"subscription-{testRunId}")
-            .Topic(topic)
-            .Create();
-
-        await using var producer = client.NewProducer(Schema.ByteArray)
-            .ProducerName($"producer-{testRunId}")
-            .Topic(topic)
-            .Create();
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, topicName);
+        await using var producer = CreateProducer(client, topicName);
 
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
@@ -342,29 +277,15 @@ public class ProducerTests
     public async Task Send_WhenProducingMessagesForFourPartitions_ShouldPartitionBeDifferentThanNegativeOne()
     {
         //Arrange
-        var testRunId = Guid.NewGuid().ToString("N");
         const int numberOfMessages = 10;
         const int partitions = 4;
-        var topicName = $"producer-with-4-partitions-test";
+        var topicName = CreateTopicName();
 
-        _fixture.CreatePartitionedTopic($"persistent://public/default/{topicName}", partitions);
+        _fixture.CreatePartitionedTopic(topicName, partitions);
 
-        await using var client = PulsarClient.Builder()
-            .ServiceUrl(_fixture.ServiceUrl)
-            .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
-            .Build();
-
-        await using var consumer = client.NewConsumer(Schema.ByteArray)
-            .ConsumerName($"consumer-{testRunId}")
-            .InitialPosition(SubscriptionInitialPosition.Earliest)
-            .SubscriptionName($"subscription-{testRunId}")
-            .Topic(topicName)
-            .Create();
-
-        await using var producer = client.NewProducer(Schema.ByteArray)
-            .ProducerName($"producer-{testRunId}")
-            .Topic(topicName)
-            .Create();
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, topicName);
+        await using var producer = CreateProducer(client, topicName);
 
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
@@ -388,20 +309,19 @@ public class ProducerTests
         foundNonNegativeOne.Should().Be(true);
     }
 
-    private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<byte[]> producer, int numberOfMessages, CancellationToken ct)
+    private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<string> producer, int numberOfMessages, CancellationToken ct)
     {
         var messageIds = new MessageId[numberOfMessages];
 
         for (var i = 0; i < numberOfMessages; ++i)
         {
-            var data = Encoding.UTF8.GetBytes($"Sent #{i} at {DateTimeOffset.UtcNow:s}");
-            messageIds[i] = await producer.Send(data, ct);
+            messageIds[i] = await producer.Send($"Sent #{i} at {DateTimeOffset.UtcNow:s}", ct);
         }
 
         return messageIds;
     }
 
-    private static async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer<byte[]> consumer, int numberOfMessages, CancellationToken ct)
+    private static async Task<IEnumerable<MessageId>> ConsumeMessages(IConsumer<string> consumer, int numberOfMessages, CancellationToken ct)
     {
         var messageIds = new List<MessageId>(numberOfMessages);
 
@@ -419,6 +339,35 @@ public class ProducerTests
 
         return messageIds;
     }
+
+    private void LogState(ConsumerStateChanged stateChange)
+        => _testOutputHelper.WriteLine($"The consumer for topic '{stateChange.Consumer.Topic}' changed state to '{stateChange.ConsumerState}'");
+
+    private void LogState(ProducerStateChanged stateChange)
+        => _testOutputHelper.WriteLine($"The producer for topic '{stateChange.Producer.Topic}' changed state to '{stateChange.ProducerState}'");
+
+    private static string CreateTopicName() => $"persistent://public/default/{Guid.NewGuid():N}";
+    private static string CreateConsumerName() => $"consumer-{Guid.NewGuid():N}";
+    private static string CreateSubscriptionName() => $"subscription-{Guid.NewGuid():N}";
+
+    private IProducer<string> CreateProducer(
+        IPulsarClient pulsarClient,
+        string? topicName = null,
+        ProducerAccessMode producerAccessMode = ProducerAccessMode.Shared)
+        =>  pulsarClient.NewProducer(Schema.String)
+        .Topic(topicName is null ? CreateTopicName() : topicName)
+        .ProducerAccessMode(producerAccessMode)
+        .StateChangedHandler(LogState)
+        .Create();
+
+    private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string? topicName = null)
+        => pulsarClient.NewConsumer(Schema.String)
+        .ConsumerName(CreateConsumerName())
+        .InitialPosition(SubscriptionInitialPosition.Earliest)
+        .SubscriptionName(CreateSubscriptionName())
+        .Topic(topicName is null ? CreateTopicName() : topicName)
+        .StateChangedHandler(LogState)
+        .Create();
 
     private IPulsarClient CreateClient()
         => PulsarClient
