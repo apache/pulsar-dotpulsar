@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,14 +14,15 @@
 
 namespace DotPulsar.Internal.Abstractions;
 
+using DotPulsar.Abstractions;
 using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-public interface IConnection : IAsyncDisposable
+public interface IConnection : IState<ConnectionState>, IAsyncDisposable
 {
-    ValueTask<bool> HasChannels(CancellationToken cancellationToken);
+    public int MaxMessageSize { get; }
 
     Task<ProducerResponse> Send(CommandProducer command, IChannel channel, CancellationToken cancellationToken);
     Task<SubscribeResponse> Send(CommandSubscribe command, IChannel channel, CancellationToken cancellationToken);
@@ -42,6 +43,4 @@ public interface IConnection : IAsyncDisposable
     Task Send(SendPackage command, TaskCompletionSource<BaseCommand> responseTcs, CancellationToken cancellationToken);
     Task<BaseCommand> Send(CommandGetOrCreateSchema command, CancellationToken cancellationToken);
     Task<BaseCommand> Send(CommandPartitionedTopicMetadata command, CancellationToken cancellationToken);
-
-    Task<IConnection> WaitForInactive();
 }

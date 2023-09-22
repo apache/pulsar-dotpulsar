@@ -34,8 +34,8 @@ public sealed class ConnectionPool : IConnectionPool
     private readonly EncryptionPolicy _encryptionPolicy;
     private readonly ConcurrentDictionary<PulsarUrl, Connection> _connections;
     private readonly CancellationTokenSource _cancellationTokenSource;
-    private readonly Task _closeInactiveConnections;
     private readonly string? _listenerName;
+    private readonly TimeSpan _closeInactiveConnectionsInterval;
     private readonly TimeSpan _keepAliveInterval;
     private readonly IAuthentication? _authentication;
 
@@ -57,7 +57,7 @@ public sealed class ConnectionPool : IConnectionPool
         _listenerName = listenerName;
         _connections = new ConcurrentDictionary<PulsarUrl, Connection>();
         _cancellationTokenSource = new CancellationTokenSource();
-        _closeInactiveConnections = CloseInactiveConnections(closeInactiveConnectionsInterval, _cancellationTokenSource.Token);
+        _closeInactiveConnectionsInterval = closeInactiveConnectionsInterval;
         _keepAliveInterval = keepAliveInterval;
         _authentication = authentication;
     }
@@ -65,8 +65,6 @@ public sealed class ConnectionPool : IConnectionPool
     public async ValueTask DisposeAsync()
     {
         _cancellationTokenSource.Cancel();
-
-        await _closeInactiveConnections.ConfigureAwait(false);
 
         await _lock.DisposeAsync().ConfigureAwait(false);
 
@@ -159,28 +157,21 @@ public sealed class ConnectionPool : IConnectionPool
     private async Task<Connection> EstablishNewConnection(PulsarUrl url, CancellationToken cancellationToken)
     {
         var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
-        var connection = new Connection(new PulsarStream(stream), _keepAliveInterval, _authentication);
-        _ = connection.WaitForInactive().ContinueWith(async _ => await DisposeConnection(url).ConfigureAwait(false), cancellationToken);
-        DotPulsarMeter.ConnectionCreated();
-        _connections[url] = connection;
-        _ = connection.ProcessIncomingFrames(_cancellationTokenSource.Token).ContinueWith(t => DisposeConnection(url));
-        var commandConnect = _commandConnect;
 
+        var commandConnect = _commandConnect;
         if (url.ProxyThroughServiceUrl)
             commandConnect = WithProxyToBroker(commandConnect, url.Logical);
 
-        var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
-        response.Expect(BaseCommand.Type.Connected);
+        var connection = await Connection.Connect(new PulsarStream(stream), _authentication, commandConnect, _keepAliveInterval, _closeInactiveConnectionsInterval, cancellationToken).ConfigureAwait(false);
+        _connections[url] = connection;
+        _ = connection.OnStateChangeFrom(ConnectionState.Connected).AsTask().ContinueWith(t => DisposeConnection(url));
         return connection;
     }
 
     private async ValueTask DisposeConnection(PulsarUrl serviceUrl)
     {
         if (_connections.TryRemove(serviceUrl, out var connection) && connection is not null)
-        {
             await connection.DisposeAsync().ConfigureAwait(false);
-            DotPulsarMeter.ConnectionDisposed();
-        }
     }
 
     private static CommandConnect WithProxyToBroker(CommandConnect commandConnect, Uri logicalUrl)
@@ -198,35 +189,6 @@ public sealed class ConnectionPool : IConnectionPool
             ProxyToBrokerUrl = $"{logicalUrl.Host}:{logicalUrl.Port}",
             FeatureFlags = commandConnect.FeatureFlags
         };
-    }
-
-    private async Task CloseInactiveConnections(TimeSpan interval, CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            try
-            {
-                await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
-
-                using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-                {
-                    var serviceUrls = _connections.Keys;
-                    foreach (var serviceUrl in serviceUrls)
-                    {
-                        var connection = _connections[serviceUrl];
-                        if (connection is null)
-                            continue;
-
-                        if (!await connection.HasChannels(cancellationToken).ConfigureAwait(false))
-                            await DisposeConnection(serviceUrl).ConfigureAwait(false);
-                    }
-                }
-            }
-            catch
-            {
-                // ignored
-            }
-        }
     }
 
     private sealed class PulsarUrl : IEquatable<PulsarUrl>

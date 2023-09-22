@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
+using DotPulsar.Extensions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Exceptions;
 using DotPulsar.Internal.Extensions;
@@ -26,36 +27,57 @@ using System.Threading.Tasks;
 
 public sealed class Connection : IConnection
 {
+    private readonly StateManager<ConnectionState> _stateManager;
     private readonly AsyncLock _lock;
+    private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly ChannelManager _channelManager;
     private readonly PingPongHandler _pingPongHandler;
     private readonly IPulsarStream _stream;
     private readonly IAuthentication? _authentication;
+    private readonly TimeSpan _closeOnInactiveInterval;
     private int _isDisposed;
-    private readonly TaskCompletionSource<IConnection> _inactiveTaskSource;
 
-    public Connection(IPulsarStream stream, TimeSpan keepAliveInterval, IAuthentication? authentication)
+    private Connection(IPulsarStream stream, IAuthentication? authentication, TimeSpan keepAliveInterval, TimeSpan closeOnInactiveInterval)
     {
+        _stateManager = new StateManager<ConnectionState>(ConnectionState.Connected, ConnectionState.Disconnected, ConnectionState.Closed);
         _lock = new AsyncLock();
+        _cancellationTokenSource = new CancellationTokenSource();
         _channelManager = new ChannelManager();
-        _inactiveTaskSource = new TaskCompletionSource<IConnection>();
-        _pingPongHandler = new PingPongHandler(this, keepAliveInterval, () =>
-        {
-            _inactiveTaskSource.TrySetResult(this);
-        });
+        _pingPongHandler = new PingPongHandler(keepAliveInterval);
         _stream = stream;
         _authentication = authentication;
+        _closeOnInactiveInterval = closeOnInactiveInterval;
+        _ = Task.Factory.StartNew(() => Setup(_cancellationTokenSource.Token));
     }
 
-    public async ValueTask<bool> HasChannels(CancellationToken cancellationToken)
+    public static async Task<Connection> Connect(
+        IPulsarStream stream,
+        IAuthentication? authentication,
+        CommandConnect commandConnect, 
+        TimeSpan keepAliveInterval,
+        TimeSpan closeOnInactiveInterval,
+        CancellationToken cancellationToken)
     {
-        ThrowIfDisposed();
+        Connection? connection = null;
 
-        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        try
         {
-            return _channelManager.HasChannels();
+            connection = new Connection(stream, authentication, keepAliveInterval, closeOnInactiveInterval);
+            var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
+            response.Expect(BaseCommand.Type.Connected);
+            connection.MaxMessageSize = response.Connected.MaxMessageSize;
+            DotPulsarMeter.ConnectionCreated();
+            return connection;
+        }
+        catch
+        {
+            if (connection is not null)
+                await connection.DisposeAsync().ConfigureAwait(false);
+            throw;
         }
     }
+
+    public int MaxMessageSize { get; private set; }
 
     public async Task<ProducerResponse> Send(CommandProducer command, IChannel channel, CancellationToken cancellationToken)
     {
@@ -91,8 +113,6 @@ public sealed class Connection : IConnection
 
     private async Task Send(CommandAuthResponse command, CancellationToken cancellationToken)
     {
-        await Task.Yield();
-
         if (_authentication is not null)
         {
             command.Response ??= new AuthData();
@@ -300,10 +320,32 @@ public sealed class Connection : IConnection
         }
     }
 
-    public async Task ProcessIncomingFrames(CancellationToken cancellationToken)
+    private async Task Setup(CancellationToken cancellationToken)
     {
-        await Task.Yield();
+        var incoming = ProcessIncomingFrames(cancellationToken);
+        var channelManager = _channelManager.OnStateChangeTo(ChannelManagerState.Inactive, _closeOnInactiveInterval, cancellationToken).AsTask();
+        var pingPongTimeOut = _pingPongHandler.OnStateChangeTo(PingPongHandlerState.TimedOut, cancellationToken).AsTask();
+        _ = Task.Factory.StartNew(async () => await KeepAlive(PingPongHandlerState.Active, cancellationToken).ConfigureAwait(false));
+        await Task.WhenAny(incoming, channelManager, pingPongTimeOut).ConfigureAwait(false);
+        _stateManager.SetState(ConnectionState.Disconnected);
+    }
 
+    private async Task KeepAlive(PingPongHandlerState state, CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            state = await _pingPongHandler.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
+            if (state == PingPongHandlerState.TimedOut)
+                return;
+            if (state == PingPongHandlerState.Active)
+                continue;
+            if (state == PingPongHandlerState.ThresholdExceeded)
+                await Send(new CommandPing(), cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task ProcessIncomingFrames(CancellationToken cancellationToken)
+    {
         try
         {
             await foreach (var frame in _stream.Frames(cancellationToken))
@@ -311,13 +353,16 @@ public sealed class Connection : IConnection
                 var commandSize = frame.ReadUInt32(0, true);
                 var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
 
-                if (_pingPongHandler.Incoming(command.CommandType))
-                    continue;
+                _pingPongHandler.Incoming(command.CommandType);
 
                 if (command.CommandType == BaseCommand.Type.Message)
                     _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
                 else if (command.CommandType == BaseCommand.Type.AuthChallenge)
-                    _ = Send(new CommandAuthResponse(), cancellationToken).ConfigureAwait(false);
+                    _ = Task.Factory.StartNew(async () => await Send(new CommandAuthResponse(), cancellationToken).ConfigureAwait(false));
+                else if (command.CommandType == BaseCommand.Type.Ping)
+                    _ = Task.Factory.StartNew(async () => await Send(new CommandPong(), cancellationToken).ConfigureAwait(false));
+                else if (command.CommandType == BaseCommand.Type.Pong)
+                    continue;
                 else
                     _channelManager.Incoming(command);
             }
@@ -333,15 +378,14 @@ public sealed class Connection : IConnection
         if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
             return;
 
+        DotPulsarMeter.ConnectionDisposed();
+
+        _stateManager.SetState(ConnectionState.Closed);
+        _cancellationTokenSource.Cancel();
         await _pingPongHandler.DisposeAsync().ConfigureAwait(false);
         await _lock.DisposeAsync().ConfigureAwait(false);
         _channelManager.Dispose();
         await _stream.DisposeAsync().ConfigureAwait(false);
-    }
-
-    public Task<IConnection> WaitForInactive()
-    {
-        return _inactiveTaskSource.Task;
     }
 
     private void ThrowIfDisposed()
@@ -349,4 +393,14 @@ public sealed class Connection : IConnection
         if (_isDisposed != 0)
             throw new ConnectionDisposedException();
     }
+
+    public bool IsFinalState() => _stateManager.IsFinalState();
+
+    public bool IsFinalState(ConnectionState state) => _stateManager.IsFinalState(state);
+
+    public async ValueTask<ConnectionState> OnStateChangeTo(ConnectionState state, CancellationToken cancellationToken = default)
+        => await _stateManager.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
+
+    public async ValueTask<ConnectionState> OnStateChangeFrom(ConnectionState state, CancellationToken cancellationToken = default)
+        => await _stateManager.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 }

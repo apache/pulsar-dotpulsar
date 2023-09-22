@@ -14,15 +14,18 @@
 
 namespace DotPulsar.Internal;
 
+using DotPulsar.Abstractions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Buffers;
+using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class ChannelManager : IDisposable
+public sealed class ChannelManager : IState<ChannelManagerState>, IDisposable
 {
+    private readonly StateManager<ChannelManagerState> _stateManager;
     private readonly RequestResponseHandler _requestResponseHandler;
     private readonly IdLookup<IChannel> _consumerChannels;
     private readonly IdLookup<IChannel> _producerChannels;
@@ -30,6 +33,7 @@ public sealed class ChannelManager : IDisposable
 
     public ChannelManager()
     {
+        _stateManager = new StateManager<ChannelManagerState>(ChannelManagerState.Inactive, ChannelManagerState.Closed);
         _requestResponseHandler = new RequestResponseHandler();
         _consumerChannels = new IdLookup<IChannel>();
         _producerChannels = new IdLookup<IChannel>();
@@ -40,12 +44,9 @@ public sealed class ChannelManager : IDisposable
         _incoming.Set(BaseCommand.Type.ReachedEndOfTopic, cmd => Incoming(cmd.ReachedEndOfTopic));
     }
 
-    public bool HasChannels()
-        => !_consumerChannels.IsEmpty() || !_producerChannels.IsEmpty();
-
     public Task<ProducerResponse> Outgoing(CommandProducer command, IChannel channel)
     {
-        var producerId = _producerChannels.Add(channel);
+        var producerId = AddProducerChannel(channel);
         command.ProducerId = producerId;
         var response = _requestResponseHandler.Outgoing(command);
 
@@ -53,7 +54,7 @@ public sealed class ChannelManager : IDisposable
         {
             if (result.Result.CommandType == BaseCommand.Type.Error)
             {
-                _ = _producerChannels.Remove(producerId);
+                _ = RemoveProducerChannel(producerId);
                 result.Result.Error.Throw();
             }
 
@@ -73,7 +74,7 @@ public sealed class ChannelManager : IDisposable
 
     public Task<SubscribeResponse> Outgoing(CommandSubscribe command, IChannel channel)
     {
-        var consumerId = _consumerChannels.Add(channel);
+        var consumerId = AddConsumerChannel(channel);
         command.ConsumerId = consumerId;
         var response = _requestResponseHandler.Outgoing(command);
 
@@ -81,7 +82,7 @@ public sealed class ChannelManager : IDisposable
         {
             if (result.Result.CommandType == BaseCommand.Type.Error)
             {
-                _ = _consumerChannels.Remove(consumerId);
+                _ = RemoveConsumerChannel(consumerId);
                 result.Result.Error.Throw();
             }
 
@@ -105,7 +106,7 @@ public sealed class ChannelManager : IDisposable
         _ = response.ContinueWith(result =>
         {
             if (result.Result.CommandType == BaseCommand.Type.Success)
-                _ = _consumerChannels.Remove(consumerId);
+                _ = RemoveConsumerChannel(consumerId);
         }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
         return response;
@@ -125,7 +126,7 @@ public sealed class ChannelManager : IDisposable
         _ = response.ContinueWith(result =>
         {
             if (result.Result.CommandType == BaseCommand.Type.Success)
-                _ = _producerChannels.Remove(producerId);
+                _ = RemoveProducerChannel(producerId);
         }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
         return response;
@@ -145,7 +146,7 @@ public sealed class ChannelManager : IDisposable
         _ = response.ContinueWith(result =>
         {
             if (result.Result.CommandType == BaseCommand.Type.Success)
-                _consumerChannels.Remove(consumerId)?.Unsubscribed();
+                RemoveConsumerChannel(consumerId)?.Unsubscribed();
         }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
         return response;
@@ -195,6 +196,7 @@ public sealed class ChannelManager : IDisposable
 
     public void Dispose()
     {
+        _stateManager.SetState(ChannelManagerState.Closed);
         _requestResponseHandler.Dispose();
 
         foreach (var channel in _consumerChannels.RemoveAll())
@@ -209,7 +211,7 @@ public sealed class ChannelManager : IDisposable
 
     private void Incoming(CommandCloseConsumer command)
     {
-        var channel = _consumerChannels.Remove(command.ConsumerId);
+        var channel = RemoveConsumerChannel(command.ConsumerId);
         if (channel is null)
             return;
 
@@ -219,7 +221,7 @@ public sealed class ChannelManager : IDisposable
 
     private void Incoming(CommandCloseProducer command)
     {
-        var channel = _producerChannels.Remove(command.ProducerId);
+        var channel = RemoveProducerChannel(command.ProducerId);
         if (channel is null)
             return;
 
@@ -275,4 +277,42 @@ public sealed class ChannelManager : IDisposable
             successAction.Invoke(response.Result.ProducerSuccess.TopicEpoch);
         });
     }
+
+    private ulong AddProducerChannel(IChannel channel) => AddChannel(_producerChannels, channel);
+
+    private ulong AddConsumerChannel(IChannel channel) => AddChannel(_consumerChannels, channel);
+
+    private ulong AddChannel(IdLookup<IChannel> lookup, IChannel channel)
+    {
+        var id = lookup.Add(channel);
+        _stateManager.SetState(ChannelManagerState.Active);
+        return id;
+    }
+
+    private IChannel? RemoveProducerChannel(ulong producerId) => RemoveChannel(_producerChannels, producerId);
+
+    private IChannel? RemoveConsumerChannel(ulong consumerId) => RemoveChannel(_consumerChannels, consumerId);
+
+    private IChannel? RemoveChannel(IdLookup<IChannel> lookup, ulong id)
+    {
+        var channel = lookup.Remove(id);
+        ChannelRemoved();
+        return channel;
+    }
+
+    private void ChannelRemoved()
+    {
+        if (_consumerChannels.IsEmpty() && _producerChannels.IsEmpty())
+            _stateManager.SetState(ChannelManagerState.Inactive);
+    }
+
+    public bool IsFinalState() => _stateManager.IsFinalState();
+
+    public bool IsFinalState(ChannelManagerState state) => _stateManager.IsFinalState(state);
+
+    public async ValueTask<ChannelManagerState> OnStateChangeTo(ChannelManagerState state, CancellationToken cancellationToken = default)
+        => await _stateManager.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
+
+    public async ValueTask<ChannelManagerState> OnStateChangeFrom(ChannelManagerState state, CancellationToken cancellationToken = default)
+        => await _stateManager.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 }

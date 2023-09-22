@@ -15,13 +15,8 @@
 namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Internal;
-using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.PulsarApi;
 using FluentAssertions;
-using NSubstitute;
-using NSubstitute.ClearExtensions;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -29,19 +24,47 @@ using Xunit;
 public class PingPongHandlerTest
 {
     [Fact]
-    public async Task Watch_GivenConnectionNotAlive_ShouldDisposeConnection()
+    public async Task Constructor_GivenNoIncomingCommands_ShouldChangeStateToTimedOut()
     {
-        var connection = Substitute.For<IConnection>();
-        var keepAliveInterval = TimeSpan.FromSeconds(1);
-        var isActive = true;
-        var pingPongHandler = new PingPongHandler(connection, keepAliveInterval, () => isActive = false);
+        // Arrange
+        var expected = PingPongHandlerState.TimedOut;
+        var uut = new PingPongHandler(TimeSpan.FromSeconds(1));
 
-        connection.When(c => c.Send(Arg.Any<CommandPing>(), Arg.Any<CancellationToken>())).Do(c => pingPongHandler.Incoming(BaseCommand.Type.Pong));
-        await Task.Delay(3 * keepAliveInterval);
-        isActive.Should().BeTrue();
+        // Act
+        var actual = await uut.OnStateChangeTo(PingPongHandlerState.TimedOut);
 
-        connection.ClearSubstitute();
-        await Task.Delay(3 * keepAliveInterval);
-        isActive.Should().BeFalse();
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task Incoming_GivenIncomingCommandAfterThresholdExceeded_ShouldChangeStateToActive()
+    {
+        // Arrange
+        var expected = PingPongHandlerState.Active;
+        var uut = new PingPongHandler(TimeSpan.FromSeconds(1));
+
+        // Act
+        _ = await uut.OnStateChangeTo(PingPongHandlerState.ThresholdExceeded);
+        uut.Incoming(DotPulsar.Internal.PulsarApi.BaseCommand.Type.Ack);
+        var actual = await uut.OnStateChangeTo(PingPongHandlerState.Active);
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task Dispose_GivenTheStateWasActive_ShouldChangeStateToClosed()
+    {
+        // Arrange
+        var expected = PingPongHandlerState.Closed;
+        var uut = new PingPongHandler(TimeSpan.FromSeconds(1));
+
+        // Act
+        var actual = uut.OnStateChangeTo(PingPongHandlerState.Closed);
+        await uut.DisposeAsync();
+
+        // Assert
+        (await actual).Should().Be(expected);
     }
 }
