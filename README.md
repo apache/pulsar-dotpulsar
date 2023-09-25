@@ -63,6 +63,7 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 - [X] Consumer/Reader - seek on message-id and publish time
 - [X] Consumer - unsubscribe
 - [X] Consumer - compacted topics
+- [X] Consumer - partitioned topics
 - [X] Reader API
 - [X] Read/Consume/Acknowledge batched messages
 - [X] Telemetry
