@@ -36,10 +36,10 @@ public class StateManagerTests
     public void SetState_GivenNewState_ShouldReturnFormerState(ProducerState initialState, ProducerState newState, ProducerState expected)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
+        var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var actual = sut.SetState(newState);
+        var actual = uut.SetState(newState);
 
         //Assert
         actual.Should().Be(expected);
@@ -52,13 +52,13 @@ public class StateManagerTests
     public void SetState_GivenStateIsFinal_ShouldNotChangeState(ProducerState newState)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(ProducerState.Closed, ProducerState.Closed);
+        var uut = new StateManager<ProducerState>(ProducerState.Closed, ProducerState.Closed);
 
         //Act
-        _ = sut.SetState(newState);
+        _ = uut.SetState(newState);
 
         //Assert
-        sut.CurrentState.Should().Be(ProducerState.Closed);
+        uut.CurrentState.Should().Be(ProducerState.Closed);
     }
 
     [Theory]
@@ -69,11 +69,11 @@ public class StateManagerTests
     public void SetState_GivenStateIsChangedToWanted_ShouldCompleteTask(ProducerState initialState, ProducerState newState)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
-        var task = sut.StateChangedTo(newState, default);
+        var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
+        var task = uut.StateChangedTo(newState, default);
 
         //Act
-        _ = sut.SetState(newState);
+        _ = uut.SetState(newState);
 
         //Assert
         task.IsCompleted.Should().BeTrue();
@@ -87,11 +87,11 @@ public class StateManagerTests
     public void SetState_GivenStateIsChangedFromWanted_ShouldCompleteTask(ProducerState initialState, ProducerState newState)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
-        var task = sut.StateChangedFrom(initialState, default);
+        var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
+        var task = uut.StateChangedFrom(initialState, default);
 
         //Act
-        _ = sut.SetState(newState);
+        _ = uut.SetState(newState);
 
         //Assert
         task.IsCompleted.Should().BeTrue();
@@ -104,10 +104,10 @@ public class StateManagerTests
     public void StateChangedTo_GivenStateIsAlreadyWanted_ShouldCompleteTask(ProducerState state)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(state, ProducerState.Closed);
+        var uut = new StateManager<ProducerState>(state, ProducerState.Closed);
 
         //Act
-        var task = sut.StateChangedTo(state, default);
+        var task = uut.StateChangedTo(state, default);
 
         //Assert
         Assert.True(task.IsCompleted);
@@ -121,10 +121,10 @@ public class StateManagerTests
     public void StateChangedTo_GivenStateIsNotWanted_ShouldNotCompleteTask(ProducerState initialState, ProducerState wantedState)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
+        var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = sut.StateChangedTo(wantedState, default);
+        var task = uut.StateChangedTo(wantedState, default);
 
         //Assert
         task.IsCompleted.Should().BeFalse();
@@ -136,10 +136,10 @@ public class StateManagerTests
     public void StateChangedTo_GivenStateIsFinal_ShouldCompleteTask(ProducerState state)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(ProducerState.Closed, ProducerState.Closed);
+        var uut = new StateManager<ProducerState>(ProducerState.Closed, ProducerState.Closed);
 
         //Act
-        var task = sut.StateChangedTo(state, default);
+        var task = uut.StateChangedTo(state, default);
 
         //Assert
         task.IsCompleted.Should().BeTrue();
@@ -151,10 +151,10 @@ public class StateManagerTests
     public void StateChangedFrom_GivenStateHasNotChanged_ShouldNotCompleteTask(ProducerState state)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(state, ProducerState.Closed);
+        var uut = new StateManager<ProducerState>(state, ProducerState.Closed);
 
         //Act
-        var task = sut.StateChangedFrom(state, default);
+        var task = uut.StateChangedFrom(state, default);
 
         //Assert
         task.IsCompleted.Should().BeFalse();
@@ -168,10 +168,10 @@ public class StateManagerTests
     public void StateChangedFrom_GivenStateHasChanged_ShouldCompleteTask(ProducerState initialState, ProducerState fromState)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
+        var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = sut.StateChangedFrom(fromState, default);
+        var task = uut.StateChangedFrom(fromState, default);
 
         //Assert
         task.IsCompleted.Should().BeTrue();
@@ -184,10 +184,10 @@ public class StateManagerTests
     public void StateChangedFrom_GivenStateIsFinal_ShouldCompleteTask(ProducerState state)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(ProducerState.Closed, ProducerState.Closed);
+        var uut = new StateManager<ProducerState>(ProducerState.Closed, ProducerState.Closed);
 
         //Act
-        var task = sut.StateChangedFrom(state, default);
+        var task = uut.StateChangedFrom(state, default);
 
         //Assert
         task.IsCompleted.Should().BeTrue();
@@ -199,11 +199,11 @@ public class StateManagerTests
     public void SetState_GivenStateIsChangeToFinalState_ShouldCompleteTask(ProducerState initialState, ProducerState wantedState)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
+        var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = sut.StateChangedTo(wantedState, default);
-        _ = sut.SetState(ProducerState.Closed);
+        var task = uut.StateChangedTo(wantedState, default);
+        _ = uut.SetState(ProducerState.Closed);
 
         //Assert
         task.IsCompleted.Should().BeTrue();
@@ -215,32 +215,45 @@ public class StateManagerTests
     public void SetState_GivenStateIsChangedToNotWanted_ShouldNotCompleteTask(ProducerState initialState, ProducerState newState, ProducerState wantedState)
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
+        var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = sut.StateChangedTo(wantedState, default);
-        _ = sut.SetState(newState);
+        var task = uut.StateChangedTo(wantedState, default);
+        _ = uut.SetState(newState);
 
         //Assert
         task.IsCompleted.Should().BeFalse();
     }
 
     [Fact]
-    public async Task CancelToken_GivenTaskWasStillWaiting_ShouldCancelTask()
+    public async Task Cancellation_WhenTokenIsCanceledWhileWaiting_ShouldThrowException()
     {
         //Arrange
-        var sut = new StateManager<ProducerState>(ProducerState.Connected, ProducerState.Closed);
-        var cts = new CancellationTokenSource();
-        var task = sut.StateChangedFrom(ProducerState.Connected, cts.Token);
+        var uut = new StateManager<ProducerState>(ProducerState.Connected, ProducerState.Closed);
+        using var cts = new CancellationTokenSource();
 
         //Act
+        var task = uut.StateChangedFrom(ProducerState.Connected, cts.Token);
         cts.Cancel();
         var exception = await Record.ExceptionAsync(() => task.AsTask()); // xUnit can't record ValueTask yet
 
         //Assert
         exception.Should().BeOfType<TaskCanceledException>();
+    }
 
-        //Annihilate
-        cts.Dispose();
+    [Fact]
+    public async Task Cancellation_GivenCanceledToken_ShouldThrowException()
+    {
+        //Arrange
+        var uut = new StateManager<ProducerState>(ProducerState.Connected, ProducerState.Closed);
+        using var cts = new CancellationTokenSource();
+
+        //Act
+        cts.Cancel();
+        var task = uut.StateChangedFrom(ProducerState.Connected, cts.Token);
+        var exception = await Record.ExceptionAsync(() => task.AsTask()); // xUnit can't record ValueTask yet
+
+        //Assert
+        exception.Should().BeOfType<TaskCanceledException>();
     }
 }

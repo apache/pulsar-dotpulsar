@@ -108,6 +108,32 @@ public class IntegrationFixture : IAsyncLifetime
         return result.Data[0];
     }
 
+    private static string CreateTopicName() => $"persistent://public/default/{Guid.NewGuid():N}";
+
+    public string CreateTopic()
+    {
+        var topic = CreateTopicName();
+        CreateTopic(topic);
+        return topic;
+    }
+
+    public void CreateTopic(string topic)
+    {
+        var arguments = $"bin/pulsar-admin topics create {topic}";
+
+        var result = _cluster.Execute(arguments);
+
+        if (!result.Success)
+            throw new Exception($"Could not create the topic: {result.Error}");
+    }
+
+    public string CreatePartitionedTopic(int numberOfPartitions)
+    {
+        var topic = CreateTopicName();
+        CreatePartitionedTopic(topic, numberOfPartitions);
+        return topic;
+    }
+
     public void CreatePartitionedTopic(string topic, int numberOfPartitions)
     {
         var arguments = $"bin/pulsar-admin topics create-partitioned-topic {topic} -p {numberOfPartitions}";

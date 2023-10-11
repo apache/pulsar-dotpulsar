@@ -38,130 +38,106 @@ public class ProducerTests
     }
 
     [Fact]
-    public async Task SimpleProduceConsume_WhenSendingMessagesToProducer_ThenReceiveMessagesFromConsumer()
+    public async Task Send_GivenMessageWasSent_ShouldBeConsumable()
     {
         //Arrange
         const string content = "test-message";
-        var topicName = CreateTopicName();
+        var topicName = _fixture.CreateTopic();
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, topicName);
         await using var consumer = CreateConsumer(client, topicName);
 
         //Act
-        await producer.Send(content);
+        var messageId = await producer.Send(content);
         var message = await consumer.Receive();
 
         //Assert
+        message.MessageId.Should().Be(messageId);
         message.Value().Should().Be(content);
     }
 
     [Fact]
-    public async Task SimpleProduceConsume_WhenSendingWithChannel_ThenReceiveMessagesFromConsumer()
+    public async Task SendChannel_GivenMessageWasSent_ShouldBeConsumable()
     {
         //Arrange
         const string content = "test-message";
-        var topicName = CreateTopicName();
+        var topicName = _fixture.CreateTopic();
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, topicName);
         await using var consumer = CreateConsumer(client, topicName);
-        const int msgCount = 3;
+        var messageId = MessageId.Earliest;
 
-        //Act
-        for (var i = 0; i < msgCount; i++)
+        ValueTask SetMessageId(MessageId id)
         {
-            await producer.SendChannel.Send(content);
-            _testOutputHelper.WriteLine($"Sent a message: {content}");
+            messageId = id;
+            return ValueTask.CompletedTask;
         }
 
+        //Act
+        await producer.SendChannel.Send(content, SetMessageId);
         producer.SendChannel.Complete();
         await producer.SendChannel.Completion();
+        var message = await consumer.Receive();
 
         //Assert
-        for (ulong i = 0; i < msgCount; i++)
-        {
-            var received = await consumer.Receive();
-            received.SequenceId.Should().Be(i);
-            received.Value().Should().Be(content);
-        }
+        message.MessageId.Should().Be(messageId);
+        message.Value().Should().Be(content);
     }
 
     [Theory]
-    [InlineData(ProducerAccessMode.Shared, ProducerState.Connected)]
-    [InlineData(ProducerAccessMode.Exclusive, ProducerState.Fenced)]
-    [InlineData(ProducerAccessMode.WaitForExclusive, ProducerState.WaitingForExclusive)]
-    public async Task TwoProducers_WhenConnectingSecond_ThenGoToExpectedState(ProducerAccessMode accessMode, ProducerState expectedState)
-    {
-        //Arrange
-        var topicName = $"producer-access-mode{Guid.NewGuid():N}";
-        var cts = new CancellationTokenSource(TestTimeout);
-        await using var client = CreateClient();
-
-        //Act
-        await using var producer1 = CreateProducer(client, topicName, accessMode);
-        _ = await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
-
-        await using var producer2 = CreateProducer(client, topicName, accessMode);
-        var actualState = await producer2.OnStateChangeTo(expectedState, cts.Token);
-
-        //Assert
-        actualState.Should().Be(expectedState);
-    }
-
-    [Fact]
-    public async Task TwoProducers_WhenUsingExclusiveWithFencing_ThenExcludeExisting()
-    {
-        //Arrange
-        await using var client = CreateClient();
-        var topicName = CreateTopicName();
-        var cts = new CancellationTokenSource(TestTimeout);
-
-        await using var producer1 = CreateProducer(client, topicName, ProducerAccessMode.ExclusiveWithFencing);
-        await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
-
-        //Act
-        await using var producer2 = CreateProducer(client, topicName, ProducerAccessMode.ExclusiveWithFencing);
-        await producer2.OnStateChangeTo(ProducerState.Connected, cts.Token);
-
-        try
-        {
-            // We need to send a message to trigger the disconnect
-            await producer1.Send(topicName, cts.Token);
-        }
-        catch
-        {
-            //Ignore
-        }
-
-        var result = await producer1.OnStateChangeTo(ProducerState.Fenced, cts.Token);
-
-        //Assert
-        result.Should().Be(ProducerState.Fenced);
-    }
-
-    [Theory]
-    [InlineData(ProducerAccessMode.Exclusive, ProducerAccessMode.Shared, ProducerState.Connected, ProducerState.Disconnected)]
-    [InlineData(ProducerAccessMode.Shared, ProducerAccessMode.Exclusive, ProducerState.Connected, ProducerState.Fenced)]
-    [InlineData(ProducerAccessMode.Shared, ProducerAccessMode.WaitForExclusive, ProducerState.Connected, ProducerState.WaitingForExclusive)]
+    [InlineData(ProducerAccessMode.Exclusive, ProducerAccessMode.Exclusive, ProducerState.Connected, ProducerState.Fenced)]
+    [InlineData(ProducerAccessMode.Exclusive, ProducerAccessMode.ExclusiveWithFencing, ProducerState.Fenced, ProducerState.Connected)]
     [InlineData(ProducerAccessMode.Exclusive, ProducerAccessMode.WaitForExclusive, ProducerState.Connected, ProducerState.WaitingForExclusive)]
-    public async Task TwoProducers_WhenUsingDifferentAccessModes_ThenGoToExpectedStates(ProducerAccessMode accessMode1, ProducerAccessMode accessMode2, ProducerState producerState1, ProducerState producerState2)
+    [InlineData(ProducerAccessMode.Exclusive, ProducerAccessMode.Shared, ProducerState.Connected, ProducerState.Disconnected)] // Rethrow on ProducerBusy to Fault instead of just Disconnect
+    [InlineData(ProducerAccessMode.ExclusiveWithFencing, ProducerAccessMode.Exclusive, ProducerState.Connected, ProducerState.Fenced)]
+    [InlineData(ProducerAccessMode.ExclusiveWithFencing, ProducerAccessMode.ExclusiveWithFencing, ProducerState.Fenced, ProducerState.Connected)]
+    [InlineData(ProducerAccessMode.ExclusiveWithFencing, ProducerAccessMode.WaitForExclusive, ProducerState.Connected, ProducerState.WaitingForExclusive)]
+    [InlineData(ProducerAccessMode.ExclusiveWithFencing, ProducerAccessMode.Shared, ProducerState.Connected, ProducerState.Disconnected)]
+    [InlineData(ProducerAccessMode.Shared, ProducerAccessMode.Exclusive, ProducerState.Connected, ProducerState.Fenced)]
+    [InlineData(ProducerAccessMode.Shared, ProducerAccessMode.ExclusiveWithFencing, ProducerState.Disconnected, ProducerState.Connected)] // Rethrow on ProducerBusy to Fault instead of just Disconnect
+    [InlineData(ProducerAccessMode.Shared, ProducerAccessMode.Shared, ProducerState.Connected, ProducerState.Connected)]
+    [InlineData(ProducerAccessMode.Shared, ProducerAccessMode.WaitForExclusive, ProducerState.Connected, ProducerState.WaitingForExclusive)]
+    [InlineData(ProducerAccessMode.WaitForExclusive, ProducerAccessMode.Exclusive, ProducerState.Connected, ProducerState.Fenced)]
+    [InlineData(ProducerAccessMode.WaitForExclusive, ProducerAccessMode.ExclusiveWithFencing, ProducerState.Fenced, ProducerState.Connected)]
+    [InlineData(ProducerAccessMode.WaitForExclusive, ProducerAccessMode.WaitForExclusive, ProducerState.Connected, ProducerState.WaitingForExclusive)]
+    [InlineData(ProducerAccessMode.WaitForExclusive, ProducerAccessMode.Shared, ProducerState.Connected, ProducerState.Disconnected)] // Rethrow on ProducerBusy to Fault instead of just Disconnect
+    public async Task State_GivenMultipleProducersWithDifferentAccessModes_ThenGoToTheExpectedStates(
+        ProducerAccessMode accessModeForProducer1,
+        ProducerAccessMode accessModeForProducer2,
+        ProducerState expectedStateForProducer1,
+        ProducerState expectedStateForProducer2)
     {
         //Arrange
-        var topicName = CreateTopicName();
-        var cts = new CancellationTokenSource(TestTimeout);
+        var topicName = _fixture.CreateTopic();
+        using var cts = new CancellationTokenSource(TestTimeout);
         await using var client = CreateClient();
-
-        await using var producer1 = CreateProducer(client, topicName, accessMode1);
+        await using var producer1 = CreateProducer(client, topicName, accessModeForProducer1);
         await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
 
         //Act
-        await using var producer2 = CreateProducer(client, topicName, accessMode2);
+        await using var producer2 = CreateProducer(client, topicName, accessModeForProducer2);
 
-        var result1 = await producer1.OnStateChangeTo(producerState1, cts.Token);
-        var result2 = await producer2.OnStateChangeTo(producerState2, cts.Token);
+        if (accessModeForProducer2 == ProducerAccessMode.ExclusiveWithFencing) // We need to send a message to trigger the state change
+        {
+            await producer2.OnStateChangeTo(ProducerState.Connected, cts.Token);
+
+            try
+            {
+                await producer1.Send("test", cts.Token);
+            }
+            catch
+            {
+                //Ignore
+
+            }
+        }
+
+        var actualStateForProducer1 = await producer1.OnStateChangeTo(expectedStateForProducer1, cts.Token);
+        var actualStateForProducer2 = await producer2.OnStateChangeTo(expectedStateForProducer2, cts.Token);
 
         //Assert
-        result1.Should().Be(producerState1);
-        result2.Should().Be(producerState2);
+        actualStateForProducer1.Should().Be(expectedStateForProducer1);
+        actualStateForProducer2.Should().Be(expectedStateForProducer2);
     }
 
     [Fact]
@@ -171,8 +147,7 @@ public class ProducerTests
         const string content = "test-message";
         const int partitions = 3;
         const int msgCount = 3;
-        var topicName = CreateTopicName();
-        _fixture.CreatePartitionedTopic(topicName, partitions);
+        var topicName = _fixture.CreatePartitionedTopic(partitions);
         await using var client = CreateClient();
 
         //Act
@@ -214,14 +189,11 @@ public class ProducerTests
     public async Task RoundRobinPartition_WhenSendMessages_ThenGetMessagesFromPartitionsInOrder()
     {
         //Arrange
-        await using var client = CreateClient();
-
-        var topicName = CreateTopicName();
         const string content = "test-message";
         const int partitions = 3;
         var consumers = new List<IConsumer<string>>();
-
-        _fixture.CreatePartitionedTopic(topicName, partitions);
+        await using var client = CreateClient();
+        var topicName = _fixture.CreatePartitionedTopic(partitions);
 
         //Act
         await using var producer = CreateProducer(client, topicName);
@@ -245,7 +217,7 @@ public class ProducerTests
     {
         //Arrange
         const int numberOfMessages = 10;
-        var topicName = CreateTopicName();
+        var topicName = _fixture.CreateTopic();
 
         await using var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName);
@@ -279,10 +251,7 @@ public class ProducerTests
         //Arrange
         const int numberOfMessages = 10;
         const int partitions = 4;
-        var topicName = CreateTopicName();
-
-        _fixture.CreatePartitionedTopic(topicName, partitions);
-
+        var topicName = _fixture.CreatePartitionedTopic(partitions);
         await using var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName);
         await using var producer = CreateProducer(client, topicName);
@@ -346,26 +315,25 @@ public class ProducerTests
     private void LogState(ProducerStateChanged stateChange)
         => _testOutputHelper.WriteLine($"The producer for topic '{stateChange.Producer.Topic}' changed state to '{stateChange.ProducerState}'");
 
-    private static string CreateTopicName() => $"persistent://public/default/{Guid.NewGuid():N}";
     private static string CreateConsumerName() => $"consumer-{Guid.NewGuid():N}";
     private static string CreateSubscriptionName() => $"subscription-{Guid.NewGuid():N}";
 
     private IProducer<string> CreateProducer(
         IPulsarClient pulsarClient,
-        string? topicName = null,
+        string topicName,
         ProducerAccessMode producerAccessMode = ProducerAccessMode.Shared)
-        =>  pulsarClient.NewProducer(Schema.String)
-        .Topic(topicName is null ? CreateTopicName() : topicName)
+        => pulsarClient.NewProducer(Schema.String)
+        .Topic(topicName)
         .ProducerAccessMode(producerAccessMode)
         .StateChangedHandler(LogState)
         .Create();
 
-    private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string? topicName = null)
+    private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string topicName)
         => pulsarClient.NewConsumer(Schema.String)
         .ConsumerName(CreateConsumerName())
         .InitialPosition(SubscriptionInitialPosition.Earliest)
         .SubscriptionName(CreateSubscriptionName())
-        .Topic(topicName is null ? CreateTopicName() : topicName)
+        .Topic(topicName)
         .StateChangedHandler(LogState)
         .Create();
 
