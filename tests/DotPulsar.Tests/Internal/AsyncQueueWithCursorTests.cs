@@ -248,6 +248,22 @@ public class AsyncQueueWithCursorTests
     }
 
     [Fact]
+    public async Task NextItem_WhenCanceled_ShouldThrowException()
+    {
+        //Arrange
+        var uut = new AsyncQueueWithCursor<QueueItem>(1);
+        var cts = new CancellationTokenSource();
+
+        //Act
+        var task = uut.NextItem(cts.Token);
+        cts.Cancel();
+        var exception = await Record.ExceptionAsync(() => task.AsTask());
+
+        //Assert
+        exception.Should().BeOfType<TaskCanceledException>();
+    }
+
+    [Fact]
     public async Task ResetCursor_GivenCursorNotAtFirstElement_ShouldMoveToFirst()
     {
         //Arrange
