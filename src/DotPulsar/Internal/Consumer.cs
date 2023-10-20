@@ -51,7 +51,6 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
     public Consumer(
         Uri serviceUrl,
-        ProcessManager processManager,
         ConsumerOptions<TMessage> consumerOptions,
         IConnectionPool connectionPool,
         IHandleException exceptionHandler)
@@ -64,7 +63,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         _cts = new CancellationTokenSource();
         _exceptionHandler = exceptionHandler;
         _semaphoreSlim = new SemaphoreSlim(1);
-        _processManager = processManager;
+        _processManager = new ProcessManager();
         _executor = new Executor(Guid.Empty, _processManager, _exceptionHandler);
         _consumerOptions = consumerOptions;
         _connectionPool = connectionPool;
@@ -72,7 +71,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         _isPartitionedTopic = false;
         _allSubConsumersAreReady = false;
         _isDisposed = 0;
-        _subConsumers = null!;
+        _subConsumers = Array.Empty<SubConsumer<TMessage>>();
 
         _emptyTaskCompletionSource = new TaskCompletionSource<IMessage<TMessage>>();
 
@@ -173,15 +172,12 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         _cts.Cancel();
         _cts.Dispose();
 
-        _state.SetState(ConsumerState.Closed);
-
-        if (_subConsumers is null)
-            return;
+        await _processManager.DisposeAsync().ConfigureAwait(false);
 
         foreach (var subConsumer in _subConsumers)
-        {
             await subConsumer.DisposeAsync().ConfigureAwait(false);
-        }
+
+        _state.SetState(ConsumerState.Closed);
     }
 
     public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)

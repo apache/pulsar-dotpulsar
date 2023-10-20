@@ -50,34 +50,19 @@ public sealed class Connection : IConnection
         _ = Task.Factory.StartNew(() => Setup(_cancellationTokenSource.Token));
     }
 
-    public static async Task<Connection> Connect(
+    public static Connection Connect(
         IPulsarStream stream,
         IAuthentication? authentication,
-        CommandConnect commandConnect, 
+        CommandConnect commandConnect,
         TimeSpan keepAliveInterval,
-        TimeSpan closeOnInactiveInterval,
-        CancellationToken cancellationToken)
+        TimeSpan closeOnInactiveInterval)
     {
-        Connection? connection = null;
-
-        try
-        {
-            connection = new Connection(stream, authentication, keepAliveInterval, closeOnInactiveInterval);
-            var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
-            response.Expect(BaseCommand.Type.Connected);
-            connection.MaxMessageSize = response.Connected.MaxMessageSize;
-            DotPulsarMeter.ConnectionCreated();
-            return connection;
-        }
-        catch
-        {
-            if (connection is not null)
-                await connection.DisposeAsync().ConfigureAwait(false);
-            throw;
-        }
+        var connection = new Connection(stream, authentication, keepAliveInterval, closeOnInactiveInterval);
+        DotPulsarMeter.ConnectionCreated();
+        return connection;
     }
 
-    public int MaxMessageSize { get; private set; }
+    public int MaxMessageSize { get; set; }
 
     public async Task<ProducerResponse> Send(CommandProducer command, IChannel channel, CancellationToken cancellationToken)
     {

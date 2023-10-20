@@ -174,8 +174,7 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
         var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler() };
         var exceptionHandlerPipeline = new ExceptionHandlerPipeline(_retryInterval, exceptionHandlers);
         var connectionPool = new ConnectionPool(_commandConnect, _serviceUrl, connector, _encryptionPolicy.Value, _closeInactiveConnectionsInterval, _listenerName, _keepAliveInterval, _authentication);
-        var processManager = new ProcessManager(connectionPool);
 
-        return new PulsarClient(connectionPool, processManager, exceptionHandlerPipeline, _serviceUrl);
+        return new PulsarClient(connectionPool, exceptionHandlerPipeline, _serviceUrl);
     }
 }

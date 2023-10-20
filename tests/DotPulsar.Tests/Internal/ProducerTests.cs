@@ -65,11 +65,11 @@ public class ProducerTests
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, topicName);
         await using var consumer = CreateConsumer(client, topicName);
-        var messageId = MessageId.Earliest;
+        var idTask = new TaskCompletionSource<MessageId>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         ValueTask SetMessageId(MessageId id)
         {
-            messageId = id;
+            idTask.SetResult(id);
             return ValueTask.CompletedTask;
         }
 
@@ -78,9 +78,10 @@ public class ProducerTests
         producer.SendChannel.Complete();
         await producer.SendChannel.Completion();
         var message = await consumer.Receive();
+        var expected = await idTask.Task;
 
         //Assert
-        message.MessageId.Should().Be(messageId);
+        message.MessageId.Should().Be(expected);
         message.Value().Should().Be(content);
     }
 

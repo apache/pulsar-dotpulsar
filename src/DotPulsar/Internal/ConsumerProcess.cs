@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 public sealed class ConsumerProcess : Process
 {
     private readonly IStateManager<ConsumerState> _stateManager;
-    private readonly IContainsChannel _consumer;
+    private readonly IContainsChannel _subConsumer;
     private readonly bool _isFailoverSubscription;
 
     public ConsumerProcess(
@@ -31,7 +31,7 @@ public sealed class ConsumerProcess : Process
         bool isFailoverSubscription) : base(correlationId)
     {
         _stateManager = stateManager;
-        _consumer = consumer;
+        _subConsumer = consumer;
         _isFailoverSubscription = isFailoverSubscription;
     }
 
@@ -39,7 +39,6 @@ public sealed class ConsumerProcess : Process
     {
         await base.DisposeAsync().ConfigureAwait(false);
         _stateManager.SetState(ConsumerState.Closed);
-        await _consumer.DisposeAsync().ConfigureAwait(false);
     }
 
     protected override void CalculateState()
@@ -51,7 +50,7 @@ public sealed class ConsumerProcess : Process
         {
             var formerState = _stateManager.SetState(ConsumerState.Faulted);
             if (formerState != ConsumerState.Faulted)
-                ActionQueue.Enqueue(async _ => await _consumer.ChannelFaulted(Exception!).ConfigureAwait(false));
+                ActionQueue.Enqueue(async _ => await _subConsumer.ChannelFaulted(Exception!).ConfigureAwait(false));
             return;
         }
 
@@ -68,8 +67,8 @@ public sealed class ConsumerProcess : Process
                 _stateManager.SetState(ConsumerState.Disconnected);
                 ActionQueue.Enqueue(async x =>
                 {
-                    await _consumer.CloseChannel(x).ConfigureAwait(false);
-                    await _consumer.EstablishNewChannel(x).ConfigureAwait(false);
+                    await _subConsumer.CloseChannel(x).ConfigureAwait(false);
+                    await _subConsumer.EstablishNewChannel(x).ConfigureAwait(false);
                 });
                 return;
             case ChannelState.Connected:

@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 public sealed class ProducerProcess : Process
 {
     private readonly IStateManager<ProducerState> _stateManager;
-    private readonly IContainsProducerChannel _producer;
+    private readonly IContainsProducerChannel _subProducer;
 
     public ProducerProcess(
         Guid correlationId,
@@ -30,14 +30,13 @@ public sealed class ProducerProcess : Process
         IContainsProducerChannel producer) : base(correlationId)
     {
         _stateManager = stateManager;
-        _producer = producer;
+        _subProducer = producer;
     }
 
     public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync().ConfigureAwait(false);
         _stateManager.SetState(ProducerState.Closed);
-        await _producer.DisposeAsync().ConfigureAwait(false);
     }
 
     protected override void CalculateState()
@@ -47,10 +46,10 @@ public sealed class ProducerProcess : Process
 
         if (ExecutorState == ExecutorState.Faulted)
         {
-            var newState = Exception! is ProducerFencedException ? ProducerState.Fenced : ProducerState.Faulted;
+            var newState = Exception is ProducerFencedException ? ProducerState.Fenced : ProducerState.Faulted;
             var formerState = _stateManager.SetState(newState);
             if (formerState != ProducerState.Faulted && formerState != ProducerState.Fenced)
-                ActionQueue.Enqueue(async _ => await _producer.ChannelFaulted(Exception!).ConfigureAwait(false));
+                ActionQueue.Enqueue(async _ => await _subProducer.ChannelFaulted(Exception!).ConfigureAwait(false));
             return;
         }
 
@@ -61,14 +60,14 @@ public sealed class ProducerProcess : Process
                 _stateManager.SetState(ProducerState.Disconnected);
                 ActionQueue.Enqueue(async x =>
                 {
-                    await _producer.CloseChannel(x).ConfigureAwait(false);
-                    await _producer.EstablishNewChannel(x).ConfigureAwait(false);
+                    await _subProducer.CloseChannel(x).ConfigureAwait(false);
+                    await _subProducer.EstablishNewChannel(x).ConfigureAwait(false);
                 });
                 return;
             case ChannelState.Connected:
                 ActionQueue.Enqueue(async x =>
                 {
-                    await _producer.ActivateChannel(TopicEpoch, x).ConfigureAwait(false);
+                    await _subProducer.ActivateChannel(TopicEpoch, x).ConfigureAwait(false);
                     _stateManager.SetState(ProducerState.Connected);
                 });
                 return;

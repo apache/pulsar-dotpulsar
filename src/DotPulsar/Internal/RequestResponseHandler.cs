@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -103,7 +103,7 @@ public sealed class RequestResponseHandler : IDisposable
         return _requests.CreateTask(request);
     }
 
-    public Task<BaseCommand> Outgoing(CommandConnect _1)
+    public Task<BaseCommand> Outgoing(CommandConnect _)
         => _requests.CreateTask(new ConnectRequest());
 
     public Task<BaseCommand> Outgoing(CommandLookupTopic command)

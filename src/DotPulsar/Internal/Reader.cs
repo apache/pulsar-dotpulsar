@@ -51,7 +51,6 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     public Reader(
         Uri serviceUrl,
         ReaderOptions<TMessage> readerOptions,
-        ProcessManager processManager,
         IHandleException exceptionHandler,
         IConnectionPool connectionPool)
     {
@@ -59,7 +58,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         Topic = readerOptions.Topic;
         _readerOptions = readerOptions;
         _connectionPool = connectionPool;
-        _processManager = processManager;
+        _processManager = new ProcessManager();
         _exceptionHandler = exceptionHandler;
         _semaphoreSlim = new SemaphoreSlim(1);
         _state = CreateStateManager();
@@ -67,7 +66,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         _cts = new CancellationTokenSource();
         _executor = new Executor(Guid.Empty, _processManager, _exceptionHandler);
         _isDisposed = 0;
-        _subReaders = null!;
+        _subReaders = Array.Empty<SubReader<TMessage>>();
 
         _emptyTaskCompletionSource = new TaskCompletionSource<IMessage<TMessage>>();
 
@@ -275,15 +274,12 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         _cts.Cancel();
         _cts.Dispose();
 
+        await _processManager.DisposeAsync().ConfigureAwait(false);
+
+        foreach (var subReader in _subReaders)
+            await subReader.DisposeAsync().ConfigureAwait(false);
+
         _state.SetState(ReaderState.Closed);
-
-        if (_subReaders is null)
-            return;
-
-        foreach (var subConsumer in _subReaders)
-        {
-            await subConsumer.DisposeAsync().ConfigureAwait(false);
-        }
     }
 
     private static StateManager<ReaderState> CreateStateManager()

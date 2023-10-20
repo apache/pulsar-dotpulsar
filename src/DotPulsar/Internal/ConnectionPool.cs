@@ -162,9 +162,12 @@ public sealed class ConnectionPool : IConnectionPool
         if (url.ProxyThroughServiceUrl)
             commandConnect = WithProxyToBroker(commandConnect, url.Logical);
 
-        var connection = await Connection.Connect(new PulsarStream(stream), _authentication, commandConnect, _keepAliveInterval, _closeInactiveConnectionsInterval, cancellationToken).ConfigureAwait(false);
+        var connection = Connection.Connect(new PulsarStream(stream), _authentication, commandConnect, _keepAliveInterval, _closeInactiveConnectionsInterval);
         _connections[url] = connection;
         _ = connection.OnStateChangeFrom(ConnectionState.Connected).AsTask().ContinueWith(t => DisposeConnection(url));
+        var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
+        response.Expect(BaseCommand.Type.Connected);
+        connection.MaxMessageSize = response.Connected.MaxMessageSize;
         return connection;
     }
 
@@ -227,15 +230,15 @@ public sealed class ConnectionPool : IConnectionPool
             => $"{nameof(Physical)}: {Physical}, {nameof(Logical)}: {Logical}, {nameof(ProxyThroughServiceUrl)}: {ProxyThroughServiceUrl}";
     }
 
-    public async ValueTask<uint> GetNumberOfPartitions(String topic, CancellationToken cancellationToken = default)
+    public async ValueTask<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken = default)
     {
         var connection = await FindConnectionForTopic(topic, cancellationToken).ConfigureAwait(false);
-        var commandPartitionedMetadata = new PulsarApi.CommandPartitionedTopicMetadata { Topic = topic };
+        var commandPartitionedMetadata = new CommandPartitionedTopicMetadata { Topic = topic };
         var response = await connection.Send(commandPartitionedMetadata, cancellationToken).ConfigureAwait(false);
 
-        response.Expect(PulsarApi.BaseCommand.Type.PartitionedMetadataResponse);
+        response.Expect(BaseCommand.Type.PartitionedMetadataResponse);
 
-        if (response.PartitionMetadataResponse.Response == PulsarApi.CommandPartitionedTopicMetadataResponse.LookupType.Failed)
+        if (response.PartitionMetadataResponse.Response == CommandPartitionedTopicMetadataResponse.LookupType.Failed)
             response.PartitionMetadataResponse.Throw();
 
         return response.PartitionMetadataResponse.Partitions;

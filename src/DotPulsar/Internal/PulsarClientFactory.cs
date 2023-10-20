@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,6 @@ using System;
 
 public sealed class PulsarClientFactory
 {
-    public static PulsarClient CreatePulsarClient(IConnectionPool connectionPool, ProcessManager processManager, IHandleException exceptionHandler, Uri serviceUrl)
-        => new(connectionPool, processManager, exceptionHandler, serviceUrl);
+    public static PulsarClient CreatePulsarClient(IConnectionPool connectionPool, IHandleException exceptionHandler, Uri serviceUrl)
+        => new(connectionPool, exceptionHandler, serviceUrl);
 }

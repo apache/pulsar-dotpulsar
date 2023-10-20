@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 public sealed class ReaderProcess : Process
 {
     private readonly IStateManager<ReaderState> _stateManager;
-    private readonly IContainsChannel _reader;
+    private readonly IContainsChannel _subReader;
 
     public ReaderProcess(
         Guid correlationId,
@@ -29,14 +29,13 @@ public sealed class ReaderProcess : Process
         IContainsChannel reader) : base(correlationId)
     {
         _stateManager = stateManager;
-        _reader = reader;
+        _subReader = reader;
     }
 
     public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync().ConfigureAwait(false);
         _stateManager.SetState(ReaderState.Closed);
-        await _reader.DisposeAsync().ConfigureAwait(false);
     }
 
     protected override void CalculateState()
@@ -48,7 +47,7 @@ public sealed class ReaderProcess : Process
         {
             var formerState = _stateManager.SetState(ReaderState.Faulted);
             if (formerState != ReaderState.Faulted)
-                ActionQueue.Enqueue(async _ => await _reader.ChannelFaulted(Exception!).ConfigureAwait(false));
+                ActionQueue.Enqueue(async _ => await _subReader.ChannelFaulted(Exception!).ConfigureAwait(false));
             return;
         }
 
@@ -59,8 +58,8 @@ public sealed class ReaderProcess : Process
                 _stateManager.SetState(ReaderState.Disconnected);
                 ActionQueue.Enqueue(async x =>
                 {
-                    await _reader.CloseChannel(x).ConfigureAwait(false);
-                    await _reader.EstablishNewChannel(x).ConfigureAwait(false);
+                    await _subReader.CloseChannel(x).ConfigureAwait(false);
+                    await _subReader.EstablishNewChannel(x).ConfigureAwait(false);
                 });
                 return;
             case ChannelState.Connected:

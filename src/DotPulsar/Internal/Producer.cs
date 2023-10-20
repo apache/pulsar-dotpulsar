@@ -55,7 +55,6 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     public Producer(
         Uri serviceUrl,
         ProducerOptions<TMessage> options,
-        ProcessManager processManager,
         IHandleException exceptionHandler,
         IConnectionPool connectionPool,
         ICompressorFactory? compressorFactory)
@@ -82,7 +81,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         _exceptionHandler = exceptionHandler;
         _connectionPool = connectionPool;
         _compressorFactory = compressorFactory;
-        _processManager = processManager;
+        _processManager = new ProcessManager();
         _messageRouter = options.MessageRouter;
         _cts = new CancellationTokenSource();
         _executor = new Executor(Guid.Empty, this, _exceptionHandler);
@@ -195,12 +194,12 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         _cts.Cancel();
         _cts.Dispose();
 
-        _state.SetState(ProducerState.Closed);
+        await _processManager.DisposeAsync().ConfigureAwait(false);
 
-        foreach (var producer in _producers.Values)
-        {
-            await producer.DisposeAsync().ConfigureAwait(false);
-        }
+        foreach (var subProducer in _producers.Values)
+            await subProducer.DisposeAsync().ConfigureAwait(false);
+
+        _state.SetState(ProducerState.Closed);
     }
 
     private async ValueTask<int> ChoosePartitions(MessageMetadata metadata, CancellationToken cancellationToken)

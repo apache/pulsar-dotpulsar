@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,20 +24,16 @@ using System.Threading.Tasks;
 public sealed class ProcessManager : IRegisterEvent, IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Guid, IProcess> _processes;
-    private readonly IConnectionPool _connectionPool;
 
-    public ProcessManager(IConnectionPool connectionPool)
+    public ProcessManager()
     {
         _processes = new ConcurrentDictionary<Guid, IProcess>();
-        _connectionPool = connectionPool;
     }
 
     public async ValueTask DisposeAsync()
     {
         foreach (var proc in _processes.Values.ToArray())
             await proc.DisposeAsync().ConfigureAwait(false);
-
-        await _connectionPool.DisposeAsync().ConfigureAwait(false);
     }
 
     public void Add(IProcess process)

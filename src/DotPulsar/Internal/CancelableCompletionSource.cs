@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,19 +22,16 @@ public sealed class CancelableCompletionSource<T> : IDisposable
 {
     private readonly TaskCompletionSource<T> _source;
     private CancellationTokenRegistration? _registration;
-    private bool _isDisposed;
-    private readonly object _lock = new();
+    private int _isDisposed;
 
     public CancelableCompletionSource()
         => _source = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public void SetupCancellation(Action callback, CancellationToken token)
     {
-        lock (_lock)
-        {
-            if (!_isDisposed)
-                _registration = token.Register(callback);
-        }
+        _registration = token.Register(callback);
+        if (_isDisposed == 1)
+            _registration?.Dispose();
     }
 
     public void SetResult(T result)
@@ -47,11 +44,10 @@ public sealed class CancelableCompletionSource<T> : IDisposable
 
     public void Dispose()
     {
-        lock (_lock)
-        {
-            _isDisposed = true;
-            _ = _source.TrySetCanceled();
-            _registration?.Dispose();
-        }
+        if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
+            return;
+
+        _ = _source.TrySetCanceled();
+        _registration?.Dispose();
     }
 }

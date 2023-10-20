@@ -16,10 +16,12 @@ namespace DotPulsar;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
+using DotPulsar.Extensions;
 using DotPulsar.Internal;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Compression;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,8 +31,9 @@ using System.Threading.Tasks;
 /// </summary>
 public sealed class PulsarClient : IPulsarClient
 {
+    private readonly object _lock = new();
+    private readonly HashSet<IAsyncDisposable> _disposables;
     private readonly IConnectionPool _connectionPool;
-    private readonly ProcessManager _processManager;
     private readonly IHandleException _exceptionHandler;
     private int _isDisposed;
 
@@ -38,12 +41,11 @@ public sealed class PulsarClient : IPulsarClient
 
     internal PulsarClient(
         IConnectionPool connectionPool,
-        ProcessManager processManager,
         IHandleException exceptionHandler,
         Uri serviceUrl)
     {
+        _disposables = new HashSet<IAsyncDisposable>();
         _connectionPool = connectionPool;
-        _processManager = processManager;
         _exceptionHandler = exceptionHandler;
         ServiceUrl = serviceUrl;
         _isDisposed = 0;
@@ -73,11 +75,13 @@ public sealed class PulsarClient : IPulsarClient
                 throw new CompressionException($"Support for {compressionType} compression was not found");
         }
 
-        var producer = new Producer<TMessage>(ServiceUrl, options, _processManager, _exceptionHandler, _connectionPool, compressorFactory);
+        var producer = new Producer<TMessage>(ServiceUrl, options, _exceptionHandler, _connectionPool, compressorFactory);
 
         if (options.StateChangedHandler is not null)
             _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);
 
+        AddDisposable(producer);
+        producer.StateChangedTo(ProducerState.Closed).AsTask().ContinueWith(_ => RemoveDisposable(producer));
         return producer;
     }
 
@@ -88,10 +92,12 @@ public sealed class PulsarClient : IPulsarClient
     {
         ThrowIfDisposed();
 
-        var consumer = new Consumer<TMessage>(ServiceUrl, _processManager, options, _connectionPool, _exceptionHandler);
+        var consumer = new Consumer<TMessage>(ServiceUrl, options, _connectionPool, _exceptionHandler);
         if (options.StateChangedHandler is not null)
             _ = StateMonitor.MonitorConsumer(consumer, options.StateChangedHandler);
 
+        AddDisposable(consumer);
+        consumer.StateChangedTo(ConsumerState.Closed).AsTask().ContinueWith(_ => RemoveDisposable(consumer));
         return consumer;
     }
 
@@ -102,10 +108,12 @@ public sealed class PulsarClient : IPulsarClient
     {
         ThrowIfDisposed();
 
-        var reader = new Reader<TMessage>(ServiceUrl, options, _processManager, _exceptionHandler, _connectionPool);
+        var reader = new Reader<TMessage>(ServiceUrl, options, _exceptionHandler, _connectionPool);
         if (options.StateChangedHandler is not null)
             _ = StateMonitor.MonitorReader(reader, options.StateChangedHandler);
 
+        AddDisposable(reader);
+        reader.StateChangedTo(ReaderState.Closed).AsTask().ContinueWith(_ => RemoveDisposable(reader));
         return reader;
     }
 
@@ -117,10 +125,36 @@ public sealed class PulsarClient : IPulsarClient
         if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
             return;
 
-        if (_processManager is IAsyncDisposable disposable)
-            await disposable.DisposeAsync().ConfigureAwait(false);
+        IEnumerable<IAsyncDisposable> disposables;
+
+        lock (_lock)
+        {
+            disposables = _disposables.ToArray();
+            _disposables.Clear();
+        }
+
+        foreach (var item in disposables)
+            await item.DisposeAsync().ConfigureAwait(false);
+
+        await _connectionPool.DisposeAsync().ConfigureAwait(false);
 
         DotPulsarMeter.ClientDisposed();
+    }
+
+    private void AddDisposable(IAsyncDisposable disposable)
+    {
+        lock (_lock)
+        {
+            _disposables.Add(disposable);
+        }
+    }
+
+    internal void RemoveDisposable(IAsyncDisposable disposable)
+    {
+        lock (_lock)
+        {
+            _disposables.Remove(disposable);
+        }
     }
 
     private void ThrowIfDisposed()
