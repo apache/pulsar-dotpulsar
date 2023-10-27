@@ -53,7 +53,6 @@ public sealed class Connection : IConnection
     public static Connection Connect(
         IPulsarStream stream,
         IAuthentication? authentication,
-        CommandConnect commandConnect,
         TimeSpan keepAliveInterval,
         TimeSpan closeOnInactiveInterval)
     {
@@ -331,9 +330,11 @@ public sealed class Connection : IConnection
 
     private async Task ProcessIncomingFrames(CancellationToken cancellationToken)
     {
+        await Task.Yield();
+
         try
         {
-            await foreach (var frame in _stream.Frames(cancellationToken))
+            await foreach (var frame in _stream.Frames(cancellationToken).ConfigureAwait(false))
             {
                 var commandSize = frame.ReadUInt32(0, true);
                 var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));

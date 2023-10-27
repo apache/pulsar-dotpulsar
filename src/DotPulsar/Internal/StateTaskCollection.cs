@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,60 +38,55 @@ public sealed class StateTaskCollection<TState> where TState : notnull
             node = _awaiters.AddFirst(new StateTask<TState>(state, changed));
         }
 
-        node.Value.CancelableCompletionSource.SetupCancellation(() => TaskWasCanceled(node), cancellationToken);
+        node.Value.CancelableCompletionSource.SetupCancellation(() => RemoveAndDispose(node), cancellationToken);
 
         return node.Value.CancelableCompletionSource.Task;
     }
 
-    public void CompleteTasksAwaiting(TState state)
+    public void CompleteTasksAwaiting(TState state) => SetState(state, true);
+
+    public void CompleteAllTasks(TState state) => SetState(state, false);
+
+    private LinkedListNode<StateTask<TState>>? GetFirst()
     {
         lock (_lock)
         {
-            var awaiter = _awaiters.First;
-
-            while (awaiter is not null)
-            {
-                var next = awaiter.Next;
-
-                if (awaiter.Value.IsAwaiting(state))
-                {
-                    _awaiters.Remove(awaiter);
-                    awaiter.Value.CancelableCompletionSource.SetResult(state);
-                    awaiter.Value.CancelableCompletionSource.Dispose();
-                }
-
-                awaiter = next;
-            }
+            return _awaiters.First;
         }
     }
 
-    public void CompleteAllTasks(TState state)
+    private void SetState(TState state, bool onlyAwaiting)
     {
-        lock (_lock)
+        var awaiter = GetFirst();
+
+        while (awaiter is not null)
         {
-            foreach (var awaiter in _awaiters)
+            var next = awaiter.Next;
+
+            if (!onlyAwaiting || awaiter.Value.IsAwaiting(state))
             {
-                awaiter.CancelableCompletionSource.SetResult(state);
-                awaiter.CancelableCompletionSource.Dispose();
+                awaiter.Value.CancelableCompletionSource.SetResult(state);
+                RemoveAndDispose(awaiter);
             }
 
-            _awaiters.Clear();
+            awaiter = next;
         }
     }
 
-    private void TaskWasCanceled(LinkedListNode<StateTask<TState>> node)
+    private void RemoveAndDispose(LinkedListNode<StateTask<TState>> node)
     {
         lock (_lock)
         {
             try
             {
                 _awaiters.Remove(node);
-                node.Value.Dispose();
             }
             catch
             {
                 // Ignore
             }
         }
+
+        node.Value.Dispose();
     }
 }

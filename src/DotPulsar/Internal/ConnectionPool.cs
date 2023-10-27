@@ -27,7 +27,6 @@ using System.Threading.Tasks;
 
 public sealed class ConnectionPool : IConnectionPool
 {
-    private readonly AsyncLock _lock;
     private readonly CommandConnect _commandConnect;
     private readonly Uri _serviceUrl;
     private readonly Connector _connector;
@@ -49,7 +48,6 @@ public sealed class ConnectionPool : IConnectionPool
         TimeSpan keepAliveInterval,
         IAuthentication? authentication)
     {
-        _lock = new AsyncLock();
         _commandConnect = commandConnect;
         _serviceUrl = serviceUrl;
         _connector = connector;
@@ -65,8 +63,6 @@ public sealed class ConnectionPool : IConnectionPool
     public async ValueTask DisposeAsync()
     {
         _cancellationTokenSource.Cancel();
-
-        await _lock.DisposeAsync().ConfigureAwait(false);
 
         foreach (var serviceUrl in _connections.Keys.ToArray())
         {
@@ -145,13 +141,10 @@ public sealed class ConnectionPool : IConnectionPool
 
     private async ValueTask<Connection> GetConnection(PulsarUrl url, CancellationToken cancellationToken)
     {
-        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-        {
-            if (_connections.TryGetValue(url, out var connection) && connection is not null)
-                return connection;
+        if (_connections.TryGetValue(url, out var connection) && connection is not null)
+            return connection;
 
-            return await EstablishNewConnection(url, cancellationToken).ConfigureAwait(false);
-        }
+        return await EstablishNewConnection(url, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<Connection> EstablishNewConnection(PulsarUrl url, CancellationToken cancellationToken)
@@ -162,11 +155,11 @@ public sealed class ConnectionPool : IConnectionPool
         if (url.ProxyThroughServiceUrl)
             commandConnect = WithProxyToBroker(commandConnect, url.Logical);
 
-        var connection = Connection.Connect(new PulsarStream(stream), _authentication, commandConnect, _keepAliveInterval, _closeInactiveConnectionsInterval);
-        _connections[url] = connection;
+        var connection = Connection.Connect(new PulsarStream(stream), _authentication, _keepAliveInterval, _closeInactiveConnectionsInterval);
         _ = connection.OnStateChangeFrom(ConnectionState.Connected).AsTask().ContinueWith(t => DisposeConnection(url));
         var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
         response.Expect(BaseCommand.Type.Connected);
+        _connections[url] = connection;
         connection.MaxMessageSize = response.Connected.MaxMessageSize;
         return connection;
     }

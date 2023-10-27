@@ -36,8 +36,7 @@ public sealed class PulsarStream : IPulsarStream
 
     private readonly Stream _stream;
     private readonly ChunkingPipeline _pipeline;
-    private readonly PipeReader _reader;
-    private readonly PipeWriter _writer;
+    private readonly Pipe _pipe;
     private int _isDisposed;
 
     public PulsarStream(Stream stream)
@@ -45,9 +44,7 @@ public sealed class PulsarStream : IPulsarStream
         _stream = stream;
         _pipeline = new ChunkingPipeline(stream, ChunkSize);
         var options = new PipeOptions(pauseWriterThreshold: PauseAtMoreThan10Mb, resumeWriterThreshold: ResumeAt5MbOrLess);
-        var pipe = new Pipe(options);
-        _reader = pipe.Reader;
-        _writer = pipe.Writer;
+        _pipe = new Pipe(options);
     }
 
     public async Task Send(ReadOnlySequence<byte> sequence)
@@ -74,7 +71,7 @@ public sealed class PulsarStream : IPulsarStream
 
     private async Task FillPipe(CancellationToken cancellationToken)
     {
-        await Task.Yield();
+        var writer = _pipe.Writer;
 
         try
         {
@@ -83,7 +80,7 @@ public sealed class PulsarStream : IPulsarStream
 #endif
             while (true)
             {
-                var memory = _writer.GetMemory(84999);
+                var memory = writer.GetMemory(84999);
 #if NETSTANDARD2_0
                 var bytesRead = await _stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
                 new Memory<byte>(buffer, 0, bytesRead).CopyTo(memory);
@@ -93,9 +90,9 @@ public sealed class PulsarStream : IPulsarStream
                 if (bytesRead == 0)
                     break;
 
-                _writer.Advance(bytesRead);
+                writer.Advance(bytesRead);
 
-                var result = await _writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                var result = await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
 
                 if (result.IsCompleted)
                     break;
@@ -107,7 +104,7 @@ public sealed class PulsarStream : IPulsarStream
         }
         finally
         {
-            await _writer.CompleteAsync().ConfigureAwait(false);
+            await writer.CompleteAsync().ConfigureAwait(false);
         }
     }
 
@@ -115,7 +112,9 @@ public sealed class PulsarStream : IPulsarStream
     {
         ThrowIfDisposed();
 
-        _ = FillPipe(cancellationToken);
+        _ = Task.Factory.StartNew(async () => await FillPipe(cancellationToken).ConfigureAwait(false));
+
+        var reader = _pipe.Reader;
 
         try
         {
@@ -125,7 +124,7 @@ public sealed class PulsarStream : IPulsarStream
             while (true)
             {
                 var minimumSize = FrameSizePrefix + frameSize;
-                var readResult = await _reader.ReadAtLeastAsync(minimumSize, cancellationToken).ConfigureAwait(false);
+                var readResult = await reader.ReadAtLeastAsync(minimumSize, cancellationToken).ConfigureAwait(false);
                 var buffer = readResult.Buffer;
 
                 while (true)
@@ -148,15 +147,15 @@ public sealed class PulsarStream : IPulsarStream
                     frameSize = UnknownFrameSize;
                 }
 
-                if (readResult.IsCompleted)
+                if (readResult.IsCompleted || readResult.IsCanceled)
                     break;
 
-                _reader.AdvanceTo(buffer.Start);
+                reader.AdvanceTo(buffer.Start);
             }
         }
         finally
         {
-            await _reader.CompleteAsync().ConfigureAwait(false);
+            await reader.CompleteAsync().ConfigureAwait(false);
         }
     }
 

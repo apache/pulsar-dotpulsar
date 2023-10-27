@@ -25,15 +25,15 @@ using Xunit;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
-public class PulsarClientTests
+public class PulsarClientTests : IDisposable
 {
-    private const string MyTopic = "persistent://public/default/mytopic";
-
+    private readonly CancellationTokenSource _cts;
     private readonly IntegrationFixture _fixture;
     private readonly ITestOutputHelper _testOutputHelper;
 
     public PulsarClientTests(IntegrationFixture fixture, ITestOutputHelper outputHelper)
     {
+        _cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
         _fixture = fixture;
         _testOutputHelper = outputHelper;
     }
@@ -46,8 +46,8 @@ public class PulsarClientTests
         await using var producer = CreateProducer(client);
 
         // Act
-        var exception = await Record.ExceptionAsync(() => producer.Send("Test").AsTask());
-        var state = await producer.OnStateChangeTo(ProducerState.Faulted);
+        var exception = await Record.ExceptionAsync(() => producer.Send("Test", _cts.Token).AsTask());
+        var state = await producer.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
 
         // Assert
         exception.Should().BeOfType<ProducerFaultedException>();
@@ -64,16 +64,16 @@ public class PulsarClientTests
             if (throwException)
                 throw new Exception();
             var token = _fixture.CreateToken(TimeSpan.FromSeconds(10));
-            _testOutputHelper.WriteLine($"Received token: {token}");
+            _testOutputHelper.Log($"Received token: {token}");
             return ValueTask.FromResult(token);
         });
 
         await using var producer = CreateProducer(client);
 
         // Act
-        _ = await producer.Send("Test"); // Make sure we have a working connection
+        _ = await producer.Send("Test", _cts.Token); // Make sure we have a working connection
         throwException = true;
-        var state = await producer.OnStateChangeTo(ProducerState.Faulted);
+        var state = await producer.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
 
         // Assert
         state.Should().Be(ProducerState.Faulted);
@@ -92,8 +92,8 @@ public class PulsarClientTests
         await using var producer = CreateProducer(client);
 
         // Act
-        var exception = await Record.ExceptionAsync(() => producer.Send("Test").AsTask());
-        var state = await producer.OnStateChangeTo(ProducerState.Faulted);
+        var exception = await Record.ExceptionAsync(() => producer.Send("Test", _cts.Token).AsTask());
+        var state = await producer.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
 
         // Assert
         exception.Should().BeOfType<ProducerFaultedException>();
@@ -115,16 +115,16 @@ public class PulsarClientTests
                 tcs.SetResult();
 
             var token = _fixture.CreateToken(TimeSpan.FromSeconds(10));
-            _testOutputHelper.WriteLine($"Received token: {token}");
+            _testOutputHelper.Log($"Received token: {token}");
             return ValueTask.FromResult(token);
         });
 
         await using var producer = CreateProducer(client);
 
         // Act
-        _ = await producer.Send("Test"); // Make sure we have a working connection
+        _ = await producer.Send("Test", _cts.Token); // Make sure we have a working connection
         await tcs.Task;
-        var state = await producer.OnStateChangeTo(ProducerState.Connected);
+        var state = await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
         // Assert
         state.Should().Be(ProducerState.Connected);
@@ -132,19 +132,18 @@ public class PulsarClientTests
 
     private IPulsarClient CreateClient(Func<CancellationToken, ValueTask<string>> tokenSupplier)
         => PulsarClient
-            .Builder()
-            .Authentication(AuthenticationFactory.Token(tokenSupplier))
-            .ExceptionHandler(ec => _testOutputHelper.WriteLine($"Exception: {ec.Exception}"))
-            .ServiceUrl(_fixture.ServiceUrl)
-            .Build();
+        .Builder()
+        .Authentication(AuthenticationFactory.Token(tokenSupplier))
+        .ExceptionHandler(_testOutputHelper.Log)
+        .ServiceUrl(_fixture.ServiceUrl)
+        .Build();
 
     private IProducer<string> CreateProducer(IPulsarClient client)
         => client
-            .NewProducer(Schema.String)
-            .Topic(MyTopic)
-            .StateChangedHandler(LogState)
-            .Create();
+        .NewProducer(Schema.String)
+        .Topic(_fixture.CreateTopic())
+        .StateChangedHandler(_testOutputHelper.Log)
+        .Create();
 
-    private void LogState(ProducerStateChanged stateChange)
-        => _testOutputHelper.WriteLine($"The producer for topic '{stateChange.Producer.Topic}' changed state to '{stateChange.ProducerState}'");
+    public void Dispose() => _cts.Dispose();
 }

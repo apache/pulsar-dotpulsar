@@ -25,14 +25,15 @@ using Xunit;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
-public class ProducerTests
+public class ProducerTests : IDisposable
 {
-    private static readonly TimeSpan TestTimeout = TimeSpan.FromSeconds(30);
+    private readonly CancellationTokenSource _cts;
     private readonly IntegrationFixture _fixture;
     private readonly ITestOutputHelper _testOutputHelper;
 
     public ProducerTests(IntegrationFixture fixture, ITestOutputHelper outputHelper)
     {
+        _cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
         _fixture = fixture;
         _testOutputHelper = outputHelper;
     }
@@ -48,8 +49,8 @@ public class ProducerTests
         await using var consumer = CreateConsumer(client, topicName);
 
         //Act
-        var messageId = await producer.Send(content);
-        var message = await consumer.Receive();
+        var messageId = await producer.Send(content, _cts.Token);
+        var message = await consumer.Receive(_cts.Token);
 
         //Assert
         message.MessageId.Should().Be(messageId);
@@ -74,10 +75,10 @@ public class ProducerTests
         }
 
         //Act
-        await producer.SendChannel.Send(content, SetMessageId);
+        await producer.SendChannel.Send(content, SetMessageId, _cts.Token);
         producer.SendChannel.Complete();
-        await producer.SendChannel.Completion();
-        var message = await consumer.Receive();
+        await producer.SendChannel.Completion(_cts.Token);
+        var message = await consumer.Receive(_cts.Token);
         var expected = await idTask.Task;
 
         //Assert
@@ -110,21 +111,20 @@ public class ProducerTests
     {
         //Arrange
         var topicName = _fixture.CreateTopic();
-        using var cts = new CancellationTokenSource(TestTimeout);
         await using var client = CreateClient();
         await using var producer1 = CreateProducer(client, topicName, accessModeForProducer1);
-        await producer1.OnStateChangeTo(ProducerState.Connected, cts.Token);
+        await producer1.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
         //Act
         await using var producer2 = CreateProducer(client, topicName, accessModeForProducer2);
 
         if (accessModeForProducer2 == ProducerAccessMode.ExclusiveWithFencing) // We need to send a message to trigger the state change
         {
-            await producer2.OnStateChangeTo(ProducerState.Connected, cts.Token);
+            await producer2.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
             try
             {
-                _ = producer1.Send("test", default);
+                _ = producer1.Send("test", _cts.Token);
             }
             catch
             {
@@ -132,8 +132,8 @@ public class ProducerTests
             }
         }
 
-        var actualStateForProducer1 = await producer1.OnStateChangeTo(expectedStateForProducer1, cts.Token);
-        var actualStateForProducer2 = await producer2.OnStateChangeTo(expectedStateForProducer2, cts.Token);
+        var actualStateForProducer1 = await producer1.OnStateChangeTo(expectedStateForProducer1, _cts.Token);
+        var actualStateForProducer2 = await producer2.OnStateChangeTo(expectedStateForProducer2, _cts.Token);
 
         //Assert
         actualStateForProducer1.Should().Be(expectedStateForProducer1);
@@ -167,8 +167,8 @@ public class ProducerTests
             for (var msgIndex = 0; msgIndex < msgCount; ++msgIndex)
             {
                 var message = $"{content}-{i}-{msgIndex}";
-                _ = await producer.Send(message);
-                _testOutputHelper.WriteLine($"Sent a message: {message}");
+                _ = await producer.Send(message, _cts.Token);
+                _testOutputHelper.Log($"Sent a message: {message}");
             }
         }
 
@@ -179,7 +179,7 @@ public class ProducerTests
 
             for (var msgIndex = 0; msgIndex < msgCount; ++msgIndex)
             {
-                var message = await consumer.Receive();
+                var message = await consumer.Receive(_cts.Token);
                 message.Value().Should().Be($"{content}-{i}-{msgIndex}");
             }
         }
@@ -201,14 +201,14 @@ public class ProducerTests
         for (var i = 0; i < partitions; ++i)
         {
             consumers.Add(CreateConsumer(client, $"{topicName}-partition-{i}"));
-            await producer.Send($"{content}-{i}");
-            _testOutputHelper.WriteLine($"Sent a message to consumer [{i}]");
+            await producer.Send($"{content}-{i}", _cts.Token);
+            _testOutputHelper.Log($"Sent a message to consumer [{i}]");
         }
 
         //Assert
         for (var i = 0; i < partitions; ++i)
         {
-            (await consumers[i].Receive()).Value().Should().Be($"{content}-{i}");
+            (await consumers[i].Receive(_cts.Token)).Value().Should().Be($"{content}-{i}");
         }
     }
 
@@ -223,11 +223,9 @@ public class ProducerTests
         await using var consumer = CreateConsumer(client, topicName);
         await using var producer = CreateProducer(client, topicName);
 
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-
         //Act
-        var produced = await ProduceMessages(producer, numberOfMessages, cts.Token);
-        var consumed = await ConsumeMessages(consumer, numberOfMessages, cts.Token);
+        var produced = await ProduceMessages(producer, numberOfMessages, _cts.Token);
+        var consumed = await ConsumeMessages(consumer, numberOfMessages, _cts.Token);
 
         //Assert
         var foundNonNegativeOne = false;
@@ -256,11 +254,9 @@ public class ProducerTests
         await using var consumer = CreateConsumer(client, topicName);
         await using var producer = CreateProducer(client, topicName);
 
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-
         //Act
-        var produced = await ProduceMessages(producer, numberOfMessages, cts.Token);
-        var consumed = await ConsumeMessages(consumer, numberOfMessages, cts.Token);
+        var produced = await ProduceMessages(producer, numberOfMessages, _cts.Token);
+        var consumed = await ConsumeMessages(consumer, numberOfMessages, _cts.Token);
 
         //Assert
         var foundNonNegativeOne = false;
@@ -309,13 +305,6 @@ public class ProducerTests
         return messageIds;
     }
 
-    private void LogState(ConsumerStateChanged stateChange)
-        => _testOutputHelper.WriteLine($"The consumer for topic '{stateChange.Consumer.Topic}' changed state to '{stateChange.ConsumerState}'");
-
-    private void LogState(ProducerStateChanged stateChange)
-        => _testOutputHelper.WriteLine($"The producer for topic '{stateChange.Producer.Topic}' changed state to '{stateChange.ProducerState}'");
-
-    private static string CreateConsumerName() => $"consumer-{Guid.NewGuid():N}";
     private static string CreateSubscriptionName() => $"subscription-{Guid.NewGuid():N}";
 
     private IProducer<string> CreateProducer(
@@ -325,23 +314,24 @@ public class ProducerTests
         => pulsarClient.NewProducer(Schema.String)
         .Topic(topicName)
         .ProducerAccessMode(producerAccessMode)
-        .StateChangedHandler(LogState)
+        .StateChangedHandler(_testOutputHelper.Log)
         .Create();
 
     private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string topicName)
         => pulsarClient.NewConsumer(Schema.String)
-        .ConsumerName(CreateConsumerName())
         .InitialPosition(SubscriptionInitialPosition.Earliest)
         .SubscriptionName(CreateSubscriptionName())
         .Topic(topicName)
-        .StateChangedHandler(LogState)
+        .StateChangedHandler(_testOutputHelper.Log)
         .Create();
 
     private IPulsarClient CreateClient()
         => PulsarClient
-            .Builder()
-            .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
-            .ExceptionHandler(ec => _testOutputHelper.WriteLine($"Exception: {ec.Exception}"))
-            .ServiceUrl(_fixture.ServiceUrl)
-            .Build();
+        .Builder()
+        .Authentication(_fixture.Authentication)
+        .ExceptionHandler(_testOutputHelper.Log)
+        .ServiceUrl(_fixture.ServiceUrl)
+        .Build();
+
+    public void Dispose() => _cts.Dispose();
 }

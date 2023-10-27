@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Tests;
 
+using DotPulsar.Abstractions;
 using Ductus.FluentDocker.Builders;
 using Ductus.FluentDocker.Services;
 using Ductus.FluentDocker.Services.Extensions;
@@ -33,6 +34,8 @@ public class IntegrationFixture : IAsyncLifetime
 
     private readonly IMessageSink _messageSink;
     private readonly IContainerService _cluster;
+
+    private string? _token;
 
     public IntegrationFixture(IMessageSink messageSink)
     {
@@ -62,7 +65,7 @@ public class IntegrationFixture : IAsyncLifetime
 
         _cluster = new Builder()
             .UseContainer()
-            .UseImage("apachepulsar/pulsar:3.1.0")
+            .UseImage("apachepulsar/pulsar:3.1.1")
             .WithEnvironment(environmentVariables)
             .ExposePort(Port)
             .Command("/bin/bash -c", arguments)
@@ -72,6 +75,8 @@ public class IntegrationFixture : IAsyncLifetime
     }
 
     public Uri ServiceUrl { get; private set; }
+
+    public IAuthentication Authentication => AuthenticationFactory.Token(ct => ValueTask.FromResult(_token!));
 
     public Task DisposeAsync()
     {
@@ -90,6 +95,7 @@ public class IntegrationFixture : IAsyncLifetime
         var endpoint = _cluster.ToHostExposedEndpoint($"{Port}/tcp");
         _messageSink.OnMessage(new DiagnosticMessage($"Endpoint opened at {endpoint}"));
         ServiceUrl = new Uri($"pulsar://localhost:{endpoint.Port}");
+        _token = CreateToken(Timeout.InfiniteTimeSpan);
         return Task.CompletedTask;
     }
 

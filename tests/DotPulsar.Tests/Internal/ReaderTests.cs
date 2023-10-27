@@ -26,13 +26,15 @@ using Xunit;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
-public class ReaderTests
+public class ReaderTests : IDisposable
 {
+    private readonly CancellationTokenSource _cts;
     private readonly IntegrationFixture _fixture;
     private readonly ITestOutputHelper _testOutputHelper;
 
     public ReaderTests(IntegrationFixture fixture, ITestOutputHelper testOutputHelper)
     {
+        _cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
         _fixture = fixture;
         _testOutputHelper = testOutputHelper;
     }
@@ -42,10 +44,10 @@ public class ReaderTests
     {
         //Arrange
         await using var client = CreateClient();
-        await using var reader = CreateReader(client, MessageId.Earliest);
+        await using var reader = CreateReader(client, MessageId.Earliest, _fixture.CreateTopic());
 
         //Act
-        var actual = await reader.GetLastMessageId();
+        var actual = await reader.GetLastMessageId(_cts.Token);
 
         //Assert
         actual.Should().BeEquivalentTo(MessageId.Earliest);
@@ -55,7 +57,7 @@ public class ReaderTests
     public async Task GetLastMessageId_GivenNonPartitionedTopic_ShouldGetMessageId()
     {
         //Arrange
-        var topicName = CreateTopicName();
+        var topicName = _fixture.CreateTopic();
         const int numberOfMessages = 6;
 
         await using var client = CreateClient();
@@ -65,7 +67,7 @@ public class ReaderTests
         MessageId expected = null!;
         for (var i = 0; i < numberOfMessages; i++)
         {
-            var messageId = await producer.Send("test-message");
+            var messageId = await producer.Send("test-message", _cts.Token);
             if (i >= 5)
             {
                 expected = messageId;
@@ -73,7 +75,7 @@ public class ReaderTests
         }
 
         //Act
-        var actual = await reader.GetLastMessageId();
+        var actual = await reader.GetLastMessageId(_cts.Token);
 
         //Assert
         actual.Should().BeEquivalentTo(expected);
@@ -83,15 +85,14 @@ public class ReaderTests
     public async Task GetLastMessageId_GivenPartitionedTopic_ShouldThrowException()
     {
         //Arrange
-        var topicName = CreateTopicName();
         const int partitions = 3;
-        _fixture.CreatePartitionedTopic(topicName, partitions);
+        var topicName = _fixture.CreatePartitionedTopic(partitions);
 
         await using var client = CreateClient();
         await using var reader = CreateReader(client, MessageId.Earliest, topicName);
 
         //Act
-        var exception = await Record.ExceptionAsync(() => reader.GetLastMessageId().AsTask());
+        var exception = await Record.ExceptionAsync(() => reader.GetLastMessageId(_cts.Token).AsTask());
 
         //Assert
         exception.Should().BeOfType<NotSupportedException>();
@@ -102,11 +103,11 @@ public class ReaderTests
     {
         //Arrange
         await using var client = CreateClient();
-        await using var reader = CreateReader(client, MessageId.Earliest);
+        await using var reader = CreateReader(client, MessageId.Earliest, _fixture.CreateTopic());
         var expected = new List<MessageId>() { MessageId.Earliest };
 
         //Act
-        var actual = await reader.GetLastMessageIds();
+        var actual = await reader.GetLastMessageIds(_cts.Token);
 
         //Assert
         actual.Should().BeEquivalentTo(expected);
@@ -116,7 +117,7 @@ public class ReaderTests
     public async Task GetLastMessageIds_GivenNonPartitionedTopic_ShouldGetMessageIdFromPartition()
     {
         //Arrange
-        var topicName = CreateTopicName();
+        var topicName = _fixture.CreateTopic();
         const int numberOfMessages = 6;
 
         await using var client = CreateClient();
@@ -126,14 +127,14 @@ public class ReaderTests
         var expected = new List<MessageId>();
         for (var i = 0; i < numberOfMessages; i++)
         {
-            var messageId = await producer.Send("test-message");
+            var messageId = await producer.Send("test-message", _cts.Token);
             if (i >= 5)
             {
                 expected.Add(messageId);
             }
         }
         //Act
-        var actual = await reader.GetLastMessageIds();
+        var actual = await reader.GetLastMessageIds(_cts.Token);
 
         //Assert
         actual.Should().BeEquivalentTo(expected);
@@ -143,10 +144,9 @@ public class ReaderTests
     public async Task GetLastMessageIds_GivenPartitionedTopic_ShouldGetMessageIdsFromPartitions()
     {
         //Arrange
-        var topicName = CreateTopicName();
         const int numberOfMessages = 6;
         const int partitions = 3;
-        _fixture.CreatePartitionedTopic(topicName, partitions);
+        var topicName = _fixture.CreatePartitionedTopic(partitions);
 
         await using var client = CreateClient();
         await using var reader = CreateReader(client, MessageId.Earliest, topicName);
@@ -155,7 +155,7 @@ public class ReaderTests
         var expected = new List<MessageId>();
         for (var i = 0; i < numberOfMessages; i++)
         {
-            var messageId = await producer.Send("test-message");
+            var messageId = await producer.Send("test-message", _cts.Token);
             if (i >= 3)
             {
                 expected.Add(messageId);
@@ -163,7 +163,7 @@ public class ReaderTests
         }
 
         //Act
-        var actual = await reader.GetLastMessageIds();
+        var actual = await reader.GetLastMessageIds(_cts.Token);
 
         //Assert
         actual.Should().BeEquivalentTo(expected);
@@ -173,7 +173,7 @@ public class ReaderTests
     public async Task Receive_GivenNonPartitionedTopic_ShouldReceiveAll()
     {
         //Arrange
-        var topicName = CreateTopicName();
+        var topicName = _fixture.CreateTopic();
         const int numberOfMessages = 10;
 
         await using var client = CreateClient();
@@ -183,7 +183,7 @@ public class ReaderTests
         var expected = new List<MessageId>();
         for (var i = 0; i < numberOfMessages; i++)
         {
-            var messageId = await producer.Send("test-message");
+            var messageId = await producer.Send("test-message", _cts.Token);
             expected.Add(messageId);
         }
 
@@ -191,7 +191,7 @@ public class ReaderTests
         var actual = new List<MessageId>();
         for (var i = 0; i < numberOfMessages; i++)
         {
-            var messageId = await reader.Receive();
+            var messageId = await reader.Receive(_cts.Token);
             actual.Add(messageId.MessageId);
         }
 
@@ -203,10 +203,9 @@ public class ReaderTests
     public async Task Receive_GivenPartitionedTopic_ShouldReceiveAll()
     {
         //Arrange
-        var topicName = CreateTopicName();
         const int numberOfMessages = 50;
         const int partitions = 3;
-        _fixture.CreatePartitionedTopic(topicName, partitions);
+        var topicName = _fixture.CreatePartitionedTopic(partitions);
 
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, topicName);
@@ -215,7 +214,7 @@ public class ReaderTests
         var expected = new List<MessageId>();
         for (var i = 0; i < numberOfMessages; i++)
         {
-            var messageId = await producer.Send("test-message");
+            var messageId = await producer.Send("test-message", _cts.Token);
             expected.Add(messageId);
         }
 
@@ -223,7 +222,7 @@ public class ReaderTests
         var actual = new List<MessageId>();
         for (var i = 0; i < numberOfMessages; i++)
         {
-            var messageId = await reader.Receive();
+            var messageId = await reader.Receive(_cts.Token);
             actual.Add(messageId.MessageId);
         }
 
@@ -244,9 +243,9 @@ public class ReaderTests
         })
         .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var reader = CreateReader(client, MessageId.Earliest, CreateTopicName());
+        await using var reader = CreateReader(client, MessageId.Earliest, _fixture.CreateTopic());
 
-        var receiveTask = reader.Receive().AsTask();
+        var receiveTask = reader.Receive(_cts.Token).AsTask();
         semaphoreSlim.Release();
 
         //Act
@@ -267,43 +266,37 @@ public class ReaderTests
         })
         .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var reader = CreateReader(client, MessageId.Earliest, CreateTopicName());
+        await using var reader = CreateReader(client, MessageId.Earliest, _fixture.CreateTopic());
 
-        await reader.OnStateChangeTo(ReaderState.Faulted);
+        await reader.OnStateChangeTo(ReaderState.Faulted, _cts.Token);
 
         //Act
-        var exception = await Record.ExceptionAsync(() => reader.Receive().AsTask());
+        var exception = await Record.ExceptionAsync(() => reader.Receive(_cts.Token).AsTask());
 
         //Assert
         exception.Should().BeOfType<ReaderFaultedException>();
     }
 
-    private void LogState(ReaderStateChanged stateChange)
-        => _testOutputHelper.WriteLine($"The reader for topic '{stateChange.Reader.Topic}' changed state to '{stateChange.ReaderState}'");
-
-    private void LogState(ProducerStateChanged stateChange)
-        => _testOutputHelper.WriteLine($"The producer for topic '{stateChange.Producer.Topic}' changed state to '{stateChange.ProducerState}'");
-
-    private static string CreateTopicName() => $"persistent://public/default/{Guid.NewGuid():N}";
-
-    private IProducer<string> CreateProducer(IPulsarClient pulsarClient, string? topicName = null)
+    private IProducer<string> CreateProducer(IPulsarClient pulsarClient, string topicName)
         => pulsarClient.NewProducer(Schema.String)
-        .Topic(topicName is null ? CreateTopicName() : topicName)
-        .StateChangedHandler(LogState)
+        .Topic(topicName)
+        .StateChangedHandler(_testOutputHelper.Log)
         .Create();
 
-    private IReader<string> CreateReader(IPulsarClient pulsarClient, MessageId messageId, string? topicName = null)
+    private IReader<string> CreateReader(IPulsarClient pulsarClient, MessageId messageId, string topicName)
         => pulsarClient.NewReader(Schema.String)
         .StartMessageId(messageId)
-        .Topic(topicName is null ? CreateTopicName() : topicName)
-        .StateChangedHandler(LogState)
+        .Topic(topicName)
+        .StateChangedHandler(_testOutputHelper.Log)
         .Create();
 
     private IPulsarClient CreateClient()
         => PulsarClient
-            .Builder()
-            .Authentication(AuthenticationFactory.Token(ct => ValueTask.FromResult(_fixture.CreateToken(Timeout.InfiniteTimeSpan))))
-            .ExceptionHandler(ec => _testOutputHelper.WriteLine($"Exception: {ec.Exception}"))
-            .ServiceUrl(_fixture.ServiceUrl)
-            .Build();
+        .Builder()
+        .Authentication(_fixture.Authentication)
+        .ExceptionHandler(_testOutputHelper.Log)
+        .ServiceUrl(_fixture.ServiceUrl)
+        .Build();
+
+    public void Dispose() => _cts.Dispose();
 }

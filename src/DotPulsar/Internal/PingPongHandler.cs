@@ -23,19 +23,19 @@ using System.Threading.Tasks;
 
 public sealed class PingPongHandler : IState<PingPongHandlerState>, IAsyncDisposable
 {
+    private readonly CancellationTokenSource _cts;
     private readonly StateManager<PingPongHandlerState> _stateManager;
     private readonly TimeSpan _keepAliveInterval;
-    private readonly Timer _timer;
     private long _lastCommand;
     private bool _waitForPong;
 
     public PingPongHandler(TimeSpan keepAliveInterval)
     {
+        _cts = new CancellationTokenSource();
         _stateManager = new StateManager<PingPongHandlerState>(PingPongHandlerState.Active, PingPongHandlerState.TimedOut, PingPongHandlerState.Closed);
         _keepAliveInterval = keepAliveInterval;
-        _timer = new Timer(Watch);
-        _timer.Change(_keepAliveInterval, TimeSpan.Zero);
         _lastCommand = Stopwatch.GetTimestamp();
+        _ = Task.Factory.StartNew(() => Watch());
     }
 
     public void Incoming(BaseCommand.Type _)
@@ -44,13 +44,24 @@ public sealed class PingPongHandler : IState<PingPongHandlerState>, IAsyncDispos
         _waitForPong = false;
     }
 
-    private void Watch(object? state)
+    private TimeSpan GetElapsedTimeSinceLastCommand()
     {
-        try
+        var lastCommand = Interlocked.Read(ref _lastCommand);
+        var now = Stopwatch.GetTimestamp();
+        var elapsedTicks = now - lastCommand;
+        if (elapsedTicks > 0)
+            return TimeSpan.FromSeconds(elapsedTicks / Stopwatch.Frequency);
+        return TimeSpan.Zero;
+    }
+
+    private async void Watch()
+    {
+        var waitFor = _keepAliveInterval;
+
+        while (!_cts.IsCancellationRequested)
         {
-            var lastCommand = Interlocked.Read(ref _lastCommand);
-            var now = Stopwatch.GetTimestamp();
-            var elapsed = TimeSpan.FromSeconds((now - lastCommand) / Stopwatch.Frequency);
+            await Task.Delay(waitFor).ConfigureAwait(false);
+            var elapsed = GetElapsedTimeSinceLastCommand();
             if (elapsed > _keepAliveInterval)
             {
                 if (_waitForPong)
@@ -61,34 +72,22 @@ public sealed class PingPongHandler : IState<PingPongHandlerState>, IAsyncDispos
 
                 _waitForPong = true;
                 _stateManager.SetState(PingPongHandlerState.ThresholdExceeded);
-                _timer.Change(_keepAliveInterval, TimeSpan.Zero);
+                waitFor = _keepAliveInterval;
             }
             else
             {
                 _stateManager.SetState(PingPongHandlerState.Active);
-                _timer.Change(_keepAliveInterval.Subtract(elapsed), TimeSpan.Zero);
+                waitFor = _keepAliveInterval.Subtract(elapsed);
             }
-        }
-        catch
-        {
-            // Ignore
         }
     }
 
-#if NETSTANDARD2_0
     public ValueTask DisposeAsync()
     {
-        _timer.Dispose();
+        _cts.Cancel();
         _stateManager.SetState(PingPongHandlerState.Closed);
         return new ValueTask();
     }
-#else
-    public async ValueTask DisposeAsync()
-    {
-        await _timer.DisposeAsync().ConfigureAwait(false);
-        _stateManager.SetState(PingPongHandlerState.Closed);
-    }
-#endif
 
     public bool IsFinalState() => _stateManager.IsFinalState();
 

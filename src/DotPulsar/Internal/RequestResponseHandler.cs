@@ -22,17 +22,19 @@ using System.Threading.Tasks;
 
 public sealed class RequestResponseHandler : IDisposable
 {
+    private readonly ConnectRequest _connectRequest;
     private readonly RequestId _requestId;
     private readonly Awaiter<IRequest, BaseCommand> _requests;
     private readonly EnumLookup<BaseCommand.Type, Func<BaseCommand, IRequest>> _getResponseIdentifier;
 
     public RequestResponseHandler()
     {
+        _connectRequest = new ConnectRequest();
         _requestId = new RequestId();
         _requests = new Awaiter<IRequest, BaseCommand>();
 
         _getResponseIdentifier = new EnumLookup<BaseCommand.Type, Func<BaseCommand, IRequest>>(cmd => throw new Exception($"CommandType '{cmd.CommandType}' not supported as request/response type"));
-        _getResponseIdentifier.Set(BaseCommand.Type.Connected, cmd => new ConnectRequest());
+        _getResponseIdentifier.Set(BaseCommand.Type.Connected, cmd => _connectRequest);
         _getResponseIdentifier.Set(BaseCommand.Type.SendError, cmd => new SendRequest(cmd.SendError.ProducerId, cmd.SendError.SequenceId));
         _getResponseIdentifier.Set(BaseCommand.Type.SendReceipt, cmd => new SendRequest(cmd.SendReceipt.ProducerId, cmd.SendReceipt.SequenceId));
         _getResponseIdentifier.Set(BaseCommand.Type.ProducerSuccess, cmd => StandardRequest.WithRequestId(cmd.ProducerSuccess.RequestId));
@@ -43,7 +45,7 @@ public sealed class RequestResponseHandler : IDisposable
         _getResponseIdentifier.Set(BaseCommand.Type.GetLastMessageIdResponse, cmd => StandardRequest.WithRequestId(cmd.GetLastMessageIdResponse.RequestId));
         _getResponseIdentifier.Set(BaseCommand.Type.GetOrCreateSchemaResponse, cmd => StandardRequest.WithRequestId(cmd.GetOrCreateSchemaResponse.RequestId));
         _getResponseIdentifier.Set(BaseCommand.Type.Success, cmd => StandardRequest.WithRequestId(cmd.Success.RequestId));
-        _getResponseIdentifier.Set(BaseCommand.Type.Error, cmd => !_requestId.IsPastInitialId() ? new ConnectRequest() : StandardRequest.WithRequestId(cmd.Error.RequestId));
+        _getResponseIdentifier.Set(BaseCommand.Type.Error, cmd => _requestId.IsPastInitialId() ? StandardRequest.WithRequestId(cmd.Error.RequestId) : _connectRequest);
     }
 
     public void Dispose()

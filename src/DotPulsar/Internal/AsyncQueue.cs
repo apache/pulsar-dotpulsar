@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -73,17 +73,14 @@ public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
 
     public void Dispose()
     {
-        lock (_lock)
-        {
-            if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
-                return;
+        if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
+            return;
 
-            foreach (var pendingDequeue in _pendingDequeues)
-                pendingDequeue.Dispose();
+        foreach (var pendingDequeue in _pendingDequeues)
+            pendingDequeue.Dispose();
 
-            _pendingDequeues.Clear();
-            _queue.Clear();
-        }
+        _pendingDequeues.Clear();
+        _queue.Clear();
     }
 
     private void Cancel(LinkedListNode<CancelableCompletionSource<T>> node)
