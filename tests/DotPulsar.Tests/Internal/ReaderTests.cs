@@ -26,7 +26,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
-public class ReaderTests : IDisposable
+public sealed class ReaderTests : IDisposable
 {
     private readonly CancellationTokenSource _cts;
     private readonly IntegrationFixture _fixture;
@@ -37,65 +37,6 @@ public class ReaderTests : IDisposable
         _cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
         _fixture = fixture;
         _testOutputHelper = testOutputHelper;
-    }
-
-    [Fact]
-    public async Task GetLastMessageId_GivenEmptyTopic_ShouldBeEqualToMessageIdEarliest()
-    {
-        //Arrange
-        await using var client = CreateClient();
-        await using var reader = CreateReader(client, MessageId.Earliest, _fixture.CreateTopic());
-
-        //Act
-        var actual = await reader.GetLastMessageId(_cts.Token);
-
-        //Assert
-        actual.Should().BeEquivalentTo(MessageId.Earliest);
-    }
-
-    [Fact]
-    public async Task GetLastMessageId_GivenNonPartitionedTopic_ShouldGetMessageId()
-    {
-        //Arrange
-        var topicName = _fixture.CreateTopic();
-        const int numberOfMessages = 6;
-
-        await using var client = CreateClient();
-        await using var reader = CreateReader(client, MessageId.Earliest, topicName);
-        await using var producer = CreateProducer(client, topicName);
-
-        MessageId expected = null!;
-        for (var i = 0; i < numberOfMessages; i++)
-        {
-            var messageId = await producer.Send("test-message", _cts.Token);
-            if (i >= 5)
-            {
-                expected = messageId;
-            }
-        }
-
-        //Act
-        var actual = await reader.GetLastMessageId(_cts.Token);
-
-        //Assert
-        actual.Should().BeEquivalentTo(expected);
-    }
-
-    [Fact]
-    public async Task GetLastMessageId_GivenPartitionedTopic_ShouldThrowException()
-    {
-        //Arrange
-        const int partitions = 3;
-        var topicName = _fixture.CreatePartitionedTopic(partitions);
-
-        await using var client = CreateClient();
-        await using var reader = CreateReader(client, MessageId.Earliest, topicName);
-
-        //Act
-        var exception = await Record.ExceptionAsync(() => reader.GetLastMessageId(_cts.Token).AsTask());
-
-        //Assert
-        exception.Should().BeOfType<NotSupportedException>();
     }
 
     [Fact]

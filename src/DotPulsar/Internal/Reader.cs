@@ -155,16 +155,6 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     public bool IsFinalState(ReaderState state)
         => _state.IsFinalState(state);
 
-    [Obsolete("GetLastMessageId is obsolete. Please use GetLastMessageIds instead.")]
-    public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken)
-    {
-        await Guard(cancellationToken).ConfigureAwait(false);
-
-        if (!_isPartitionedTopic)
-            return await _subReaders[_subReaderIndex].GetLastMessageId(cancellationToken).ConfigureAwait(false);
-        throw new NotSupportedException("GetLastMessageId can't be used on partitioned topics. Please use GetLastMessageIds");
-    }
-
     public async ValueTask<IEnumerable<MessageId>> GetLastMessageIds(CancellationToken cancellationToken)
     {
         await Guard(cancellationToken).ConfigureAwait(false);

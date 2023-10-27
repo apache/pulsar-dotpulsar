@@ -28,12 +28,6 @@ public interface IPulsarClientBuilder
     IPulsarClientBuilder AuthenticateUsingClientCertificate(X509Certificate2 clientCertificate);
 
     /// <summary>
-    /// Authenticate using a (JSON Web) token. This is optional.
-    /// </summary>
-    [Obsolete("This method is obsolete. Call Authentication(AuthenticationFactory.Token(...)) instead.", false)]
-    IPulsarClientBuilder AuthenticateUsingToken(string token);
-
-    /// <summary>
     /// Set the authentication provider. This is optional.
     /// </summary>
     IPulsarClientBuilder Authentication(IAuthentication authentication);

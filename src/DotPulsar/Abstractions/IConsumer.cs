@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 /// <summary>
 /// A consumer abstraction.
 /// </summary>
-public interface IConsumer : IGetLastMessageId, IGetLastMessageIds, ISeek, IState<ConsumerState>, IAsyncDisposable
+public interface IConsumer : IGetLastMessageIds, ISeek, IState<ConsumerState>, IAsyncDisposable
 {
     /// <summary>
     /// Acknowledge the consumption of a single message using the MessageId.

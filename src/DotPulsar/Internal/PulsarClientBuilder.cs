@@ -68,12 +68,6 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
         return this;
     }
 
-    public IPulsarClientBuilder AuthenticateUsingToken(string token)
-    {
-        _authentication = AuthenticationFactory.Token(token);
-        return this;
-    }
-
     public IPulsarClientBuilder Authentication(IAuthentication authentication)
     {
         _authentication = authentication;

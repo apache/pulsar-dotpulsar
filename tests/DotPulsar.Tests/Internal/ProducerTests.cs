@@ -25,7 +25,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
-public class ProducerTests : IDisposable
+public sealed class ProducerTests : IDisposable
 {
     private readonly CancellationTokenSource _cts;
     private readonly IntegrationFixture _fixture;

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,7 +19,7 @@ using System;
 /// <summary>
 /// A reader abstraction.
 /// </summary>
-public interface IReader : IGetLastMessageId, IGetLastMessageIds, ISeek, IState<ReaderState>, IAsyncDisposable
+public interface IReader : IGetLastMessageIds, ISeek, IState<ReaderState>, IAsyncDisposable
 {
     /// <summary>
     /// The reader's service url.
