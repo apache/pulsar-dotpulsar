@@ -198,7 +198,7 @@ svn rm https://dist.apache.org/repos/dist/release/pulsar/pulsar-dotpulsar/pulsar
 
 Browse to https://github.com/apache/pulsar-dotpulsar/releases/new
 
-If the head of the master branch have moved and therefor the last commit is not named `Make ready for release X.X.X-rc-X`.
+If the head of the master branch has moved and therefore the last commit is not named `Make ready for release X.X.X-rc-X`.
 Then change the Target from master to Recent Commits that matches `Make ready for release X.X.X-rc-X`
 
 Create a tag `X.X.X`.
