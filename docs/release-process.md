@@ -33,6 +33,10 @@ In general, you need to perform the following steps:
 8. Create a GitHub release.
 9. Announce the release.
 
+#### Managing backporting of patches
+When we need to create a backporting patch, we simply create a branch for the version that requires the backport.
+We can easily locate a specific version using git tags. We do not create a branch until the actual need arises.
+
 ### Requirements
 - [Creating GPG keys to sign release artifacts](https://pulsar.apache.org/contribute/create-gpg-keys/)
 
