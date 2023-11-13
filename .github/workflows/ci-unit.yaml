@@ -30,13 +30,17 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    strategy:
+      matrix:
+        dotnet: [ '6.0.x', '7.0.x' ]
+    name: Dotnet ${{ matrix.dotnet }} unit tests
     steps:
       - uses: actions/checkout@v3
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
         id: setupstep
         with:
-          dotnet-version: '7.0.x'
+          dotnet-version: ${{ matrix.dotnet }}
 
       - name: run unit tests
         run: |
