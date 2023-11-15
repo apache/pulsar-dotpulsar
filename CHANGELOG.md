@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [Unreleased]
 
+### Added
+
+- .NET 8 added as a target framework
+
+### Changed
+
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 7.0.11 to 8.0.0
+- Updated the System.IO.Pipelines dependency from version 7.0.0 to 8.0.0
+
+### Fixed
+
+- A race condition could cause a hang when trying to dispose a client
+- A race condition could cause a producer, consumer, or reader to never exit the disconnected state
+
 ### Removed
 
 - The 'GetLastMessageId' method on IReader and IConsumer has been removed. Use 'GetLastMessageIds' instead
