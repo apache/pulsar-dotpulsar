@@ -48,10 +48,10 @@ jobs:
         run: dotnet restore
 
       - name: Build library (Release)
-        run: dotnet build --no-restore /p:PackageVersion=$VERSION -c release src/DotPulsar/DotPulsar.csproj
+        run: dotnet build --no-restore /p:PackageVersion=$VERSION /p:ContinuousIntegrationBuild=true -c release src/DotPulsar/DotPulsar.csproj
 
       - name: Create nuget package
-        run: dotnet pack /p:PackageVersion=$VERSION -c release --include-symbols
+        run: dotnet pack /p:PackageVersion=$VERSION /p:ContinuousIntegrationBuild=true -c release --include-symbols
 
       - name: Publish the package to nuget.org
         run: dotnet nuget push src/DotPulsar/bin/release/*.nupkg --api-key $NUGET_AUTH_TOKEN --source https://api.nuget.org/v3/index.json

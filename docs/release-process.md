@@ -56,7 +56,7 @@ Bump up the version number as follows.
 
 1. Update the version and tag of a package.
 
-Update the information of the new release in the `DotPulsar.csproj` and `CHANGELOG.md` files and send a PR for with the changes.
+Update the information in `CHANGELOG.md` and send a PR for with the changes.
 
 Be sure to make the commit message `Make ready for release X.X.X-rc-X`
 
