@@ -56,4 +56,4 @@ jobs:
       - name: Publish the package to nuget.org
         run: dotnet nuget push src/DotPulsar/bin/release/*.nupkg --api-key $NUGET_AUTH_TOKEN --source https://api.nuget.org/v3/index.json
         env:
-          NUGET_AUTH_TOKEN: ${{secret.NUGET_KEY}}
+          NUGET_AUTH_TOKEN: ${{ secrets.NUGET_KEY }}
