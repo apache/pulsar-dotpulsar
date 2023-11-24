@@ -87,15 +87,11 @@ $ gpg -b --armor pulsar-dotpulsar-X.X.X-src.tar.gz
 $ shasum -a 512 pulsar-dotpulsar-X.X.X-src.tar.gz > pulsar-dotpulsar-X.X.X-src.tar.gz.sha512 
 ```
 
-Checkout repo for uploading artifacts
-```
-$ svn co https://dist.apache.org/repos/dist/dev/pulsar pulsar-dist-dev
-$ cd pulsar-dist-dev
-```
+Create a candidate directory for uploading artifacts, and then check it out:
 
-Create a candidate directory at the root repo
 ```
-$ svn mkdir pulsar-dotpulsar-X.X.X-rc-1
+$ svn mkdir -m "Create DotPulsar pre-release dir" https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc-1
+$ svn co https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc-1 pulsar-dotpulsar-X.X.X-rc-1
 $ cd pulsar-dotpulsar-X.X.X-rc-1
 ```
 
@@ -115,6 +111,7 @@ To: dev@pulsar.apache.org
 Subject: [VOTE] DotPulsar Release X.X.X RC 1
 
 Hi everyone,
+
 Please review and vote on the release candidate #1 for the version X.X.X, as follows:
 [ ] +1, Approve the release
 [ ] -1, Do not approve the release (please provide specific comments)
@@ -122,7 +119,7 @@ Please review and vote on the release candidate #1 for the version X.X.X, as fol
 This is the release candidate for DotPulsar, version X.X.X.
 
 DotPulsar's KEYS file contains PGP keys we used to sign this release:
-https://dist.apache.org/repos/dist/dev/pulsar/KEYS
+https://downloads.apache.org/pulsar/KEYS
 
 Please download these packages and review this release candidate:
 - Review release notes
@@ -135,11 +132,10 @@ Source file:
 https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc-1/
 
 Nuget package:
-https://www.nuget.org/packages/DotPulsar/X.X.X-rc-X
+https://www.nuget.org/packages/DotPulsar/X.X.X-rc.X
 
 The tag to be voted upon:
-X.X.X
-https://github.com/apache/pulsar-dotpulsar/tree/X.X.X-rc-X
+https://github.com/apache/pulsar-dotpulsar/tree/X.X.X-rc.X
 
 SHA-512 checksums:
 97bb1000f70011e9a585186590e0688586590e09  pulsar-dotpulsar-X.X.X-src.tar.gz
