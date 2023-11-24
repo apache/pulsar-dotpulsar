@@ -23,15 +23,15 @@ This guide illustrates how to perform a release for Apache DotPulsar.
 
 In general, you need to perform the following steps:
 
-1. Update the version and tag of a package.
-2. Create a GitHub prerelease.
-3. Download the source code.
-4. Sign and stage the artifacts.
-5. Run a vote.
-6. Summary of vote.
-7. Promote the release.
-8. Create a GitHub release.
-9. Announce the release.
+1. Version Update & Tagging.
+2. GitHub Prerelease Creation.
+3. Source Code Download.
+4. Artifact Staging & Signing.
+5. Voting Process Execution.
+6. Vote Summary.
+7. Release Artifacts.
+8. GitHub Release Creation.
+9. Release Announcement.
 
 #### Managing backporting of patches
 When we need to create a backporting patch, we simply create a branch for the version that requires the backport.
@@ -54,19 +54,19 @@ Bump up the version number as follows.
 
 **In these instructions, I'm referring to an fictitious release `X.X.X`. Change the release version in the examples accordingly with the real version.**
 
-1. Update the version and tag of a package.
+1. Version Update & Tagging.
 
 Update the information in `CHANGELOG.md` and send a PR for with the changes.
 
-Be sure to make the commit message `Make ready for release X.X.X-rc-X`
+Be sure to make the commit message `Make ready for release X.X.X-rc.X`
 
-2. Create a GitHub prerelease.
+2. GitHub Prerelease Creation.
 
 Browse to https://github.com/apache/pulsar-dotpulsar/releases/new
 
-Create a tag `X.X.X-rc-X`
+Create a tag `X.X.X-rc.X`
 
-Create a release title: `DotPulsar X.X.X-rc-X`
+Create a release title: `DotPulsar X.X.X-rc.X`
 
 Generated release notes.
 
@@ -74,11 +74,11 @@ Make sure the `Set as a pre-release` checkbox is checked!
 
 Publish the release.
 
-3. Download the source code.
+3. Source Code Download.
 
 Browse to https://github.com/apache/pulsar-dotpulsar/releases to download the source code in tar.gz.
 
-4. Sign and stage the artifacts.
+4. Artifact Staging & Signing.
 
 The src artifact need to be signed and uploaded to the dist SVN repository for staging.
 
@@ -90,19 +90,19 @@ $ shasum -a 512 pulsar-dotpulsar-X.X.X-src.tar.gz > pulsar-dotpulsar-X.X.X-src.t
 Create a candidate directory for uploading artifacts, and then check it out:
 
 ```
-$ svn mkdir -m "Create DotPulsar pre-release dir" https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc-1
-$ svn co https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc-1 pulsar-dotpulsar-X.X.X-rc-1
-$ cd pulsar-dotpulsar-X.X.X-rc-1
+$ svn mkdir -m "Create DotPulsar pre-release dir" https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc.1
+$ svn co https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc-1 pulsar-dotpulsar-X.X.X-rc.1
+$ cd pulsar-dotpulsar-X.X.X-rc.1
 ```
 
 Copy the signed artifacts into the rc directory and commit
 ```
 $ cp ../apache-pulsar-dotpulsar-X.X.X-* .
 $ svn add *
-$ svn ci -m 'Staging artifacts and signature for DotPulsar X.X.X-rc-1'
+$ svn ci -m 'Staging artifacts and signature for DotPulsar X.X.X-rc.1'
 ```
 
-5. Run a vote.
+5. Voting Process Execution.
 
 Send an email to the Pulsar Dev mailing list:
 
@@ -129,7 +129,7 @@ README.md to build and run DotPulsar.
 The vote will be open for at least 72 hours. It is adopted by majority approval, with at least 3 PMC affirmative votes.
 
 Source file:
-https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc-1/
+https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc.1/
 
 Nuget package:
 https://www.nuget.org/packages/DotPulsar/X.X.X-rc.X
@@ -145,7 +145,7 @@ The vote should be open for at least 72 hours (3 days). Votes from Pulsar PMC me
 
 If the release is approved here, we can then proceed to the next step.
 
-6. Summary of vote.
+6. Vote Summary.
 
 ```
 To: dev@pulsar.apache.org
@@ -175,11 +175,11 @@ Thank you to all the above members to help us to verify and vote for the X.X.X r
 Thanks
 ```
 
-7. Promote the release.
+7. Release Artifacts.
 
 Promote the artifacts on the release location (need PMC permissions):
 ```
-svn move -m "release 0.X.0" https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc-1 \
+svn move -m "release 0.X.0" https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc.1 \
          https://dist.apache.org/repos/dist/release/pulsar/pulsar-dotpulsar-X.X.X
 Remove the old releases (if any). We only need the latest release there, older releases are available through the Apache archive:
 ```
@@ -194,12 +194,12 @@ Delete each release (except for the last one)
 svn rm https://dist.apache.org/repos/dist/release/pulsar/pulsar-dotpulsar/pulsar-dotpulsar-X.X.X
 ``` 
 
-8. Create a GitHub release.
+8. GitHub Release Creation.
 
 Browse to https://github.com/apache/pulsar-dotpulsar/releases/new
 
-If the head of the master branch has moved and therefore the last commit is not named `Make ready for release X.X.X-rc-X`.
-Then change the Target from master to Recent Commits that matches `Make ready for release X.X.X-rc-X`
+If the head of the master branch has moved and therefore the last commit is not named `Make ready for release X.X.X-rc.X`.
+Then change the Target from master to Recent Commits that matches `Make ready for release X.X.X-rc.X`
 
 Create a tag `X.X.X`.
 
@@ -209,7 +209,7 @@ To Generated release notes select the 'Previous tag: X.X.X' where X.X.X is the l
 
 Make sure the `Set as the latest release` checkbox is checked!
 
-9. Announce the release.
+9. Release Announcement.
 
 Once the release process is available , you can announce the release and send an email as below:
 
