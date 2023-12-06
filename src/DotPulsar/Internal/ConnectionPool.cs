@@ -21,7 +21,6 @@ using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 using System;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -64,9 +63,9 @@ public sealed class ConnectionPool : IConnectionPool
     {
         _cancellationTokenSource.Cancel();
 
-        foreach (var serviceUrl in _connections.Keys.ToArray())
+        foreach (var entry in _connections.ToArray())
         {
-            await DisposeConnection(serviceUrl).ConfigureAwait(false);
+            await DisposeConnection(entry.Key, entry.Value).ConfigureAwait(false);
         }
     }
 
@@ -149,14 +148,14 @@ public sealed class ConnectionPool : IConnectionPool
 
     private async Task<Connection> EstablishNewConnection(PulsarUrl url, CancellationToken cancellationToken)
     {
-        var stream = await _connector.Connect(url.Physical).ConfigureAwait(false);
+        var stream = await _connector.Connect(url.Physical, cancellationToken).ConfigureAwait(false);
 
         var commandConnect = _commandConnect;
         if (url.ProxyThroughServiceUrl)
             commandConnect = WithProxyToBroker(commandConnect, url.Logical);
 
         var connection = Connection.Connect(new PulsarStream(stream), _authentication, _keepAliveInterval, _closeInactiveConnectionsInterval);
-        _ = connection.OnStateChangeFrom(ConnectionState.Connected).AsTask().ContinueWith(t => DisposeConnection(url));
+        _ = connection.OnStateChangeFrom(ConnectionState.Connected, CancellationToken.None).AsTask().ContinueWith(t => DisposeConnection(url, connection));
         var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
         response.Expect(BaseCommand.Type.Connected);
         _connections[url] = connection;
@@ -164,10 +163,10 @@ public sealed class ConnectionPool : IConnectionPool
         return connection;
     }
 
-    private async ValueTask DisposeConnection(PulsarUrl serviceUrl)
+    private async ValueTask DisposeConnection(PulsarUrl serviceUrl, Connection connection)
     {
-        if (_connections.TryRemove(serviceUrl, out var connection) && connection is not null)
-            await connection.DisposeAsync().ConfigureAwait(false);
+        _connections.TryRemove(serviceUrl, out var _);
+        await connection.DisposeAsync().ConfigureAwait(false);
     }
 
     private static CommandConnect WithProxyToBroker(CommandConnect commandConnect, Uri logicalUrl)

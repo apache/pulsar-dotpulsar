@@ -49,10 +49,8 @@ public abstract class Process : IProcess
     public virtual async ValueTask DisposeAsync()
     {
         _cancellationTokenSource.Cancel();
-        if (_actionProcessorTask != null)
-        {
+        if (_actionProcessorTask is not null)
             await _actionProcessorTask.ConfigureAwait(false);
-        }
     }
 
     public void Handle(IEvent e)

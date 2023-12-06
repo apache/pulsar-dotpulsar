@@ -21,6 +21,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 
 public sealed class Connector
@@ -45,7 +46,7 @@ public sealed class Connector
         _checkCertificateRevocation = checkCertificateRevocation;
     }
 
-    public async Task<Stream> Connect(Uri serviceUrl)
+    public async Task<Stream> Connect(Uri serviceUrl, CancellationToken cancellationToken)
     {
         var scheme = serviceUrl.Scheme;
         var host = serviceUrl.Host;
@@ -55,15 +56,15 @@ public sealed class Connector
         if (port == -1)
             port = encrypt ? Constants.DefaultPulsarSSLPort : Constants.DefaultPulsarPort;
 
-        var stream = await GetStream(host, port).ConfigureAwait(false);
+        var stream = await GetStream(host, port, cancellationToken).ConfigureAwait(false);
 
         if (encrypt)
-            stream = await EncryptStream(stream, host).ConfigureAwait(false);
+            stream = await EncryptStream(stream, host, cancellationToken).ConfigureAwait(false);
 
         return stream;
     }
 
-    private static async Task<Stream> GetStream(string host, int port)
+    private static async Task<Stream> GetStream(string host, int port, CancellationToken cancellationToken)
     {
         var tcpClient = new TcpClient();
 
@@ -71,10 +72,17 @@ public sealed class Connector
         {
             var type = Uri.CheckHostName(host);
 
+#if NETSTANDARD2_0 || NETSTANDARD2_1
             if (type == UriHostNameType.IPv4 || type == UriHostNameType.IPv6)
                 await tcpClient.ConnectAsync(IPAddress.Parse(host), port).ConfigureAwait(false);
             else
                 await tcpClient.ConnectAsync(host, port).ConfigureAwait(false);
+#else
+            if (type == UriHostNameType.IPv4 || type == UriHostNameType.IPv6)
+                await tcpClient.ConnectAsync(IPAddress.Parse(host), port, cancellationToken).ConfigureAwait(false);
+            else
+                await tcpClient.ConnectAsync(host, port, cancellationToken).ConfigureAwait(false);
+#endif
 
             return tcpClient.GetStream();
         }
@@ -85,7 +93,8 @@ public sealed class Connector
         }
     }
 
-    private async Task<Stream> EncryptStream(Stream stream, string host)
+#if NETSTANDARD2_0
+    private async Task<Stream> EncryptStream(Stream stream, string host, CancellationToken _)
     {
         SslStream? sslStream = null;
 
@@ -97,20 +106,43 @@ public sealed class Connector
         }
         catch
         {
-#if NETSTANDARD2_0
             if (sslStream is null)
                 stream.Dispose();
             else
                 sslStream.Dispose();
+
+            throw;
+        }
+    }
 #else
+    private async Task<Stream> EncryptStream(Stream stream, string host, CancellationToken cancellationToken)
+    {
+        SslStream? sslStream = null;
+
+        try
+        {
+            sslStream = new SslStream(stream, false, ValidateServerCertificate, null);
+            var options = new SslClientAuthenticationOptions
+            {
+                TargetHost = host,
+                ClientCertificates = _clientCertificates,
+                EnabledSslProtocols = SslProtocols.None,
+                CertificateRevocationCheckMode = _checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck
+            };
+            await sslStream.AuthenticateAsClientAsync(options, cancellationToken).ConfigureAwait(false);
+            return sslStream;
+        }
+        catch
+        {
             if (sslStream is null)
                 await stream.DisposeAsync().ConfigureAwait(false);
             else
                 await sslStream.DisposeAsync().ConfigureAwait(false);
-#endif
+
             throw;
         }
     }
+#endif
 
     private bool ValidateServerCertificate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
     {
