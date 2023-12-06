@@ -82,6 +82,10 @@ Browse to https://github.com/apache/pulsar-dotpulsar/releases to download the so
 
 The src artifact need to be signed and uploaded to the dist SVN repository for staging.
 
+> **Note**
+>
+> The name of the downloaded tarball is with the suffix `-rc.1.tar.gz`. Please change it to `-src.tar.gz` before all the following actions.
+
 ```
 $ gpg -b --armor pulsar-dotpulsar-X.X.X-src.tar.gz
 $ shasum -a 512 pulsar-dotpulsar-X.X.X-src.tar.gz > pulsar-dotpulsar-X.X.X-src.tar.gz.sha512 
@@ -91,7 +95,7 @@ Create a candidate directory for uploading artifacts, and then check it out:
 
 ```
 $ svn mkdir -m "Create DotPulsar pre-release dir" https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc.1
-$ svn co https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc-1 pulsar-dotpulsar-X.X.X-rc.1
+$ svn co https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc.1 pulsar-dotpulsar-X.X.X-rc.1
 $ cd pulsar-dotpulsar-X.X.X-rc.1
 ```
 
