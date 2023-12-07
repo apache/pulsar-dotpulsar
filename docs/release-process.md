@@ -95,7 +95,7 @@ Create a candidate directory for uploading artifacts, and then check it out:
 
 ```
 $ svn mkdir -m "Create DotPulsar pre-release dir" https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc.1
-$ svn co https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc.1 pulsar-dotpulsar-X.X.X-rc.1
+$ svn co https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-X.X.X-rc.1
 $ cd pulsar-dotpulsar-X.X.X-rc.1
 ```
 
