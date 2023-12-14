@@ -15,10 +15,6 @@
 namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Internal;
-using FluentAssertions;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
 
 [Trait("Category", "Unit")]
 public class AsyncQueueTests

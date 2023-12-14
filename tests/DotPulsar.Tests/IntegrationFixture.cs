@@ -19,9 +19,6 @@ using Ductus.FluentDocker.Builders;
 using Ductus.FluentDocker.Services;
 using Ductus.FluentDocker.Services.Extensions;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 

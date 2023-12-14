@@ -15,10 +15,7 @@
 namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Internal;
-using FluentAssertions;
 using System;
-using System.Threading.Tasks;
-using Xunit;
 
 [Trait("Category", "Unit")]
 public class PingPongHandlerTest

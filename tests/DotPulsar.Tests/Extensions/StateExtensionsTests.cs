@@ -17,13 +17,8 @@ namespace DotPulsar.Tests.Extensions;
 using AutoFixture.Xunit2;
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
-using FluentAssertions;
-using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
 
 [Trait("Category", "Unit")]
 public class StateExtensionsTests

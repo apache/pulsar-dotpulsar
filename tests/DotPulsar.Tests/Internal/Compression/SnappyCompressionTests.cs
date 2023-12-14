@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,8 +15,6 @@
 namespace DotPulsar.Tests.Internal.Compression;
 
 using DotPulsar.Internal.Compression;
-using FluentAssertions;
-using Xunit;
 
 [Trait("Category", "Unit")]
 public class SnappyCompressionTests

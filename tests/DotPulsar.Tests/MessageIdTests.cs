@@ -16,9 +16,6 @@
 
 namespace DotPulsar.Tests;
 
-using FluentAssertions;
-using Xunit;
-
 [Trait("Category", "Unit")]
 public class MessageIdTests
 {

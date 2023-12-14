@@ -16,10 +16,6 @@ namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Internal;
 using DotPulsar.Internal.Exceptions;
-using FluentAssertions;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
 
 [Trait("Category", "Unit")]
 public class AsyncLockTests

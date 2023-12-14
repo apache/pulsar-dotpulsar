@@ -17,15 +17,11 @@ namespace DotPulsar.Tests;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
-using FluentAssertions;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
-public class PulsarClientTests : IDisposable
+public sealed class PulsarClientTests : IDisposable
 {
     private readonly CancellationTokenSource _cts;
     private readonly IntegrationFixture _fixture;
