@@ -68,7 +68,7 @@ Create a tag `X.X.X-rc.X`
 
 Create a release title: `DotPulsar X.X.X-rc.X`
 
-Generated release notes.
+Navigate to the GitHub page for Pulsar at https://github.com/apache/pulsar-dotpulsar/blob/master/CHANGELOG.md. Locate the specific version labeled X.X.X-rc.X in the changelog and transfer all the modifications or updates listed for that version into the designated 'Describe this release' text box. 
 
 Make sure the `Set as a pre-release` checkbox is checked!
 
@@ -209,7 +209,7 @@ Create a tag `X.X.X`.
 
 Create a release title: `DotPulsar X.X.X`
 
-To Generated release notes select the 'Previous tag: X.X.X' where X.X.X is the last non rc version.
+Visit https://github.com/apache/pulsar-dotpulsar/releases/edit/X.X.X-rc.X. Proceed to extract the release notes from that specific version and seamlessly insert them into the final release.
 
 Make sure the `Set as the latest release` checkbox is checked!
 
