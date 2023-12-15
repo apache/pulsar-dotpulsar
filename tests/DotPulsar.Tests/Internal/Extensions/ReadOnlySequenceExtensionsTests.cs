@@ -126,16 +126,15 @@ public class ReadOnlySequenceExtensionsTests
         actual.Should().Be(expected);
     }
 
-#pragma warning disable xUnit1025 // Miscoded warning can't tell these are all different
     [Theory]
-    [InlineData(new byte[] { }, new byte[] { 0x02, 0x03, 0x04, 0x05 })]
+    [InlineData(new byte[0], new byte[] { 0x02, 0x03, 0x04, 0x05 })]
     [InlineData(new byte[] { 0x02 }, new byte[] { 0x03, 0x04, 0x05 })]
     [InlineData(new byte[] { 0x02, 0x03 }, new byte[] { 0x04, 0x05 })]
     [InlineData(new byte[] { 0x02, 0x03, 0x04 }, new byte[] { 0x05 })]
-    [InlineData(new byte[] { 0x02, 0x03, 0x04, 0x05 }, new byte[] { })]
-    [InlineData(new byte[] { 0x02 }, new byte[] { }, new byte[] { 0x03, 0x04, 0x05 })]
-    [InlineData(new byte[] { 0x02, 0x03 }, new byte[] { }, new byte[] { 0x04, 0x05 })]
-    [InlineData(new byte[] { 0x02, 0x03, 0x04 }, new byte[] { }, new byte[] { 0x05 })]
+    [InlineData(new byte[] { 0x02, 0x03, 0x04, 0x05 }, new byte[0])]
+    [InlineData(new byte[] { 0x02 }, new byte[0], new byte[] { 0x03, 0x04, 0x05 })]
+    [InlineData(new byte[] { 0x02, 0x03 }, new byte[0], new byte[] { 0x04, 0x05 })]
+    [InlineData(new byte[] { 0x02, 0x03, 0x04 }, new byte[0], new byte[] { 0x05 })]
     [InlineData(new byte[] { 0x02, 0x03 }, new byte[] { 0x04 }, new byte[] { 0x05 })]
     [InlineData(new byte[] { 0x02 }, new byte[] { 0x03, 0x04 }, new byte[] { 0x05 })]
     [InlineData(new byte[] { 0x02 }, new byte[] { 0x03 }, new byte[] { 0x04, 0x05 })]
@@ -143,7 +142,6 @@ public class ReadOnlySequenceExtensionsTests
     [InlineData(new byte[] { 0x02, 0x03, 0x04 }, new byte[] { 0x05, 0x09 })]
     [InlineData(new byte[] { 0x02 }, new byte[] { 0x03, 0x04, 0x05 }, new byte[] { 0x09 })]
     [InlineData(new byte[] { 0x02 }, new byte[] { 0x03 }, new byte[] { 0x04, 0x05 }, new byte[] { 0x09 })]
-#pragma warning restore xUnit1025 // InlineData should be unique within the Theory it belongs to
     public void ReadUInt32_GivenSequenceWithMultipleSegments_ShouldGiveExpectedResult(params byte[][] testPath)
     {
         //Arrange
