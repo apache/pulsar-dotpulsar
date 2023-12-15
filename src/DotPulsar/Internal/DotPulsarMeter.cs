@@ -19,15 +19,11 @@ using System.Diagnostics.Metrics;
 
 public static class DotPulsarMeter
 {
-#pragma warning disable IDE0079
-#pragma warning disable IDE0044
     private static int _numberOfClients;
     private static int _numberOfConnections;
     private static int _numberOfReaders;
     private static int _numberOfConsumers;
     private static int _numberOfProducers;
-#pragma warning restore IDE0044
-#pragma warning restore IDE0079
     private static readonly Histogram<double> _producerSendDuration;
     private static readonly Histogram<double> _consumerProcessDuration;
 
