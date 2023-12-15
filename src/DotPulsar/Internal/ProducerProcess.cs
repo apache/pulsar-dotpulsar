@@ -16,8 +16,6 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
-using System;
-using System.Threading.Tasks;
 
 public sealed class ProducerProcess : Process
 {

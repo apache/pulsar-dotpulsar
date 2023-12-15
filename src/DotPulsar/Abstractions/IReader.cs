@@ -14,8 +14,6 @@
 
 namespace DotPulsar.Abstractions;
 
-using System;
-
 /// <summary>
 /// A reader abstraction.
 /// </summary>

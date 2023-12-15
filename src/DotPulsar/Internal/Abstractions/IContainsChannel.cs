@@ -14,10 +14,6 @@
 
 namespace DotPulsar.Internal.Abstractions;
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 public interface IContainsChannel : IAsyncDisposable
 {
     Task EstablishNewChannel(CancellationToken cancellationToken);

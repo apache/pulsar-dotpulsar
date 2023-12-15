@@ -15,9 +15,6 @@
 namespace DotPulsar.Extensions;
 
 using DotPulsar.Abstractions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Extensions for IReader.

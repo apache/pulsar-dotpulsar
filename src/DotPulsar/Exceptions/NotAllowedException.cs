@@ -14,8 +14,6 @@
 
 namespace DotPulsar.Exceptions;
 
-using System;
-
 /// <summary>
 /// Not allowed error
 /// </summary>

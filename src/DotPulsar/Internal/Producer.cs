@@ -18,13 +18,8 @@ using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Extensions;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 {

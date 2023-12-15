@@ -14,7 +14,6 @@
 
 namespace DotPulsar.Abstractions;
 
-using System;
 using System.Security.Cryptography.X509Certificates;
 
 /// <summary>

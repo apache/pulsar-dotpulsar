@@ -14,10 +14,6 @@
 
 namespace DotPulsar.Internal;
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 public sealed class CancelableCompletionSource<T> : IDisposable
 {
     private readonly TaskCompletionSource<T> _source;

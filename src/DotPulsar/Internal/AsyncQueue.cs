@@ -16,10 +16,6 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
 {

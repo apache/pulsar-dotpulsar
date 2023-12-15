@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,10 +16,7 @@ namespace DotPulsar.Internal.Compression;
 
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 public static class ZstdCompression

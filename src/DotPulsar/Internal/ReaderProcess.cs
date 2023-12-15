@@ -15,8 +15,6 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.Abstractions;
-using System;
-using System.Threading.Tasks;
 
 public sealed class ReaderProcess : Process
 {

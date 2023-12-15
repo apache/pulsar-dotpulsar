@@ -14,8 +14,6 @@
 
 namespace DotPulsar.Exceptions;
 
-using System;
-
 /// <summary>
 /// Non valid authentication
 /// </summary>

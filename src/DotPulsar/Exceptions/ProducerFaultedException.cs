@@ -14,8 +14,6 @@
 
 namespace DotPulsar.Exceptions;
 
-using System;
-
 /// <summary>
 /// Thrown when a producer has faulted. See innerException
 /// </summary>

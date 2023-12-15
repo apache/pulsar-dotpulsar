@@ -16,10 +16,7 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Events;
-using System;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading.Tasks;
 
 public sealed class ProcessManager : IRegisterEvent, IAsyncDisposable
 {

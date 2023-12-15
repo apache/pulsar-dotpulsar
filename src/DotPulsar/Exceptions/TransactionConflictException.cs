@@ -14,8 +14,6 @@
 
 namespace DotPulsar.Exceptions;
 
-using System;
-
 /// <summary>
 /// Ack with transaction conflict
 /// </summary>

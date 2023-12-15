@@ -15,7 +15,6 @@
 namespace DotPulsar.Internal.Events;
 
 using DotPulsar.Internal.Abstractions;
-using System;
 
 public sealed class ProducerWaitingForExclusive : IEvent
 {

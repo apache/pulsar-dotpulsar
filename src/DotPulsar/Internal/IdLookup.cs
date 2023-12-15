@@ -14,8 +14,6 @@
 
 namespace DotPulsar.Internal;
 
-using System.Collections.Generic;
-
 public sealed class IdLookup<T> where T : class
 {
     private T?[] _items;

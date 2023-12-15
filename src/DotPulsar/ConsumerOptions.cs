@@ -15,7 +15,6 @@
 namespace DotPulsar;
 
 using DotPulsar.Abstractions;
-using System.Collections.Generic;
 
 /// <summary>
 /// The consumer building options.

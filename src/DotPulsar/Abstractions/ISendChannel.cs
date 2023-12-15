@@ -14,10 +14,6 @@
 
 namespace DotPulsar.Abstractions;
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 /// <summary>
 /// A channel abstraction for producing messages without waiting for server acknowledgement.
 /// </summary>

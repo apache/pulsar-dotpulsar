@@ -1,8 +1,0 @@
-<Project>
-
-  <PropertyGroup>
-    <LangVersion>10.0</LangVersion>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-</Project>

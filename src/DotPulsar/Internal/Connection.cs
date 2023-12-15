@@ -20,10 +20,7 @@ using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Exceptions;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
-using System;
 using System.Buffers;
-using System.Threading;
-using System.Threading.Tasks;
 
 public sealed class Connection : IConnection
 {

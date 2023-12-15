@@ -15,10 +15,6 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDisposable
 {

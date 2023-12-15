@@ -16,7 +16,6 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
-using System.Threading.Tasks;
 
 public static class StateMonitor
 {

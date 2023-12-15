@@ -14,10 +14,6 @@
 
 namespace DotPulsar.Internal;
 
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 public sealed class StateTaskCollection<TState> where TState : notnull
 {
     private readonly object _lock;

@@ -14,8 +14,6 @@
 
 namespace DotPulsar.Exceptions;
 
-using System;
-
 /// <summary>
 /// Base exception for ConsumerFaultedException, ProducerFaultedException, and ReaderFaultedException
 /// </summary>

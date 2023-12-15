@@ -16,7 +16,6 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Internal.Abstractions;
-using System;
 
 public sealed class PulsarClientFactory
 {

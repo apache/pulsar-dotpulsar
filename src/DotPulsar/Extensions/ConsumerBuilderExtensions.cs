@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,9 +16,6 @@ namespace DotPulsar.Extensions;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Internal;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Extensions for IConsumerBuilder.

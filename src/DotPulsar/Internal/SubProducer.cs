@@ -21,9 +21,6 @@ using DotPulsar.Internal.Events;
 using DotPulsar.Internal.Exceptions;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState>
 {

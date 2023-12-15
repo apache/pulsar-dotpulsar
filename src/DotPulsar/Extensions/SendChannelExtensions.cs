@@ -16,10 +16,7 @@ namespace DotPulsar.Extensions;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Internal;
-using System;
 using System.Buffers;
-using System.Threading;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Extensions for ISendChannel.

@@ -16,7 +16,6 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
-using System.Collections.Generic;
 
 public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
 {

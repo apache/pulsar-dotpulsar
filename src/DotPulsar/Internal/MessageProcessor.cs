@@ -17,13 +17,9 @@ namespace DotPulsar.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Internal.Extensions;
 using Microsoft.Extensions.ObjectPool;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 public sealed class MessageProcessor<TMessage> : IDisposable
 {

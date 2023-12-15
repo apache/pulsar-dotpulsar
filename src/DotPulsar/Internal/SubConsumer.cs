@@ -21,11 +21,6 @@ using DotPulsar.Internal.Events;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 using Microsoft.Extensions.ObjectPool;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChannel
 {

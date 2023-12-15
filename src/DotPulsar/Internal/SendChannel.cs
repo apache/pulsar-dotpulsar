@@ -16,9 +16,6 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Internal.Exceptions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 public sealed class SendChannel<TMessage> : ISendChannel<TMessage>
 {

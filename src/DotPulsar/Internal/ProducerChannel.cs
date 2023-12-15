@@ -17,10 +17,7 @@ namespace DotPulsar.Internal;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
 using Microsoft.Extensions.ObjectPool;
-using System;
 using System.Buffers;
-using System.Threading;
-using System.Threading.Tasks;
 
 public sealed class ProducerChannel : IProducerChannel
 {

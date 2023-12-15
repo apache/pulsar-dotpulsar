@@ -16,9 +16,6 @@ namespace DotPulsar.Internal.Abstractions;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Internal.PulsarApi;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 public interface IConnection : IState<ConnectionState>, IAsyncDisposable
 {

@@ -16,9 +16,6 @@ namespace DotPulsar.Extensions;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Internal;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Extensions for IConsumer.

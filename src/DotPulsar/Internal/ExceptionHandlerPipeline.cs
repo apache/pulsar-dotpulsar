@@ -15,10 +15,6 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 public sealed class ExceptionHandlerPipeline : IHandleException
 {

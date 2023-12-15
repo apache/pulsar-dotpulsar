@@ -14,9 +14,6 @@
 
 namespace DotPulsar.Internal.Abstractions;
 
-using System.Threading;
-using System.Threading.Tasks;
-
 public interface IContainsProducerChannel : IContainsChannel
 {
     Task ActivateChannel(ulong? topicEpoch, CancellationToken cancellationToken);

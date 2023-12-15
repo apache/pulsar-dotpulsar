@@ -14,10 +14,6 @@
 
 namespace DotPulsar.Abstractions;
 
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 /// <summary>
 /// An abstraction for getting the last message ids.
 /// </summary>

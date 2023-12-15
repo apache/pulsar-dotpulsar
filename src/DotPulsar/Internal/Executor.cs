@@ -17,9 +17,6 @@ namespace DotPulsar.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Events;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 public sealed class Executor : IExecute
 {

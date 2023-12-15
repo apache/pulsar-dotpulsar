@@ -15,9 +15,6 @@
 namespace DotPulsar.Internal.Abstractions;
 
 using DotPulsar.Internal.Events;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 public abstract class Process : IProcess
 {

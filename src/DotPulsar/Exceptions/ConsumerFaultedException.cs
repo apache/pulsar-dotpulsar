@@ -14,8 +14,6 @@
 
 namespace DotPulsar.Exceptions;
 
-using System;
-
 /// <summary>
 /// Thrown when a consumer has faulted. See innerException
 /// </summary>

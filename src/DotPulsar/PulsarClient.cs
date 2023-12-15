@@ -20,11 +20,6 @@ using DotPulsar.Extensions;
 using DotPulsar.Internal;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Compression;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Pulsar client for creating producers, consumers and readers.
