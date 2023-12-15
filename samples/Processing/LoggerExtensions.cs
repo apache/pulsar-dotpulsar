@@ -18,9 +18,6 @@ using DotPulsar;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 
-#pragma warning disable IDE0079 // Remove unnecessary suppression... Ehm... *sigh*
-#pragma warning disable IDE0060 // Remove unused parameter... Why Microsoft? Why do you force me to do this?
-
 public static partial class LoggerExtensions
 {
     // Output Message
@@ -80,6 +77,3 @@ public static partial class LoggerExtensions
     [LoggerMessage(EventId = 4, Level = LogLevel.Warning, Message = "The consumer for topic '{topic}' has regained the connection")]
     static partial void ConsumerRegainedConnection(this ILogger logger, string topic);
 }
-
-#pragma warning restore IDE0060 // Remove unused parameter
-#pragma warning restore IDE0079 // Remove unnecessary suppression
