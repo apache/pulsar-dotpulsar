@@ -23,7 +23,7 @@ public sealed class MessageFactory<TValue> : IMessageFactory<TValue>
 {
     private static readonly Dictionary<string, string> _empty;
 
-    static MessageFactory() => _empty = new Dictionary<string, string>();
+    static MessageFactory() => _empty = [];
 
     private static IReadOnlyDictionary<string, string> FromKeyValueList(List<KeyValue> keyValues)
     {

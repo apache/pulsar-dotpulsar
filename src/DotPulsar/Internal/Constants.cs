@@ -36,7 +36,7 @@ public static class Constants
         PulsarSslScheme = "pulsar+ssl";
         DefaultPulsarPort = 6650;
         DefaultPulsarSSLPort = 6651;
-        MagicNumber = new byte[] { 0x0e, 0x01 };
+        MagicNumber = [0x0e, 0x01];
         MetadataSizeOffset = 6;
         MetadataOffset = 10;
         ConversationId = "messaging.conversation_id";

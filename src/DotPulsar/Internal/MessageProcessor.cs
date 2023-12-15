@@ -44,21 +44,21 @@ public sealed class MessageProcessor<TMessage> : IDisposable
         const string operation = "process";
         _operationName = $"{consumer.Topic} {operation}";
 
-        _activityTags = new KeyValuePair<string, object?>[]
-        {
-            new KeyValuePair<string, object?>("messaging.destination", consumer.Topic),
-            new KeyValuePair<string, object?>("messaging.destination_kind", "topic"),
-            new KeyValuePair<string, object?>("messaging.operation", operation),
-            new KeyValuePair<string, object?>("messaging.system", "pulsar"),
-            new KeyValuePair<string, object?>("messaging.url", consumer.ServiceUrl),
-            new KeyValuePair<string, object?>("messaging.pulsar.subscription", consumer.SubscriptionName)
-        };
+        _activityTags =
+        [
+            new("messaging.destination", consumer.Topic),
+            new("messaging.destination_kind", "topic"),
+            new("messaging.operation", operation),
+            new("messaging.system", "pulsar"),
+            new("messaging.url", consumer.ServiceUrl),
+            new("messaging.pulsar.subscription", consumer.SubscriptionName)
+        ];
 
-        _meterTags = new KeyValuePair<string, object?>[]
-        {
-            new KeyValuePair<string, object?>("topic", consumer.Topic),
-            new KeyValuePair<string, object?>("subscription", consumer.SubscriptionName)
-        };
+        _meterTags =
+        [
+            new("topic", consumer.Topic),
+            new("subscription", consumer.SubscriptionName)
+        ];
 
         _consumer = consumer;
         _processor = processor;

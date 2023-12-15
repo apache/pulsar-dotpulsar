@@ -32,7 +32,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
     {
         _pendingLock = new AsyncLock();
         _cursorSemaphore = new SemaphoreSlim(1, 1);
-        _queueEmptyTcs = new List<TaskCompletionSource<object>>();
+        _queueEmptyTcs = [];
         _queue = new LinkedList<T>();
         _maxItems = maxItems;
     }

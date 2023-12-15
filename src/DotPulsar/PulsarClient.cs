@@ -39,7 +39,7 @@ public sealed class PulsarClient : IPulsarClient
         IHandleException exceptionHandler,
         Uri serviceUrl)
     {
-        _disposables = new HashSet<IAsyncDisposable>();
+        _disposables = [];
         _connectionPool = connectionPool;
         _exceptionHandler = exceptionHandler;
         ServiceUrl = serviceUrl;

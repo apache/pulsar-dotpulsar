@@ -18,7 +18,7 @@ using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
 using System.Diagnostics.CodeAnalysis;
 
-public struct ConnectRequest : IRequest
+public readonly struct ConnectRequest : IRequest
 {
     public bool SenderIsConsumer(ulong consumerId)
         => false;

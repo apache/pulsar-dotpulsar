@@ -18,12 +18,12 @@ using System.Diagnostics;
 
 public static class ActivityExtensions
 {
-    private const string _exceptionEventName = "exception";
-    private const string _exceptionStackTrace = "exception.stacktrace";
-    private const string _exceptionType = "exception.type";
-    private const string _exceptionMessage = "exception.message";
-    private const string _messageId = "messaging.message_id";
-    private const string _payloadSize = "messaging.message_payload_size_bytes";
+    private const string ExceptionEventName = "exception";
+    private const string ExceptionStackTrace = "exception.stacktrace";
+    private const string ExceptionType = "exception.type";
+    private const string ExceptionMessage = "exception.message";
+    private const string MessageId = "messaging.message_id";
+    private const string PayloadSize = "messaging.message_payload_size_bytes";
 
     public static void AddException(this Activity activity, Exception exception)
     {
@@ -31,23 +31,23 @@ public static class ActivityExtensions
 
         var exceptionTags = new ActivityTagsCollection
         {
-            { _exceptionType, exception.GetType().FullName },
-            { _exceptionStackTrace, exception.ToString() }
+            { ExceptionType, exception.GetType().FullName },
+            { ExceptionStackTrace, exception.ToString() }
         };
 
         if (!string.IsNullOrWhiteSpace(exception.Message))
-            exceptionTags.Add(_exceptionMessage, exception.Message);
+            exceptionTags.Add(ExceptionMessage, exception.Message);
 
-        var activityEvent = new ActivityEvent(_exceptionEventName, default, exceptionTags);
+        var activityEvent = new ActivityEvent(ExceptionEventName, default, exceptionTags);
         activity.AddEvent(activityEvent);
     }
 
     public static void SetMessageId(this Activity activity, MessageId messageId)
-        => activity.SetTag(_messageId, messageId.ToString());
+        => activity.SetTag(MessageId, messageId.ToString());
 
     public static void SetConversationId(this Activity activity, string conversationId)
         => activity.SetTag(Constants.ConversationId, conversationId);
 
     public static void SetPayloadSize(this Activity activity, long payloadSize)
-        => activity.SetTag(_payloadSize, payloadSize);
+        => activity.SetTag(PayloadSize, payloadSize);
 }

@@ -18,7 +18,7 @@ using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
 using System.Diagnostics.CodeAnalysis;
 
-public struct StandardRequest : IRequest
+public readonly struct StandardRequest : IRequest
 {
     private readonly ulong _requestId;
     private readonly ulong? _consumerId;

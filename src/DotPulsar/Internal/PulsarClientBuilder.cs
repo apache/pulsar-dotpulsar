@@ -48,11 +48,11 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
             }
         };
 
-        _exceptionHandlers = new List<IHandleException>();
+        _exceptionHandlers = [];
         _keepAliveInterval = TimeSpan.FromSeconds(30);
         _retryInterval = TimeSpan.FromSeconds(3);
         _serviceUrl = new Uri($"{Constants.PulsarScheme}://localhost:{Constants.DefaultPulsarPort}");
-        _clientCertificates = new X509Certificate2Collection();
+        _clientCertificates = [];
         _checkCertificateRevocation = true;
         _verifyCertificateAuthority = true;
         _verifyCertificateName = false;

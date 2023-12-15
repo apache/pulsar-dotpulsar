@@ -23,8 +23,8 @@ public static class CompressionFactories
 
     static CompressionFactories()
     {
-        _compressorFactories = new List<ICompressorFactory>();
-        _decompressorFactories = new List<IDecompressorFactory>();
+        _compressorFactories = [];
+        _decompressorFactories = [];
 
         LoadSupportForLz4();
         LoadSupportForSnappy();

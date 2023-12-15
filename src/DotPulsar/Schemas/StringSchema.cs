@@ -23,10 +23,10 @@ using System.Text;
 /// </summary>
 public sealed class StringSchema : ISchema<string>
 {
-    private const string _charSetKey = "__charset";
-    private const string _utf8 = "UTF-8";
-    private const string _unicode = "UTF-16";
-    private const string _ascii = "US-ASCII";
+    private const string CharSetKey = "__charset";
+    private const string Utf8Encoding = "UTF-8";
+    private const string UnicodeEncoding = "UTF-16";
+    private const string AsciiEncoding = "US-ASCII";
 
     static StringSchema()
     {
@@ -54,9 +54,9 @@ public sealed class StringSchema : ISchema<string>
     {
         return encodingName switch
         {
-            "Unicode (UTF-8)" => _utf8,
-            "Unicode" => _unicode,
-            "US-ASCII" => _ascii,
+            "Unicode (UTF-8)" => Utf8Encoding,
+            "Unicode" => UnicodeEncoding,
+            "US-ASCII" => AsciiEncoding,
             _ => throw new Exception($"Encoding '{encodingName}' is not supported!")
         };
     }
@@ -65,9 +65,9 @@ public sealed class StringSchema : ISchema<string>
     {
         return charSet switch
         {
-            _utf8 => UTF8,
-            _unicode => Unicode,
-            _ascii => ASCII,
+            Utf8Encoding => UTF8,
+            UnicodeEncoding => Unicode,
+            AsciiEncoding => ASCII,
             _ => throw new Exception($"CharSet '{charSet}' is not supported!")
         };
     }
@@ -77,7 +77,7 @@ public sealed class StringSchema : ISchema<string>
         if (schemaInfo.Type != SchemaType.String)
             throw new Exception("Not a string schema!");
 
-        if (schemaInfo.Properties.TryGetValue(_charSetKey, out var charset))
+        if (schemaInfo.Properties.TryGetValue(CharSetKey, out var charset))
             return GetSchema(charset);
         else
             return UTF8;
@@ -91,7 +91,7 @@ public sealed class StringSchema : ISchema<string>
 
         var properties = new Dictionary<string, string>
         {
-            { _charSetKey, GetCharSet(encoding.EncodingName) }
+            { CharSetKey, GetCharSet(encoding.EncodingName) }
         };
 
         SchemaInfo = new SchemaInfo("String", Array.Empty<byte>(), SchemaType.String, properties);

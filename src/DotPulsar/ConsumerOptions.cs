@@ -62,7 +62,7 @@ public sealed class ConsumerOptions<TMessage>
         ReadCompacted = DefaultReadCompacted;
         ReplicateSubscriptionState = DefaultReplicateSubscriptionState;
         SubscriptionType = DefaultSubscriptionType;
-        SubscriptionProperties = new Dictionary<string, string>();
+        SubscriptionProperties = [];
         SubscriptionName = subscriptionName;
         Topic = topic;
         Schema = schema;

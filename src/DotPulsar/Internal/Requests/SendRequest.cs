@@ -18,7 +18,7 @@ using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
 using System.Diagnostics.CodeAnalysis;
 
-public struct SendRequest : IRequest
+public readonly struct SendRequest : IRequest
 {
     private readonly ulong _producerId;
     private readonly ulong _sequenceId;

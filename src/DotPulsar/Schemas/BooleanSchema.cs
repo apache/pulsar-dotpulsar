@@ -29,8 +29,8 @@ public sealed class BooleanSchema : ISchema<bool>
 
     static BooleanSchema()
     {
-        _true = new ReadOnlySequence<byte>(new byte[] { 1 });
-        _false = new ReadOnlySequence<byte>(new byte[] { 0 });
+        _true = new ReadOnlySequence<byte>([1]);
+        _false = new ReadOnlySequence<byte>([0]);
     }
 
     public BooleanSchema()

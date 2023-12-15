@@ -42,7 +42,7 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
         _messagePrefetchCount = ConsumerOptions<TMessage>.DefaultMessagePrefetchCount;
         _readCompacted = ConsumerOptions<TMessage>.DefaultReadCompacted;
         _replicateSubscriptionState = ConsumerOptions<TMessage>.DefaultReplicateSubscriptionState;
-        _subscriptionProperties = new Dictionary<string, string>();
+        _subscriptionProperties = [];
         _subscriptionType = ConsumerOptions<TMessage>.DefaultSubscriptionType;
     }
 

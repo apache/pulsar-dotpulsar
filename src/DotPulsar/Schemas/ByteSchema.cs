@@ -38,5 +38,5 @@ public sealed class ByteSchema : ISchema<byte>
     }
 
     public ReadOnlySequence<byte> Encode(byte message)
-        => new(new[] { message });
+        => new([message]);
 }

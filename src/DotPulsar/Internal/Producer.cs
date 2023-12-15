@@ -55,17 +55,17 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         ICompressorFactory? compressorFactory)
     {
         _operationName = $"{options.Topic} send";
-        _activityTags = new KeyValuePair<string, object?>[]
-        {
+        _activityTags =
+        [
             new("messaging.destination", options.Topic),
             new("messaging.destination_kind", "topic"),
             new("messaging.system", "pulsar"),
             new("messaging.url", serviceUrl),
-        };
-        _meterTags = new KeyValuePair<string, object?>[]
-        {
+        ];
+        _meterTags =
+        [
             new("topic", options.Topic)
-        };
+        ];
         _attachTraceInfoToMessages = options.AttachTraceInfoToMessages;
         _sequenceId = new SequenceId(options.InitialSequenceId);
         _state = CreateStateManager();
