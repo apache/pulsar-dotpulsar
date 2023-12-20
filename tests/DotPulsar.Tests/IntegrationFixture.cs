@@ -17,7 +17,6 @@ namespace DotPulsar.Tests;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using DotPulsar.Abstractions;
-using System;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -27,6 +26,7 @@ public class IntegrationFixture : IAsyncLifetime
     private const string SecretKeyPath = "/pulsar/secret.key";
     private const string UserName = "test-user";
     private const int Port = 6650;
+    private readonly CancellationTokenSource _cts;
 
     private readonly IMessageSink _messageSink;
     private readonly IContainer _cluster;
@@ -36,6 +36,7 @@ public class IntegrationFixture : IAsyncLifetime
     public IntegrationFixture(IMessageSink messageSink)
     {
         _messageSink = messageSink;
+        _cts = new CancellationTokenSource();
 
         var environmentVariables = new Dictionary<string, string>()
         {
@@ -50,32 +51,31 @@ public class IntegrationFixture : IAsyncLifetime
             { "CLIENT_PREFIX_authPlugin", AuthenticationPlugin }
         };
 
-        var arguments = $"bin/pulsar tokens create-secret-key --output {SecretKeyPath} &&" +
-                             $" export brokerClientAuthenticationParameters=token:$(bin/pulsar tokens create --secret-key {SecretKeyPath} --subject {UserName}) &&" +
-                             $" export CLIENT_PREFIX_authParams=$brokerClientAuthenticationParameters && bin/apply-config-from-env.py conf/standalone.conf &&" +
-                             $" bin/apply-config-from-env-with-prefix.py CLIENT_PREFIX_ conf/client.conf && bin/pulsar standalone --no-functions-worker";
+        var arguments =
+            $"bin/pulsar tokens create-secret-key --output {SecretKeyPath} && " +
+            $"export brokerClientAuthenticationParameters=token:$(bin/pulsar tokens create --secret-key {SecretKeyPath} --subject {UserName}) && " +
+            $"export CLIENT_PREFIX_authParams=$brokerClientAuthenticationParameters && bin/apply-config-from-env.py conf/standalone.conf && " +
+            $"bin/apply-config-from-env-with-prefix.py CLIENT_PREFIX_ conf/client.conf && bin/pulsar standalone --no-functions-worker";
 
         _cluster = new ContainerBuilder()
             .WithImage("apachepulsar/pulsar:3.1.1")
             .WithEnvironment(environmentVariables)
-            .WithPortBinding(Port,Port)
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilMessageIsLogged(@"\[test-user] Created namespace public/default"))
+            .WithPortBinding(Port, Port)
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted(["/bin/bash", "-c", "bin/pulsar-admin clusters list"]))
             .WithCommand("/bin/bash", "-c", arguments)
             .Build();
 
-        ServiceUrl = new Uri("pulsar://localhost:6650");
+        ServiceUrl = new Uri($"pulsar://{_cluster.Hostname}:{Port}");
     }
 
     public Uri ServiceUrl { get; private set; }
 
     public IAuthentication Authentication => AuthenticationFactory.Token(ct => ValueTask.FromResult(_token!));
 
-    public Task DisposeAsync() => _cluster.DisposeAsync().AsTask();
+    public async Task DisposeAsync() => await _cluster.DisposeAsync();
 
-    private void HandleClusterStateChange(string state)
-    {
+    private void HandleClusterStateChange(string state) =>
         _messageSink.OnMessage(new DiagnosticMessage($"The Pulsar cluster changed state to: {state}"));
-    }
 
     public async Task InitializeAsync()
     {
@@ -87,12 +87,12 @@ public class IntegrationFixture : IAsyncLifetime
         _cluster.Stopping += (_, _) => HandleClusterStateChange("Stopping");
 
         _messageSink.OnMessage(new DiagnosticMessage("Starting container service"));
-        await _cluster.StartAsync();
-        _messageSink.OnMessage(new DiagnosticMessage("Container service started. Waiting for message in logs"));
-        _messageSink.OnMessage(new DiagnosticMessage("Got message, will now get endpoint"));
+        await _cluster.StartAsync(_cts.Token);
+        _messageSink.OnMessage(new DiagnosticMessage("The container service has initiated. Awaiting successful completion of command."));
+        _messageSink.OnMessage(new DiagnosticMessage("Command execution was successful. Next, we'll retrieve the endpoint."));
         var endpoint = _cluster.GetMappedPublicPort(Port);
         _messageSink.OnMessage(new DiagnosticMessage($"Endpoint opened at {endpoint}"));
-        ServiceUrl = new Uri($"pulsar://localhost:{Port}");
+        ServiceUrl = new Uri($"pulsar://{_cluster.Hostname}:{Port}");
         _token = await CreateToken(Timeout.InfiniteTimeSpan);
     }
 
@@ -103,7 +103,7 @@ public class IntegrationFixture : IAsyncLifetime
         if (expiryTime != Timeout.InfiniteTimeSpan)
             arguments += $" --expiry-time {expiryTime.TotalSeconds}s";
 
-        var result = await _cluster.ExecAsync(new[] { "/bin/bash", "-c" , arguments });
+        var result = await _cluster.ExecAsync(new[] { "/bin/bash", "-c", arguments }, _cts.Token);
 
         if (result.ExitCode != 0)
             throw new InvalidOperationException($"Could not create the token: {result.Stderr}");
@@ -124,7 +124,7 @@ public class IntegrationFixture : IAsyncLifetime
     {
         var arguments = $"bin/pulsar-admin topics create {topic}";
 
-        var result = await _cluster.ExecAsync(new[] { "/bin/bash", "-c" , arguments });
+        var result = await _cluster.ExecAsync(new[] { "/bin/bash", "-c", arguments }, _cts.Token);
 
         if (result.ExitCode != 0)
             throw new Exception($"Could not create the topic: {result.Stderr}");
@@ -141,7 +141,7 @@ public class IntegrationFixture : IAsyncLifetime
     {
         var arguments = $"bin/pulsar-admin topics create-partitioned-topic {topic} -p {numberOfPartitions}";
 
-        var result = await _cluster.ExecAsync(new[] { "/bin/bash", "-c" , arguments });
+        var result = await _cluster.ExecAsync(new[] { "/bin/bash", "-c", arguments }, _cts.Token);
 
         if (result.ExitCode != 0)
             throw new Exception($"Could not create the partitioned topic: {result.Stderr}");
