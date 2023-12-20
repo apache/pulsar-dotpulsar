@@ -39,7 +39,7 @@ public sealed class PulsarClientTests : IDisposable
     {
         // Arrange
         await using var client = CreateClient(ct => throw new Exception());
-        await using var producer = CreateProducer(client);
+        await using var producer = await CreateProducer(client);
 
         // Act
         var exception = await Record.ExceptionAsync(() => producer.Send("Test", _cts.Token).AsTask());
@@ -55,16 +55,16 @@ public sealed class PulsarClientTests : IDisposable
     {
         // Arrange
         var throwException = false;
-        await using var client = CreateClient(ct =>
+        await using var client = CreateClient(async ct =>
         {
             if (throwException)
                 throw new Exception();
-            var token = _fixture.CreateToken(TimeSpan.FromSeconds(10));
+            var token = await _fixture.CreateToken(TimeSpan.FromSeconds(10));
             _testOutputHelper.Log($"Received token: {token}");
-            return ValueTask.FromResult(token);
+            return token;
         });
 
-        await using var producer = CreateProducer(client);
+        await using var producer = await CreateProducer(client);
 
         // Act
         _ = await producer.Send("Test", _cts.Token); // Make sure we have a working connection
@@ -85,7 +85,7 @@ public sealed class PulsarClientTests : IDisposable
             return string.Empty;
         });
 
-        await using var producer = CreateProducer(client);
+        await using var producer = await CreateProducer(client);
 
         // Act
         var exception = await Record.ExceptionAsync(() => producer.Send("Test", _cts.Token).AsTask());
@@ -104,18 +104,18 @@ public sealed class PulsarClientTests : IDisposable
         var refreshCount = 0;
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        await using var client = CreateClient(ct =>
+        await using var client = CreateClient(async ct =>
         {
             ++refreshCount;
             if (refreshCount == 3)
                 tcs.SetResult();
 
-            var token = _fixture.CreateToken(TimeSpan.FromSeconds(10));
+            var token = await _fixture.CreateToken(TimeSpan.FromSeconds(10));
             _testOutputHelper.Log($"Received token: {token}");
-            return ValueTask.FromResult(token);
+            return token;
         });
 
-        await using var producer = CreateProducer(client);
+        await using var producer = await CreateProducer(client);
 
         // Act
         _ = await producer.Send("Test", _cts.Token); // Make sure we have a working connection
@@ -134,10 +134,10 @@ public sealed class PulsarClientTests : IDisposable
         .ServiceUrl(_fixture.ServiceUrl)
         .Build();
 
-    private IProducer<string> CreateProducer(IPulsarClient client)
+    private async Task<IProducer<string>> CreateProducer(IPulsarClient client)
         => client
         .NewProducer(Schema.String)
-        .Topic(_fixture.CreateTopic())
+        .Topic(await _fixture.CreateTopic())
         .StateChangedHandler(_testOutputHelper.Log)
         .Create();
 

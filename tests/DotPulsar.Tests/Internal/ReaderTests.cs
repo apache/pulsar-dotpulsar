@@ -40,7 +40,7 @@ public sealed class ReaderTests : IDisposable
     {
         //Arrange
         await using var client = CreateClient();
-        await using var reader = CreateReader(client, MessageId.Earliest, _fixture.CreateTopic());
+        await using var reader = CreateReader(client, MessageId.Earliest, await _fixture.CreateTopic());
         var expected = new List<MessageId>() { MessageId.Earliest };
 
         //Act
@@ -54,7 +54,7 @@ public sealed class ReaderTests : IDisposable
     public async Task GetLastMessageIds_GivenNonPartitionedTopic_ShouldGetMessageIdFromPartition()
     {
         //Arrange
-        var topicName = _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic();
         const int numberOfMessages = 6;
 
         await using var client = CreateClient();
@@ -83,7 +83,7 @@ public sealed class ReaderTests : IDisposable
         //Arrange
         const int numberOfMessages = 6;
         const int partitions = 3;
-        var topicName = _fixture.CreatePartitionedTopic(partitions);
+        var topicName = await _fixture.CreatePartitionedTopic(partitions);
 
         await using var client = CreateClient();
         await using var reader = CreateReader(client, MessageId.Earliest, topicName);
@@ -110,7 +110,7 @@ public sealed class ReaderTests : IDisposable
     public async Task Receive_GivenNonPartitionedTopic_ShouldReceiveAll()
     {
         //Arrange
-        var topicName = _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic();
         const int numberOfMessages = 10;
 
         await using var client = CreateClient();
@@ -142,7 +142,7 @@ public sealed class ReaderTests : IDisposable
         //Arrange
         const int numberOfMessages = 50;
         const int partitions = 3;
-        var topicName = _fixture.CreatePartitionedTopic(partitions);
+        var topicName = await _fixture.CreatePartitionedTopic(partitions);
 
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, topicName);
@@ -180,7 +180,7 @@ public sealed class ReaderTests : IDisposable
         })
         .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var reader = CreateReader(client, MessageId.Earliest, _fixture.CreateTopic());
+        await using var reader = CreateReader(client, MessageId.Earliest, await _fixture.CreateTopic());
 
         var receiveTask = reader.Receive(_cts.Token).AsTask();
         semaphoreSlim.Release();
@@ -203,7 +203,7 @@ public sealed class ReaderTests : IDisposable
         })
         .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var reader = CreateReader(client, MessageId.Earliest, _fixture.CreateTopic());
+        await using var reader = CreateReader(client, MessageId.Earliest, await _fixture.CreateTopic());
 
         await reader.OnStateChangeTo(ReaderState.Faulted, _cts.Token);
 

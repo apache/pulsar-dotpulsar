@@ -39,7 +39,7 @@ public sealed class ProducerTests : IDisposable
     {
         //Arrange
         const string content = "test-message";
-        var topicName = _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic();
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, topicName);
         await using var consumer = CreateConsumer(client, topicName);
@@ -58,7 +58,7 @@ public sealed class ProducerTests : IDisposable
     {
         //Arrange
         const string content = "test-message";
-        var topicName = _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic();
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, topicName);
         await using var consumer = CreateConsumer(client, topicName);
@@ -106,7 +106,7 @@ public sealed class ProducerTests : IDisposable
         ProducerState expectedStateForProducer2)
     {
         //Arrange
-        var topicName = _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic();
         await using var client = CreateClient();
         await using var producer1 = CreateProducer(client, topicName, accessModeForProducer1);
         await producer1.OnStateChangeTo(ProducerState.Connected, _cts.Token);
@@ -143,7 +143,7 @@ public sealed class ProducerTests : IDisposable
         const string content = "test-message";
         const int partitions = 3;
         const int msgCount = 3;
-        var topicName = _fixture.CreatePartitionedTopic(partitions);
+        var topicName = await _fixture.CreatePartitionedTopic(partitions);
         await using var client = CreateClient();
 
         //Act
@@ -189,7 +189,7 @@ public sealed class ProducerTests : IDisposable
         const int partitions = 3;
         var consumers = new List<IConsumer<string>>();
         await using var client = CreateClient();
-        var topicName = _fixture.CreatePartitionedTopic(partitions);
+        var topicName = await _fixture.CreatePartitionedTopic(partitions);
 
         //Act
         await using var producer = CreateProducer(client, topicName);
@@ -213,7 +213,7 @@ public sealed class ProducerTests : IDisposable
     {
         //Arrange
         const int numberOfMessages = 10;
-        var topicName = _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic();
 
         await using var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName);
@@ -245,7 +245,7 @@ public sealed class ProducerTests : IDisposable
         //Arrange
         const int numberOfMessages = 10;
         const int partitions = 4;
-        var topicName = _fixture.CreatePartitionedTopic(partitions);
+        var topicName = await _fixture.CreatePartitionedTopic(partitions);
         await using var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName);
         await using var producer = CreateProducer(client, topicName);
