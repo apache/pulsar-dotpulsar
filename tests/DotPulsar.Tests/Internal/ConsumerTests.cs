@@ -17,8 +17,6 @@ namespace DotPulsar.Tests.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
-using System;
-using System.Collections.Generic;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
@@ -39,7 +37,7 @@ public sealed class ConsumerTests : IDisposable
     public async Task GetLastMessageIds_GivenNonPartitionedTopic_ShouldGetMessageIdFromPartition()
     {
         //Arrange
-        var topicName = _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic(_cts.Token);
         const int numberOfMessages = 6;
 
         await using var client = CreateClient();
@@ -69,7 +67,7 @@ public sealed class ConsumerTests : IDisposable
         //Arrange
         const int numberOfMessages = 6;
         const int partitions = 3;
-        var topicName = _fixture.CreatePartitionedTopic(partitions);
+        var topicName = await _fixture.CreatePartitionedTopic(partitions, _cts.Token);
 
         await using var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName);
@@ -97,7 +95,7 @@ public sealed class ConsumerTests : IDisposable
     {
         //Arrange
         await using var client = CreateClient();
-        await using var consumer = CreateConsumer(client, _fixture.CreateTopic());
+        await using var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
         var expected = new List<MessageId>() { MessageId.Earliest };
 
         //Act
@@ -111,7 +109,7 @@ public sealed class ConsumerTests : IDisposable
     public async Task Receive_GivenNonPartitionedTopic_ShouldReceiveAll()
     {
         //Arrange
-        var topicName = _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic(_cts.Token);
         const int numberOfMessages = 1000;
 
         await using var client = CreateClient();
@@ -133,7 +131,7 @@ public sealed class ConsumerTests : IDisposable
         const int numberOfMessages = 1000;
         const int partitions = 3;
 
-        var topicName = _fixture.CreatePartitionedTopic(partitions);
+        var topicName = await _fixture.CreatePartitionedTopic(partitions, _cts.Token);
 
         await using var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName);
@@ -160,7 +158,7 @@ public sealed class ConsumerTests : IDisposable
         })
         .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var consumer = CreateConsumer(client, _fixture.CreateTopic());
+        await using var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
 
         var receiveTask = consumer.Receive(_cts.Token).AsTask();
         semaphoreSlim.Release();
@@ -183,7 +181,7 @@ public sealed class ConsumerTests : IDisposable
         })
         .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
-        await using var consumer = CreateConsumer(client, _fixture.CreateTopic());
+        await using var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
 
         await consumer.OnStateChangeTo(ConsumerState.Faulted, _cts.Token);
 
