@@ -17,7 +17,6 @@ namespace DotPulsar.Tests;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
-using System;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
@@ -59,7 +58,7 @@ public sealed class PulsarClientTests : IDisposable
         {
             if (throwException)
                 throw new Exception();
-            var token = await _fixture.CreateToken(TimeSpan.FromSeconds(10));
+            var token = await _fixture.CreateToken(TimeSpan.FromSeconds(10), _cts.Token);
             _testOutputHelper.Log($"Received token: {token}");
             return token;
         });
@@ -110,7 +109,7 @@ public sealed class PulsarClientTests : IDisposable
             if (refreshCount == 3)
                 tcs.SetResult();
 
-            var token = await _fixture.CreateToken(TimeSpan.FromSeconds(10));
+            var token = await _fixture.CreateToken(TimeSpan.FromSeconds(10), _cts.Token);
             _testOutputHelper.Log($"Received token: {token}");
             return token;
         });
@@ -128,18 +127,18 @@ public sealed class PulsarClientTests : IDisposable
 
     private IPulsarClient CreateClient(Func<CancellationToken, ValueTask<string>> tokenSupplier)
         => PulsarClient
-        .Builder()
-        .Authentication(AuthenticationFactory.Token(tokenSupplier))
-        .ExceptionHandler(_testOutputHelper.Log)
-        .ServiceUrl(_fixture.ServiceUrl)
-        .Build();
+            .Builder()
+            .Authentication(AuthenticationFactory.Token(tokenSupplier))
+            .ExceptionHandler(_testOutputHelper.Log)
+            .ServiceUrl(_fixture.ServiceUrl)
+            .Build();
 
     private async Task<IProducer<string>> CreateProducer(IPulsarClient client)
         => client
-        .NewProducer(Schema.String)
-        .Topic(await _fixture.CreateTopic())
-        .StateChangedHandler(_testOutputHelper.Log)
-        .Create();
+            .NewProducer(Schema.String)
+            .Topic(await _fixture.CreateTopic(_cts.Token))
+            .StateChangedHandler(_testOutputHelper.Log)
+            .Create();
 
     public void Dispose() => _cts.Dispose();
 }

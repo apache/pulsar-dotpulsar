@@ -16,8 +16,6 @@ namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
-using System;
-using System.Collections.Generic;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
@@ -39,7 +37,7 @@ public sealed class ProducerTests : IDisposable
     {
         //Arrange
         const string content = "test-message";
-        var topicName = await _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic(_cts.Token);
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, topicName);
         await using var consumer = CreateConsumer(client, topicName);
@@ -58,7 +56,7 @@ public sealed class ProducerTests : IDisposable
     {
         //Arrange
         const string content = "test-message";
-        var topicName = await _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic(_cts.Token);
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, topicName);
         await using var consumer = CreateConsumer(client, topicName);
@@ -106,7 +104,7 @@ public sealed class ProducerTests : IDisposable
         ProducerState expectedStateForProducer2)
     {
         //Arrange
-        var topicName = await _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic(_cts.Token);
         await using var client = CreateClient();
         await using var producer1 = CreateProducer(client, topicName, accessModeForProducer1);
         await producer1.OnStateChangeTo(ProducerState.Connected, _cts.Token);
@@ -143,7 +141,7 @@ public sealed class ProducerTests : IDisposable
         const string content = "test-message";
         const int partitions = 3;
         const int msgCount = 3;
-        var topicName = await _fixture.CreatePartitionedTopic(partitions);
+        var topicName = await _fixture.CreatePartitionedTopic(partitions, _cts.Token);
         await using var client = CreateClient();
 
         //Act
@@ -189,7 +187,7 @@ public sealed class ProducerTests : IDisposable
         const int partitions = 3;
         var consumers = new List<IConsumer<string>>();
         await using var client = CreateClient();
-        var topicName = await _fixture.CreatePartitionedTopic(partitions);
+        var topicName = await _fixture.CreatePartitionedTopic(partitions, _cts.Token);
 
         //Act
         await using var producer = CreateProducer(client, topicName);
@@ -213,7 +211,7 @@ public sealed class ProducerTests : IDisposable
     {
         //Arrange
         const int numberOfMessages = 10;
-        var topicName = await _fixture.CreateTopic();
+        var topicName = await _fixture.CreateTopic(_cts.Token);
 
         await using var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName);
@@ -245,7 +243,7 @@ public sealed class ProducerTests : IDisposable
         //Arrange
         const int numberOfMessages = 10;
         const int partitions = 4;
-        var topicName = await _fixture.CreatePartitionedTopic(partitions);
+        var topicName = await _fixture.CreatePartitionedTopic(partitions, _cts.Token);
         await using var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName);
         await using var producer = CreateProducer(client, topicName);
@@ -308,26 +306,26 @@ public sealed class ProducerTests : IDisposable
         string topicName,
         ProducerAccessMode producerAccessMode = ProducerAccessMode.Shared)
         => pulsarClient.NewProducer(Schema.String)
-        .Topic(topicName)
-        .ProducerAccessMode(producerAccessMode)
-        .StateChangedHandler(_testOutputHelper.Log)
-        .Create();
+            .Topic(topicName)
+            .ProducerAccessMode(producerAccessMode)
+            .StateChangedHandler(_testOutputHelper.Log)
+            .Create();
 
     private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string topicName)
         => pulsarClient.NewConsumer(Schema.String)
-        .InitialPosition(SubscriptionInitialPosition.Earliest)
-        .SubscriptionName(CreateSubscriptionName())
-        .Topic(topicName)
-        .StateChangedHandler(_testOutputHelper.Log)
-        .Create();
+            .InitialPosition(SubscriptionInitialPosition.Earliest)
+            .SubscriptionName(CreateSubscriptionName())
+            .Topic(topicName)
+            .StateChangedHandler(_testOutputHelper.Log)
+            .Create();
 
     private IPulsarClient CreateClient()
         => PulsarClient
-        .Builder()
-        .Authentication(_fixture.Authentication)
-        .ExceptionHandler(_testOutputHelper.Log)
-        .ServiceUrl(_fixture.ServiceUrl)
-        .Build();
+            .Builder()
+            .Authentication(_fixture.Authentication)
+            .ExceptionHandler(_testOutputHelper.Log)
+            .ServiceUrl(_fixture.ServiceUrl)
+            .Build();
 
     public void Dispose() => _cts.Dispose();
 }
