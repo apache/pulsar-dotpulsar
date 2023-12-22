@@ -92,8 +92,7 @@ public class IntegrationFixture : IAsyncLifetime
 
         _messageSink.OnMessage(new DiagnosticMessage("Starting container service"));
         await _cluster.StartAsync(_cts.Token);
-        _messageSink.OnMessage(new DiagnosticMessage("The container service has initiated. Awaiting successful completion of command."));
-        _messageSink.OnMessage(new DiagnosticMessage("Command execution was successful. Next, we'll retrieve the endpoint."));
+        _messageSink.OnMessage(new DiagnosticMessage("The container service has initiated. Next, we'll retrieve the endpoint."));
         var endpoint = _cluster.GetMappedPublicPort(Port);
         _messageSink.OnMessage(new DiagnosticMessage($"Endpoint opened at {endpoint}"));
         ServiceUrl = new Uri($"pulsar://{_cluster.Hostname}:{endpoint}");
