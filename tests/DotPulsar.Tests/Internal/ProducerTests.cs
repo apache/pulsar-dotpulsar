@@ -306,26 +306,26 @@ public sealed class ProducerTests : IDisposable
         string topicName,
         ProducerAccessMode producerAccessMode = ProducerAccessMode.Shared)
         => pulsarClient.NewProducer(Schema.String)
-            .Topic(topicName)
-            .ProducerAccessMode(producerAccessMode)
-            .StateChangedHandler(_testOutputHelper.Log)
-            .Create();
+        .Topic(topicName)
+        .ProducerAccessMode(producerAccessMode)
+        .StateChangedHandler(_testOutputHelper.Log)
+        .Create();
 
     private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string topicName)
         => pulsarClient.NewConsumer(Schema.String)
-            .InitialPosition(SubscriptionInitialPosition.Earliest)
-            .SubscriptionName(CreateSubscriptionName())
-            .Topic(topicName)
-            .StateChangedHandler(_testOutputHelper.Log)
-            .Create();
+        .InitialPosition(SubscriptionInitialPosition.Earliest)
+        .SubscriptionName(CreateSubscriptionName())
+        .Topic(topicName)
+        .StateChangedHandler(_testOutputHelper.Log)
+        .Create();
 
     private IPulsarClient CreateClient()
         => PulsarClient
-            .Builder()
-            .Authentication(_fixture.Authentication)
-            .ExceptionHandler(_testOutputHelper.Log)
-            .ServiceUrl(_fixture.ServiceUrl)
-            .Build();
+        .Builder()
+        .Authentication(_fixture.Authentication)
+        .ExceptionHandler(_testOutputHelper.Log)
+        .ServiceUrl(_fixture.ServiceUrl)
+        .Build();
 
     public void Dispose() => _cts.Dispose();
 }

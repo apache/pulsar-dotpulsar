@@ -64,6 +64,8 @@ public class IntegrationFixture : IAsyncLifetime
             .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted(["/bin/bash", "-c", "bin/pulsar-admin clusters list"]))
             .WithCommand("/bin/bash", "-c", arguments)
             .Build();
+
+        ServiceUrl = new Uri($"pulsar://{_cluster.Hostname}:{Port}");
     }
 
     public Uri ServiceUrl { get; private set; }

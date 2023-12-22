@@ -151,12 +151,12 @@ public sealed class ConsumerTests : IDisposable
         //Arrange
         var semaphoreSlim = new SemaphoreSlim(1);
         await using var client = PulsarClient.Builder().ExceptionHandler(context =>
-            {
-                semaphoreSlim.WaitAsync();
-                context.Result = FaultAction.Rethrow;
-                context.ExceptionHandled = true;
-            })
-            .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
+        {
+            semaphoreSlim.WaitAsync();
+            context.Result = FaultAction.Rethrow;
+            context.ExceptionHandled = true;
+        })
+        .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
         await using var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
 
@@ -175,11 +175,11 @@ public sealed class ConsumerTests : IDisposable
     {
         //Arrange
         await using var client = PulsarClient.Builder().ExceptionHandler(context =>
-            {
-                context.Result = FaultAction.Rethrow;
-                context.ExceptionHandled = true;
-            })
-            .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
+        {
+            context.Result = FaultAction.Rethrow;
+            context.ExceptionHandled = true;
+        })
+        .ServiceUrl(new Uri("pulsar://nosuchhost")).Build();
 
         await using var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
 
@@ -227,25 +227,25 @@ public sealed class ConsumerTests : IDisposable
 
     private IProducer<string> CreateProducer(IPulsarClient pulsarClient, string topicName)
         => pulsarClient.NewProducer(Schema.String)
-            .Topic(topicName)
-            .StateChangedHandler(_testOutputHelper.Log)
-            .Create();
+        .Topic(topicName)
+        .StateChangedHandler(_testOutputHelper.Log)
+        .Create();
 
     private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string topicName)
         => pulsarClient.NewConsumer(Schema.String)
-            .InitialPosition(SubscriptionInitialPosition.Earliest)
-            .SubscriptionName(CreateSubscriptionName())
-            .Topic(topicName)
-            .StateChangedHandler(_testOutputHelper.Log)
-            .Create();
+        .InitialPosition(SubscriptionInitialPosition.Earliest)
+        .SubscriptionName(CreateSubscriptionName())
+        .Topic(topicName)
+        .StateChangedHandler(_testOutputHelper.Log)
+        .Create();
 
     private IPulsarClient CreateClient()
         => PulsarClient
-            .Builder()
-            .Authentication(_fixture.Authentication)
-            .ExceptionHandler(_testOutputHelper.Log)
-            .ServiceUrl(_fixture.ServiceUrl)
-            .Build();
+        .Builder()
+        .Authentication(_fixture.Authentication)
+        .ExceptionHandler(_testOutputHelper.Log)
+        .ServiceUrl(_fixture.ServiceUrl)
+        .Build();
 
     public void Dispose() => _cts.Dispose();
 }
