@@ -400,13 +400,11 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         var messageFactory = new MessageFactory<TMessage>(_consumerOptions.Schema);
         var batchHandler = new BatchHandler<TMessage>(true, messageFactory);
         var decompressorFactories = CompressionFactories.DecompressorFactories();
-        var consumerChannelFactory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe,
-            messagePrefetchCount, batchHandler, messageFactory, decompressorFactories, topic);
+        var consumerChannelFactory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decompressorFactories, topic);
         var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-        var subConsumer = new SubConsumer<TMessage>(correlationId, ServiceUrl, _consumerOptions.SubscriptionName, topic,
-            _processManager, initialChannel, executor, stateManager, consumerChannelFactory);
+        var subConsumer = new SubConsumer<TMessage>(correlationId, ServiceUrl, _consumerOptions.SubscriptionName, topic, _processManager, initialChannel, executor, stateManager, consumerChannelFactory);
         var process = new ConsumerProcess(correlationId, stateManager, subConsumer, _consumerOptions.SubscriptionType == SubscriptionType.Failover);
         _processManager.Add(process);
         process.Start();
