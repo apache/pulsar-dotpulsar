@@ -19,7 +19,6 @@ using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Networks;
 using DotPulsar.Abstractions;
 using Toxiproxy.Net;
-using Toxiproxy.Net.Toxics;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -32,17 +31,13 @@ public class IntegrationFixture : IAsyncLifetime
     private const int ToxiProxyControlPort = 8474;
     private const int ToxiProxyPort = 15124;
     private readonly CancellationTokenSource _cts;
-
     private readonly IMessageSink _messageSink;
-
     private readonly INetwork _network;
     private readonly IContainer _pulsarCluster;
     private readonly IContainer _toxiProxy;
-
     private Client _toxiProxyClient;
     private Connection _toxiProxyConnection;
-    private Proxy _toxiProxylocalToPulsarCluster;
-
+    private Proxy _toxiProxyPulsarProxy;
     private string? _token;
 
     public IntegrationFixture(IMessageSink messageSink)
@@ -94,7 +89,7 @@ public class IntegrationFixture : IAsyncLifetime
         ServiceUrl = new Uri($"pulsar://{_pulsarCluster.Hostname}:{PulsarPort}");
         _toxiProxyConnection = new Connection();
         _toxiProxyClient = _toxiProxyConnection.Client();
-        _toxiProxylocalToPulsarCluster = new Proxy();
+        _toxiProxyPulsarProxy = new Proxy();
     }
 
     public Uri ServiceUrl { get; private set; }
@@ -119,17 +114,17 @@ public class IntegrationFixture : IAsyncLifetime
         _messageSink.OnMessage(new DiagnosticMessage("Starting Pulsar Cluster"));
         await _pulsarCluster.StartAsync(_cts.Token);
         _messageSink.OnMessage(new DiagnosticMessage("The containers has initiated. Next, we'll configure Toxiproxy mappings."));
-        _toxiProxyConnection = new Connection(_toxiProxy.Hostname, _toxiProxy.GetMappedPublicPort(ToxiProxyControlPort));
 
+        _toxiProxyConnection = new Connection(_toxiProxy.Hostname, _toxiProxy.GetMappedPublicPort(ToxiProxyControlPort));
         _toxiProxyClient = _toxiProxyConnection.Client();
-        _toxiProxylocalToPulsarCluster = new Proxy
+        _toxiProxyPulsarProxy = new Proxy
         {
             Name = "localToPulsarCluster",
             Enabled = true,
             Listen = $"{"0.0.0.0"}:{ToxiProxyPort}",
             Upstream = $"{"pulsar"}:{PulsarPort}"
         };
-        await _toxiProxyClient.AddAsync(_toxiProxylocalToPulsarCluster);
+        await _toxiProxyClient.AddAsync(_toxiProxyPulsarProxy);
 
         _messageSink.OnMessage(new DiagnosticMessage("Toxiproxy successfully mapped connections between host and the Pulsar Cluster."));
         ServiceUrl = new Uri($"pulsar://{_toxiProxy.Hostname}:{_toxiProxy.GetMappedPublicPort(ToxiProxyPort)}");
@@ -202,22 +197,23 @@ public class IntegrationFixture : IAsyncLifetime
             throw new Exception($"Could not create the partitioned topic: {result.Stderr}");
     }
 
-    public async Task SimulateDisconnect()
+    public async Task<IAsyncDisposable> DisableThePulsarConnection()
     {
-        var timeoutProxy = new TimeoutToxic();
-        timeoutProxy.Attributes.Timeout = 1000000000;
-        timeoutProxy.Toxicity = 1.0;
-        await _toxiProxylocalToPulsarCluster.AddAsync(timeoutProxy);
-        await _toxiProxylocalToPulsarCluster.UpdateAsync();
+        _toxiProxyPulsarProxy.Enabled = false;
+        await _toxiProxyPulsarProxy.UpdateAsync();
+        return new Releaser(_toxiProxyPulsarProxy);
     }
 
-    public async Task RemoveAllToxins()
+    private class Releaser : IAsyncDisposable
     {
-        var allToxicsAsync = await _toxiProxylocalToPulsarCluster.GetAllToxicsAsync();
+        private readonly Proxy _proxy;
 
-        foreach (var toxicBase in allToxicsAsync)
+        public Releaser(Proxy proxy) => _proxy = proxy;
+
+        public async ValueTask DisposeAsync()
         {
-            await _toxiProxylocalToPulsarCluster.RemoveToxicAsync(toxicBase.Name);
+            _proxy.Enabled = true;
+            await _proxy.UpdateAsync();
         }
     }
 }

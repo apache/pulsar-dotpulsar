@@ -268,6 +268,75 @@ public sealed class ProducerTests : IDisposable
         foundNonNegativeOne.Should().Be(true);
     }
 
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyDown_ShouldBeAbleToDispose()
+    {
+        //Arrange
+        await using var connectionDown = await _fixture.DisableThePulsarConnection();
+        await using var client = CreateClient();
+        var producer = CreateProducer(client, await _fixture.CreateTopic(_cts.Token));
+
+        //Act
+        var exception = await Record.ExceptionAsync(() => producer.DisposeAsync().AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyDownAndComesUp_ShouldBeAbleToSend()
+    {
+        //Arrange
+        var connectionDown = await _fixture.DisableThePulsarConnection();
+        await using var client = CreateClient();
+        await using var producer = CreateProducer(client, await _fixture.CreateTopic(_cts.Token));
+
+        //Act
+        await connectionDown.DisposeAsync();
+        await producer.StateChangedTo(ProducerState.Connected, _cts.Token);
+        var exception = await Record.ExceptionAsync(() => producer.Send("test", _cts.Token).AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyUpAndGoesDown_ShouldBeAbleToDispose()
+    {
+        //Arrange
+        await using var client = CreateClient();
+        await using var producer = CreateProducer(client, await _fixture.CreateTopic(_cts.Token));
+        await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+
+        //Act
+        await using var connectionDown = await _fixture.DisableThePulsarConnection();
+        await producer.StateChangedTo(ProducerState.Disconnected, _cts.Token);
+        var exception = await Record.ExceptionAsync(() => producer.DisposeAsync().AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyUpAndReconnects_ShouldBeAbleToSend()
+    {
+        //Arrange
+        await using var client = CreateClient();
+        await using var producer = CreateProducer(client, await _fixture.CreateTopic(_cts.Token));
+        await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+
+        //Act
+        await using (await _fixture.DisableThePulsarConnection())
+        {
+            await producer.StateChangedTo(ProducerState.Disconnected, _cts.Token);
+        }
+        await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+        var exception = await Record.ExceptionAsync(() => producer.Send("test", _cts.Token).AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
     private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<string> producer, int numberOfMessages, CancellationToken ct)
     {
         var messageIds = new MessageId[numberOfMessages];
