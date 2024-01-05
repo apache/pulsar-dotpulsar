@@ -212,6 +212,81 @@ public sealed class ReaderTests : IDisposable
         exception.Should().BeOfType<ReaderFaultedException>();
     }
 
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyDownAndComesUp_ShouldBeAbleToReceive()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await using var client = CreateClient();
+        await using var producer = CreateProducer(client, topicName);
+        await producer.Send("test-message", _cts.Token);
+        var connectionDown = await _fixture.DisableThePulsarConnection();
+        await using var reader = CreateReader(client, MessageId.Earliest, topicName);
+
+        //Act
+        await connectionDown.DisposeAsync();
+        await reader.StateChangedTo(ReaderState.Connected, _cts.Token);
+        var exception = await Record.ExceptionAsync(() => reader.Receive(_cts.Token).AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyDown_ShouldBeAbleToDispose()
+    {
+        //Arrange
+        await using var connectionDown = await _fixture.DisableThePulsarConnection();
+        await using var client = CreateClient();
+        var reader = CreateReader(client, MessageId.Earliest, await _fixture.CreateTopic(_cts.Token));
+
+        //Act
+        var exception = await Record.ExceptionAsync(() => reader.DisposeAsync().AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyUpAndGoesDown_ShouldBeAbleToDispose()
+    {
+        //Arrange
+        await using var client = CreateClient();
+        var reader = CreateReader(client, MessageId.Earliest, await _fixture.CreateTopic(_cts.Token));
+        await reader.OnStateChangeTo(ReaderState.Connected, _cts.Token);
+
+        //Act
+        await using var connectionDown = await _fixture.DisableThePulsarConnection();
+        await reader.StateChangedTo(ReaderState.Disconnected, _cts.Token);
+        var exception = await Record.ExceptionAsync(() => reader.DisposeAsync().AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyUpAndReconnects_ShouldBeAbleToReceive()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await using var client = CreateClient();
+        await using var producer = CreateProducer(client, topicName);
+        await using var reader = CreateReader(client, MessageId.Earliest, topicName);
+        await producer.Send("test-message", _cts.Token);
+        await reader.OnStateChangeTo(ReaderState.Connected, _cts.Token);
+
+        //Act
+        await using (await _fixture.DisableThePulsarConnection())
+        {
+            await reader.StateChangedTo(ReaderState.Disconnected, _cts.Token);
+        }
+        await reader.OnStateChangeTo(ReaderState.Connected, _cts.Token);
+        var exception = await Record.ExceptionAsync(() => reader.Receive(_cts.Token).AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
     private IProducer<string> CreateProducer(IPulsarClient pulsarClient, string topicName)
         => pulsarClient.NewProducer(Schema.String)
         .Topic(topicName)

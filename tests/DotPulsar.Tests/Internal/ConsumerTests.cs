@@ -192,6 +192,81 @@ public sealed class ConsumerTests : IDisposable
         exception.Should().BeOfType<ConsumerFaultedException>();
     }
 
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyDownAndComesUp_ShouldBeAbleToReceive()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await using var client = CreateClient();
+        await using var producer = CreateProducer(client, topicName);
+        await ProduceMessages(producer, 1, "test-message", _cts.Token);
+        var connectionDown = await _fixture.DisableThePulsarConnection();
+        await using var consumer = CreateConsumer(client, topicName);
+
+        //Act
+        await connectionDown.DisposeAsync();
+        await consumer.StateChangedTo(ConsumerState.Active, _cts.Token);
+        var exception = await Record.ExceptionAsync(() => consumer.Receive(_cts.Token).AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyDown_ShouldBeAbleToDispose()
+    {
+        //Arrange
+        await using var connectionDown = await _fixture.DisableThePulsarConnection();
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
+
+        //Act
+        var exception = await Record.ExceptionAsync(() => consumer.DisposeAsync().AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyUpAndGoesDown_ShouldBeAbleToDispose()
+    {
+        //Arrange
+        await using var client = CreateClient();
+        var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
+        await consumer.OnStateChangeTo(ConsumerState.Active, _cts.Token);
+
+        //Act
+        await using var connectionDown = await _fixture.DisableThePulsarConnection();
+        await consumer.StateChangedTo(ConsumerState.Disconnected, _cts.Token);
+        var exception = await Record.ExceptionAsync(() => consumer.DisposeAsync().AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyUpAndReconnects_ShouldBeAbleToReceive()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await using var client = CreateClient();
+        await using var producer = CreateProducer(client, topicName);
+        await using var consumer = CreateConsumer(client, topicName);
+        await ProduceMessages(producer, 1, "test-message", _cts.Token);
+        await consumer.OnStateChangeTo(ConsumerState.Active, _cts.Token);
+
+        //Act
+        await using (await _fixture.DisableThePulsarConnection())
+        {
+            await consumer.StateChangedTo(ConsumerState.Disconnected, _cts.Token);
+        }
+        await consumer.OnStateChangeTo(ConsumerState.Active, _cts.Token);
+        var exception = await Record.ExceptionAsync(() => consumer.Receive(_cts.Token).AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
     private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<string> producer, int numberOfMessages, string content, CancellationToken ct)
     {
         var messageIds = new MessageId[numberOfMessages];
