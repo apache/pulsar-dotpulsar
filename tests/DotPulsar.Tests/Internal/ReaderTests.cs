@@ -212,6 +212,30 @@ public sealed class ReaderTests : IDisposable
         exception.Should().BeOfType<ReaderFaultedException>();
     }
 
+    [Fact(Skip = "Skip for now")]
+    public async Task Connectivity_WhenInitiallyConnectedWithNoMessagesThenGoDown_ShouldBeAbleToReceiveWhenUpAgain()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await using var client = CreateClient();
+        await using var reader = CreateReader(client, MessageId.Earliest, topicName);
+        await using var producer = CreateProducer(client, topicName);
+        await reader.StateChangedTo(ReaderState.Connected, _cts.Token);
+        var receiveTask = reader.Receive(_cts.Token);
+        await using (await _fixture.DisableThePulsarConnection())
+        {
+            await reader.StateChangedTo(ReaderState.Disconnected, _cts.Token);
+        }
+        await reader.StateChangedTo(ReaderState.Connected, _cts.Token);
+        await producer.Send("test-message", _cts.Token);
+
+        //Act
+        var exception = await Record.ExceptionAsync(async () => await receiveTask.AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
     [Fact]
     public async Task Connectivity_WhenConnectionIsInitiallyDownAndComesUp_ShouldBeAbleToReceive()
     {
