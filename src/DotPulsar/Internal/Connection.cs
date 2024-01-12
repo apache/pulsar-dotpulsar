@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Exceptions;
@@ -241,19 +242,23 @@ public sealed class Connection : IConnection
     {
         ThrowIfDisposed();
 
-        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        try
         {
-            try
+            var sequence = Serializer.Serialize(command.Command!.AsBaseCommand(), command.Metadata!, command.Payload);
+
+            if (sequence.Length > MaxMessageSize)
+                throw new TooLargeMessageException((int) sequence.Length, MaxMessageSize);
+
+            using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
             {
                 _channelManager.Outgoing(command.Command!, responseTcs);
+                await _stream.Send(sequence).ConfigureAwait(false);
             }
-            catch (OperationCanceledException)
-            {
-                responseTcs.TrySetCanceled();
-                throw;
-            }
-            var sequence = Serializer.Serialize(command.Command!.AsBaseCommand(), command.Metadata!, command.Payload);
-            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            _ = responseTcs.TrySetCanceled();
+            throw;
         }
     }
 
