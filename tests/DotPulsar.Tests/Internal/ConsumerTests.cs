@@ -192,6 +192,30 @@ public sealed class ConsumerTests : IDisposable
         exception.Should().BeOfType<ConsumerFaultedException>();
     }
 
+    [Fact(Skip = "Skip for now")]
+    public async Task Connectivity_WhenInitiallyConnectedWithNoMessagesThenGoDown_ShouldBeAbleToReceiveWhenUpAgain()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, topicName);
+        await using var producer = CreateProducer(client, topicName);
+        await consumer.StateChangedTo(ConsumerState.Active, _cts.Token);
+        var receiveTask = consumer.Receive(_cts.Token);
+        await using (await _fixture.DisableThePulsarConnection())
+        {
+            await consumer.StateChangedTo(ConsumerState.Disconnected, _cts.Token);
+        }
+        await consumer.StateChangedTo(ConsumerState.Active, _cts.Token);
+        await ProduceMessages(producer, 1, "test-message", _cts.Token);
+
+        //Act
+        var exception = await Record.ExceptionAsync(async () => await receiveTask.AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
     [Fact]
     public async Task Connectivity_WhenConnectionIsInitiallyDownAndComesUp_ShouldBeAbleToReceive()
     {

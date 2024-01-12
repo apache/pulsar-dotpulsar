@@ -268,6 +268,30 @@ public sealed class ProducerTests : IDisposable
         foundNonNegativeOne.Should().Be(true);
     }
 
+    [Fact(Skip = "Skip for now")]
+    public async Task Connectivity_WhenConnectionIsInitiallyUpAndComesDown_ShouldBeAbleToSendWhileDown()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await using var client = CreateClient();
+        await using var producer = CreateProducer(client, topicName);
+        await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+
+        ValueTask<MessageId> sendTask;
+        await using (await _fixture.DisableThePulsarConnection())
+        {
+            await producer.StateChangedTo(ProducerState.Disconnected, _cts.Token);
+            sendTask = producer.Send("test", _cts.Token);
+        }
+        await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+
+        //Act
+        var exception = await Record.ExceptionAsync(async () => await sendTask.AsTask());
+
+        //Assert
+        exception.Should().BeNull();
+    }
+
     [Fact]
     public async Task Connectivity_WhenConnectionIsInitiallyDown_ShouldBeAbleToDispose()
     {
