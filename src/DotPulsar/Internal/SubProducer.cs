@@ -118,50 +118,45 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
 
     private async Task MessageDispatcher(IProducerChannel channel, CancellationToken cancellationToken)
     {
-        var responseQueue = new AsyncQueue<Task<BaseCommand>>();
-        var responseProcessorTask = ResponseProcessor(responseQueue, cancellationToken);
+        using var responseQueue = new AsyncQueue<Task<BaseCommand>>();
+        var responseProcessorTask = Task.Run(async () => await ResponseProcessor(responseQueue, cancellationToken));
 
-        try
+        _sendQueue.ResetCursor();
+
+        while (!cancellationToken.IsCancellationRequested)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            var sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
+
+            if (sendOp.CancellationToken.IsCancellationRequested)
             {
-                var sendOp = await _sendQueue.NextItem(cancellationToken).ConfigureAwait(false);
+                _sendQueue.RemoveCurrentItem();
+                continue;
+            }
 
-                if (sendOp.CancellationToken.IsCancellationRequested)
+            var tcs = new TaskCompletionSource<BaseCommand>();
+            _ = tcs.Task.ContinueWith(task =>
+            {
+                try
                 {
-                    _sendQueue.RemoveCurrentItem();
-                    continue;
+                    responseQueue.Enqueue(task);
                 }
-
-                var tcs = new TaskCompletionSource<BaseCommand>();
-                _ = tcs.Task.ContinueWith(task =>
+                catch
                 {
-                    try
-                    {
-                        responseQueue.Enqueue(task);
-                    }
-                    catch
-                    {
-                        // Ignore
-                    }
-                }, TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
+                    // Ignore
+                }
+            }, TaskContinuationOptions.NotOnCanceled | TaskContinuationOptions.ExecuteSynchronously);
 
-                // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
-                var success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), CancellationToken.None).ConfigureAwait(false);
+            // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
+            var success = await _executor.TryExecuteOnce(() => channel.Send(sendOp.Metadata, sendOp.Data, tcs, cancellationToken), CancellationToken.None).ConfigureAwait(false);
 
-                if (success)
-                    continue;
-
+            if (!success)
+            {
                 _eventRegister.Register(new ChannelDisconnected(_correlationId));
                 break;
             }
+        }
 
-            await responseProcessorTask.ConfigureAwait(false);
-        }
-        finally
-        {
-            responseQueue.Dispose();
-        }
+        await responseProcessorTask.ConfigureAwait(false);
     }
 
     private async ValueTask ResponseProcessor(IDequeue<Task<BaseCommand>> responseQueue, CancellationToken cancellationToken)
@@ -210,9 +205,10 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
     {
         try
         {
-            if (_dispatcherCts is not null && !_dispatcherCts.IsCancellationRequested)
+            if (_dispatcherCts is not null)
             {
-                _dispatcherCts.Cancel();
+                if (!_dispatcherCts.IsCancellationRequested)
+                    _dispatcherCts.Cancel();
                 _dispatcherCts.Dispose();
             }
         }
@@ -236,15 +232,12 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
         _channel = await _executor.Execute(() => _factory.Create(_topicEpoch, cancellationToken), cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task ActivateChannel(ulong? topicEpoch, CancellationToken cancellationToken)
+    public Task ActivateChannel(ulong? topicEpoch, CancellationToken cancellationToken)
     {
         _topicEpoch ??= topicEpoch;
         _dispatcherCts = new CancellationTokenSource();
-        await _executor.Execute(() =>
-        {
-            _sendQueue.ResetCursor();
-            _dispatcherTask = MessageDispatcher(_channel, _dispatcherCts.Token);
-        }, cancellationToken).ConfigureAwait(false);
+        _dispatcherTask = Task.Run(async () => await MessageDispatcher(_channel, _dispatcherCts.Token));
+        return Task.CompletedTask;
     }
 
     public async ValueTask CloseChannel(CancellationToken cancellationToken)

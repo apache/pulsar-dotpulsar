@@ -268,8 +268,8 @@ public sealed class ProducerTests : IDisposable
         foundNonNegativeOne.Should().Be(true);
     }
 
-    [Fact(Skip = "Skip for now")]
-    public async Task Connectivity_WhenConnectionIsInitiallyUpAndComesDown_ShouldBeAbleToSendWhileDown()
+    [Fact]
+    public async Task Connectivity_WhenConnectionIsInitiallyUpAndGoesDown_ShouldBeAbleToSendWhileDown()
     {
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
@@ -286,7 +286,7 @@ public sealed class ProducerTests : IDisposable
         await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
         //Act
-        var exception = await Record.ExceptionAsync(async () => await sendTask.AsTask());
+        var exception = await Record.ExceptionAsync(sendTask.AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -301,7 +301,7 @@ public sealed class ProducerTests : IDisposable
         var producer = CreateProducer(client, await _fixture.CreateTopic(_cts.Token));
 
         //Act
-        var exception = await Record.ExceptionAsync(() => producer.DisposeAsync().AsTask());
+        var exception = await Record.ExceptionAsync(producer.DisposeAsync().AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -318,7 +318,7 @@ public sealed class ProducerTests : IDisposable
         //Act
         await connectionDown.DisposeAsync();
         await producer.StateChangedTo(ProducerState.Connected, _cts.Token);
-        var exception = await Record.ExceptionAsync(() => producer.Send("test", _cts.Token).AsTask());
+        var exception = await Record.ExceptionAsync(producer.Send("test", _cts.Token).AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -335,7 +335,7 @@ public sealed class ProducerTests : IDisposable
         //Act
         await using var connectionDown = await _fixture.DisableThePulsarConnection();
         await producer.StateChangedTo(ProducerState.Disconnected, _cts.Token);
-        var exception = await Record.ExceptionAsync(() => producer.DisposeAsync().AsTask());
+        var exception = await Record.ExceptionAsync(producer.DisposeAsync().AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -355,7 +355,7 @@ public sealed class ProducerTests : IDisposable
             await producer.StateChangedTo(ProducerState.Disconnected, _cts.Token);
         }
         await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
-        var exception = await Record.ExceptionAsync(() => producer.Send("test", _cts.Token).AsTask());
+        var exception = await Record.ExceptionAsync(producer.Send("test", _cts.Token).AsTask);
 
         //Assert
         exception.Should().BeNull();

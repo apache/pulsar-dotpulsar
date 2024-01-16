@@ -39,7 +39,7 @@ public sealed class ReaderTests : IDisposable
         //Arrange
         await using var client = CreateClient();
         await using var reader = CreateReader(client, MessageId.Earliest, await _fixture.CreateTopic(_cts.Token));
-        var expected = new List<MessageId>() { MessageId.Earliest };
+        var expected = new List<MessageId> { MessageId.Earliest };
 
         //Act
         var actual = await reader.GetLastMessageIds(_cts.Token);
@@ -206,14 +206,14 @@ public sealed class ReaderTests : IDisposable
         await reader.OnStateChangeTo(ReaderState.Faulted, _cts.Token);
 
         //Act
-        var exception = await Record.ExceptionAsync(() => reader.Receive(_cts.Token).AsTask());
+        var exception = await Record.ExceptionAsync(reader.Receive(_cts.Token).AsTask);
 
         //Assert
         exception.Should().BeOfType<ReaderFaultedException>();
     }
 
-    [Fact(Skip = "Skip for now")]
-    public async Task Connectivity_WhenInitiallyConnectedWithNoMessagesThenGoDown_ShouldBeAbleToReceiveWhenUpAgain()
+    [Fact]
+    public async Task Connectivity_WhenInitiallyConnectedWithNoMessagesThenGoesDown_ShouldBeAbleToReceiveWhenUpAgain()
     {
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
@@ -230,7 +230,7 @@ public sealed class ReaderTests : IDisposable
         await producer.Send("test-message", _cts.Token);
 
         //Act
-        var exception = await Record.ExceptionAsync(async () => await receiveTask.AsTask());
+        var exception = await Record.ExceptionAsync(receiveTask.AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -250,7 +250,7 @@ public sealed class ReaderTests : IDisposable
         //Act
         await connectionDown.DisposeAsync();
         await reader.StateChangedTo(ReaderState.Connected, _cts.Token);
-        var exception = await Record.ExceptionAsync(() => reader.Receive(_cts.Token).AsTask());
+        var exception = await Record.ExceptionAsync(reader.Receive(_cts.Token).AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -265,7 +265,7 @@ public sealed class ReaderTests : IDisposable
         var reader = CreateReader(client, MessageId.Earliest, await _fixture.CreateTopic(_cts.Token));
 
         //Act
-        var exception = await Record.ExceptionAsync(() => reader.DisposeAsync().AsTask());
+        var exception = await Record.ExceptionAsync(reader.DisposeAsync().AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -282,7 +282,7 @@ public sealed class ReaderTests : IDisposable
         //Act
         await using var connectionDown = await _fixture.DisableThePulsarConnection();
         await reader.StateChangedTo(ReaderState.Disconnected, _cts.Token);
-        var exception = await Record.ExceptionAsync(() => reader.DisposeAsync().AsTask());
+        var exception = await Record.ExceptionAsync(reader.DisposeAsync().AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -305,7 +305,7 @@ public sealed class ReaderTests : IDisposable
             await reader.StateChangedTo(ReaderState.Disconnected, _cts.Token);
         }
         await reader.OnStateChangeTo(ReaderState.Connected, _cts.Token);
-        var exception = await Record.ExceptionAsync(() => reader.Receive(_cts.Token).AsTask());
+        var exception = await Record.ExceptionAsync(reader.Receive(_cts.Token).AsTask);
 
         //Assert
         exception.Should().BeNull();

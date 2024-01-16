@@ -96,7 +96,7 @@ public sealed class ConsumerTests : IDisposable
         //Arrange
         await using var client = CreateClient();
         await using var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
-        var expected = new List<MessageId>() { MessageId.Earliest };
+        var expected = new List<MessageId> { MessageId.Earliest };
 
         //Act
         var actual = await consumer.GetLastMessageIds(_cts.Token);
@@ -160,11 +160,11 @@ public sealed class ConsumerTests : IDisposable
 
         await using var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
 
-        var receiveTask = consumer.Receive(_cts.Token).AsTask();
+        var receiveTask = consumer.Receive(_cts.Token);
         semaphoreSlim.Release();
 
         //Act
-        var exception = await Record.ExceptionAsync(() => receiveTask);
+        var exception = await Record.ExceptionAsync(receiveTask.AsTask);
 
         //Assert
         exception.Should().BeOfType<ConsumerFaultedException>();
@@ -186,14 +186,14 @@ public sealed class ConsumerTests : IDisposable
         await consumer.OnStateChangeTo(ConsumerState.Faulted, _cts.Token);
 
         //Act
-        var exception = await Record.ExceptionAsync(() => consumer.Receive(_cts.Token).AsTask());
+        var exception = await Record.ExceptionAsync(consumer.Receive(_cts.Token).AsTask);
 
         //Assert
         exception.Should().BeOfType<ConsumerFaultedException>();
     }
 
-    [Fact(Skip = "Skip for now")]
-    public async Task Connectivity_WhenInitiallyConnectedWithNoMessagesThenGoDown_ShouldBeAbleToReceiveWhenUpAgain()
+    [Fact]
+    public async Task Connectivity_WhenInitiallyConnectedWithNoMessagesThenGoesDown_ShouldBeAbleToReceiveWhenUpAgain()
     {
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
@@ -210,7 +210,7 @@ public sealed class ConsumerTests : IDisposable
         await ProduceMessages(producer, 1, "test-message", _cts.Token);
 
         //Act
-        var exception = await Record.ExceptionAsync(async () => await receiveTask.AsTask());
+        var exception = await Record.ExceptionAsync(receiveTask.AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -230,7 +230,7 @@ public sealed class ConsumerTests : IDisposable
         //Act
         await connectionDown.DisposeAsync();
         await consumer.StateChangedTo(ConsumerState.Active, _cts.Token);
-        var exception = await Record.ExceptionAsync(() => consumer.Receive(_cts.Token).AsTask());
+        var exception = await Record.ExceptionAsync(consumer.Receive(_cts.Token).AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -245,7 +245,7 @@ public sealed class ConsumerTests : IDisposable
         await using var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
 
         //Act
-        var exception = await Record.ExceptionAsync(() => consumer.DisposeAsync().AsTask());
+        var exception = await Record.ExceptionAsync(consumer.DisposeAsync().AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -262,7 +262,7 @@ public sealed class ConsumerTests : IDisposable
         //Act
         await using var connectionDown = await _fixture.DisableThePulsarConnection();
         await consumer.StateChangedTo(ConsumerState.Disconnected, _cts.Token);
-        var exception = await Record.ExceptionAsync(() => consumer.DisposeAsync().AsTask());
+        var exception = await Record.ExceptionAsync(consumer.DisposeAsync().AsTask);
 
         //Assert
         exception.Should().BeNull();
@@ -285,7 +285,7 @@ public sealed class ConsumerTests : IDisposable
             await consumer.StateChangedTo(ConsumerState.Disconnected, _cts.Token);
         }
         await consumer.OnStateChangeTo(ConsumerState.Active, _cts.Token);
-        var exception = await Record.ExceptionAsync(() => consumer.Receive(_cts.Token).AsTask());
+        var exception = await Record.ExceptionAsync(consumer.Receive(_cts.Token).AsTask);
 
         //Assert
         exception.Should().BeNull();

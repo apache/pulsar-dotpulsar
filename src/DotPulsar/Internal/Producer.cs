@@ -215,7 +215,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     public async ValueTask<MessageId> Send(MessageMetadata metadata, TMessage message, CancellationToken cancellationToken)
     {
         var tcs = new TaskCompletionSource<MessageId>();
-        var registration = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
+        using var registration = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
 
         ValueTask OnMessageSent(MessageId messageId)
         {
@@ -227,21 +227,25 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 #endif
         }
 
-        try
-        {
-            await InternalSend(metadata, message, true, OnMessageSent, x => tcs.TrySetException(x), cancellationToken).ConfigureAwait(false);
-            return await tcs.Task.ConfigureAwait(false);
-        }
-        finally
-        {
-            registration.Dispose();
-        }
+        await InternalSend(metadata, message, true, tcs, OnMessageSent, x => tcs.TrySetException(x), cancellationToken).ConfigureAwait(false);
+        return await tcs.Task.ConfigureAwait(false);
     }
 
-    public async ValueTask Enqueue(MessageMetadata metadata, TMessage message, Func<MessageId, ValueTask>? onMessageSent = default, CancellationToken cancellationToken = default)
-        => await InternalSend(metadata, message, false, onMessageSent, cancellationToken: cancellationToken).ConfigureAwait(false);
+    public async ValueTask Enqueue(
+        MessageMetadata metadata,
+        TMessage message,
+        Func<MessageId, ValueTask>? onMessageSent = default,
+        CancellationToken cancellationToken = default)
+        => await InternalSend(metadata, message, false, null, onMessageSent, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-    private async ValueTask InternalSend(MessageMetadata metadata, TMessage message, bool sendOpCancelable, Func<MessageId, ValueTask>? onMessageSent = default, Action<Exception>? onFailed = default, CancellationToken cancellationToken = default)
+    private async ValueTask InternalSend(
+        MessageMetadata metadata,
+        TMessage message,
+        bool sendOpCancelable,
+        TaskCompletionSource<MessageId>? tcs = default,
+        Func<MessageId, ValueTask>? onMessageSent = default,
+        Action<Exception>? onFailed = default,
+        CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
 
@@ -265,8 +269,9 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             var subProducer = _producers[partition];
             var data = _options.Schema.Encode(message);
 
-            var tcs = new TaskCompletionSource<MessageId>();
-            await subProducer.Send(new SendOp(metadata.Metadata, data, tcs, sendOpCancelable ? cancellationToken : CancellationToken.None), cancellationToken).ConfigureAwait(false);
+            tcs ??= new TaskCompletionSource<MessageId>();
+            var sendOp = new SendOp(metadata.Metadata, data, tcs, sendOpCancelable ? cancellationToken : CancellationToken.None);
+            await subProducer.Send(sendOp, cancellationToken).ConfigureAwait(false);
 
             _ = tcs.Task.ContinueWith(async task =>
             {
@@ -281,7 +286,15 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
                     if (autoAssignSequenceId)
                         metadata.SequenceId = 0;
 
-                    onFailed?.Invoke(exception);
+                    try
+                    {
+                        onFailed?.Invoke(exception);
+                    }
+                    catch
+                    {
+                        // Ignore
+                    }
+
                     return;
                 }
 
