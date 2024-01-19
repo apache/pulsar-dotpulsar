@@ -37,6 +37,7 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
     private int _isDisposed;
     private ulong? _topicEpoch;
     private Exception? _faultException;
+    private readonly object _lock;
 
     public string Topic { get; }
 
@@ -51,6 +52,7 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
         uint maxPendingMessages,
         string topic)
     {
+        _lock = new object();
         _sendQueue = new AsyncQueueWithCursor<SendOp>(maxPendingMessages);
         _correlationId = correlationId;
         _eventRegister = registerEvent;
@@ -205,11 +207,14 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
     {
         try
         {
-            if (_dispatcherCts is not null)
+            lock (_lock)
             {
-                if (!_dispatcherCts.IsCancellationRequested)
-                    _dispatcherCts.Cancel();
-                _dispatcherCts.Dispose();
+                if (_dispatcherCts is not null)
+                {
+                    if (!_dispatcherCts.IsCancellationRequested)
+                        _dispatcherCts.Cancel();
+                    _dispatcherCts.Dispose();
+                }
             }
         }
         catch (Exception)

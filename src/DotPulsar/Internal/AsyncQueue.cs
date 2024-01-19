@@ -72,11 +72,14 @@ public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
         if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
             return;
 
-        foreach (var pendingDequeue in _pendingDequeues)
-            pendingDequeue.Dispose();
+        lock (_lock)
+        {
+            foreach (var pendingDequeue in _pendingDequeues)
+                pendingDequeue.Dispose();
 
-        _pendingDequeues.Clear();
-        _queue.Clear();
+            _pendingDequeues.Clear();
+            _queue.Clear();
+        }
     }
 
     private void Cancel(LinkedListNode<CancelableCompletionSource<T>> node)
