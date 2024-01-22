@@ -153,7 +153,8 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
 
             if (!success)
             {
-                _eventRegister.Register(new ChannelDisconnected(_correlationId));
+                if (!cancellationToken.IsCancellationRequested)
+                    _eventRegister.Register(new ChannelDisconnected(_correlationId));
                 break;
             }
         }
