@@ -208,14 +208,11 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
     {
         try
         {
-            lock (_lock)
+            if (_dispatcherCts is not null)
             {
-                if (_dispatcherCts is not null)
-                {
-                    if (!_dispatcherCts.IsCancellationRequested)
-                        _dispatcherCts.Cancel();
-                    _dispatcherCts.Dispose();
-                }
+                if (!_dispatcherCts.IsCancellationRequested)
+                    _dispatcherCts.Cancel();
+                _dispatcherCts.Dispose();
             }
         }
         catch (Exception)
