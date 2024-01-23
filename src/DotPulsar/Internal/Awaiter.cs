@@ -38,13 +38,13 @@ public sealed class Awaiter<T, TResult> : IDisposable where T : notnull
     public void SetResult(T item, TResult result)
     {
         if (_items.TryRemove(item, out var tcs))
-            tcs.SetResult(result);
+            tcs.TrySetResult(result);
     }
 
     public void Cancel(T item)
     {
         if (_items.TryRemove(item, out var tcs))
-            tcs.SetCanceled();
+            tcs.TrySetCanceled();
     }
 
     public IEnumerable<T> Keys => _items.Keys;
@@ -52,7 +52,7 @@ public sealed class Awaiter<T, TResult> : IDisposable where T : notnull
     public void Dispose()
     {
         foreach (var item in _items.Values)
-            item.SetCanceled();
+            item.TrySetCanceled();
 
         _items.Clear();
     }

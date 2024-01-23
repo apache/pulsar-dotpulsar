@@ -35,7 +35,6 @@ public abstract class Process : IProcess
     }
 
     public Guid CorrelationId { get; }
-    protected ulong? TopicEpoch { get; private set; }
 
     public void Start()
     {
@@ -65,10 +64,6 @@ public abstract class Process : IProcess
                 ChannelState = ChannelState.ClosedByServer;
                 break;
             case ChannelConnected _:
-                ChannelState = ChannelState.Connected;
-                break;
-            case ProducerChannelConnected producerChannelConnected:
-                TopicEpoch = producerChannelConnected.TopicEpoch;
                 ChannelState = ChannelState.Connected;
                 break;
             case ChannelDeactivated _:

@@ -20,12 +20,12 @@ using DotPulsar.Internal.Abstractions;
 public sealed class ProducerProcess : Process
 {
     private readonly IStateManager<ProducerState> _stateManager;
-    private readonly IContainsProducerChannel _subProducer;
+    private readonly IContainsChannel _subProducer;
 
     public ProducerProcess(
         Guid correlationId,
         IStateManager<ProducerState> stateManager,
-        IContainsProducerChannel producer) : base(correlationId)
+        IContainsChannel producer) : base(correlationId)
     {
         _stateManager = stateManager;
         _subProducer = producer;
@@ -63,10 +63,10 @@ public sealed class ProducerProcess : Process
                 });
                 return;
             case ChannelState.Connected:
-                ActionQueue.Enqueue(async x =>
+                ActionQueue.Enqueue(x =>
                 {
-                    await _subProducer.ActivateChannel(TopicEpoch, x).ConfigureAwait(false);
                     _stateManager.SetState(ProducerState.Connected);
+                    return Task.CompletedTask;
                 });
                 return;
             case ChannelState.WaitingForExclusive:

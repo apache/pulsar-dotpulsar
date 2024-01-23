@@ -16,5 +16,5 @@ namespace DotPulsar.Internal.Abstractions;
 
 public interface IProducerChannelFactory
 {
-    Task<IProducerChannel> Create(ulong? topicEpoch, CancellationToken cancellationToken = default);
+    Task<IProducerChannel> Create(CancellationToken cancellationToken = default);
 }

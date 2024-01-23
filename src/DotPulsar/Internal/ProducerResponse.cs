@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,12 +16,14 @@ namespace DotPulsar.Internal;
 
 public sealed class ProducerResponse
 {
-    public ProducerResponse(ulong producerId, string producerName)
+    public ProducerResponse(ulong producerId, string producerName, ulong topicEpoch)
     {
         ProducerId = producerId;
         ProducerName = producerName;
+        TopicEpoch = topicEpoch;
     }
 
     public ulong ProducerId { get; }
     public string ProducerName { get; }
+    public ulong TopicEpoch { get; }
 }

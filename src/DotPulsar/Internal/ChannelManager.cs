@@ -57,15 +57,15 @@ public sealed class ChannelManager : IState<ChannelManagerState>, IDisposable
 
             if (response.Result.ProducerSuccess.ProducerReady)
             {
-                channel.ProducerConnected(response.Result.ProducerSuccess.TopicEpoch);
+                channel.Connected();
             }
             else
             {
                 channel.WaitingForExclusive();
-                HandleAdditionalProducerSuccess(command, channel.ProducerConnected);
+                HandleAdditionalProducerSuccess(command, channel.Connected);
             }
 
-            return new ProducerResponse(producerId, response.Result.ProducerSuccess.ProducerName);
+            return new ProducerResponse(producerId, response.Result.ProducerSuccess.ProducerName, response.Result.ProducerSuccess.TopicEpoch);
         }, TaskContinuationOptions.OnlyOnRanToCompletion);
     }
 
@@ -257,7 +257,7 @@ public sealed class ChannelManager : IState<ChannelManagerState>, IDisposable
         return channel.SenderLock();
     }
 
-    private void HandleAdditionalProducerSuccess(CommandProducer command, Action<ulong> successAction)
+    private void HandleAdditionalProducerSuccess(CommandProducer command, Action successAction)
     {
         _ = _requestResponseHandler.ExpectAdditionalResponse(command).ContinueWith(response =>
         {
@@ -271,7 +271,7 @@ public sealed class ChannelManager : IState<ChannelManagerState>, IDisposable
                 HandleAdditionalProducerSuccess(command, successAction);
                 return;
             }
-            successAction.Invoke(response.Result.ProducerSuccess.TopicEpoch);
+            successAction.Invoke();
         });
     }
 

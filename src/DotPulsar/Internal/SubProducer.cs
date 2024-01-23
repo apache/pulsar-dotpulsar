@@ -22,7 +22,7 @@ using DotPulsar.Internal.Exceptions;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 
-public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState>
+public sealed class SubProducer : IContainsChannel, IState<ProducerState>
 {
     private readonly AsyncQueueWithCursor<SendOp> _sendQueue;
     private CancellationTokenSource? _dispatcherCts;
@@ -35,7 +35,6 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
     private readonly IProducerChannelFactory _factory;
     private readonly int _partition;
     private int _isDisposed;
-    private ulong? _topicEpoch;
     private Exception? _faultException;
 
     public string Topic { get; }
@@ -151,7 +150,8 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
 
             if (!success)
             {
-                _eventRegister.Register(new ChannelDisconnected(_correlationId));
+                if (!cancellationToken.IsCancellationRequested)
+                    _eventRegister.Register(new ChannelDisconnected(_correlationId));
                 break;
             }
         }
@@ -229,15 +229,9 @@ public sealed class SubProducer : IContainsProducerChannel, IState<ProducerState
             // Ignored
         }
 
-        _channel = await _executor.Execute(() => _factory.Create(_topicEpoch, cancellationToken), cancellationToken).ConfigureAwait(false);
-    }
-
-    public Task ActivateChannel(ulong? topicEpoch, CancellationToken cancellationToken)
-    {
-        _topicEpoch ??= topicEpoch;
+        _channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
         _dispatcherCts = new CancellationTokenSource();
         _dispatcherTask = Task.Run(async () => await MessageDispatcher(_channel, _dispatcherCts.Token));
-        return Task.CompletedTask;
     }
 
     public async ValueTask CloseChannel(CancellationToken cancellationToken)

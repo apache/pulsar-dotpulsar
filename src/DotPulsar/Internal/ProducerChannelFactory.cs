@@ -26,6 +26,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
     private readonly CommandProducer _commandProducer;
     private readonly ICompressorFactory? _compressorFactory;
     private readonly Schema? _schema;
+    private ulong? _topicEpoch;
 
     public ProducerChannelFactory(
         Guid correlationId,
@@ -52,13 +53,13 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         _schema = schemaInfo.PulsarSchema;
     }
 
-    public async Task<IProducerChannel> Create(ulong? topicEpoch, CancellationToken cancellationToken)
+    public async Task<IProducerChannel> Create(CancellationToken cancellationToken)
     {
-        if (topicEpoch.HasValue)
+        if (_topicEpoch.HasValue)
         {
             if (_commandProducer.ProducerAccessMode != ProducerAccessMode.Shared)
                 _commandProducer.ProducerAccessMode = ProducerAccessMode.Exclusive;
-            _commandProducer.TopicEpoch = topicEpoch.Value;
+            _commandProducer.TopicEpoch = _topicEpoch.Value;
         }
         else
             _commandProducer.ResetTopicEpoch();
@@ -66,6 +67,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         var connection = await _connectionPool.FindConnectionForTopic(_commandProducer.Topic, cancellationToken).ConfigureAwait(false);
         var channel = new Channel(_correlationId, _eventRegister, new AsyncQueue<MessagePackage>());
         var response = await connection.Send(_commandProducer, channel, cancellationToken).ConfigureAwait(false);
+        _topicEpoch = response.TopicEpoch;
         var schemaVersion = await GetSchemaVersion(connection, cancellationToken).ConfigureAwait(false);
         return new ProducerChannel(response.ProducerId, response.ProducerName, connection, _compressorFactory, schemaVersion);
     }

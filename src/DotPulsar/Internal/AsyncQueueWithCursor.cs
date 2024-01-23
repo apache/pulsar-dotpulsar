@@ -279,7 +279,7 @@ public sealed class AsyncQueueWithCursor<T> : IAsyncDisposable where T : IDispos
     {
         foreach (var tcs in _queueEmptyTcs)
         {
-            tcs.SetResult(0);
+            tcs.TrySetResult(0);
         }
 
         _queueEmptyTcs.Clear();
