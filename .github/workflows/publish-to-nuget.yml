@@ -59,13 +59,14 @@ jobs:
           NUGET_AUTH_TOKEN: ${{ secrets.NUGET_KEY }}
           
   build-web-api:
-    timeout-minutes: 120
+    timeout-minutes: 30
     needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - name: Check Out
+        uses: actions/checkout@v3
       
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
