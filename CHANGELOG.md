@@ -4,12 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.1.2-rc.1] - 2024-01-24
 
 ### Fixed
 
 - When sending a message that is too large the broker will close the tcp connection, causing the producer to disconnect, reconnect, and retry in an endless loop.
   Now a TooLargeMessageException is thrown (will be given to the exception handler) and the producer's state is changed to 'Faulted'
+- A race condition could cause Send(..) operations of the producer to hang after a reconnect
 
 ## [3.1.1] - 2023-12-11
 
