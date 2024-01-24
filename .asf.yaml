@@ -20,6 +20,8 @@
 github:
   description: "The official .NET client library for Apache Pulsar"
   homepage: https://pulsar.apache.org/
+  ghp_branch:  gh-pages
+  ghp_path:    /docs
   labels:
     - pulsar
     - pubsub
@@ -48,4 +50,3 @@ notifications:
   issues:       commits@pulsar.apache.org
   pullrequests: commits@pulsar.apache.org
   discussions:  dev@pulsar.apache.org
-  jira_options: link label
