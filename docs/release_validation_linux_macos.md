@@ -1,12 +1,18 @@
-﻿# Validating DotPulsar release on MacOS
+﻿# Validating DotPulsar release on Linux And MacOS
 
 ## Prerequisites
 
 ### Install dotnet-sdk
 
+#### MacOS
+
 ```
 brew install --cask dotnet-sdk
 ```
+
+#### Linux
+
+You can find install [instructions here](https://learn.microsoft.com/en-us/dotnet/core/install/linux?WT.mc_id=dotnet-35129-website)
 
 ### Show dotnet-sdk version
 
