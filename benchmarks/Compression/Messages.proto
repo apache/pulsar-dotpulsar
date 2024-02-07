@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option csharp_namespace = "Compression.Messages";
+
+package compression.Messages;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+message Message {
+  double pi = 1;
+  bool is_true = 2;
+  google.protobuf.Duration one_hour = 3;
+  google.protobuf.Timestamp now = 4;
+  repeated InnerMessage inner_messages = 5;
+}
+
+message InnerMessage {
+  enum Enum {
+    ENUM_UNSPECIFIED = 0;
+    ENUM_ONE = 1;
+    ENUM_TWO = 2;
+    ENUM_THREE = 3;
+    ENUM_FOUR = 4;
+    ENUM_FIVE = 5;
+  }
+  Enum my_enum = 1;
+  int32 random_number = 2;
+  string new_guid = 3;
+}
