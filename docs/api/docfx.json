@@ -3,9 +3,9 @@
     {
       "src": [
         {
-          "src": "..",
+          "src": "../../",
           "files": [
-            "src/DotPulsar/bin/**/net7.0/DotPulsar.dll"
+            "src/DotPulsar/**.csproj"
           ]
         }
       ],
@@ -44,7 +44,7 @@
     "dest": "_site",
     "globalMetadata": {
       "_appTitle": "Official DotPulsar Documentation",
-      "_appFooter": "Copyright &copy; 2019-2023 The Apache Software Foundation. All Rights Reserved. Apache, Pulsar, Apache Pulsar, and the Apache feather logo are trademarks or registered trademarks of The Apache Software Foundation.",
+      "_appFooter": "Copyright &copy; 2019-2024 The Apache Software Foundation. All Rights Reserved. Apache, Pulsar, Apache Pulsar, and the Apache feather logo are trademarks or registered trademarks of The Apache Software Foundation.",
       "_appLogoPath": "assets/pulsar.svg",
       "_appFaviconPath": "assets/favicon.ico"
     },
