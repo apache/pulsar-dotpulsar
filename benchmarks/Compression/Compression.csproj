@@ -10,8 +10,8 @@
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
     <PackageReference Include="DotNetZip" Version="1.16.0" />
-    <PackageReference Include="Google.Protobuf" Version="3.25.2" />
-    <PackageReference Include="Grpc.Tools" Version="2.61.0">
+    <PackageReference Include="Google.Protobuf" Version="3.25.3" />
+    <PackageReference Include="Grpc.Tools" Version="2.62.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
