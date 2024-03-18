@@ -56,4 +56,12 @@ public interface IStateChanged<TState> where TState : notnull
     /// True if it's final and False if it's not.
     /// </returns>
     bool IsFinalState(TState state);
+
+    /// <summary>
+    /// Ask whether the provided state is the current state.
+    /// </summary>
+    /// <returns>
+    /// True if it's the current state and False if it's not.
+    /// </returns>
+    bool IsCurrentState(TState state);
 }

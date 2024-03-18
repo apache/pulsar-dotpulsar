@@ -31,6 +31,15 @@ public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
         _pendingDequeues = new LinkedList<CancelableCompletionSource<T>>();
     }
 
+    public int Count
+    {
+        get
+        {
+            lock (_lock)
+                return _queue.Count;
+        }
+    }
+
     public void Enqueue(T item)
     {
         lock (_lock)

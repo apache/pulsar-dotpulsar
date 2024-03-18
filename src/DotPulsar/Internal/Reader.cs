@@ -177,6 +177,45 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         return messageIds;
     }
 
+    public bool HasReachedEndOfTopic()
+    {
+        if (!_allSubReadersAreReady)
+            return false;
+
+        if (!_isPartitionedTopic)
+            return _subReaders[_subReaderIndex].HasReachedEndOfTopic();
+
+        var numberOfSubReaders = _isPartitionedTopic ? _numberOfPartitions : 1;
+        for (int i = 0; i < numberOfSubReaders; i++)
+        {
+            if (!_subReaders[i].HasReachedEndOfTopic())
+                return false;
+        }
+        return true;
+    }
+
+    public async ValueTask<bool> HasMessageAvailable(CancellationToken cancellationToken = default)
+    {
+        await Guard(cancellationToken).ConfigureAwait(false);
+
+        if (!_isPartitionedTopic)
+            return await _subReaders[_subReaderIndex].HasMessageAvailable(cancellationToken).ConfigureAwait(false);
+
+        var list = _subReaders.Select(x => x.HasMessageAvailable(cancellationToken).AsTask()).ToList();
+        while (list.Count > 0)
+        {
+            var task = await Task.WhenAny(list).ConfigureAwait(false);
+            list.Remove(task);
+
+            if (await task.ConfigureAwait(false))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
     {
         await Guard(cancellationToken).ConfigureAwait(false);

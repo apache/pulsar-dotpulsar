@@ -70,6 +70,29 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
         _firstFlow = true;
     }
 
+    public async ValueTask<bool> HasMessageAvailable(CancellationToken cancellationToken)
+    {
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            if (HasMessageQueued())
+            {
+                return true;
+            }
+
+            if (_sendWhenZero == 0)
+            {
+                await SendFlow(cancellationToken).ConfigureAwait(false);
+            }
+
+            return HasMessageQueued();
+        }
+    }
+
+    private bool HasMessageQueued()
+    {
+        return _batchHandler.Count > 0 || _queue.Count > 0;
+    }
+
     public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
     {
         using (await _lock.Lock(cancellationToken).ConfigureAwait(false))

@@ -84,4 +84,6 @@ public sealed class StateManager<TState> : IStateManager<TState> where TState : 
 
     public bool IsFinalState()
         => IsFinalState(CurrentState);
+
+    public bool IsCurrentState(TState state) => EqualityComparer<TState>.Default.Equals(state, CurrentState);
 }

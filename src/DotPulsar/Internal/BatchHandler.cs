@@ -38,6 +38,15 @@ public sealed class BatchHandler<TMessage>
         _batches = new LinkedList<Batch>();
     }
 
+    public int Count
+    {
+        get
+        {
+            lock (_lock)
+                return _messages.Count;
+        }
+    }
+
     public IMessage<TMessage> Add(MessageIdData messageId, uint redeliveryCount, MessageMetadata metadata, ReadOnlySequence<byte> data)
     {
         var messages = new List<IMessage<TMessage>>(metadata.NumMessagesInBatch);
