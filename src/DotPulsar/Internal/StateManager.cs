@@ -15,8 +15,9 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.Abstractions;
+using System.Runtime.CompilerServices;
 
-public sealed class StateManager<TState> : IStateManager<TState> where TState : notnull
+public sealed class StateManager<TState> : IStateManager<TState> where TState : struct, Enum
 {
     private readonly object _lock;
     private readonly StateTaskCollection<TState> _stateTasks;
@@ -75,7 +76,7 @@ public sealed class StateManager<TState> : IStateManager<TState> where TState : 
     {
         for (var i = 0; i < _finalStates.Length; ++i)
         {
-            if (_finalStates[i].Equals(state))
+            if (Equals(_finalStates[i], state))
                 return true;
         }
 
@@ -85,5 +86,8 @@ public sealed class StateManager<TState> : IStateManager<TState> where TState : 
     public bool IsFinalState()
         => IsFinalState(CurrentState);
 
-    public bool IsCurrentState(TState state) => EqualityComparer<TState>.Default.Equals(state, CurrentState);
+    public bool IsCurrentState(TState state) => Equals(state, CurrentState);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool Equals(TState lhs, TState rhs) => EqualityComparer<TState>.Default.Equals(lhs, rhs);
 }
