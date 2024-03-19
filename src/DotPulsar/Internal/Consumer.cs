@@ -175,6 +175,45 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         _state.SetState(ConsumerState.Closed);
     }
 
+    public bool HasReachedEndOfTopic()
+    {
+        if (!_allSubConsumersAreReady)
+            return false;
+
+        if (!_isPartitionedTopic)
+            return _subConsumers[_subConsumerIndex].HasReachedEndOfTopic();
+
+        var numberOfSubConsumers = _isPartitionedTopic ? _numberOfPartitions : 1;
+        for (int i = 0; i < numberOfSubConsumers; i++)
+        {
+            if (!_subConsumers[i].HasReachedEndOfTopic())
+                return false;
+        }
+        return true;
+    }
+
+    public async ValueTask<bool> HasMessageAvailable(CancellationToken cancellationToken = default)
+    {
+        await Guard(cancellationToken).ConfigureAwait(false);
+
+        if (!_isPartitionedTopic)
+            return await _subConsumers[_subConsumerIndex].HasMessageAvailable(cancellationToken).ConfigureAwait(false);
+
+        var list = _subConsumers.Select(x => x.HasMessageAvailable(cancellationToken).AsTask()).ToList();
+        while (list.Count > 0)
+        {
+            var task = await Task.WhenAny(list).ConfigureAwait(false);
+            list.Remove(task);
+
+            if (await task.ConfigureAwait(false))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
     {
         await Guard(cancellationToken).ConfigureAwait(false);

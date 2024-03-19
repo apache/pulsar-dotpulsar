@@ -20,6 +20,25 @@ namespace DotPulsar.Abstractions;
 public interface IReceive<TMessage>
 {
     /// <summary>
+    /// Return true if the topic was terminated and this reader has reached the end of the topic
+    /// </summary>
+    /// <remarks>
+    /// Note that this only applies to a "terminated" topic (where the topic is "sealed" and no
+    /// more messages can be published) and not just that the reader is simply caught up with
+    /// the publishers. Use <see cref="HasMessageAvailable" /> to check for that.
+    /// </remarks>
+    bool HasReachedEndOfTopic();
+
+    /// <summary>
+    /// Check if there is any message available to read from the current position
+    /// </summary>
+    /// <remarks>
+    /// This check can be used by an application to scan through a topic and
+    /// stop when the reader reaches the current last published message.
+    /// </remarks>
+    ValueTask<bool> HasMessageAvailable(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Receive a single message.
     /// </summary>
     ValueTask<TMessage> Receive(CancellationToken cancellationToken = default);

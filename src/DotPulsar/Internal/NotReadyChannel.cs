@@ -28,6 +28,9 @@ public sealed class NotReadyChannel<TMessage> : IConsumerChannel<TMessage>, IPro
     public ValueTask ClosedByClient(CancellationToken cancellationToken)
         => new();
 
+    public ValueTask<bool> HasMessageAvailable(CancellationToken cancellationToken)
+        => throw GetException();
+
     public ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken = default)
         => throw GetException();
 

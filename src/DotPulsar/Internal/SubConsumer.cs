@@ -91,6 +91,17 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
         await _channel.DisposeAsync().ConfigureAwait(false);
     }
 
+    public bool HasReachedEndOfTopic() => _state.IsCurrentState(ConsumerState.ReachedEndOfTopic);
+
+    public async ValueTask<bool> HasMessageAvailable(CancellationToken cancellationToken)
+        => await _executor.Execute(() => InternalHasMessageAvailable(cancellationToken), cancellationToken).ConfigureAwait(false);
+
+    private async ValueTask<bool> InternalHasMessageAvailable(CancellationToken cancellationToken)
+    {
+        Guard();
+        return await _channel.HasMessageAvailable(cancellationToken).ConfigureAwait(false);
+    }
+
     public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
         => await _executor.Execute(() => InternalReceive(cancellationToken), cancellationToken).ConfigureAwait(false);
 

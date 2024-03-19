@@ -19,6 +19,7 @@ using DotPulsar.Internal.PulsarApi;
 
 public interface IConsumerChannel<TMessage> : IAsyncDisposable
 {
+    ValueTask<bool> HasMessageAvailable(CancellationToken cancellationToken);
     Task Send(CommandAck command, CancellationToken cancellationToken);
     Task Send(CommandRedeliverUnacknowledgedMessages command, CancellationToken cancellationToken);
     Task Send(CommandUnsubscribe command, CancellationToken cancellationToken);

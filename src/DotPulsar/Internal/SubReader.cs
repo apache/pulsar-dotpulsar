@@ -81,6 +81,17 @@ public sealed class SubReader<TMessage> : IContainsChannel, IReader<TMessage>
         return await _channel.Send(command, cancellationToken).ConfigureAwait(false);
     }
 
+    public bool HasReachedEndOfTopic() => _state.IsCurrentState(ReaderState.ReachedEndOfTopic);
+
+    public async ValueTask<bool> HasMessageAvailable(CancellationToken cancellationToken)
+        => await _executor.Execute(() => InternalHasMessageAvailable(cancellationToken), cancellationToken).ConfigureAwait(false);
+
+    private async ValueTask<bool> InternalHasMessageAvailable(CancellationToken cancellationToken)
+    {
+        Guard();
+        return await _channel.HasMessageAvailable(cancellationToken).ConfigureAwait(false);
+    }
+
     public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
         => await _executor.Execute(() => InternalReceive(cancellationToken), cancellationToken).ConfigureAwait(false);
 
