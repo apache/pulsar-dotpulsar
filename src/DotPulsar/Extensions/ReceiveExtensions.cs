@@ -15,6 +15,7 @@
 namespace DotPulsar.Extensions;
 
 using DotPulsar.Abstractions;
+using Microsoft.Extensions.ObjectPool;
 using System.Runtime.CompilerServices;
 
 /// <summary>
@@ -22,6 +23,36 @@ using System.Runtime.CompilerServices;
 /// </summary>
 public static class ReceiveExtensions
 {
+    static ReceiveExtensions()
+    {
+        var policy = new DefaultPooledObjectPolicy<CancellationTokenSource>();
+        _ctsPool = new DefaultObjectPool<CancellationTokenSource>(policy);
+    }
+
+    private static readonly ObjectPool<CancellationTokenSource> _ctsPool;
+
+    /// <summary>
+    /// Will return true (and a message) if a message is buffered or false otherwise.
+    /// </summary>
+    public static bool TryReceive<TMessage>(this IReceive<TMessage> receiver, out TMessage? message)
+    {
+
+        var cts = _ctsPool.Get();
+        var messageTask = receiver.Receive(cts.Token);
+
+        if (!messageTask.IsCompleted)
+            cts.Cancel();
+        else
+            _ctsPool.Return(cts);
+
+        if (messageTask.IsCompletedSuccessfully)
+            message = messageTask.Result;
+        else
+            message = default;
+
+        return messageTask.IsCompletedSuccessfully;
+    }
+
     /// <summary>
     /// Get an IAsyncEnumerable for receiving messages.
     /// </summary>
