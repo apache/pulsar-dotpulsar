@@ -31,6 +31,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     private readonly IExecute _executor;
     private readonly StateManager<ReaderState> _state;
     private readonly SemaphoreSlim _semaphoreSlim;
+    private readonly AsyncLock _lock;
     private SubReader<TMessage>[] _subReaders;
     private bool _allSubReadersAreReady;
     private Task<IMessage<TMessage>>[] _receiveTasks;
@@ -49,6 +50,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         IHandleException exceptionHandler,
         IConnectionPool connectionPool)
     {
+        _lock = new AsyncLock();
         ServiceUrl = serviceUrl;
         Topic = readerOptions.Topic;
         _readerOptions = readerOptions;
@@ -185,6 +187,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
             return await _subReaders[_subReaderIndex].Receive(cancellationToken).ConfigureAwait(false);
 
         var iterations = 0;
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
         while (true)
         {
             iterations++;
@@ -264,6 +267,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         foreach (var subReader in _subReaders)
             await subReader.DisposeAsync().ConfigureAwait(false);
 
+        await _lock.DisposeAsync().ConfigureAwait(false);
         _state.SetState(ReaderState.Closed);
     }
 

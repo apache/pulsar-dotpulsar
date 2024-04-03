@@ -31,6 +31,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     private readonly IHandleException _exceptionHandler;
     private readonly IExecute _executor;
     private readonly SemaphoreSlim _semaphoreSlim;
+    private readonly AsyncLock _lock;
     private SubConsumer<TMessage>[] _subConsumers;
     private bool _allSubConsumersAreReady;
     private int _isDisposed;
@@ -50,6 +51,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         IConnectionPool connectionPool,
         IHandleException exceptionHandler)
     {
+        _lock = new AsyncLock();
         _state = CreateStateManager();
         ServiceUrl = serviceUrl;
         SubscriptionName = consumerOptions.SubscriptionName;
@@ -172,6 +174,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         foreach (var subConsumer in _subConsumers)
             await subConsumer.DisposeAsync().ConfigureAwait(false);
 
+        await _lock.DisposeAsync().ConfigureAwait(false);
         _state.SetState(ConsumerState.Closed);
     }
 
@@ -183,6 +186,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
             return await _subConsumers[_subConsumerIndex].Receive(cancellationToken).ConfigureAwait(false);
 
         var iterations = 0;
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
         while (true)
         {
             iterations++;
