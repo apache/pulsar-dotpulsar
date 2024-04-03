@@ -188,32 +188,32 @@ public sealed class Reader<TMessage> : IReader<TMessage>
 
         var iterations = 0;
         using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-        while (true)
-        {
-            iterations++;
-            _subReaderIndex++;
-            if (_subReaderIndex == _subReaders.Length)
-                _subReaderIndex = 0;
+            while (true)
+            {
+                iterations++;
+                _subReaderIndex++;
+                if (_subReaderIndex == _subReaders.Length)
+                    _subReaderIndex = 0;
 
-            var receiveTask = _receiveTasks[_subReaderIndex];
-            if (receiveTask == _emptyTaskCompletionSource.Task)
-            {
-                var receiveTaskValueTask = _subReaders[_subReaderIndex].Receive(cancellationToken);
-                if (receiveTaskValueTask.IsCompleted)
-                    return receiveTaskValueTask.Result;
-                _receiveTasks[_subReaderIndex] = receiveTaskValueTask.AsTask();
-            }
-            else
-            {
-                if (receiveTask.IsCompleted)
+                var receiveTask = _receiveTasks[_subReaderIndex];
+                if (receiveTask == _emptyTaskCompletionSource.Task)
                 {
-                    _receiveTasks[_subReaderIndex] = _emptyTaskCompletionSource.Task;
-                    return receiveTask.Result;
+                    var receiveTaskValueTask = _subReaders[_subReaderIndex].Receive(cancellationToken);
+                    if (receiveTaskValueTask.IsCompleted)
+                        return receiveTaskValueTask.Result;
+                    _receiveTasks[_subReaderIndex] = receiveTaskValueTask.AsTask();
                 }
+                else
+                {
+                    if (receiveTask.IsCompleted)
+                    {
+                        _receiveTasks[_subReaderIndex] = _emptyTaskCompletionSource.Task;
+                        return receiveTask.Result;
+                    }
+                }
+                if (iterations == _subReaders.Length)
+                    await Task.WhenAny(_receiveTasks).ConfigureAwait(false);
             }
-            if (iterations == _subReaders.Length)
-                await Task.WhenAny(_receiveTasks).ConfigureAwait(false);
-        }
     }
 
     public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)
@@ -265,7 +265,10 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         await _processManager.DisposeAsync().ConfigureAwait(false);
 
         foreach (var subReader in _subReaders)
-            await subReader.DisposeAsync().ConfigureAwait(false);
+        {
+            if (subReader is not null)
+                await subReader.DisposeAsync().ConfigureAwait(false);
+        }
 
         await _lock.DisposeAsync().ConfigureAwait(false);
         _state.SetState(ReaderState.Closed);

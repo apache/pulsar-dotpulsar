@@ -172,7 +172,10 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         await _processManager.DisposeAsync().ConfigureAwait(false);
 
         foreach (var subConsumer in _subConsumers)
-            await subConsumer.DisposeAsync().ConfigureAwait(false);
+        {
+            if (subConsumer is not null)
+                await subConsumer.DisposeAsync().ConfigureAwait(false);
+        }
 
         await _lock.DisposeAsync().ConfigureAwait(false);
         _state.SetState(ConsumerState.Closed);
@@ -187,32 +190,32 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
         var iterations = 0;
         using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
-        while (true)
-        {
-            iterations++;
-            _subConsumerIndex++;
-            if (_subConsumerIndex == _subConsumers.Length)
-                _subConsumerIndex = 0;
+            while (true)
+            {
+                iterations++;
+                _subConsumerIndex++;
+                if (_subConsumerIndex == _subConsumers.Length)
+                    _subConsumerIndex = 0;
 
-            var receiveTask = _receiveTasks[_subConsumerIndex];
-            if (receiveTask == _emptyTaskCompletionSource.Task)
-            {
-                var receiveTaskValueTask = _subConsumers[_subConsumerIndex].Receive(cancellationToken);
-                if (receiveTaskValueTask.IsCompleted)
-                    return receiveTaskValueTask.Result;
-                _receiveTasks[_subConsumerIndex] = receiveTaskValueTask.AsTask();
-            }
-            else
-            {
-                if (receiveTask.IsCompleted)
+                var receiveTask = _receiveTasks[_subConsumerIndex];
+                if (receiveTask == _emptyTaskCompletionSource.Task)
                 {
-                    _receiveTasks[_subConsumerIndex] = _emptyTaskCompletionSource.Task;
-                    return receiveTask.Result;
+                    var receiveTaskValueTask = _subConsumers[_subConsumerIndex].Receive(cancellationToken);
+                    if (receiveTaskValueTask.IsCompleted)
+                        return receiveTaskValueTask.Result;
+                    _receiveTasks[_subConsumerIndex] = receiveTaskValueTask.AsTask();
                 }
+                else
+                {
+                    if (receiveTask.IsCompleted)
+                    {
+                        _receiveTasks[_subConsumerIndex] = _emptyTaskCompletionSource.Task;
+                        return receiveTask.Result;
+                    }
+                }
+                if (iterations == _subConsumers.Length)
+                    await Task.WhenAny(_receiveTasks).ConfigureAwait(false);
             }
-            if (iterations == _subConsumers.Length)
-                await Task.WhenAny(_receiveTasks).ConfigureAwait(false);
-        }
     }
 
     public async ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken)
@@ -355,7 +358,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         await Guard(cancellationToken).ConfigureAwait(false);
 
         if (!_isPartitionedTopic)
-            return new[] { await _subConsumers[_subConsumerIndex].GetLastMessageId(cancellationToken).ConfigureAwait(false) };
+            return [await _subConsumers[_subConsumerIndex].GetLastMessageId(cancellationToken).ConfigureAwait(false)];
 
         var getLastMessageIdsTasks = new List<Task<MessageId>>(_numberOfPartitions);
 
