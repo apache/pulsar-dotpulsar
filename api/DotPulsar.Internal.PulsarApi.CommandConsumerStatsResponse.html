@@ -1,0 +1,1566 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class CommandConsumerStatsResponse | Official DotPulsar Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class CommandConsumerStatsResponse | Official DotPulsar Documentation ">
+      
+      
+      <link rel="icon" href="../assets/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0-rc.1/apiSpec/new?filename=DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse.md&amp;value=---%0Auid%3A%20DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+  </head>
+
+  <script type="module" src="./../public/docfx.min.js"></script>
+
+  <script>
+    const theme = localStorage.getItem('theme') || 'auto'
+    document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+  </script>
+
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../assets/pulsar.svg" alt="">
+            
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" style="margin-top: -.65em; margin-left: -.8em" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse">
+
+
+
+  <h1 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse" class="text-break">
+Class CommandConsumerStatsResponse  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2146"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="DotPulsar.html">DotPulsar</a>.<a class="xref" href="DotPulsar.Internal.html">Internal</a>.<a class="xref" href="DotPulsar.Internal.PulsarApi.html">PulsarApi</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>DotPulsar.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"></div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoContract]
+public class CommandConsumerStatsResponse : IExtensible</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">CommandConsumerStatsResponse</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><span class="xref">IExtensible</span></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+  <dl class="typelist extensionMethods">
+    <dt>Extension Methods</dt>
+    <dd>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__2___0___1_System_TimeSpan_System_Action___0___1__System_Action___0___1__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState&gt;(TEntity, TState, TimeSpan, Action&lt;TEntity, TState&gt;, Action&lt;TEntity, TState&gt;, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__2___0___1_System_TimeSpan_System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState&gt;(TEntity, TState, TimeSpan, Func&lt;TEntity, TState, CancellationToken, ValueTask&gt;, Func&lt;TEntity, TState, CancellationToken, ValueTask&gt;, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__3___0___1_System_TimeSpan_System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask___2___System_Func___0___1___2_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState, TFaultContext&gt;(TEntity, TState, TimeSpan, Func&lt;TEntity, TState, CancellationToken, ValueTask&lt;TFaultContext&gt;&gt;, Func&lt;TEntity, TState, TFaultContext, CancellationToken, ValueTask&gt;, CancellationToken)</a>
+  </div>
+  </dd></dl>
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_Address_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.Address*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_Address" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.Address">
+  Address
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2258"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(11, Name = &quot;address&quot;)]
+public string Address { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ErrorCode_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ErrorCode*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ErrorCode" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ErrorCode">
+  ErrorCode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2156"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(2, Name = &quot;error_code&quot;)]
+public ServerError ErrorCode { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.ServerError.html">ServerError</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ErrorMessage_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ErrorMessage*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ErrorMessage" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ErrorMessage">
+  ErrorMessage
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2168"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(3, Name = &quot;error_message&quot;)]
+public string ErrorMessage { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_RequestId_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.RequestId*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_RequestId" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.RequestId">
+  RequestId
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2153"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(1, Name = &quot;request_id&quot;, IsRequired = true)]
+public ulong RequestId { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_Type_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.Type*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_Type" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.Type">
+  Type
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2282"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(13, Name = &quot;type&quot;)]
+public string Type { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_availablePermits_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.availablePermits*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_availablePermits" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.availablePermits">
+  availablePermits
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2225"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(8)]
+public ulong availablePermits { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_blockedConsumerOnUnackedMsgs_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.blockedConsumerOnUnackedMsgs*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_blockedConsumerOnUnackedMsgs" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.blockedConsumerOnUnackedMsgs">
+  blockedConsumerOnUnackedMsgs
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2247"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(10)]
+public bool blockedConsumerOnUnackedMsgs { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_connectedSince_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.connectedSince*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_connectedSince" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.connectedSince">
+  connectedSince
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2270"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(12)]
+public string connectedSince { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_consumerName_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.consumerName*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_consumerName" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.consumerName">
+  consumerName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2213"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(7)]
+public string consumerName { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_messageAckRate_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.messageAckRate*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_messageAckRate" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.messageAckRate">
+  messageAckRate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2316"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(16)]
+public double messageAckRate { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_msgBacklog_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.msgBacklog*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_msgBacklog" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.msgBacklog">
+  msgBacklog
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2305"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(15)]
+public ulong msgBacklog { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_msgRateExpired_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.msgRateExpired*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_msgRateExpired" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.msgRateExpired">
+  msgRateExpired
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2294"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(14)]
+public double msgRateExpired { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_msgRateOut_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.msgRateOut*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_msgRateOut" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.msgRateOut">
+  msgRateOut
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2180"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(4)]
+public double msgRateOut { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_msgRateRedeliver_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.msgRateRedeliver*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_msgRateRedeliver" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.msgRateRedeliver">
+  msgRateRedeliver
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2202"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(6)]
+public double msgRateRedeliver { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_msgThroughputOut_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.msgThroughputOut*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_msgThroughputOut" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.msgThroughputOut">
+  msgThroughputOut
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2191"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(5)]
+public double msgThroughputOut { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_unackedMessages_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.unackedMessages*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_unackedMessages" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.unackedMessages">
+  unackedMessages
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2236"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(9)]
+public ulong unackedMessages { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetAddress_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetAddress*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetAddress" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetAddress">
+  ResetAddress()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2267"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetAddress()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetErrorCode_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetErrorCode*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetErrorCode" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetErrorCode">
+  ResetErrorCode()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2165"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetErrorCode()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetErrorMessage_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetErrorMessage*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetErrorMessage" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetErrorMessage">
+  ResetErrorMessage()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2177"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetErrorMessage()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetType_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetType*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetType" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetType">
+  ResetType()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2291"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetType()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetavailablePermits_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetavailablePermits*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetavailablePermits" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetavailablePermits">
+  ResetavailablePermits()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2233"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetavailablePermits()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetblockedConsumerOnUnackedMsgs_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetblockedConsumerOnUnackedMsgs*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetblockedConsumerOnUnackedMsgs" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetblockedConsumerOnUnackedMsgs">
+  ResetblockedConsumerOnUnackedMsgs()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2255"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetblockedConsumerOnUnackedMsgs()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetconnectedSince_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetconnectedSince*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetconnectedSince" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetconnectedSince">
+  ResetconnectedSince()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2279"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetconnectedSince()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetconsumerName_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetconsumerName*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetconsumerName" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetconsumerName">
+  ResetconsumerName()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2222"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetconsumerName()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmessageAckRate_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmessageAckRate*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmessageAckRate" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmessageAckRate">
+  ResetmessageAckRate()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2324"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetmessageAckRate()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmsgBacklog_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmsgBacklog*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmsgBacklog" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmsgBacklog">
+  ResetmsgBacklog()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2313"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetmsgBacklog()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmsgRateExpired_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmsgRateExpired*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmsgRateExpired" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmsgRateExpired">
+  ResetmsgRateExpired()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2302"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetmsgRateExpired()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmsgRateOut_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmsgRateOut*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmsgRateOut" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmsgRateOut">
+  ResetmsgRateOut()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2188"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetmsgRateOut()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmsgRateRedeliver_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmsgRateRedeliver*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmsgRateRedeliver" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmsgRateRedeliver">
+  ResetmsgRateRedeliver()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2210"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetmsgRateRedeliver()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmsgThroughputOut_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmsgThroughputOut*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetmsgThroughputOut" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetmsgThroughputOut">
+  ResetmsgThroughputOut()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2199"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetmsgThroughputOut()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetunackedMessages_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetunackedMessages*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ResetunackedMessages" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ResetunackedMessages">
+  ResetunackedMessages()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2244"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetunackedMessages()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeAddress_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeAddress*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeAddress" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeAddress">
+  ShouldSerializeAddress()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2266"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeAddress()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeErrorCode_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeErrorCode*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeErrorCode" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeErrorCode">
+  ShouldSerializeErrorCode()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2164"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeErrorCode()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeErrorMessage_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeErrorMessage*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeErrorMessage" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeErrorMessage">
+  ShouldSerializeErrorMessage()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2176"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeErrorMessage()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeType_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeType*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeType" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeType">
+  ShouldSerializeType()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2290"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeType()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeavailablePermits_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeavailablePermits*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeavailablePermits" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeavailablePermits">
+  ShouldSerializeavailablePermits()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2232"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeavailablePermits()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeblockedConsumerOnUnackedMsgs_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeblockedConsumerOnUnackedMsgs*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeblockedConsumerOnUnackedMsgs" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeblockedConsumerOnUnackedMsgs">
+  ShouldSerializeblockedConsumerOnUnackedMsgs()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2254"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeblockedConsumerOnUnackedMsgs()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeconnectedSince_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeconnectedSince*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeconnectedSince" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeconnectedSince">
+  ShouldSerializeconnectedSince()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2278"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeconnectedSince()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeconsumerName_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeconsumerName*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeconsumerName" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeconsumerName">
+  ShouldSerializeconsumerName()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2221"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeconsumerName()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemessageAckRate_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemessageAckRate*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemessageAckRate" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemessageAckRate">
+  ShouldSerializemessageAckRate()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2323"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializemessageAckRate()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemsgBacklog_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemsgBacklog*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemsgBacklog" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemsgBacklog">
+  ShouldSerializemsgBacklog()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2312"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializemsgBacklog()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemsgRateExpired_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemsgRateExpired*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemsgRateExpired" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemsgRateExpired">
+  ShouldSerializemsgRateExpired()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2301"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializemsgRateExpired()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemsgRateOut_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemsgRateOut*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemsgRateOut" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemsgRateOut">
+  ShouldSerializemsgRateOut()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2187"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializemsgRateOut()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemsgRateRedeliver_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemsgRateRedeliver*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemsgRateRedeliver" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemsgRateRedeliver">
+  ShouldSerializemsgRateRedeliver()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2209"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializemsgRateRedeliver()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemsgThroughputOut_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemsgThroughputOut*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializemsgThroughputOut" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializemsgThroughputOut">
+  ShouldSerializemsgThroughputOut()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2198"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializemsgThroughputOut()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeunackedMessages_" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeunackedMessages*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandConsumerStatsResponse_ShouldSerializeunackedMessages" data-uid="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.ShouldSerializeunackedMessages">
+  ShouldSerializeunackedMessages()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2243"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeunackedMessages()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L2146" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          Copyright &copy; 2019-2024 The Apache Software Foundation. All Rights Reserved. Apache, Pulsar, Apache Pulsar, and the Apache feather logo are trademarks or registered trademarks of The Apache Software Foundation.
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

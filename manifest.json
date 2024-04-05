@@ -1,0 +1,3887 @@
+{
+  "source_base_path": "/home/runner/work/pulsar-dotpulsar/pulsar-dotpulsar/docs/api",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IAuthentication.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IAuthentication.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IConsumer-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IConsumer-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IConsumer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IConsumer.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IConsumerBuilder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IConsumerBuilder-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IGetLastMessageIds.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IGetLastMessageIds.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IHandleException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IHandleException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IHandleStateChanged-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IHandleStateChanged-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IMessage-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IMessage-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IMessage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IMessage.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IMessageBuilder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IMessageBuilder-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IMessageRouter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IMessageRouter.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IProducer-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IProducer-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IProducer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IProducer.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IProducerBuilder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IProducerBuilder-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IPulsarClient.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IPulsarClient.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IPulsarClientBuilder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IPulsarClientBuilder.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IReader-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IReader-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IReader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IReader.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IReaderBuilder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IReaderBuilder-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IReceive-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IReceive-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.ISchema-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.ISchema-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.ISeek.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.ISeek.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.ISend-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.ISend-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.ISendChannel-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.ISendChannel-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.IState-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.IState-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Abstractions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Abstractions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.AuthenticationFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.AuthenticationFactory.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.CompressionType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.CompressionType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ConsumerOptions-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ConsumerOptions-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ConsumerState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ConsumerState.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ConsumerStateChanged.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ConsumerStateChanged.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.EncryptionPolicy.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.EncryptionPolicy.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ExceptionContext.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ExceptionContext.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.AuthenticationException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.AuthenticationException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.AuthorizationException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.AuthorizationException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ChannelNotReadyException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ChannelNotReadyException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ChecksumException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ChecksumException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.CompressionException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.CompressionException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ConfigurationException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ConfigurationException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ConnectionSecurityException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ConnectionSecurityException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ConsumerAssignException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ConsumerAssignException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ConsumerBusyException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ConsumerBusyException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ConsumerClosedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ConsumerClosedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ConsumerDisposedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ConsumerDisposedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ConsumerFaultedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ConsumerFaultedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ConsumerNotFoundException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ConsumerNotFoundException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.DotPulsarException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.DotPulsarException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.FaultedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.FaultedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.IncompatibleSchemaException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.IncompatibleSchemaException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.InvalidSchemeException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.InvalidSchemeException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.InvalidTopicNameException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.InvalidTopicNameException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.InvalidTransactionStatusException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.InvalidTransactionStatusException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.MetadataException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.MetadataException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.NotAllowedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.NotAllowedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.PersistenceException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.PersistenceException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ProducerBlockedQuotaExceededException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ProducerBlockedQuotaExceededException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ProducerBusyException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ProducerBusyException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ProducerClosedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ProducerClosedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ProducerDisposedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ProducerDisposedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ProducerFaultedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ProducerFaultedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ProducerFencedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ProducerFencedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.PulsarClientClosedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.PulsarClientClosedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.PulsarClientDisposedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.PulsarClientDisposedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ReaderClosedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ReaderClosedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ReaderDisposedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ReaderDisposedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ReaderFaultedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ReaderFaultedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.SchemaSerializationException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.SchemaSerializationException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ServiceNotReadyException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ServiceNotReadyException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.SubscriptionNotFoundException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.SubscriptionNotFoundException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.TooLargeMessageException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.TooLargeMessageException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.TooManyRequestsException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.TooManyRequestsException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.TopicNotFoundException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.TopicNotFoundException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.TopicTerminatedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.TopicTerminatedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.TransactionConflictException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.TransactionConflictException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.TransactionCoordinatorNotFoundException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.TransactionCoordinatorNotFoundException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.UnknownException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.UnknownException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.UnsupportedVersionException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.UnsupportedVersionException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.ConsumerBuilderExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.ConsumerBuilderExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.ConsumerExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.ConsumerExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.MessageBuilderExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.MessageBuilderExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.MessageExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.MessageExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.MessageMetadataExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.MessageMetadataExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.ProducerBuilderExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.ProducerBuilderExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.ProducerExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.ProducerExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.PulsarClientBuilderExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.PulsarClientBuilderExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.PulsarClientExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.PulsarClientExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.ReaderBuilderExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.ReaderBuilderExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.ReaderExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.ReaderExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.ReceiveExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.ReceiveExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.SeekExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.SeekExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.SendChannelExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.SendChannelExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.SendExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.SendExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.StateExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.StateExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Extensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Extensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.FaultAction.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.FaultAction.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IChannel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IChannel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.ICompress.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.ICompress.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.ICompressorFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.ICompressorFactory.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IConnection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IConnection.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IConnectionPool.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IConnectionPool.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IConsumerChannel-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IConsumerChannel-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IConsumerChannelFactory-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IConsumerChannelFactory-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IContainsChannel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IContainsChannel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IDecompress.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IDecompress.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IDecompressorFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IDecompressorFactory.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IDequeue-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IDequeue-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IEnqueue-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IEnqueue-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IEvent.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IEvent.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IExecute.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IExecute.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IMessageFactory-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IMessageFactory-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IProcess.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IProcess.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IProducerChannel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IProducerChannel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IProducerChannelFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IProducerChannelFactory.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IPulsarStream.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IPulsarStream.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IRegisterEvent.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IRegisterEvent.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IRequest.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IStateChanged-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IStateChanged-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.IStateManager-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.IStateManager-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.Process.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.Process.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Abstractions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Abstractions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ActionExceptionHandler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ActionExceptionHandler.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ActionStateChangedHandler-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ActionStateChangedHandler-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.AsyncLock.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.AsyncLock.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.AsyncQueue-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.AsyncQueue-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.AsyncQueueWithCursor-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.AsyncQueueWithCursor-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Awaiter-2.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Awaiter-2.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.BatchHandler-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.BatchHandler-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.CancelableCompletionSource-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.CancelableCompletionSource-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Channel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Channel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ChannelManager.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ChannelManager.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ChannelManagerState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ChannelManagerState.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ChannelState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ChannelState.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ChunkingPipeline.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ChunkingPipeline.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.CompressionFactories.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.CompressionFactories.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.CompressionTester.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.CompressionTester.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.Compressor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.Compressor.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.CompressorFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.CompressorFactory.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.Decompressor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.Decompressor.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.DecompressorFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.DecompressorFactory.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.Lz4Compression.Decode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.Lz4Compression.Decode.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.Lz4Compression.Encode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.Lz4Compression.Encode.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.Lz4Compression.MaximumOutputSize.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.Lz4Compression.MaximumOutputSize.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.Lz4Compression.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.Lz4Compression.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.SnappyCompression.Decode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.SnappyCompression.Decode.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.SnappyCompression.Encode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.SnappyCompression.Encode.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.SnappyCompression.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.SnappyCompression.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.ZlibCompression.CompressBuffer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.ZlibCompression.CompressBuffer.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.ZlibCompression.UncompressBuffer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.ZlibCompression.UncompressBuffer.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.ZlibCompression.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.ZlibCompression.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.ZstdCompression.Unwrap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.ZstdCompression.Unwrap.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.ZstdCompression.Wrap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.ZstdCompression.Wrap.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.ZstdCompression.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.ZstdCompression.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.ZstdSharpCompression.Unwrap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.ZstdSharpCompression.Unwrap.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.ZstdSharpCompression.Wrap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.ZstdSharpCompression.Wrap.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.ZstdSharpCompression.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.ZstdSharpCompression.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Compression.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Compression.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Connection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Connection.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ConnectionPool.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ConnectionPool.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ConnectionState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ConnectionState.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Connector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Connector.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Constants.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Constants.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Consumer-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Consumer-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ConsumerBuilder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ConsumerBuilder-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ConsumerChannel-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ConsumerChannel-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ConsumerChannelFactory-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ConsumerChannelFactory-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ConsumerProcess.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ConsumerProcess.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Crc32C.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Crc32C.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.DefaultExceptionHandler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.DefaultExceptionHandler.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.DotPulsarActivitySource.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.DotPulsarActivitySource.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.DotPulsarMeter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.DotPulsarMeter.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.EnumLookup-2.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.EnumLookup-2.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ChannelActivated.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ChannelActivated.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ChannelClosedByServer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ChannelClosedByServer.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ChannelConnected.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ChannelConnected.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ChannelDeactivated.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ChannelDeactivated.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ChannelDisconnected.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ChannelDisconnected.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ChannelReachedEndOfTopic.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ChannelReachedEndOfTopic.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ChannelUnsubscribed.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ChannelUnsubscribed.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ConsumerCreated.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ConsumerCreated.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ConsumerDisposed.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ConsumerDisposed.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ExecutorFaulted.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ExecutorFaulted.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ProducerCreated.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ProducerCreated.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ProducerDisposed.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ProducerDisposed.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ProducerWaitingForExclusive.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ProducerWaitingForExclusive.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ReaderCreated.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ReaderCreated.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.ReaderDisposed.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.ReaderDisposed.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.SendReceiptWrongOrdering.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.SendReceiptWrongOrdering.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Events.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Events.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ExceptionHandlerPipeline.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ExceptionHandlerPipeline.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Exceptions.AsyncLockDisposedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Exceptions.AsyncLockDisposedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Exceptions.AsyncQueueDisposedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Exceptions.AsyncQueueDisposedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Exceptions.AsyncQueueWithCursorDisposedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Exceptions.AsyncQueueWithCursorDisposedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Exceptions.AsyncQueueWithCursorNoItemException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Exceptions.AsyncQueueWithCursorNoItemException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Exceptions.ConnectionDisposedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Exceptions.ConnectionDisposedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Exceptions.ProducerSendReceiptOrderingException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Exceptions.ProducerSendReceiptOrderingException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Exceptions.PulsarStreamDisposedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Exceptions.PulsarStreamDisposedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Exceptions.SendChannelCompletedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Exceptions.SendChannelCompletedException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Exceptions.UnexpectedResponseException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Exceptions.UnexpectedResponseException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Exceptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Exceptions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ExecutionResult-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ExecutionResult-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Executor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Executor.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ExecutorState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ExecutorState.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Extensions.ActivityExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Extensions.ActivityExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Extensions.CommandExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Extensions.CommandExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Extensions.MessageIdDataExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Extensions.MessageIdDataExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Extensions.MessageMetadataExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Extensions.MessageMetadataExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Extensions.MessagePackageExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Extensions.MessagePackageExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Extensions.ReadOnlySequenceExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Extensions.ReadOnlySequenceExtensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Extensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Extensions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.FuncExceptionHandler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.FuncExceptionHandler.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.FuncStateChangedHandler-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.FuncStateChangedHandler-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.IdLookup-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.IdLookup-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Message-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Message-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.MessageBuilder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.MessageBuilder-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.MessageFactory-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.MessageFactory-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.MessageMetadataObjectPool.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.MessageMetadataObjectPool.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.MessagePackage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.MessagePackage.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.MessageProcessor-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.MessageProcessor-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.NotReadyChannel-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.NotReadyChannel-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PingPongHandler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PingPongHandler.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PingPongHandlerState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PingPongHandlerState.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ProcessManager.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ProcessManager.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Producer-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Producer-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ProducerBuilder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ProducerBuilder-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ProducerChannel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ProducerChannel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ProducerChannelFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ProducerChannelFactory.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ProducerProcess.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ProducerProcess.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ProducerResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ProducerResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.AuthData.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.AuthData.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.AuthMethod.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.AuthMethod.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.BaseCommand.Type.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.BaseCommand.Type.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.BaseCommand.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.BaseCommand.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.BrokerEntryMetadata.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.BrokerEntryMetadata.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAck.AckType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAck.AckType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAck.ValidationErrorType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAck.ValidationErrorType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAck.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAck.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAckResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAckResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandActiveConsumerChange.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandActiveConsumerChange.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAddPartitionToTxn.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAddPartitionToTxn.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAddPartitionToTxnResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAddPartitionToTxnResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAddSubscriptionToTxn.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAddSubscriptionToTxn.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAddSubscriptionToTxnResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAddSubscriptionToTxnResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAuthChallenge.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAuthChallenge.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAuthResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandAuthResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandCloseConsumer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandCloseConsumer.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandCloseProducer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandCloseProducer.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandConnect.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandConnect.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandConnected.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandConnected.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandConsumerStats.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandConsumerStats.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxn.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxn.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxnOnPartition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxnOnPartition.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxnOnPartitionResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxnOnPartitionResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxnOnSubscription.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxnOnSubscription.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxnOnSubscriptionResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxnOnSubscriptionResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxnResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandEndTxnResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandError.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandError.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandFlow.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandFlow.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetLastMessageId.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetLastMessageId.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetLastMessageIdResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetLastMessageIdResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetOrCreateSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetOrCreateSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetOrCreateSchemaResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetOrCreateSchemaResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetSchemaResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetSchemaResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetTopicsOfNamespace.Mode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetTopicsOfNamespace.Mode.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetTopicsOfNamespace.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetTopicsOfNamespace.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetTopicsOfNamespaceResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandGetTopicsOfNamespaceResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandLookupTopic.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandLookupTopic.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandLookupTopicResponse.LookupType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandLookupTopicResponse.LookupType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandLookupTopicResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandLookupTopicResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandMessage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandMessage.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandNewTxn.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandNewTxn.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandNewTxnResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandNewTxnResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandPartitionedTopicMetadata.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandPartitionedTopicMetadata.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandPartitionedTopicMetadataResponse.LookupType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandPartitionedTopicMetadataResponse.LookupType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandPartitionedTopicMetadataResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandPartitionedTopicMetadataResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandPing.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandPing.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandPong.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandPong.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandProducer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandProducer.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandProducerSuccess.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandProducerSuccess.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandReachedEndOfTopic.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandReachedEndOfTopic.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandRedeliverUnacknowledgedMessages.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandRedeliverUnacknowledgedMessages.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSeek.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSeek.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSend.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSend.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSendError.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSendError.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSendReceipt.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSendReceipt.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSubscribe.InitialPositionType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSubscribe.InitialPositionType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSubscribe.SubType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSubscribe.SubType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSubscribe.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSubscribe.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSuccess.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandSuccess.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandTcClientConnectRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandTcClientConnectRequest.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandTcClientConnectResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandTcClientConnectResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandTopicMigrated.ResourceType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandTopicMigrated.ResourceType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandTopicMigrated.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandTopicMigrated.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandUnsubscribe.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandUnsubscribe.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandWatchTopicList.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandWatchTopicList.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandWatchTopicListClose.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandWatchTopicListClose.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandWatchTopicListSuccess.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandWatchTopicListSuccess.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CommandWatchTopicUpdate.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CommandWatchTopicUpdate.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.CompressionType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.CompressionType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.EncryptionKeys.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.EncryptionKeys.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.FeatureFlags.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.FeatureFlags.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.IntRange.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.IntRange.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.KeyLongValue.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.KeyLongValue.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.KeySharedMeta.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.KeySharedMeta.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.KeySharedMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.KeySharedMode.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.KeyValue.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.KeyValue.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.MessageIdData.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.MessageIdData.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.MessageMetadata.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.MessageMetadata.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.ProducerAccessMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.ProducerAccessMode.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.ProtocolVersion.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.ProtocolVersion.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.Schema.SchemaType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.Schema.SchemaType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.Schema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.Schema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.ServerError.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.ServerError.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.SingleMessageMetadata.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.SingleMessageMetadata.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.Subscription.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.Subscription.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.TxnAction.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.TxnAction.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarApi.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarApi.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarClientBuilder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarClientBuilder.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarClientFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarClientFactory.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.PulsarStream.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.PulsarStream.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Reader-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Reader-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ReaderBuilder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ReaderBuilder-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.ReaderProcess.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.ReaderProcess.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.RequestId.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.RequestId.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.RequestResponseHandler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.RequestResponseHandler.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Requests.ConnectRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Requests.ConnectRequest.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Requests.SendRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Requests.SendRequest.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Requests.StandardRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Requests.StandardRequest.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Requests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Requests.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.SendChannel-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.SendChannel-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.SendOp.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.SendOp.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.SendPackage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.SendPackage.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.SequenceBuilder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.SequenceBuilder-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.SequenceId.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.SequenceId.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.Serializer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.Serializer.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.StateChanged.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.StateChanged.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.StateManager-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.StateManager-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.StateMonitor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.StateMonitor.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.StateTask-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.StateTask-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.StateTaskCollection-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.StateTaskCollection-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.SubConsumer-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.SubConsumer-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.SubProducer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.SubProducer.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.SubReader-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.SubReader-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.SubscribeResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.SubscribeResponse.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.TokenAuthentication.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.TokenAuthentication.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.UIntUnion.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.UIntUnion.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Internal.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Internal.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.MessageId.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.MessageId.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.MessageMetadata.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.MessageMetadata.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ProcessingOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ProcessingOptions.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ProducerAccessMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ProducerAccessMode.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ProducerOptions-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ProducerOptions-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ProducerState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ProducerState.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ProducerStateChanged.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ProducerStateChanged.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.PulsarClient.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.PulsarClient.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ReaderOptions-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ReaderOptions-1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ReaderState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ReaderState.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.ReaderStateChanged.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.ReaderStateChanged.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.RoundRobinPartitionRouter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.RoundRobinPartitionRouter.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.SchemaInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.SchemaInfo.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.SchemaType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.SchemaType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.BooleanSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.BooleanSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.ByteArraySchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.ByteArraySchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.ByteSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.ByteSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.ByteSequenceSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.ByteSequenceSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.DoubleSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.DoubleSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.FloatSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.FloatSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.IntegerSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.IntegerSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.LongSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.LongSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.ShortSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.ShortSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.StringSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.StringSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.TimeSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.TimeSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.TimestampSchema.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.TimestampSchema.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Schemas.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Schemas.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.SinglePartitionRouter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.SinglePartitionRouter.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.SubscriptionInitialPosition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.SubscriptionInitialPosition.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.SubscriptionType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.SubscriptionType.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "api/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "api/index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".json": {
+          "relative_path": "api/toc.json"
+        },
+        ".html": {
+          "relative_path": "api/toc.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "assets/favicon.ico",
+      "output": {
+        "resource": {
+          "relative_path": "assets/favicon.ico"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "assets/pulsar.svg",
+      "output": {
+        "resource": {
+          "relative_path": "assets/pulsar.svg"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".json": {
+          "relative_path": "toc.json"
+        },
+        ".html": {
+          "relative_path": "toc.html"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}

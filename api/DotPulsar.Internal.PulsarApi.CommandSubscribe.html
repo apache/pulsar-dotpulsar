@@ -1,0 +1,1323 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class CommandSubscribe | Official DotPulsar Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class CommandSubscribe | Official DotPulsar Documentation ">
+      
+      
+      <link rel="icon" href="../assets/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0-rc.1/apiSpec/new?filename=DotPulsar_Internal_PulsarApi_CommandSubscribe.md&amp;value=---%0Auid%3A%20DotPulsar.Internal.PulsarApi.CommandSubscribe%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+  </head>
+
+  <script type="module" src="./../public/docfx.min.js"></script>
+
+  <script>
+    const theme = localStorage.getItem('theme') || 'auto'
+    document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+  </script>
+
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../assets/pulsar.svg" alt="">
+            
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" style="margin-top: -.65em; margin-left: -.8em" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe">
+
+
+
+  <h1 id="DotPulsar_Internal_PulsarApi_CommandSubscribe" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe" class="text-break">
+Class CommandSubscribe  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L935"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="DotPulsar.html">DotPulsar</a>.<a class="xref" href="DotPulsar.Internal.html">Internal</a>.<a class="xref" href="DotPulsar.Internal.PulsarApi.html">PulsarApi</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>DotPulsar.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"></div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoContract]
+public class CommandSubscribe : IExtensible</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">CommandSubscribe</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><span class="xref">IExtensible</span></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+  <dl class="typelist extensionMethods">
+    <dt>Extension Methods</dt>
+    <dd>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__2___0___1_System_TimeSpan_System_Action___0___1__System_Action___0___1__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState&gt;(TEntity, TState, TimeSpan, Action&lt;TEntity, TState&gt;, Action&lt;TEntity, TState&gt;, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__2___0___1_System_TimeSpan_System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState&gt;(TEntity, TState, TimeSpan, Func&lt;TEntity, TState, CancellationToken, ValueTask&gt;, Func&lt;TEntity, TState, CancellationToken, ValueTask&gt;, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__3___0___1_System_TimeSpan_System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask___2___System_Func___0___1___2_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState, TFaultContext&gt;(TEntity, TState, TimeSpan, Func&lt;TEntity, TState, CancellationToken, ValueTask&lt;TFaultContext&gt;&gt;, Func&lt;TEntity, TState, TFaultContext, CancellationToken, ValueTask&gt;, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Internal.Extensions.CommandExtensions.html#DotPulsar_Internal_Extensions_CommandExtensions_AsBaseCommand_DotPulsar_Internal_PulsarApi_CommandSubscribe_">CommandExtensions.AsBaseCommand(CommandSubscribe)</a>
+  </div>
+  </dd></dl>
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ConsumerEpoch_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ConsumerEpoch*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ConsumerEpoch" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ConsumerEpoch">
+  ConsumerEpoch
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1065"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(19, Name = &quot;consumer_epoch&quot;)]
+public ulong ConsumerEpoch { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ConsumerId_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ConsumerId*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ConsumerId" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ConsumerId">
+  ConsumerId
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L951"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(4, Name = &quot;consumer_id&quot;, IsRequired = true)]
+public ulong ConsumerId { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ConsumerName_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ConsumerName*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ConsumerName" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ConsumerName">
+  ConsumerName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L957"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(6, Name = &quot;consumer_name&quot;)]
+public string ConsumerName { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Durable_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Durable*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Durable" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Durable">
+  Durable
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L980"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(8, Name = &quot;durable&quot;)]
+public bool Durable { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ForceTopicCreation_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ForceTopicCreation*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ForceTopicCreation" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ForceTopicCreation">
+  ForceTopicCreation
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1035"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(15, Name = &quot;force_topic_creation&quot;)]
+public bool ForceTopicCreation { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_InitialPosition_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.InitialPosition*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_InitialPosition" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.InitialPosition">
+  InitialPosition
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1012"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(13)]
+public CommandSubscribe.InitialPositionType InitialPosition { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSubscribe.html">CommandSubscribe</a>.<a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSubscribe.InitialPositionType.html">InitialPositionType</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Metadatas_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Metadatas*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Metadatas" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Metadatas">
+  Metadatas
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L995"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(10, Name = &quot;metadata&quot;)]
+public List&lt;KeyValue&gt; Metadatas { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.KeyValue.html">KeyValue</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_PriorityLevel_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.PriorityLevel*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_PriorityLevel" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.PriorityLevel">
+  PriorityLevel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L969"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(7, Name = &quot;priority_level&quot;)]
+public int PriorityLevel { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ReadCompacted_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ReadCompacted*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ReadCompacted" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ReadCompacted">
+  ReadCompacted
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L998"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(11, Name = &quot;read_compacted&quot;)]
+public bool ReadCompacted { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ReplicateSubscriptionState_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ReplicateSubscriptionState*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ReplicateSubscriptionState" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ReplicateSubscriptionState">
+  ReplicateSubscriptionState
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1024"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(14, Name = &quot;replicate_subscription_state&quot;)]
+public bool ReplicateSubscriptionState { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_RequestId_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.RequestId*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_RequestId" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.RequestId">
+  RequestId
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L954"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(5, Name = &quot;request_id&quot;, IsRequired = true)]
+public ulong RequestId { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Schema_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Schema*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Schema" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Schema">
+  Schema
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1009"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(12, Name = &quot;schema&quot;)]
+public Schema Schema { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.Schema.html">Schema</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_StartMessageId_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.StartMessageId*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_StartMessageId" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.StartMessageId">
+  StartMessageId
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L992"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(9, Name = &quot;start_message_id&quot;)]
+public MessageIdData StartMessageId { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.MessageIdData.html">MessageIdData</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_StartMessageRollbackDurationSec_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.StartMessageRollbackDurationSec*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_StartMessageRollbackDurationSec" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.StartMessageRollbackDurationSec">
+  StartMessageRollbackDurationSec
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1047"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(16, Name = &quot;start_message_rollback_duration_sec&quot;)]
+public ulong StartMessageRollbackDurationSec { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Subscription_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Subscription*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Subscription" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Subscription">
+  Subscription
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L945"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(2, Name = &quot;subscription&quot;, IsRequired = true)]
+public string Subscription { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_SubscriptionProperties_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.SubscriptionProperties*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_SubscriptionProperties" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.SubscriptionProperties">
+  SubscriptionProperties
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1062"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(18, Name = &quot;subscription_properties&quot;)]
+public List&lt;KeyValue&gt; SubscriptionProperties { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.KeyValue.html">KeyValue</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Topic_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Topic*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Topic" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Topic">
+  Topic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L942"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(1, Name = &quot;topic&quot;, IsRequired = true)]
+public string Topic { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Type_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Type*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_Type" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.Type">
+  Type
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L948"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(3, IsRequired = true)]
+public CommandSubscribe.SubType Type { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSubscribe.html">CommandSubscribe</a>.<a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSubscribe.SubType.html">SubType</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_keySharedMeta_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.keySharedMeta*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_keySharedMeta" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.keySharedMeta">
+  keySharedMeta
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1059"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(17)]
+public KeySharedMeta keySharedMeta { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.KeySharedMeta.html">KeySharedMeta</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetConsumerEpoch_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetConsumerEpoch*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetConsumerEpoch" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetConsumerEpoch">
+  ResetConsumerEpoch()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1073"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetConsumerEpoch()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetConsumerName_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetConsumerName*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetConsumerName" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetConsumerName">
+  ResetConsumerName()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L966"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetConsumerName()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetDurable_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetDurable*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetDurable" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetDurable">
+  ResetDurable()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L989"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetDurable()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetForceTopicCreation_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetForceTopicCreation*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetForceTopicCreation" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetForceTopicCreation">
+  ResetForceTopicCreation()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1044"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetForceTopicCreation()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetPriorityLevel_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetPriorityLevel*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetPriorityLevel" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetPriorityLevel">
+  ResetPriorityLevel()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L977"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetPriorityLevel()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetReadCompacted_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetReadCompacted*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetReadCompacted" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetReadCompacted">
+  ResetReadCompacted()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1006"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetReadCompacted()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetReplicateSubscriptionState_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetReplicateSubscriptionState*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetReplicateSubscriptionState" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetReplicateSubscriptionState">
+  ResetReplicateSubscriptionState()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1032"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetReplicateSubscriptionState()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetStartMessageRollbackDurationSec_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetStartMessageRollbackDurationSec*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetStartMessageRollbackDurationSec" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetStartMessageRollbackDurationSec">
+  ResetStartMessageRollbackDurationSec()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1056"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetStartMessageRollbackDurationSec()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetinitialPosition_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetinitialPosition*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ResetinitialPosition" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ResetinitialPosition">
+  ResetinitialPosition()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1021"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResetinitialPosition()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeConsumerEpoch_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeConsumerEpoch*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeConsumerEpoch" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeConsumerEpoch">
+  ShouldSerializeConsumerEpoch()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1072"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeConsumerEpoch()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeConsumerName_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeConsumerName*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeConsumerName" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeConsumerName">
+  ShouldSerializeConsumerName()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L965"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeConsumerName()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeDurable_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeDurable*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeDurable" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeDurable">
+  ShouldSerializeDurable()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L988"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeDurable()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeForceTopicCreation_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeForceTopicCreation*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeForceTopicCreation" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeForceTopicCreation">
+  ShouldSerializeForceTopicCreation()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1043"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeForceTopicCreation()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializePriorityLevel_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializePriorityLevel*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializePriorityLevel" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializePriorityLevel">
+  ShouldSerializePriorityLevel()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L976"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializePriorityLevel()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeReadCompacted_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeReadCompacted*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeReadCompacted" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeReadCompacted">
+  ShouldSerializeReadCompacted()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1005"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeReadCompacted()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeReplicateSubscriptionState_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeReplicateSubscriptionState*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeReplicateSubscriptionState" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeReplicateSubscriptionState">
+  ShouldSerializeReplicateSubscriptionState()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1031"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeReplicateSubscriptionState()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeStartMessageRollbackDurationSec_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeStartMessageRollbackDurationSec*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeStartMessageRollbackDurationSec" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeStartMessageRollbackDurationSec">
+  ShouldSerializeStartMessageRollbackDurationSec()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1055"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeStartMessageRollbackDurationSec()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeinitialPosition_" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeinitialPosition*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_CommandSubscribe_ShouldSerializeinitialPosition" data-uid="DotPulsar.Internal.PulsarApi.CommandSubscribe.ShouldSerializeinitialPosition">
+  ShouldSerializeinitialPosition()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L1020"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ShouldSerializeinitialPosition()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L935" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          Copyright &copy; 2019-2024 The Apache Software Foundation. All Rights Reserved. Apache, Pulsar, Apache Pulsar, and the Apache feather logo are trademarks or registered trademarks of The Apache Software Foundation.
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

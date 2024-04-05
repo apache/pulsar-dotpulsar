@@ -1,0 +1,908 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class ChannelManager | Official DotPulsar Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class ChannelManager | Official DotPulsar Documentation ">
+      
+      
+      <link rel="icon" href="../assets/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0-rc.1/apiSpec/new?filename=DotPulsar_Internal_ChannelManager.md&amp;value=---%0Auid%3A%20DotPulsar.Internal.ChannelManager%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+  </head>
+
+  <script type="module" src="./../public/docfx.min.js"></script>
+
+  <script>
+    const theme = localStorage.getItem('theme') || 'auto'
+    document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+  </script>
+
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../assets/pulsar.svg" alt="">
+            
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" style="margin-top: -.65em; margin-left: -.8em" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="DotPulsar.Internal.ChannelManager">
+
+
+
+  <h1 id="DotPulsar_Internal_ChannelManager" data-uid="DotPulsar.Internal.ChannelManager" class="text-break">
+Class ChannelManager  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L23"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="DotPulsar.html">DotPulsar</a>.<a class="xref" href="DotPulsar.Internal.html">Internal</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>DotPulsar.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"></div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class ChannelManager : IState&lt;ChannelManagerState&gt;, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">ChannelManager</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="DotPulsar.Abstractions.IState-1.html">IState</a>&lt;<a class="xref" href="DotPulsar.Internal.ChannelManagerState.html">ChannelManagerState</a>&gt;</div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+  <dl class="typelist extensionMethods">
+    <dt>Extension Methods</dt>
+    <dd>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_OnStateChangeFrom__1_DotPulsar_Abstractions_IState___0____0_System_TimeSpan_System_Threading_CancellationToken_">StateExtensions.OnStateChangeFrom&lt;TState&gt;(IState&lt;TState&gt;, TState, TimeSpan, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_OnStateChangeTo__1_DotPulsar_Abstractions_IState___0____0_System_TimeSpan_System_Threading_CancellationToken_">StateExtensions.OnStateChangeTo&lt;TState&gt;(IState&lt;TState&gt;, TState, TimeSpan, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__2___0___1_System_TimeSpan_System_Action___0___1__System_Action___0___1__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState&gt;(TEntity, TState, TimeSpan, Action&lt;TEntity, TState&gt;, Action&lt;TEntity, TState&gt;, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__2___0___1_System_TimeSpan_System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState&gt;(TEntity, TState, TimeSpan, Func&lt;TEntity, TState, CancellationToken, ValueTask&gt;, Func&lt;TEntity, TState, CancellationToken, ValueTask&gt;, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__3___0___1_System_TimeSpan_System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask___2___System_Func___0___1___2_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState, TFaultContext&gt;(TEntity, TState, TimeSpan, Func&lt;TEntity, TState, CancellationToken, ValueTask&lt;TFaultContext&gt;&gt;, Func&lt;TEntity, TState, TFaultContext, CancellationToken, ValueTask&gt;, CancellationToken)</a>
+  </div>
+  </dd></dl>
+
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="DotPulsar_Internal_ChannelManager__ctor_" data-uid="DotPulsar.Internal.ChannelManager.#ctor*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager__ctor" data-uid="DotPulsar.Internal.ChannelManager.#ctor">
+  ChannelManager()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChannelManager()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Dispose_" data-uid="DotPulsar.Internal.ChannelManager.Dispose*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Dispose" data-uid="DotPulsar.Internal.ChannelManager.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L194"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Incoming_" data-uid="DotPulsar.Internal.ChannelManager.Incoming*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Incoming_DotPulsar_Internal_PulsarApi_BaseCommand_" data-uid="DotPulsar.Internal.ChannelManager.Incoming(DotPulsar.Internal.PulsarApi.BaseCommand)">
+  Incoming(BaseCommand)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L188"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Incoming(BaseCommand command)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Incoming_" data-uid="DotPulsar.Internal.ChannelManager.Incoming*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Incoming_DotPulsar_Internal_PulsarApi_CommandMessage_System_Buffers_ReadOnlySequence_System_Byte__" data-uid="DotPulsar.Internal.ChannelManager.Incoming(DotPulsar.Internal.PulsarApi.CommandMessage,System.Buffers.ReadOnlySequence{System.Byte})">
+  Incoming(CommandMessage, ReadOnlySequence&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L191"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Incoming(CommandMessage command, ReadOnlySequence&lt;byte&gt; data)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandMessage.html">CommandMessage</a></dt>
+    <dd></dd>
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.buffers.readonlysequence-1">ReadOnlySequence</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_IsFinalState_" data-uid="DotPulsar.Internal.ChannelManager.IsFinalState*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_IsFinalState" data-uid="DotPulsar.Internal.ChannelManager.IsFinalState">
+  IsFinalState()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L306"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Ask whether the current state is final, meaning that it will never change.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsFinalState()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if it's final and False if it's not.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_IsFinalState_" data-uid="DotPulsar.Internal.ChannelManager.IsFinalState*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_IsFinalState_DotPulsar_Internal_ChannelManagerState_" data-uid="DotPulsar.Internal.ChannelManager.IsFinalState(DotPulsar.Internal.ChannelManagerState)">
+  IsFinalState(ChannelManagerState)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L308"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Ask whether the provided state is final, meaning that it will never change.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsFinalState(ChannelManagerState state)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>state</code> <a class="xref" href="DotPulsar.Internal.ChannelManagerState.html">ChannelManagerState</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if it's final and False if it's not.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_OnStateChangeFrom_" data-uid="DotPulsar.Internal.ChannelManager.OnStateChangeFrom*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_OnStateChangeFrom_DotPulsar_Internal_ChannelManagerState_System_Threading_CancellationToken_" data-uid="DotPulsar.Internal.ChannelManager.OnStateChangeFrom(DotPulsar.Internal.ChannelManagerState,System.Threading.CancellationToken)">
+  OnStateChangeFrom(ChannelManagerState, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L313"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Wait for the state to change from a specific state.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ValueTask&lt;ChannelManagerState&gt; OnStateChangeFrom(ChannelManagerState state, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>state</code> <a class="xref" href="DotPulsar.Internal.ChannelManagerState.html">ChannelManagerState</a></dt>
+    <dd></dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1">ValueTask</a>&lt;<a class="xref" href="DotPulsar.Internal.ChannelManagerState.html">ChannelManagerState</a>&gt;</dt>
+    <dd><p>The current state.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="DotPulsar_Internal_ChannelManager_OnStateChangeFrom_DotPulsar_Internal_ChannelManagerState_System_Threading_CancellationToken__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>If the state change to a final state, then all awaiting tasks will complete.</p>
+</div>
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_OnStateChangeTo_" data-uid="DotPulsar.Internal.ChannelManager.OnStateChangeTo*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_OnStateChangeTo_DotPulsar_Internal_ChannelManagerState_System_Threading_CancellationToken_" data-uid="DotPulsar.Internal.ChannelManager.OnStateChangeTo(DotPulsar.Internal.ChannelManagerState,System.Threading.CancellationToken)">
+  OnStateChangeTo(ChannelManagerState, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L310"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Wait for the state to change to a specific state.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ValueTask&lt;ChannelManagerState&gt; OnStateChangeTo(ChannelManagerState state, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>state</code> <a class="xref" href="DotPulsar.Internal.ChannelManagerState.html">ChannelManagerState</a></dt>
+    <dd></dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1">ValueTask</a>&lt;<a class="xref" href="DotPulsar.Internal.ChannelManagerState.html">ChannelManagerState</a>&gt;</dt>
+    <dd><p>The current state.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="DotPulsar_Internal_ChannelManager_OnStateChangeTo_DotPulsar_Internal_ChannelManagerState_System_Threading_CancellationToken__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>If the state change to a final state, then all awaiting tasks will complete.</p>
+</div>
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandCloseConsumer_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandCloseConsumer)">
+  Outgoing(CommandCloseConsumer)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;BaseCommand&gt; Outgoing(CommandCloseConsumer command)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandCloseConsumer.html">CommandCloseConsumer</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandCloseProducer_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandCloseProducer)">
+  Outgoing(CommandCloseProducer)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;BaseCommand&gt; Outgoing(CommandCloseProducer command)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandCloseProducer.html">CommandCloseProducer</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandConnect_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandConnect)">
+  Outgoing(CommandConnect)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L163"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;BaseCommand&gt; Outgoing(CommandConnect command)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandConnect.html">CommandConnect</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandGetLastMessageId_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandGetLastMessageId)">
+  Outgoing(CommandGetLastMessageId)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L180"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;BaseCommand&gt; Outgoing(CommandGetLastMessageId command)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandGetLastMessageId.html">CommandGetLastMessageId</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandGetOrCreateSchema_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandGetOrCreateSchema)">
+  Outgoing(CommandGetOrCreateSchema)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;BaseCommand&gt; Outgoing(CommandGetOrCreateSchema command)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandGetOrCreateSchema.html">CommandGetOrCreateSchema</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandLookupTopic_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandLookupTopic)">
+  Outgoing(CommandLookupTopic)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L166"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;BaseCommand&gt; Outgoing(CommandLookupTopic command)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandLookupTopic.html">CommandLookupTopic</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandPartitionedTopicMetadata_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandPartitionedTopicMetadata)">
+  Outgoing(CommandPartitionedTopicMetadata)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L169"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;BaseCommand&gt; Outgoing(CommandPartitionedTopicMetadata command)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandPartitionedTopicMetadata.html">CommandPartitionedTopicMetadata</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandProducer_DotPulsar_Internal_Abstractions_IChannel_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandProducer,DotPulsar.Internal.Abstractions.IChannel)">
+  Outgoing(CommandProducer, IChannel)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;ProducerResponse&gt; Outgoing(CommandProducer command, IChannel channel)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandProducer.html">CommandProducer</a></dt>
+    <dd></dd>
+    <dt><code>channel</code> <a class="xref" href="DotPulsar.Internal.Abstractions.IChannel.html">IChannel</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="DotPulsar.Internal.ProducerResponse.html">ProducerResponse</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandSeek_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandSeek)">
+  Outgoing(CommandSeek)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L172"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;BaseCommand&gt; Outgoing(CommandSeek command)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSeek.html">CommandSeek</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandSend_System_Threading_Tasks_TaskCompletionSource_DotPulsar_Internal_PulsarApi_BaseCommand__" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandSend,System.Threading.Tasks.TaskCompletionSource{DotPulsar.Internal.PulsarApi.BaseCommand})">
+  Outgoing(CommandSend, TaskCompletionSource&lt;BaseCommand&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L152"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Outgoing(CommandSend command, TaskCompletionSource&lt;BaseCommand&gt; tcs)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSend.html">CommandSend</a></dt>
+    <dd></dd>
+    <dt><code>tcs</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.taskcompletionsource-1">TaskCompletionSource</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandSubscribe_DotPulsar_Internal_Abstractions_IChannel_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandSubscribe,DotPulsar.Internal.Abstractions.IChannel)">
+  Outgoing(CommandSubscribe, IChannel)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;SubscribeResponse&gt; Outgoing(CommandSubscribe command, IChannel channel)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSubscribe.html">CommandSubscribe</a></dt>
+    <dd></dd>
+    <dt><code>channel</code> <a class="xref" href="DotPulsar.Internal.Abstractions.IChannel.html">IChannel</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="DotPulsar.Internal.SubscribeResponse.html">SubscribeResponse</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_ChannelManager_Outgoing_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing*"></a>
+
+  <h3 id="DotPulsar_Internal_ChannelManager_Outgoing_DotPulsar_Internal_PulsarApi_CommandUnsubscribe_" data-uid="DotPulsar.Internal.ChannelManager.Outgoing(DotPulsar.Internal.PulsarApi.CommandUnsubscribe)">
+  Outgoing(CommandUnsubscribe)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;BaseCommand&gt; Outgoing(CommandUnsubscribe command)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>command</code> <a class="xref" href="DotPulsar.Internal.PulsarApi.CommandUnsubscribe.html">CommandUnsubscribe</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ChannelManager.cs/#L23" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          Copyright &copy; 2019-2024 The Apache Software Foundation. All Rights Reserved. Apache, Pulsar, Apache Pulsar, and the Apache feather logo are trademarks or registered trademarks of The Apache Software Foundation.
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

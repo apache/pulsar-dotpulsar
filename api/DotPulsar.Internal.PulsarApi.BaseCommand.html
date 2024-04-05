@@ -1,0 +1,2086 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class BaseCommand | Official DotPulsar Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class BaseCommand | Official DotPulsar Documentation ">
+      
+      
+      <link rel="icon" href="../assets/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0-rc.1/apiSpec/new?filename=DotPulsar_Internal_PulsarApi_BaseCommand.md&amp;value=---%0Auid%3A%20DotPulsar.Internal.PulsarApi.BaseCommand%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+  </head>
+
+  <script type="module" src="./../public/docfx.min.js"></script>
+
+  <script>
+    const theme = localStorage.getItem('theme') || 'auto'
+    document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+  </script>
+
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../assets/pulsar.svg" alt="">
+            
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" style="margin-top: -.65em; margin-left: -.8em" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="DotPulsar.Internal.PulsarApi.BaseCommand">
+
+
+
+  <h1 id="DotPulsar_Internal_PulsarApi_BaseCommand" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand" class="text-break">
+Class BaseCommand  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3401"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="DotPulsar.html">DotPulsar</a>.<a class="xref" href="DotPulsar.Internal.html">Internal</a>.<a class="xref" href="DotPulsar.Internal.PulsarApi.html">PulsarApi</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>DotPulsar.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"></div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoContract]
+public class BaseCommand : IExtensible</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">BaseCommand</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><span class="xref">IExtensible</span></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+  <dl class="typelist extensionMethods">
+    <dt>Extension Methods</dt>
+    <dd>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__2___0___1_System_TimeSpan_System_Action___0___1__System_Action___0___1__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState&gt;(TEntity, TState, TimeSpan, Action&lt;TEntity, TState&gt;, Action&lt;TEntity, TState&gt;, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__2___0___1_System_TimeSpan_System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState&gt;(TEntity, TState, TimeSpan, Func&lt;TEntity, TState, CancellationToken, ValueTask&gt;, Func&lt;TEntity, TState, CancellationToken, ValueTask&gt;, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Extensions.StateExtensions.html#DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__3___0___1_System_TimeSpan_System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask___2___System_Func___0___1___2_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Threading_CancellationToken_">StateExtensions.DelayedStateMonitor&lt;TEntity, TState, TFaultContext&gt;(TEntity, TState, TimeSpan, Func&lt;TEntity, TState, CancellationToken, ValueTask&lt;TFaultContext&gt;&gt;, Func&lt;TEntity, TState, TFaultContext, CancellationToken, ValueTask&gt;, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="DotPulsar.Internal.Extensions.CommandExtensions.html#DotPulsar_Internal_Extensions_CommandExtensions_Expect_DotPulsar_Internal_PulsarApi_BaseCommand_DotPulsar_Internal_PulsarApi_BaseCommand_Type_">CommandExtensions.Expect(BaseCommand, BaseCommand.Type)</a>
+  </div>
+  </dd></dl>
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Ack_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Ack*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Ack" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Ack">
+  Ack
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3435"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(10, Name = &quot;ack&quot;)]
+public CommandAck Ack { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandAck.html">CommandAck</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_ActiveConsumerChange_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.ActiveConsumerChange*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_ActiveConsumerChange" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.ActiveConsumerChange">
+  ActiveConsumerChange
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3498"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(31, Name = &quot;active_consumer_change&quot;)]
+public CommandActiveConsumerChange ActiveConsumerChange { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandActiveConsumerChange.html">CommandActiveConsumerChange</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_AuthResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.AuthResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_AuthResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.AuthResponse">
+  AuthResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3516"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(37)]
+public CommandAuthResponse AuthResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandAuthResponse.html">CommandAuthResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_CloseConsumer_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.CloseConsumer*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_CloseConsumer" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.CloseConsumer">
+  CloseConsumer
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3453"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(16, Name = &quot;close_consumer&quot;)]
+public CommandCloseConsumer CloseConsumer { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandCloseConsumer.html">CommandCloseConsumer</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_CloseProducer_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.CloseProducer*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_CloseProducer" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.CloseProducer">
+  CloseProducer
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3450"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(15, Name = &quot;close_producer&quot;)]
+public CommandCloseProducer CloseProducer { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandCloseProducer.html">CommandCloseProducer</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_CommandType_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.CommandType*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_CommandType" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.CommandType">
+  CommandType
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3408"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(1, IsRequired = true)]
+public BaseCommand.Type CommandType { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.html">BaseCommand</a>.<a class="xref" href="DotPulsar.Internal.PulsarApi.BaseCommand.Type.html">Type</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Connect_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Connect*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Connect" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Connect">
+  Connect
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3411"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(2, Name = &quot;connect&quot;)]
+public CommandConnect Connect { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandConnect.html">CommandConnect</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Connected_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Connected*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Connected" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Connected">
+  Connected
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3414"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(3, Name = &quot;connected&quot;)]
+public CommandConnected Connected { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandConnected.html">CommandConnected</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Error_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Error*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Error" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Error">
+  Error
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3447"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(14, Name = &quot;error&quot;)]
+public CommandError Error { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandError.html">CommandError</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Flow_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Flow*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Flow" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Flow">
+  Flow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3438"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(11, Name = &quot;flow&quot;)]
+public CommandFlow Flow { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandFlow.html">CommandFlow</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_GetLastMessageId_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.GetLastMessageId*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_GetLastMessageId" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.GetLastMessageId">
+  GetLastMessageId
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3492"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(29)]
+public CommandGetLastMessageId GetLastMessageId { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandGetLastMessageId.html">CommandGetLastMessageId</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_GetLastMessageIdResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.GetLastMessageIdResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_GetLastMessageIdResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.GetLastMessageIdResponse">
+  GetLastMessageIdResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3495"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(30)]
+public CommandGetLastMessageIdResponse GetLastMessageIdResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandGetLastMessageIdResponse.html">CommandGetLastMessageIdResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_GetOrCreateSchema_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.GetOrCreateSchema*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_GetOrCreateSchema" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.GetOrCreateSchema">
+  GetOrCreateSchema
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3522"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(39)]
+public CommandGetOrCreateSchema GetOrCreateSchema { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandGetOrCreateSchema.html">CommandGetOrCreateSchema</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_GetOrCreateSchemaResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.GetOrCreateSchemaResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_GetOrCreateSchemaResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.GetOrCreateSchemaResponse">
+  GetOrCreateSchemaResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3525"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(40)]
+public CommandGetOrCreateSchemaResponse GetOrCreateSchemaResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandGetOrCreateSchemaResponse.html">CommandGetOrCreateSchemaResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_LookupTopic_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.LookupTopic*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_LookupTopic" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.LookupTopic">
+  LookupTopic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3474"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(23)]
+public CommandLookupTopic LookupTopic { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandLookupTopic.html">CommandLookupTopic</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_LookupTopicResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.LookupTopicResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_LookupTopicResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.LookupTopicResponse">
+  LookupTopicResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3477"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(24)]
+public CommandLookupTopicResponse LookupTopicResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandLookupTopicResponse.html">CommandLookupTopicResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Message_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Message*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Message" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Message">
+  Message
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3432"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(9, Name = &quot;message&quot;)]
+public CommandMessage Message { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandMessage.html">CommandMessage</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_PartitionMetadata_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.PartitionMetadata*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_PartitionMetadata" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.PartitionMetadata">
+  PartitionMetadata
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3468"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(21)]
+public CommandPartitionedTopicMetadata PartitionMetadata { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandPartitionedTopicMetadata.html">CommandPartitionedTopicMetadata</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_PartitionMetadataResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.PartitionMetadataResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_PartitionMetadataResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.PartitionMetadataResponse">
+  PartitionMetadataResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3471"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(22)]
+public CommandPartitionedTopicMetadataResponse PartitionMetadataResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandPartitionedTopicMetadataResponse.html">CommandPartitionedTopicMetadataResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Ping_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Ping*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Ping" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Ping">
+  Ping
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3459"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(18, Name = &quot;ping&quot;)]
+public CommandPing Ping { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandPing.html">CommandPing</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Pong_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Pong*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Pong" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Pong">
+  Pong
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3462"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(19, Name = &quot;pong&quot;)]
+public CommandPong Pong { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandPong.html">CommandPong</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Producer_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Producer*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Producer" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Producer">
+  Producer
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3420"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(5, Name = &quot;producer&quot;)]
+public CommandProducer Producer { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandProducer.html">CommandProducer</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_ProducerSuccess_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.ProducerSuccess*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_ProducerSuccess" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.ProducerSuccess">
+  ProducerSuccess
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3456"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(17, Name = &quot;producer_success&quot;)]
+public CommandProducerSuccess ProducerSuccess { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandProducerSuccess.html">CommandProducerSuccess</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_ReachedEndOfTopic_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.ReachedEndOfTopic*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_ReachedEndOfTopic" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.ReachedEndOfTopic">
+  ReachedEndOfTopic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3486"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(27)]
+public CommandReachedEndOfTopic ReachedEndOfTopic { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandReachedEndOfTopic.html">CommandReachedEndOfTopic</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_RedeliverUnacknowledgedMessages_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.RedeliverUnacknowledgedMessages*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_RedeliverUnacknowledgedMessages" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.RedeliverUnacknowledgedMessages">
+  RedeliverUnacknowledgedMessages
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3465"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(20)]
+public CommandRedeliverUnacknowledgedMessages RedeliverUnacknowledgedMessages { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandRedeliverUnacknowledgedMessages.html">CommandRedeliverUnacknowledgedMessages</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Seek_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Seek*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Seek" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Seek">
+  Seek
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3489"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(28, Name = &quot;seek&quot;)]
+public CommandSeek Seek { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSeek.html">CommandSeek</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Send_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Send*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Send" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Send">
+  Send
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3423"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(6, Name = &quot;send&quot;)]
+public CommandSend Send { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSend.html">CommandSend</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_SendError_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.SendError*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_SendError" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.SendError">
+  SendError
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3429"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(8, Name = &quot;send_error&quot;)]
+public CommandSendError SendError { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSendError.html">CommandSendError</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_SendReceipt_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.SendReceipt*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_SendReceipt" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.SendReceipt">
+  SendReceipt
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3426"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(7, Name = &quot;send_receipt&quot;)]
+public CommandSendReceipt SendReceipt { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSendReceipt.html">CommandSendReceipt</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Subscribe_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Subscribe*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Subscribe" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Subscribe">
+  Subscribe
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3417"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(4, Name = &quot;subscribe&quot;)]
+public CommandSubscribe Subscribe { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSubscribe.html">CommandSubscribe</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Success_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Success*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Success" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Success">
+  Success
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3444"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(13, Name = &quot;success&quot;)]
+public CommandSuccess Success { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandSuccess.html">CommandSuccess</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_Unsubscribe_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Unsubscribe*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_Unsubscribe" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.Unsubscribe">
+  Unsubscribe
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3441"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(12, Name = &quot;unsubscribe&quot;)]
+public CommandUnsubscribe Unsubscribe { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandUnsubscribe.html">CommandUnsubscribe</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_ackResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.ackResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_ackResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.ackResponse">
+  ackResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3519"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(38)]
+public CommandAckResponse ackResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandAckResponse.html">CommandAckResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_addPartitionToTxn_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.addPartitionToTxn*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_addPartitionToTxn" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.addPartitionToTxn">
+  addPartitionToTxn
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3534"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(52)]
+public CommandAddPartitionToTxn addPartitionToTxn { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandAddPartitionToTxn.html">CommandAddPartitionToTxn</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_addPartitionToTxnResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.addPartitionToTxnResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_addPartitionToTxnResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.addPartitionToTxnResponse">
+  addPartitionToTxnResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3537"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(53)]
+public CommandAddPartitionToTxnResponse addPartitionToTxnResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandAddPartitionToTxnResponse.html">CommandAddPartitionToTxnResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_addSubscriptionToTxn_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.addSubscriptionToTxn*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_addSubscriptionToTxn" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.addSubscriptionToTxn">
+  addSubscriptionToTxn
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3540"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(54)]
+public CommandAddSubscriptionToTxn addSubscriptionToTxn { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandAddSubscriptionToTxn.html">CommandAddSubscriptionToTxn</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_addSubscriptionToTxnResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.addSubscriptionToTxnResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_addSubscriptionToTxnResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.addSubscriptionToTxnResponse">
+  addSubscriptionToTxnResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3543"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(55)]
+public CommandAddSubscriptionToTxnResponse addSubscriptionToTxnResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandAddSubscriptionToTxnResponse.html">CommandAddSubscriptionToTxnResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_authChallenge_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.authChallenge*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_authChallenge" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.authChallenge">
+  authChallenge
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3513"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(36)]
+public CommandAuthChallenge authChallenge { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandAuthChallenge.html">CommandAuthChallenge</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_consumerStats_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.consumerStats*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_consumerStats" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.consumerStats">
+  consumerStats
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3480"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(25)]
+public CommandConsumerStats consumerStats { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandConsumerStats.html">CommandConsumerStats</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_consumerStatsResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.consumerStatsResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_consumerStatsResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.consumerStatsResponse">
+  consumerStatsResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3483"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(26)]
+public CommandConsumerStatsResponse consumerStatsResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandConsumerStatsResponse.html">CommandConsumerStatsResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxn_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxn*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxn" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxn">
+  endTxn
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3546"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(56)]
+public CommandEndTxn endTxn { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandEndTxn.html">CommandEndTxn</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxnOnPartition_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxnOnPartition*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxnOnPartition" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxnOnPartition">
+  endTxnOnPartition
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3552"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(58)]
+public CommandEndTxnOnPartition endTxnOnPartition { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandEndTxnOnPartition.html">CommandEndTxnOnPartition</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxnOnPartitionResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxnOnPartitionResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxnOnPartitionResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxnOnPartitionResponse">
+  endTxnOnPartitionResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3555"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(59)]
+public CommandEndTxnOnPartitionResponse endTxnOnPartitionResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandEndTxnOnPartitionResponse.html">CommandEndTxnOnPartitionResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxnOnSubscription_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxnOnSubscription*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxnOnSubscription" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxnOnSubscription">
+  endTxnOnSubscription
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3558"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(60)]
+public CommandEndTxnOnSubscription endTxnOnSubscription { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandEndTxnOnSubscription.html">CommandEndTxnOnSubscription</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxnOnSubscriptionResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxnOnSubscriptionResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxnOnSubscriptionResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxnOnSubscriptionResponse">
+  endTxnOnSubscriptionResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3561"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(61)]
+public CommandEndTxnOnSubscriptionResponse endTxnOnSubscriptionResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandEndTxnOnSubscriptionResponse.html">CommandEndTxnOnSubscriptionResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxnResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxnResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_endTxnResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.endTxnResponse">
+  endTxnResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3549"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(57)]
+public CommandEndTxnResponse endTxnResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandEndTxnResponse.html">CommandEndTxnResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_getSchema_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.getSchema*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_getSchema" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.getSchema">
+  getSchema
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3507"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(34)]
+public CommandGetSchema getSchema { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandGetSchema.html">CommandGetSchema</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_getSchemaResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.getSchemaResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_getSchemaResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.getSchemaResponse">
+  getSchemaResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3510"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(35)]
+public CommandGetSchemaResponse getSchemaResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandGetSchemaResponse.html">CommandGetSchemaResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_getTopicsOfNamespace_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.getTopicsOfNamespace*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_getTopicsOfNamespace" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.getTopicsOfNamespace">
+  getTopicsOfNamespace
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3501"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(32)]
+public CommandGetTopicsOfNamespace getTopicsOfNamespace { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandGetTopicsOfNamespace.html">CommandGetTopicsOfNamespace</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_getTopicsOfNamespaceResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.getTopicsOfNamespaceResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_getTopicsOfNamespaceResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.getTopicsOfNamespaceResponse">
+  getTopicsOfNamespaceResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3504"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(33)]
+public CommandGetTopicsOfNamespaceResponse getTopicsOfNamespaceResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandGetTopicsOfNamespaceResponse.html">CommandGetTopicsOfNamespaceResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_newTxn_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.newTxn*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_newTxn" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.newTxn">
+  newTxn
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3528"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(50)]
+public CommandNewTxn newTxn { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandNewTxn.html">CommandNewTxn</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_newTxnResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.newTxnResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_newTxnResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.newTxnResponse">
+  newTxnResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3531"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(51)]
+public CommandNewTxnResponse newTxnResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandNewTxnResponse.html">CommandNewTxnResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_tcClientConnectRequest_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.tcClientConnectRequest*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_tcClientConnectRequest" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.tcClientConnectRequest">
+  tcClientConnectRequest
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3564"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(62)]
+public CommandTcClientConnectRequest tcClientConnectRequest { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandTcClientConnectRequest.html">CommandTcClientConnectRequest</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_tcClientConnectResponse_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.tcClientConnectResponse*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_tcClientConnectResponse" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.tcClientConnectResponse">
+  tcClientConnectResponse
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3567"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(63)]
+public CommandTcClientConnectResponse tcClientConnectResponse { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandTcClientConnectResponse.html">CommandTcClientConnectResponse</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_topicMigrated_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.topicMigrated*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_topicMigrated" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.topicMigrated">
+  topicMigrated
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3582"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(68)]
+public CommandTopicMigrated topicMigrated { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandTopicMigrated.html">CommandTopicMigrated</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_watchTopicList_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.watchTopicList*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_watchTopicList" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.watchTopicList">
+  watchTopicList
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3570"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(64)]
+public CommandWatchTopicList watchTopicList { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandWatchTopicList.html">CommandWatchTopicList</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_watchTopicListClose_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.watchTopicListClose*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_watchTopicListClose" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.watchTopicListClose">
+  watchTopicListClose
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3579"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(67)]
+public CommandWatchTopicListClose watchTopicListClose { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandWatchTopicListClose.html">CommandWatchTopicListClose</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_watchTopicListSuccess_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.watchTopicListSuccess*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_watchTopicListSuccess" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.watchTopicListSuccess">
+  watchTopicListSuccess
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3573"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(65)]
+public CommandWatchTopicListSuccess watchTopicListSuccess { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandWatchTopicListSuccess.html">CommandWatchTopicListSuccess</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="DotPulsar_Internal_PulsarApi_BaseCommand_watchTopicUpdate_" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.watchTopicUpdate*"></a>
+
+  <h3 id="DotPulsar_Internal_PulsarApi_BaseCommand_watchTopicUpdate" data-uid="DotPulsar.Internal.PulsarApi.BaseCommand.watchTopicUpdate">
+  watchTopicUpdate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3576"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[ProtoMember(66)]
+public CommandWatchTopicUpdate watchTopicUpdate { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="DotPulsar.Internal.PulsarApi.CommandWatchTopicUpdate.html">CommandWatchTopicUpdate</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/PulsarApi/GeneratedCode.cs/#L3401" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          Copyright &copy; 2019-2024 The Apache Software Foundation. All Rights Reserved. Apache, Pulsar, Apache Pulsar, and the Apache feather logo are trademarks or registered trademarks of The Apache Software Foundation.
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
