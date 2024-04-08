@@ -48,7 +48,7 @@ gpg --verify-files *.asc
 
 ```shell
 tar zxvf pulsar-dotpulsar-${DOTPULSAR_VERSION}-src.tar.gz
-cd pulsar-dotpulsar-${DOTPULSAR_VERSION_RC}
+cd pulsar-dotpulsar-${DOTPULSAR_VERSION_RC}-src
 dotnet build
 ```
 
@@ -85,7 +85,7 @@ await consumer.Acknowledge(message);
 Console.WriteLine("Acknowledged message");
 EOF
 dotnet build
-docker run --name pulsar-standalone -d --rm -it -p 8080:8080 -p 6650:6650 apachepulsar/pulsar:3.0.2 /pulsar/bin/pulsar standalone -nss -nfw
+docker run --name pulsar-standalone -d --rm -it -p 8080:8080 -p 6650:6650 apachepulsar/pulsar:3.0.4 /pulsar/bin/pulsar standalone -nss -nfw
 dotnet run
 docker stop pulsar-standalone
 ```
