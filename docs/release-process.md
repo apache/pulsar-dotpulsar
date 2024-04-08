@@ -87,7 +87,7 @@ Check out the RC tag and package source code into a tarball:
 git checkout $DOTPULSAR_VERSION_RC
 git archive --format=tar.gz \
   --output="$(pwd)/pulsar-dotpulsar-$DOTPULSAR_VERSION_RC/pulsar-dotpulsar-$DOTPULSAR_VERSION-src.tar.gz" \
-  --prefix="pulsar-dotpulsar-$DOTPULSAR_VERSION-src"
+  --prefix="pulsar-dotpulsar-$DOTPULSAR_VERSION-src/" HEAD
 ```
 
 4. Artifact Staging & Signing.
