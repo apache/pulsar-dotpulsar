@@ -140,6 +140,9 @@ README.md to build and run DotPulsar.
 
 The vote will be open for at least 72 hours. It is adopted by majority approval, with at least 3 PMC affirmative votes.
 
+Guide for Validating DotPulsar Release on Linux and MacOS
+https://github.com/apache/pulsar-dotpulsar/blob/master/docs/release_validation_linux_macos.md
+
 Source file:
 https://dist.apache.org/repos/dist/dev/pulsar/pulsar-dotpulsar-$DOTPULSAR_VERSION_RC/
 
