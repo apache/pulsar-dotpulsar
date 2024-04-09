@@ -16,7 +16,7 @@
       
       
       
-      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0-rc.1/apiSpec/new?filename=DotPulsar_Internal_ProducerBuilder_1.md&amp;value=---%0Auid%3A%20DotPulsar.Internal.ProducerBuilder%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0/apiSpec/new?filename=DotPulsar_Internal_ProducerBuilder_1.md&amp;value=---%0Auid%3A%20DotPulsar.Internal.ProducerBuilder%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -29,15 +29,15 @@
       <meta name="loc:changeTheme" content="Change theme">
       <meta name="loc:copy" content="Copy">
       <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
   </head>
-
-  <script type="module" src="./../public/docfx.min.js"></script>
-
-  <script>
-    const theme = localStorage.getItem('theme') || 'auto'
-    document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
-  </script>
-
 
   <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
     <header class="bg-body border-bottom">
@@ -85,7 +85,7 @@
 
 
   <h1 id="DotPulsar_Internal_ProducerBuilder_1" data-uid="DotPulsar.Internal.ProducerBuilder`1" class="text-break">
-Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L20"><i class="bi bi-code-slash"></i></a>
+Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L20"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -182,7 +182,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ProducerBuilder_1__ctor_DotPulsar_Abstractions_IPulsarClient_DotPulsar_Abstractions_ISchema__0__" data-uid="DotPulsar.Internal.ProducerBuilder`1.#ctor(DotPulsar.Abstractions.IPulsarClient,DotPulsar.Abstractions.ISchema{`0})">
   ProducerBuilder(IPulsarClient, ISchema&lt;TMessage&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L34"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
@@ -219,7 +219,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ProducerBuilder_1_AttachTraceInfoToMessages_System_Boolean_" data-uid="DotPulsar.Internal.ProducerBuilder`1.AttachTraceInfoToMessages(System.Boolean)">
   AttachTraceInfoToMessages(bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L45"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Whether to attach the sending trace's parent and state to the outgoing messages metadata. The default is 'false'.</p>
@@ -256,7 +256,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ProducerBuilder_1_CompressionType_DotPulsar_CompressionType_" data-uid="DotPulsar.Internal.ProducerBuilder`1.CompressionType(DotPulsar.CompressionType)">
   CompressionType(CompressionType)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L51"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Set the compression type. The default is 'None'.</p>
@@ -293,7 +293,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ProducerBuilder_1_Create" data-uid="DotPulsar.Internal.ProducerBuilder`1.Create">
   Create()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L99"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Create the producer.</p>
@@ -325,7 +325,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ProducerBuilder_1_InitialSequenceId_System_UInt64_" data-uid="DotPulsar.Internal.ProducerBuilder`1.InitialSequenceId(System.UInt64)">
   InitialSequenceId(ulong)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L57"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Set the initial sequence id. The default is 0.</p>
@@ -362,7 +362,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ProducerBuilder_1_MaxPendingMessages_System_UInt32_" data-uid="DotPulsar.Internal.ProducerBuilder`1.MaxPendingMessages(System.UInt32)">
   MaxPendingMessages(uint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L93"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Set the max size of the queue holding the messages pending to receive an acknowledgment from the broker. The default is 500.</p>
@@ -399,7 +399,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ProducerBuilder_1_MessageRouter_DotPulsar_Abstractions_IMessageRouter_" data-uid="DotPulsar.Internal.ProducerBuilder`1.MessageRouter(DotPulsar.Abstractions.IMessageRouter)">
   MessageRouter(IMessageRouter)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L87"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Set the message router for this producer. The default is RoundRobinPartitionRouter.</p>
@@ -436,7 +436,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ProducerBuilder_1_ProducerAccessMode_DotPulsar_ProducerAccessMode_" data-uid="DotPulsar.Internal.ProducerBuilder`1.ProducerAccessMode(DotPulsar.ProducerAccessMode)">
   ProducerAccessMode(ProducerAccessMode)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L63"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Set the producer access mode. The default is 'Shared'.</p>
@@ -473,7 +473,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ProducerBuilder_1_ProducerName_System_String_" data-uid="DotPulsar.Internal.ProducerBuilder`1.ProducerName(System.String)">
   ProducerName(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L69"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L69"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Set the producer name. This is optional.</p>
@@ -510,7 +510,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ProducerBuilder_1_StateChangedHandler_DotPulsar_Abstractions_IHandleStateChanged_DotPulsar_ProducerStateChanged__" data-uid="DotPulsar.Internal.ProducerBuilder`1.StateChangedHandler(DotPulsar.Abstractions.IHandleStateChanged{DotPulsar.ProducerStateChanged})">
   StateChangedHandler(IHandleStateChanged&lt;ProducerStateChanged&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L75"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Register a state changed handler.</p>
@@ -547,7 +547,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ProducerBuilder_1_Topic_System_String_" data-uid="DotPulsar.Internal.ProducerBuilder`1.Topic(System.String)">
   Topic(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L81"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Set the topic for this producer. This is required.</p>
@@ -584,7 +584,7 @@ Class ProducerBuilder&lt;TMessage&gt;  <a class="header-action link-secondary" t
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ProducerBuilder.cs/#L20" class="edit-link">Edit this page</a>
+          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ProducerBuilder.cs/#L20" class="edit-link">Edit this page</a>
         </div>
 
 

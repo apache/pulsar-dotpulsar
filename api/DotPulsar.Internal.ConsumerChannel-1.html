@@ -16,7 +16,7 @@
       
       
       
-      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0-rc.1/apiSpec/new?filename=DotPulsar_Internal_ConsumerChannel_1.md&amp;value=---%0Auid%3A%20DotPulsar.Internal.ConsumerChannel%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0/apiSpec/new?filename=DotPulsar_Internal_ConsumerChannel_1.md&amp;value=---%0Auid%3A%20DotPulsar.Internal.ConsumerChannel%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -29,15 +29,15 @@
       <meta name="loc:changeTheme" content="Change theme">
       <meta name="loc:copy" content="Copy">
       <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
   </head>
-
-  <script type="module" src="./../public/docfx.min.js"></script>
-
-  <script>
-    const theme = localStorage.getItem('theme') || 'auto'
-    document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
-  </script>
-
 
   <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
     <header class="bg-body border-bottom">
@@ -85,7 +85,7 @@
 
 
   <h1 id="DotPulsar_Internal_ConsumerChannel_1" data-uid="DotPulsar.Internal.ConsumerChannel`1" class="text-break">
-Class ConsumerChannel&lt;TMessage&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ConsumerChannel.cs/#L23"><i class="bi bi-code-slash"></i></a>
+Class ConsumerChannel&lt;TMessage&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ConsumerChannel.cs/#L23"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -174,7 +174,7 @@ Class ConsumerChannel&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ConsumerChannel_1__ctor_System_UInt64_System_UInt32_DotPulsar_Internal_AsyncQueue_DotPulsar_Internal_MessagePackage__DotPulsar_Internal_Abstractions_IConnection_DotPulsar_Internal_BatchHandler__0__DotPulsar_Internal_Abstractions_IMessageFactory__0__System_Collections_Generic_IEnumerable_DotPulsar_Internal_Abstractions_IDecompressorFactory__System_String_" data-uid="DotPulsar.Internal.ConsumerChannel`1.#ctor(System.UInt64,System.UInt32,DotPulsar.Internal.AsyncQueue{DotPulsar.Internal.MessagePackage},DotPulsar.Internal.Abstractions.IConnection,DotPulsar.Internal.BatchHandler{`0},DotPulsar.Internal.Abstractions.IMessageFactory{`0},System.Collections.Generic.IEnumerable{DotPulsar.Internal.Abstractions.IDecompressorFactory},System.String)">
   ConsumerChannel(ulong, uint, AsyncQueue&lt;MessagePackage&gt;, IConnection, BatchHandler&lt;TMessage&gt;, IMessageFactory&lt;TMessage&gt;, IEnumerable&lt;IDecompressorFactory&gt;, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ConsumerChannel.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ConsumerChannel.cs/#L37"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
@@ -223,7 +223,7 @@ Class ConsumerChannel&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ConsumerChannel_1_ClosedByClient_System_Threading_CancellationToken_" data-uid="DotPulsar.Internal.ConsumerChannel`1.ClosedByClient(System.Threading.CancellationToken)">
   ClosedByClient(CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ConsumerChannel.cs/#L230"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ConsumerChannel.cs/#L230"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
@@ -259,7 +259,7 @@ Class ConsumerChannel&lt;TMessage&gt;  <a class="header-action link-secondary" t
 
   <h3 id="DotPulsar_Internal_ConsumerChannel_1_DisposeAsync" data-uid="DotPulsar.Internal.ConsumerChannel`1.DisposeAsync">
   DisposeAsync()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ConsumerChannel.cs/#L192"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ConsumerChannel.cs/#L192"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Performs application-defined tasks associated with freeing, releasing, or
@@ -292,7 +292,7 @@ resetting unmanaged resources asynchronously.</p>
 
   <h3 id="DotPulsar_Internal_ConsumerChannel_1_Receive_System_Threading_CancellationToken_" data-uid="DotPulsar.Internal.ConsumerChannel`1.Receive(System.Threading.CancellationToken)">
   Receive(CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ConsumerChannel.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ConsumerChannel.cs/#L73"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
@@ -328,7 +328,7 @@ resetting unmanaged resources asynchronously.</p>
 
   <h3 id="DotPulsar_Internal_ConsumerChannel_1_Send_DotPulsar_Internal_PulsarApi_CommandAck_System_Threading_CancellationToken_" data-uid="DotPulsar.Internal.ConsumerChannel`1.Send(DotPulsar.Internal.PulsarApi.CommandAck,System.Threading.CancellationToken)">
   Send(CommandAck, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ConsumerChannel.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ConsumerChannel.cs/#L139"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
@@ -366,7 +366,7 @@ resetting unmanaged resources asynchronously.</p>
 
   <h3 id="DotPulsar_Internal_ConsumerChannel_1_Send_DotPulsar_Internal_PulsarApi_CommandGetLastMessageId_System_Threading_CancellationToken_" data-uid="DotPulsar.Internal.ConsumerChannel`1.Send(DotPulsar.Internal.PulsarApi.CommandGetLastMessageId,System.Threading.CancellationToken)">
   Send(CommandGetLastMessageId, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ConsumerChannel.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ConsumerChannel.cs/#L178"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
@@ -404,7 +404,7 @@ resetting unmanaged resources asynchronously.</p>
 
   <h3 id="DotPulsar_Internal_ConsumerChannel_1_Send_DotPulsar_Internal_PulsarApi_CommandRedeliverUnacknowledgedMessages_System_Threading_CancellationToken_" data-uid="DotPulsar.Internal.ConsumerChannel`1.Send(DotPulsar.Internal.PulsarApi.CommandRedeliverUnacknowledgedMessages,System.Threading.CancellationToken)">
   Send(CommandRedeliverUnacknowledgedMessages, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ConsumerChannel.cs/#L157"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ConsumerChannel.cs/#L157"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
@@ -442,7 +442,7 @@ resetting unmanaged resources asynchronously.</p>
 
   <h3 id="DotPulsar_Internal_ConsumerChannel_1_Send_DotPulsar_Internal_PulsarApi_CommandSeek_System_Threading_CancellationToken_" data-uid="DotPulsar.Internal.ConsumerChannel`1.Send(DotPulsar.Internal.PulsarApi.CommandSeek,System.Threading.CancellationToken)">
   Send(CommandSeek, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ConsumerChannel.cs/#L170"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ConsumerChannel.cs/#L170"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
@@ -480,7 +480,7 @@ resetting unmanaged resources asynchronously.</p>
 
   <h3 id="DotPulsar_Internal_ConsumerChannel_1_Send_DotPulsar_Internal_PulsarApi_CommandUnsubscribe_System_Threading_CancellationToken_" data-uid="DotPulsar.Internal.ConsumerChannel`1.Send(DotPulsar.Internal.PulsarApi.CommandUnsubscribe,System.Threading.CancellationToken)">
   Send(CommandUnsubscribe, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ConsumerChannel.cs/#L163"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ConsumerChannel.cs/#L163"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
@@ -518,7 +518,7 @@ resetting unmanaged resources asynchronously.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/ConsumerChannel.cs/#L23" class="edit-link">Edit this page</a>
+          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/ConsumerChannel.cs/#L23" class="edit-link">Edit this page</a>
         </div>
 
 

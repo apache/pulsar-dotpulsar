@@ -16,7 +16,7 @@
       
       
       
-      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0-rc.1/apiSpec/new?filename=DotPulsar_Internal_Message_1.md&amp;value=---%0Auid%3A%20DotPulsar.Internal.Message%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0/apiSpec/new?filename=DotPulsar_Internal_Message_1.md&amp;value=---%0Auid%3A%20DotPulsar.Internal.Message%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -29,15 +29,15 @@
       <meta name="loc:changeTheme" content="Change theme">
       <meta name="loc:copy" content="Copy">
       <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
   </head>
-
-  <script type="module" src="./../public/docfx.min.js"></script>
-
-  <script>
-    const theme = localStorage.getItem('theme') || 'auto'
-    document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
-  </script>
-
 
   <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
     <header class="bg-body border-bottom">
@@ -85,7 +85,7 @@
 
 
   <h1 id="DotPulsar_Internal_Message_1" data-uid="DotPulsar.Internal.Message`1" class="text-break">
-Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L20"><i class="bi bi-code-slash"></i></a>
+Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L20"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -177,7 +177,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_Data" data-uid="DotPulsar.Internal.Message`1.Data">
   Data
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L56"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The raw payload of the message.</p>
@@ -209,7 +209,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_EventTime" data-uid="DotPulsar.Internal.Message`1.EventTime">
   EventTime
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L68"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The event time of the message as unix time in milliseconds.</p>
@@ -241,7 +241,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_EventTimeAsDateTime" data-uid="DotPulsar.Internal.Message`1.EventTimeAsDateTime">
   EventTimeAsDateTime
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L70"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The event time of the message as an UTC DateTime.</p>
@@ -273,7 +273,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_EventTimeAsDateTimeOffset" data-uid="DotPulsar.Internal.Message`1.EventTimeAsDateTimeOffset">
   EventTimeAsDateTimeOffset
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L72"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The event time of the message as a DateTimeOffset with an offset of 0.</p>
@@ -305,7 +305,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_HasBase64EncodedKey" data-uid="DotPulsar.Internal.Message`1.HasBase64EncodedKey">
   HasBase64EncodedKey
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L74"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Check whether the key been base64 encoded.</p>
@@ -337,7 +337,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_HasEventTime" data-uid="DotPulsar.Internal.Message`1.HasEventTime">
   HasEventTime
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L66"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Check whether the message has an event time.</p>
@@ -369,7 +369,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_HasKey" data-uid="DotPulsar.Internal.Message`1.HasKey">
   HasKey
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L76"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Check whether the message has a key.</p>
@@ -401,7 +401,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_HasOrderingKey" data-uid="DotPulsar.Internal.Message`1.HasOrderingKey">
   HasOrderingKey
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L82"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Check whether the message has an ordering key.</p>
@@ -433,7 +433,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_Key" data-uid="DotPulsar.Internal.Message`1.Key">
   Key
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L78"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The key as a string.</p>
@@ -465,7 +465,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_KeyBytes" data-uid="DotPulsar.Internal.Message`1.KeyBytes">
   KeyBytes
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L80"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The key as bytes.</p>
@@ -497,7 +497,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_MessageId" data-uid="DotPulsar.Internal.Message`1.MessageId">
   MessageId
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L54"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The id of the message.</p>
@@ -529,7 +529,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_OrderingKey" data-uid="DotPulsar.Internal.Message`1.OrderingKey">
   OrderingKey
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L84"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The ordering key of the message.</p>
@@ -561,7 +561,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_ProducerName" data-uid="DotPulsar.Internal.Message`1.ProducerName">
   ProducerName
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L58"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The name of the producer who produced the message.</p>
@@ -593,7 +593,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_Properties" data-uid="DotPulsar.Internal.Message`1.Properties">
   Properties
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L92"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The properties of the message.</p>
@@ -625,7 +625,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_PublishTime" data-uid="DotPulsar.Internal.Message`1.PublishTime">
   PublishTime
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L86"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The publish time of the message as unix time in milliseconds.</p>
@@ -657,7 +657,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_PublishTimeAsDateTime" data-uid="DotPulsar.Internal.Message`1.PublishTimeAsDateTime">
   PublishTimeAsDateTime
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L88"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The publish time of the message as an UTC DateTime.</p>
@@ -689,7 +689,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_PublishTimeAsDateTimeOffset" data-uid="DotPulsar.Internal.Message`1.PublishTimeAsDateTimeOffset">
   PublishTimeAsDateTimeOffset
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L90"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The publish time of the message as a DateTimeOffset with an offset of 0.</p>
@@ -721,7 +721,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_RedeliveryCount" data-uid="DotPulsar.Internal.Message`1.RedeliveryCount">
   RedeliveryCount
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L64"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The redelivery count (maintained by the broker) of the message.</p>
@@ -753,7 +753,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_SchemaVersion" data-uid="DotPulsar.Internal.Message`1.SchemaVersion">
   SchemaVersion
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L60"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The schema version of the message.</p>
@@ -785,7 +785,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_SequenceId" data-uid="DotPulsar.Internal.Message`1.SequenceId">
   SequenceId
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L62"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The sequence id of the message.</p>
@@ -821,7 +821,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 
   <h3 id="DotPulsar_Internal_Message_1_Value" data-uid="DotPulsar.Internal.Message`1.Value">
   Value()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L94"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The value of the message.</p>
@@ -853,7 +853,7 @@ Class Message&lt;TValue&gt;  <a class="header-action link-secondary" title="View
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Internal/Message.cs/#L20" class="edit-link">Edit this page</a>
+          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Internal/Message.cs/#L20" class="edit-link">Edit this page</a>
         </div>
 
 

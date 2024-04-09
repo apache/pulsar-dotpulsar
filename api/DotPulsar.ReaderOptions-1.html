@@ -16,7 +16,7 @@
       
       
       
-      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0-rc.1/apiSpec/new?filename=DotPulsar_ReaderOptions_1.md&amp;value=---%0Auid%3A%20DotPulsar.ReaderOptions%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0/apiSpec/new?filename=DotPulsar_ReaderOptions_1.md&amp;value=---%0Auid%3A%20DotPulsar.ReaderOptions%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -29,15 +29,15 @@
       <meta name="loc:changeTheme" content="Change theme">
       <meta name="loc:copy" content="Copy">
       <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
   </head>
-
-  <script type="module" src="./../public/docfx.min.js"></script>
-
-  <script>
-    const theme = localStorage.getItem('theme') || 'auto'
-    document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
-  </script>
-
 
   <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
     <header class="bg-body border-bottom">
@@ -85,7 +85,7 @@
 
 
   <h1 id="DotPulsar_ReaderOptions_1" data-uid="DotPulsar.ReaderOptions`1" class="text-break">
-Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L22"><i class="bi bi-code-slash"></i></a>
+Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L22"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -106,7 +106,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
   <h4 class="section">Type Parameters</h4>
   <dl class="parameters">
     <dt><code>TMessage</code></dt>
-    <dd>The reader building options.</dd>
+    <dd></dd>
   </dl>
 
   <dl class="typelist inheritance">
@@ -168,7 +168,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
 
   <h3 id="DotPulsar_ReaderOptions_1__ctor_DotPulsar_MessageId_System_String_DotPulsar_Abstractions_ISchema__0__" data-uid="DotPulsar.ReaderOptions`1.#ctor(DotPulsar.MessageId,System.String,DotPulsar.Abstractions.ISchema{`0})">
   ReaderOptions(MessageId, string, ISchema&lt;TMessage&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L37"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Initializes a new instance using the specified startMessageId and topic.</p>
@@ -207,7 +207,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
 
   <h3 id="DotPulsar_ReaderOptions_1_DefaultMessagePrefetchCount" data-uid="DotPulsar.ReaderOptions`1.DefaultMessagePrefetchCount">
   DefaultMessagePrefetchCount
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L27"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The default message prefetch count.</p>
@@ -238,7 +238,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
 
   <h3 id="DotPulsar_ReaderOptions_1_DefaultReadCompacted" data-uid="DotPulsar.ReaderOptions`1.DefaultReadCompacted">
   DefaultReadCompacted
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L32"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The default of whether to read compacted.</p>
@@ -274,7 +274,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
 
   <h3 id="DotPulsar_ReaderOptions_1_MessagePrefetchCount" data-uid="DotPulsar.ReaderOptions`1.MessagePrefetchCount">
   MessagePrefetchCount
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L49"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Number of messages that will be prefetched. The default is 1000.</p>
@@ -306,7 +306,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
 
   <h3 id="DotPulsar_ReaderOptions_1_ReadCompacted" data-uid="DotPulsar.ReaderOptions`1.ReadCompacted">
   ReadCompacted
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L54"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Whether to read from the compacted topic. The default is 'false'.</p>
@@ -338,7 +338,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
 
   <h3 id="DotPulsar_ReaderOptions_1_ReaderName" data-uid="DotPulsar.ReaderOptions`1.ReaderName">
   ReaderName
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L59"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Set the reader name. This is optional.</p>
@@ -370,7 +370,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
 
   <h3 id="DotPulsar_ReaderOptions_1_Schema" data-uid="DotPulsar.ReaderOptions`1.Schema">
   Schema
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L64"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Set the schema. This is required.</p>
@@ -402,7 +402,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
 
   <h3 id="DotPulsar_ReaderOptions_1_StartMessageId" data-uid="DotPulsar.ReaderOptions`1.StartMessageId">
   StartMessageId
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L69"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L69"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The initial reader position is set to the specified message id. This is required.</p>
@@ -434,7 +434,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
 
   <h3 id="DotPulsar_ReaderOptions_1_StateChangedHandler" data-uid="DotPulsar.ReaderOptions`1.StateChangedHandler">
   StateChangedHandler
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L74"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Register a state changed handler. This is optional.</p>
@@ -466,7 +466,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
 
   <h3 id="DotPulsar_ReaderOptions_1_Topic" data-uid="DotPulsar.ReaderOptions`1.Topic">
   Topic
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L79"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Set the topic for this reader. This is required.</p>
@@ -498,7 +498,7 @@ Class ReaderOptions&lt;TMessage&gt;  <a class="header-action link-secondary" tit
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/ReaderOptions.cs/#L22" class="edit-link">Edit this page</a>
+          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/ReaderOptions.cs/#L22" class="edit-link">Edit this page</a>
         </div>
 
 

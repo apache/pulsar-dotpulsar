@@ -16,7 +16,7 @@
       
       
       
-      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0-rc.1/apiSpec/new?filename=DotPulsar_Extensions_StateExtensions.md&amp;value=---%0Auid%3A%20DotPulsar.Extensions.StateExtensions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/apache/pulsar-dotpulsar/new/3.2.0/apiSpec/new?filename=DotPulsar_Extensions_StateExtensions.md&amp;value=---%0Auid%3A%20DotPulsar.Extensions.StateExtensions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -29,15 +29,15 @@
       <meta name="loc:changeTheme" content="Change theme">
       <meta name="loc:copy" content="Copy">
       <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
   </head>
-
-  <script type="module" src="./../public/docfx.min.js"></script>
-
-  <script>
-    const theme = localStorage.getItem('theme') || 'auto'
-    document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
-  </script>
-
 
   <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
     <header class="bg-body border-bottom">
@@ -85,7 +85,7 @@
 
 
   <h1 id="DotPulsar_Extensions_StateExtensions" data-uid="DotPulsar.Extensions.StateExtensions" class="text-break">
-Class StateExtensions  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Extensions/StateExtensions.cs/#L22"><i class="bi bi-code-slash"></i></a>
+Class StateExtensions  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Extensions/StateExtensions.cs/#L22"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -153,7 +153,7 @@ Class StateExtensions  <a class="header-action link-secondary" title="View sourc
 
   <h3 id="DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__2___0___1_System_TimeSpan_System_Action___0___1__System_Action___0___1__System_Threading_CancellationToken_" data-uid="DotPulsar.Extensions.StateExtensions.DelayedStateMonitor``2(``0,``1,System.TimeSpan,System.Action{``0,``1},System.Action{``0,``1},System.Threading.CancellationToken)">
   DelayedStateMonitor&lt;TEntity, TState&gt;(TEntity, TState, TimeSpan, Action&lt;TEntity, TState&gt;, Action&lt;TEntity, TState&gt;, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Extensions/StateExtensions.cs/#L189"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Extensions/StateExtensions.cs/#L189"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Will invoke the onStateLeft callback when the state if left (with delay) and onStateReached when it's reached again.</p>
@@ -208,7 +208,7 @@ Class StateExtensions  <a class="header-action link-secondary" title="View sourc
 
   <h3 id="DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__2___0___1_System_TimeSpan_System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Threading_CancellationToken_" data-uid="DotPulsar.Extensions.StateExtensions.DelayedStateMonitor``2(``0,``1,System.TimeSpan,System.Func{``0,``1,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask},System.Func{``0,``1,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask},System.Threading.CancellationToken)">
   DelayedStateMonitor&lt;TEntity, TState&gt;(TEntity, TState, TimeSpan, Func&lt;TEntity, TState, CancellationToken, ValueTask&gt;, Func&lt;TEntity, TState, CancellationToken, ValueTask&gt;, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Extensions/StateExtensions.cs/#L161"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Extensions/StateExtensions.cs/#L161"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Will invoke the onStateLeft callback when the state if left (with delay) and onStateReached when it's reached again.</p>
@@ -263,7 +263,7 @@ Class StateExtensions  <a class="header-action link-secondary" title="View sourc
 
   <h3 id="DotPulsar_Extensions_StateExtensions_DelayedStateMonitor__3___0___1_System_TimeSpan_System_Func___0___1_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask___2___System_Func___0___1___2_System_Threading_CancellationToken_System_Threading_Tasks_ValueTask__System_Threading_CancellationToken_" data-uid="DotPulsar.Extensions.StateExtensions.DelayedStateMonitor``3(``0,``1,System.TimeSpan,System.Func{``0,``1,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask{``2}},System.Func{``0,``1,``2,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask},System.Threading.CancellationToken)">
   DelayedStateMonitor&lt;TEntity, TState, TFaultContext&gt;(TEntity, TState, TimeSpan, Func&lt;TEntity, TState, CancellationToken, ValueTask&lt;TFaultContext&gt;&gt;, Func&lt;TEntity, TState, TFaultContext, CancellationToken, ValueTask&gt;, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Extensions/StateExtensions.cs/#L110"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Extensions/StateExtensions.cs/#L110"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Will invoke the onStateLeft callback when the state if left (with delay) and onStateReached when it's reached again.</p>
@@ -320,7 +320,7 @@ Class StateExtensions  <a class="header-action link-secondary" title="View sourc
 
   <h3 id="DotPulsar_Extensions_StateExtensions_OnStateChangeFrom__1_DotPulsar_Abstractions_IState___0____0_System_TimeSpan_System_Threading_CancellationToken_" data-uid="DotPulsar.Extensions.StateExtensions.OnStateChangeFrom``1(DotPulsar.Abstractions.IState{``0},``0,System.TimeSpan,System.Threading.CancellationToken)">
   OnStateChangeFrom&lt;TState&gt;(IState&lt;TState&gt;, TState, TimeSpan, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Extensions/StateExtensions.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Extensions/StateExtensions.cs/#L73"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Wait for the state to change from a specific state with a delay.</p>
@@ -372,7 +372,7 @@ Class StateExtensions  <a class="header-action link-secondary" title="View sourc
 
   <h3 id="DotPulsar_Extensions_StateExtensions_OnStateChangeTo__1_DotPulsar_Abstractions_IState___0____0_System_TimeSpan_System_Threading_CancellationToken_" data-uid="DotPulsar.Extensions.StateExtensions.OnStateChangeTo``1(DotPulsar.Abstractions.IState{``0},``0,System.TimeSpan,System.Threading.CancellationToken)">
   OnStateChangeTo&lt;TState&gt;(IState&lt;TState&gt;, TState, TimeSpan, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Extensions/StateExtensions.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Extensions/StateExtensions.cs/#L33"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Wait for the state to change to a specific state with a delay.</p>
@@ -424,7 +424,7 @@ Class StateExtensions  <a class="header-action link-secondary" title="View sourc
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0-rc.1/src/DotPulsar/Extensions/StateExtensions.cs/#L22" class="edit-link">Edit this page</a>
+          <a href="https://github.com/apache/pulsar-dotpulsar/blob/3.2.0/src/DotPulsar/Extensions/StateExtensions.cs/#L22" class="edit-link">Edit this page</a>
         </div>
 
 
