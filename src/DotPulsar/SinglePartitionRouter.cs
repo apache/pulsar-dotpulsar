@@ -49,7 +49,7 @@ public sealed class SinglePartitionRouter : IMessageRouter
     {
         var keyBytes = messageMetadata.KeyBytes;
         if (keyBytes is not null && keyBytes.Length > 0)
-            return (int) MurmurHash3.Hash32(keyBytes, 0) % numberOfPartitions;
+            return (int) (MurmurHash3.Hash32(keyBytes, 0) % numberOfPartitions);
 
         if (_partitionIndex == -1)
             _partitionIndex = new Random().Next(0, numberOfPartitions);

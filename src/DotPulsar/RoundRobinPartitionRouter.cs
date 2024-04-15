@@ -18,7 +18,7 @@ using DotPulsar.Abstractions;
 using HashDepot;
 
 /// <summary>
-/// The round robin partition messages router, which is the default router.
+/// The round-robin partition messages router, which is the default router.
 /// If a key is provided, the producer will hash the key and publish the message to a particular partition.
 /// If a key is not provided, the producer will publish messages across all partitions in a round-robin fashion to achieve maximum throughput.
 /// </summary>
@@ -27,7 +27,7 @@ public sealed class RoundRobinPartitionRouter : IMessageRouter
     private int _partitionIndex;
 
     /// <summary>
-    /// Initializes a new instance of the round robin partition router
+    /// Initializes a new instance of the round-robin partition router
     /// </summary>
     public RoundRobinPartitionRouter()
     {
@@ -35,13 +35,13 @@ public sealed class RoundRobinPartitionRouter : IMessageRouter
     }
 
     /// <summary>
-    /// Choose a partition in round robin routing mode
+    /// Choose a partition in round-robin routing mode
     /// </summary>
     public int ChoosePartition(MessageMetadata messageMetadata, int numberOfPartitions)
     {
         var keyBytes = messageMetadata.KeyBytes;
         if (keyBytes is not null && keyBytes.Length > 0)
-            return (int) MurmurHash3.Hash32(keyBytes, 0) % numberOfPartitions;
+            return (int) (MurmurHash3.Hash32(keyBytes, 0) % numberOfPartitions);
 
         return Interlocked.Increment(ref _partitionIndex) % numberOfPartitions;
     }
