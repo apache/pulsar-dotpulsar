@@ -78,7 +78,7 @@ public class IntegrationFixture : IAsyncLifetime
             .Build();
 
         _pulsarCluster = new ContainerBuilder()
-            .WithImage("apachepulsar/pulsar:3.1.1")
+            .WithImage("apachepulsar/pulsar:3.1.3")
             .WithEnvironment(environmentVariables)
             .WithHostname("pulsar")
             .WithNetwork(_network)
@@ -153,12 +153,12 @@ public class IntegrationFixture : IAsyncLifetime
         if (expiryTime != Timeout.InfiniteTimeSpan)
             arguments += $" --expiry-time {expiryTime.TotalSeconds}s";
 
-        var result = await _pulsarCluster.ExecAsync(new[] { "/bin/bash", "-c", arguments }, cancellationToken);
+        var result = await _pulsarCluster.ExecAsync(["/bin/bash", "-c", arguments], cancellationToken);
 
         if (result.ExitCode != 0)
             throw new InvalidOperationException($"Could not create the token: {result.Stderr}");
 
-        return result.Stdout;
+        return result.Stdout.Trim();
     }
 
     private static string CreateTopicName() => $"persistent://public/default/{Guid.NewGuid():N}";
@@ -174,7 +174,7 @@ public class IntegrationFixture : IAsyncLifetime
     {
         var arguments = $"bin/pulsar-admin topics create {topic}";
 
-        var result = await _pulsarCluster.ExecAsync(new[] { "/bin/bash", "-c", arguments }, cancellationToken);
+        var result = await _pulsarCluster.ExecAsync(["/bin/bash", "-c", arguments], cancellationToken);
 
         if (result.ExitCode != 0)
             throw new Exception($"Could not create the topic: {result.Stderr}");
@@ -191,7 +191,7 @@ public class IntegrationFixture : IAsyncLifetime
     {
         var arguments = $"bin/pulsar-admin topics create-partitioned-topic {topic} -p {numberOfPartitions}";
 
-        var result = await _pulsarCluster.ExecAsync(new[] { "/bin/bash", "-c", arguments }, cancellationToken);
+        var result = await _pulsarCluster.ExecAsync(["/bin/bash", "-c", arguments], cancellationToken);
 
         if (result.ExitCode != 0)
             throw new Exception($"Could not create the partitioned topic: {result.Stderr}");

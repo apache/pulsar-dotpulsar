@@ -1,5 +1,6 @@
-﻿namespace DotPulsar.Tests.Internal;
+namespace DotPulsar.Tests.Internal;
 
+[Trait("Category", "Unit")]
 public class RoundRobinPartitionRouterTests
 {
     [Fact]

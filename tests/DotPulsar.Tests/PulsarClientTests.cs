@@ -59,7 +59,7 @@ public sealed class PulsarClientTests : IDisposable
             if (throwException)
                 throw new Exception();
             var token = await _fixture.CreateToken(TimeSpan.FromSeconds(10), _cts.Token);
-            _testOutputHelper.Log($"Received token: {token}");
+            _testOutputHelper.Log($"Received token: '{token}'");
             return token;
         });
 
@@ -110,7 +110,7 @@ public sealed class PulsarClientTests : IDisposable
                 tcs.SetResult();
 
             var token = await _fixture.CreateToken(TimeSpan.FromSeconds(10), _cts.Token);
-            _testOutputHelper.Log($"Received token: {token}");
+            _testOutputHelper.Log($"Received token: '{token}'");
             return token;
         });
 
