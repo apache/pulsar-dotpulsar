@@ -48,7 +48,7 @@ gpg --verify-files *.asc
 
 ```shell
 tar zxvf pulsar-dotpulsar-${DOTPULSAR_VERSION}-src.tar.gz
-cd pulsar-dotpulsar-${DOTPULSAR_VERSION_RC}-src
+cd pulsar-dotpulsar-${DOTPULSAR_VERSION}-src
 dotnet build
 ```
 
