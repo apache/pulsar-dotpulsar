@@ -15,6 +15,8 @@
 namespace DotPulsar;
 
 using DotPulsar.Abstractions;
+using DotPulsar.Internal;
+using System.Collections.Concurrent;
 
 /// <summary>
 /// The consumer building options.
@@ -35,6 +37,18 @@ public sealed class ConsumerOptions<TMessage>
     /// The default priority level.
     /// </summary>
     public static readonly int DefaultPriorityLevel = 0;
+
+    /// <summary>
+    /// The default encryption keys (empty dictionary).
+    /// TODO: These keys probably don't need to be exposed in the options.
+    /// </summary>
+    public static readonly ConcurrentDictionary<string, string> DefaultEncryptionKeys = new();
+
+    /// <summary>
+    /// The default crypto key reader.
+    /// TODO: This should be an enum instead.
+    /// </summary>
+    public static readonly ICryptoKeyReader DefaultCryptoKeyReader = new LocalFileCryptoKeyReader();
 
     /// <summary>
     /// The default action to take when message decryption fails.
@@ -64,6 +78,8 @@ public sealed class ConsumerOptions<TMessage>
         InitialPosition = DefaultInitialPosition;
         PriorityLevel = DefaultPriorityLevel;
         MessagePrefetchCount = DefaultMessagePrefetchCount;
+        EncryptionKeys = DefaultEncryptionKeys;
+        CryptoKeyReader = DefaultCryptoKeyReader;
         CryptoFailureAction = DefaultCryptoFailureAction;
         ReadCompacted = DefaultReadCompacted;
         ReplicateSubscriptionState = DefaultReplicateSubscriptionState;
@@ -95,9 +111,14 @@ public sealed class ConsumerOptions<TMessage>
     public int PriorityLevel { get; set; }
 
     /// <summary>
+    /// Set the encryption keys.
+    /// </summary>
+    public ConcurrentDictionary<string, string> EncryptionKeys { get; set; }
+
+    /// <summary>
     /// Set the crypto key reader
     /// </summary>
-    public CryptoKeyReader CryptoKeyReader { get; set; }
+    public ICryptoKeyReader CryptoKeyReader { get; set; }
 
     /// <summary>
     /// Set the action to take when a crypto operation fails. The default is 'ConsumerCryptoFailureAction.Fail'.

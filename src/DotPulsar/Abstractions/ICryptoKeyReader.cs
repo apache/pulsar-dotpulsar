@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-namespace DotPulsar;
+namespace DotPulsar.Abstractions;
 
-public interface CryptoKeyReader
+public interface ICryptoKeyReader
 {
     /// <summary>
     /// Return the encryption (public) key corresponding to the key name in the argument.
