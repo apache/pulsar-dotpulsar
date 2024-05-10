@@ -26,6 +26,7 @@ public sealed class ConsumerChannelFactory<TMessage> : IConsumerChannelFactory<T
     private readonly uint _messagePrefetchCount;
     private readonly BatchHandler<TMessage> _batchHandler;
     private readonly IMessageFactory<TMessage> _messageFactory;
+    private readonly IEnumerable<IDecryptorFactory> _decryptorFactories;
     private readonly IEnumerable<IDecompressorFactory> _decompressorFactories;
     private readonly string _topic;
 
@@ -37,6 +38,7 @@ public sealed class ConsumerChannelFactory<TMessage> : IConsumerChannelFactory<T
         uint messagePrefetchCount,
         BatchHandler<TMessage> batchHandler,
         IMessageFactory<TMessage> messageFactory,
+        IEnumerable<IDecryptorFactory> decryptorFactories,
         IEnumerable<IDecompressorFactory> decompressorFactories,
         string topic)
     {
@@ -47,6 +49,7 @@ public sealed class ConsumerChannelFactory<TMessage> : IConsumerChannelFactory<T
         _messagePrefetchCount = messagePrefetchCount;
         _batchHandler = batchHandler;
         _messageFactory = messageFactory;
+        _decryptorFactories = decryptorFactories;
         _decompressorFactories = decompressorFactories;
         _topic = topic;
     }
@@ -57,6 +60,6 @@ public sealed class ConsumerChannelFactory<TMessage> : IConsumerChannelFactory<T
         var messageQueue = new AsyncQueue<MessagePackage>();
         var channel = new Channel(_correlationId, _eventRegister, messageQueue);
         var response = await connection.Send(_subscribe, channel, cancellationToken).ConfigureAwait(false);
-        return new ConsumerChannel<TMessage>(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler, _messageFactory, _decompressorFactories, _topic);
+        return new ConsumerChannel<TMessage>(response.ConsumerId, _messagePrefetchCount, messageQueue, connection, _batchHandler, _messageFactory, _decryptorFactories, _decompressorFactories, _topic);
     }
 }

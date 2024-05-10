@@ -18,6 +18,7 @@ using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Compression;
+using DotPulsar.Internal.Encryption;
 using DotPulsar.Internal.PulsarApi;
 
 public sealed class Reader<TMessage> : IReader<TMessage>
@@ -293,8 +294,9 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         var messagePrefetchCount = _readerOptions.MessagePrefetchCount;
         var messageFactory = new MessageFactory<TMessage>(_readerOptions.Schema);
         var batchHandler = new BatchHandler<TMessage>(false, messageFactory);
+        var decryptorFactories = EncryptionFactories.DecryptorFactories();
         var decompressorFactories = CompressionFactories.DecompressorFactories();
-        var factory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decompressorFactories, topic);
+        var factory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decryptorFactories, decompressorFactories, topic);
         var stateManager = new StateManager<ReaderState>(ReaderState.Disconnected, ReaderState.Closed, ReaderState.ReachedEndOfTopic, ReaderState.Faulted);
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);

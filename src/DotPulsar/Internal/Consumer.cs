@@ -18,6 +18,7 @@ using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Compression;
+using DotPulsar.Internal.Encryption;
 using DotPulsar.Internal.PulsarApi;
 
 public sealed class Consumer<TMessage> : IConsumer<TMessage>
@@ -406,8 +407,9 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         var messagePrefetchCount = _consumerOptions.MessagePrefetchCount;
         var messageFactory = new MessageFactory<TMessage>(_consumerOptions.Schema);
         var batchHandler = new BatchHandler<TMessage>(true, messageFactory);
+        var decryptorFactories = EncryptionFactories.DecryptorFactories();
         var decompressorFactories = CompressionFactories.DecompressorFactories();
-        var consumerChannelFactory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decompressorFactories, topic);
+        var consumerChannelFactory = new ConsumerChannelFactory<TMessage>(correlationId, _processManager, _connectionPool, subscribe, messagePrefetchCount, batchHandler, messageFactory, decryptorFactories, decompressorFactories, topic);
         var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);

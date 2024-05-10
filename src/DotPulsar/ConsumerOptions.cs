@@ -37,6 +37,11 @@ public sealed class ConsumerOptions<TMessage>
     public static readonly int DefaultPriorityLevel = 0;
 
     /// <summary>
+    /// The default action to take when message decryption fails.
+    /// </summary>
+    public static readonly ConsumerCryptoFailureAction DefaultCryptoFailureAction = ConsumerCryptoFailureAction.Fail;
+
+    /// <summary>
     /// The default of whether to read compacted.
     /// </summary>
     public static readonly bool DefaultReadCompacted = false;
@@ -59,6 +64,7 @@ public sealed class ConsumerOptions<TMessage>
         InitialPosition = DefaultInitialPosition;
         PriorityLevel = DefaultPriorityLevel;
         MessagePrefetchCount = DefaultMessagePrefetchCount;
+        CryptoFailureAction = DefaultCryptoFailureAction;
         ReadCompacted = DefaultReadCompacted;
         ReplicateSubscriptionState = DefaultReplicateSubscriptionState;
         SubscriptionType = DefaultSubscriptionType;
@@ -87,6 +93,16 @@ public sealed class ConsumerOptions<TMessage>
     /// Set the priority level for the shared subscription consumer. The default is 0.
     /// </summary>
     public int PriorityLevel { get; set; }
+
+    /// <summary>
+    /// Set the crypto key reader
+    /// </summary>
+    public CryptoKeyReader CryptoKeyReader { get; set; }
+
+    /// <summary>
+    /// Set the action to take when a crypto operation fails. The default is 'ConsumerCryptoFailureAction.Fail'.
+    /// </summary>
+    public ConsumerCryptoFailureAction CryptoFailureAction { get; set; }
 
     /// <summary>
     /// Whether to read from the compacted topic. The default is 'false'.
