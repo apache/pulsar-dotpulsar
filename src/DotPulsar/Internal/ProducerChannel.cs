@@ -26,13 +26,14 @@ public sealed class ProducerChannel : IProducerChannel
     private readonly string _name;
     private readonly IConnection _connection;
     private readonly ICompressorFactory? _compressorFactory;
+    private readonly IEncryptorFactory _encryptorFactory;
     private readonly byte[]? _schemaVersion;
 
-    public ProducerChannel(
-        ulong id,
+    public ProducerChannel(ulong id,
         string name,
         IConnection connection,
         ICompressorFactory? compressorFactory,
+        IEncryptorFactory encryptorFactory,
         byte[]? schemaVersion)
     {
         var sendPackagePolicy = new DefaultPooledObjectPolicy<SendPackage>();
@@ -41,6 +42,7 @@ public sealed class ProducerChannel : IProducerChannel
         _name = name;
         _connection = connection;
         _compressorFactory = compressorFactory;
+        _encryptorFactory = encryptorFactory;
         _schemaVersion = schemaVersion;
     }
 
@@ -91,6 +93,9 @@ public sealed class ProducerChannel : IProducerChannel
                 sendPackage.Payload = compressor.Compress(payload);
                 resetCompression = true;
             }
+
+            var encryptor = _encryptorFactory.Create();
+            sendPackage.Payload = encryptor.Encrypt(sendPackage.Payload);
 
             await _connection.Send(sendPackage, responseTcs, cancellationToken).ConfigureAwait(false);
         }

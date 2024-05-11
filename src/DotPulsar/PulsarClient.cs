@@ -20,6 +20,7 @@ using DotPulsar.Extensions;
 using DotPulsar.Internal;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Compression;
+using DotPulsar.Internal.Encryption;
 
 /// <summary>
 /// Pulsar client for creating producers, consumers and readers.
@@ -70,7 +71,9 @@ public sealed class PulsarClient : IPulsarClient
                 throw new CompressionException($"Support for {compressionType} compression was not found");
         }
 
-        var producer = new Producer<TMessage>(ServiceUrl, options, _exceptionHandler, _connectionPool, compressorFactory);
+        var encryptorFactory = EncryptionFactories.GetEncryptorFactory(options.EncryptionAlgo);
+
+        var producer = new Producer<TMessage>(ServiceUrl, options, _exceptionHandler, _connectionPool, compressorFactory, encryptorFactory);
 
         if (options.StateChangedHandler is not null)
             _ = StateMonitor.MonitorProducer(producer, options.StateChangedHandler);

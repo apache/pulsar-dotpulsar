@@ -15,17 +15,19 @@
 namespace DotPulsar.Internal.Encryption;
 
 using DotPulsar.Internal.Abstractions;
+using System.Buffers;
 
 /// <summary>
 /// Null encryptor that does not encrypt or decrypt data.
 /// </summary>
-public class NullEncryptor
+public class NullEncryptor(IDisposable? disposable = null) : IEncryptor, IDecryptor
 {
-    public static bool TryLoading(out IEncryptorFactory? encryptorFactory, out IDecryptorFactory? decryptorFactory)
-    {
-        decryptorFactory = new DecryptorFactory(string.Empty, () => new NullEncryption());
-        encryptorFactory = new EncryptorFactory(string.Empty, () => new NullEncryption());
+    public void Dispose()
+        => disposable?.Dispose();
 
-        return EncryptionTester.TestEncryption(encryptorFactory, decryptorFactory);
-    }
+    public ReadOnlySequence<byte> Decrypt(ReadOnlySequence<byte> data, int encryptedSize) =>
+        data;
+
+    public ReadOnlySequence<byte> Encrypt(ReadOnlySequence<byte> data) =>
+        data;
 }

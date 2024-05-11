@@ -15,6 +15,8 @@
 namespace DotPulsar;
 
 using DotPulsar.Abstractions;
+using DotPulsar.Internal;
+using System.Collections.Concurrent;
 
 /// <summary>
 /// The producer building options.
@@ -37,6 +39,28 @@ public sealed class ProducerOptions<TMessage>
     public static readonly ProducerAccessMode DefaultProducerAccessMode = ProducerAccessMode.Shared;
 
     /// <summary>
+    /// The default encryption algorithm
+    /// </summary>
+    public static readonly string DefaultEncryptionAlgo = string.Empty;
+
+    /// <summary>
+    /// The default encryption keys (empty dictionary).
+    /// TODO: These keys probably don't need to be exposed in the options.
+    /// </summary>
+    public static readonly ConcurrentDictionary<string, string> DefaultEncryptionKeys = new();
+
+    /// <summary>
+    /// The default crypto key reader.
+    /// TODO: This should be an enum instead.
+    /// </summary>
+    public static readonly ICryptoKeyReader DefaultCryptoKeyReader = new LocalFileCryptoKeyReader();
+
+    /// <summary>
+    /// The default action to take when message encryption fails.
+    /// </summary>
+    public static readonly ProducerCryptoFailureAction DefaultCryptoFailureAction = ProducerCryptoFailureAction.Fail;
+
+    /// <summary>
     /// Initializes a new instance using the specified topic.
     /// </summary>
     public ProducerOptions(string topic, ISchema<TMessage> schema)
@@ -48,12 +72,36 @@ public sealed class ProducerOptions<TMessage>
         Topic = topic;
         Schema = schema;
         MessageRouter = new RoundRobinPartitionRouter();
+        EncryptionAlgo = DefaultEncryptionAlgo;
+        EncryptionKeys = DefaultEncryptionKeys;
+        CryptoKeyReader = DefaultCryptoKeyReader;
+        CryptoFailureAction = DefaultCryptoFailureAction;
     }
 
     /// <summary>
     /// Whether to attach the sending trace's parent and state to the outgoing messages metadata. The default is 'false'.
     /// </summary>
     public bool AttachTraceInfoToMessages { get; set; }
+
+    /// <summary>
+    /// Set the crypto key reader.
+    /// </summary>
+    public ICryptoKeyReader CryptoKeyReader { get; set; }
+
+    /// <summary>
+    /// Set the encryption algorithm used. The default is "".
+    /// </summary>
+    public string EncryptionAlgo { get; set; }
+
+    /// <summary>
+    /// Set the encryption keys.
+    /// </summary>
+    public ConcurrentDictionary<string, string> EncryptionKeys { get; set; }
+
+    /// <summary>
+    /// Set the action to take when a crypto operation fails. The default is 'Fail'.
+    /// </summary>
+    public ProducerCryptoFailureAction CryptoFailureAction { get; set; }
 
     /// <summary>
     /// Set the compression type. The default is 'None'.

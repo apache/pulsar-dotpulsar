@@ -32,6 +32,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     private readonly IConnectionPool _connectionPool;
     private readonly IHandleException _exceptionHandler;
     private readonly ICompressorFactory? _compressorFactory;
+    private readonly IEncryptorFactory _encryptorFactory;
     private readonly ProducerOptions<TMessage> _options;
     private readonly ProcessManager _processManager;
     private readonly ConcurrentDictionary<int, SubProducer> _producers;
@@ -47,12 +48,12 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
     public ISendChannel<TMessage> SendChannel { get; }
 
-    public Producer(
-        Uri serviceUrl,
+    public Producer(Uri serviceUrl,
         ProducerOptions<TMessage> options,
         IHandleException exceptionHandler,
         IConnectionPool connectionPool,
-        ICompressorFactory? compressorFactory)
+        ICompressorFactory? compressorFactory,
+        IEncryptorFactory encryptorFactory)
     {
         _operationName = $"{options.Topic} send";
         _activityTags =
@@ -76,6 +77,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         _exceptionHandler = exceptionHandler;
         _connectionPool = connectionPool;
         _compressorFactory = compressorFactory;
+        _encryptorFactory = encryptorFactory;
         _processManager = new ProcessManager();
         _messageRouter = options.MessageRouter;
         _cts = new CancellationTokenSource();
@@ -159,7 +161,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var producerName = _options.ProducerName;
         var schema = _options.Schema;
         var producerAccessMode = (PulsarApi.ProducerAccessMode) _options.ProducerAccessMode;
-        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory);
+        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory, _encryptorFactory);
         var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);

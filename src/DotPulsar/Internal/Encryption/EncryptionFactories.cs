@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Internal.Encryption;
 
+using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 
 public static class EncryptionFactories
@@ -32,7 +33,7 @@ public static class EncryptionFactories
 
     private static void LoadSupportForNull()
     {
-        if (NullEncryptor.TryLoading(out var encryptionFactory, out var decryptionFactory))
+        if (NullEncryption.TryLoading(out var encryptionFactory, out var decryptionFactory))
             Add(encryptionFactory, decryptionFactory);
     }
 
@@ -48,9 +49,15 @@ public static class EncryptionFactories
         _decryptorFactories.Add(decryptorFactory!);
     }
 
-    public static IEnumerable<IEncryptorFactory> EncryptorFactories()
-        => _encryptorFactories;
-
     public static IEnumerable<IDecryptorFactory> DecryptorFactories()
         => _decryptorFactories;
+
+    public static IEncryptorFactory GetEncryptorFactory(string encryptionAlgorith)
+    {
+        var encryptorFactory = _encryptorFactories.SingleOrDefault(f => f.EncryptionAlgo == encryptionAlgorith);
+        if (encryptorFactory is null)
+            throw new CryptoException($"Support for '{encryptionAlgorith}' encryption was not found");
+
+        return encryptorFactory;
+    }
 }
