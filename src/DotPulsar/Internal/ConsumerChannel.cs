@@ -103,14 +103,15 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
 
                 var metadataSize = messagePackage.GetMetadataSize();
                 var metadata = messagePackage.ExtractMetadata(metadataSize);
-                var data = messagePackage.ExtractData(metadataSize);
+                var extractedData = messagePackage.ExtractData(metadataSize);
 
                 var decryptor = _decryptors[metadata.EncryptionAlgo];
                 if (decryptor is null)
                     throw new CryptoException($"Support for {metadata.EncryptionAlgo} encryption was not found");
 
-                data = decryptor.Decrypt(data, (int) metadata.UncompressedSize);
+                var decryptedData = decryptor.Decrypt(extractedData, (int) metadata.UncompressedSize);
 
+                var decompressedData = decryptedData;
                 if (metadata.Compression != CompressionType.None)
                 {
                     var decompressor = _decompressors[(int) metadata.Compression];
@@ -119,7 +120,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
 
                     try
                     {
-                        data = decompressor.Decompress(data, (int) metadata.UncompressedSize);
+                        decompressedData = decompressor.Decompress(decryptedData, (int) metadata.UncompressedSize);
                     }
                     catch
                     {
@@ -135,7 +136,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
                 {
                     try
                     {
-                        return _batchHandler.Add(messageId, redeliveryCount, metadata, data);
+                        return _batchHandler.Add(messageId, redeliveryCount, metadata, decompressedData);
                     }
                     catch
                     {
@@ -144,7 +145,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
                     }
                 }
 
-                return _messageFactory.Create(messageId.ToMessageId(_topic), redeliveryCount, data, metadata);
+                return _messageFactory.Create(messageId.ToMessageId(_topic), redeliveryCount, decompressedData, metadata);
             }
         }
     }
