@@ -69,7 +69,7 @@ public class IntegrationFixture : IAsyncLifetime
             .Build();
 
         _toxiProxy = new ContainerBuilder()
-            .WithImage("ghcr.io/shopify/toxiproxy:2.7.0")
+            .WithImage("ghcr.io/shopify/toxiproxy:2.9.0")
             .WithPortBinding(ToxiProxyControlPort, true)
             .WithPortBinding(ToxiProxyPort, true)
             .WithHostname("toxiproxy")
@@ -78,7 +78,7 @@ public class IntegrationFixture : IAsyncLifetime
             .Build();
 
         _pulsarCluster = new ContainerBuilder()
-            .WithImage("apachepulsar/pulsar:3.1.3")
+            .WithImage("apachepulsar/pulsar:3.2.3")
             .WithEnvironment(environmentVariables)
             .WithHostname("pulsar")
             .WithNetwork(_network)
@@ -151,7 +151,12 @@ public class IntegrationFixture : IAsyncLifetime
         var arguments = $"bin/pulsar tokens create --secret-key {SecretKeyPath} --subject {UserName}";
 
         if (expiryTime != Timeout.InfiniteTimeSpan)
-            arguments += $" --expiry-time {expiryTime.TotalSeconds}s";
+        {
+            if (_pulsarCluster.Image.FullName is "apachepulsar/pulsar:3.2.0" or "apachepulsar/pulsar:3.2.1" or "apachepulsar/pulsar:3.2.2" or "apachepulsar/pulsar:3.2.3")
+                arguments += $" --expiry-time {expiryTime.TotalSeconds * 1000}s";
+            else
+                arguments += $" --expiry-time {expiryTime.TotalSeconds}s";
+        }
 
         var result = await _pulsarCluster.ExecAsync(["/bin/bash", "-c", arguments], cancellationToken);
 
