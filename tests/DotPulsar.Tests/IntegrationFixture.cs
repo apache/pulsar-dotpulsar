@@ -69,7 +69,7 @@ public class IntegrationFixture : IAsyncLifetime
             .Build();
 
         _toxiProxy = new ContainerBuilder()
-            .WithImage("ghcr.io/shopify/toxiproxy:2.7.0")
+            .WithImage("ghcr.io/shopify/toxiproxy:2.9.0")
             .WithPortBinding(ToxiProxyControlPort, true)
             .WithPortBinding(ToxiProxyPort, true)
             .WithHostname("toxiproxy")
@@ -78,7 +78,7 @@ public class IntegrationFixture : IAsyncLifetime
             .Build();
 
         _pulsarCluster = new ContainerBuilder()
-            .WithImage("apachepulsar/pulsar:3.1.3")
+            .WithImage("apachepulsar/pulsar:3.2.3")
             .WithEnvironment(environmentVariables)
             .WithHostname("pulsar")
             .WithNetwork(_network)
