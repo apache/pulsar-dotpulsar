@@ -25,7 +25,7 @@ public static class EncryptionTester
         using var decryptor = decryptorFactory.Create();
         var data = System.Text.Encoding.UTF8.GetBytes("Test data");
         var encryptedData = encryptor.Encrypt(new ReadOnlySequence<byte>(data));
-        var decryptedData = decryptor.Decrypt(encryptedData, data.Length).ToArray();
+        var decryptedData = decryptor.Decrypt(encryptedData).ToArray();
         return data.SequenceEqual(decryptedData);
     }
 }

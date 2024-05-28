@@ -103,15 +103,25 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
 
                 var metadataSize = messagePackage.GetMetadataSize();
                 var metadata = messagePackage.ExtractMetadata(metadataSize);
-                var extractedData = messagePackage.ExtractData(metadataSize);
+                var data = messagePackage.ExtractData(metadataSize);
 
-                var decryptor = _decryptors[metadata.EncryptionAlgo];
-                if (decryptor is null)
-                    throw new CryptoException($"Support for {metadata.EncryptionAlgo} encryption was not found");
+                if (metadata.EncryptionKeys.Count > 0)
+                {
+                    var decryptor = _decryptors[metadata.EncryptionAlgo];
+                    if (decryptor is null)
+                        throw new CryptoException($"Support for {metadata.EncryptionAlgo} encryption was not found");
 
-                var decryptedData = decryptor.Decrypt(extractedData, (int) metadata.UncompressedSize);
+                    try
+                    {
+                        data = decryptor.Decrypt(data);
+                    }
+                    catch
+                    {
+                        await RejectPackage(messagePackage, CommandAck.ValidationErrorType.DecryptionError, cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
+                }
 
-                var decompressedData = decryptedData;
                 if (metadata.Compression != CompressionType.None)
                 {
                     var decompressor = _decompressors[(int) metadata.Compression];
@@ -120,7 +130,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
 
                     try
                     {
-                        decompressedData = decompressor.Decompress(decryptedData, (int) metadata.UncompressedSize);
+                        data = decompressor.Decompress(data, (int) metadata.UncompressedSize);
                     }
                     catch
                     {
@@ -136,7 +146,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
                 {
                     try
                     {
-                        return _batchHandler.Add(messageId, redeliveryCount, metadata, decompressedData);
+                        return _batchHandler.Add(messageId, redeliveryCount, metadata, data);
                     }
                     catch
                     {
@@ -145,7 +155,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
                     }
                 }
 
-                return _messageFactory.Create(messageId.ToMessageId(_topic), redeliveryCount, decompressedData, metadata);
+                return _messageFactory.Create(messageId.ToMessageId(_topic), redeliveryCount, data, metadata);
             }
         }
     }

@@ -20,16 +20,16 @@ using System.Buffers;
 public sealed class Decryptor : IDecryptor
 {
     private readonly IDisposable? _disposable;
-    private readonly Func<ReadOnlySequence<byte>, int, ReadOnlySequence<byte>> _decrypt;
+    private readonly Func<ReadOnlySequence<byte>, ReadOnlySequence<byte>> _decrypt;
 
-    public Decryptor(Func<ReadOnlySequence<byte>, int, ReadOnlySequence<byte>> decrypt, IDisposable? disposable = null)
+    public Decryptor(Func<ReadOnlySequence<byte>, ReadOnlySequence<byte>> decrypt, IDisposable? disposable = null)
     {
         _disposable = disposable;
         _decrypt = decrypt;
     }
 
-    public ReadOnlySequence<byte> Decrypt(ReadOnlySequence<byte> data, int encryptedSize)
-        => _decrypt(data, encryptedSize);
+    public ReadOnlySequence<byte> Decrypt(ReadOnlySequence<byte> data)
+        => _decrypt(data);
 
     public void Dispose()
         => _disposable?.Dispose();

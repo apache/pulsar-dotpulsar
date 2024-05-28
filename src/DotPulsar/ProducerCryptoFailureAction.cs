@@ -22,10 +22,10 @@ public enum ProducerCryptoFailureAction
     /// <summary>
     /// Fail the operation if crypto fails.
     /// </summary>
-    Fail,
+    Fail = 0,
 
     /// <summary>
     /// Ignore crypto failure and proceed with sending unencrypted messages.
     /// </summary>
-    Send
+    Send = 1
 }

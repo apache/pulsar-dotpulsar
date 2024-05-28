@@ -25,7 +25,7 @@ public class NullEncryptor(IDisposable? disposable = null) : IEncryptor, IDecryp
     public void Dispose()
         => disposable?.Dispose();
 
-    public ReadOnlySequence<byte> Decrypt(ReadOnlySequence<byte> data, int encryptedSize) =>
+    public ReadOnlySequence<byte> Decrypt(ReadOnlySequence<byte> data) =>
         data;
 
     public ReadOnlySequence<byte> Encrypt(ReadOnlySequence<byte> data) =>

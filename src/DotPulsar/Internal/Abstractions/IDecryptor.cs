@@ -18,5 +18,5 @@ using System.Buffers;
 
 public interface IDecryptor : IDisposable
 {
-    ReadOnlySequence<byte> Decrypt(ReadOnlySequence<byte> data, int encryptedSize);
+    ReadOnlySequence<byte> Decrypt(ReadOnlySequence<byte> data);
 }
