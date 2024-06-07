@@ -1162,6 +1162,24 @@ references:
   fullName.vb: DotPulsar.Abstractions.IProducerBuilder(Of TMessage).ProducerName
   nameWithType: IProducerBuilder<TMessage>.ProducerName
   nameWithType.vb: IProducerBuilder(Of TMessage).ProducerName
+- uid: DotPulsar.Abstractions.IProducerBuilder`1.ProducerProperty(System.String,System.String)
+  name: ProducerProperty(string, string)
+  href: api/DotPulsar.Abstractions.IProducerBuilder-1.html#DotPulsar_Abstractions_IProducerBuilder_1_ProducerProperty_System_String_System_String_
+  commentId: M:DotPulsar.Abstractions.IProducerBuilder`1.ProducerProperty(System.String,System.String)
+  name.vb: ProducerProperty(String, String)
+  fullName: DotPulsar.Abstractions.IProducerBuilder<TMessage>.ProducerProperty(string, string)
+  fullName.vb: DotPulsar.Abstractions.IProducerBuilder(Of TMessage).ProducerProperty(String, String)
+  nameWithType: IProducerBuilder<TMessage>.ProducerProperty(string, string)
+  nameWithType.vb: IProducerBuilder(Of TMessage).ProducerProperty(String, String)
+- uid: DotPulsar.Abstractions.IProducerBuilder`1.ProducerProperty*
+  name: ProducerProperty
+  href: api/DotPulsar.Abstractions.IProducerBuilder-1.html#DotPulsar_Abstractions_IProducerBuilder_1_ProducerProperty_
+  commentId: Overload:DotPulsar.Abstractions.IProducerBuilder`1.ProducerProperty
+  isSpec: "True"
+  fullName: DotPulsar.Abstractions.IProducerBuilder<TMessage>.ProducerProperty
+  fullName.vb: DotPulsar.Abstractions.IProducerBuilder(Of TMessage).ProducerProperty
+  nameWithType: IProducerBuilder<TMessage>.ProducerProperty
+  nameWithType.vb: IProducerBuilder(Of TMessage).ProducerProperty
 - uid: DotPulsar.Abstractions.IProducerBuilder`1.StateChangedHandler(DotPulsar.Abstractions.IHandleStateChanged{DotPulsar.ProducerStateChanged})
   name: StateChangedHandler(IHandleStateChanged<ProducerStateChanged>)
   href: api/DotPulsar.Abstractions.IProducerBuilder-1.html#DotPulsar_Abstractions_IProducerBuilder_1_StateChangedHandler_DotPulsar_Abstractions_IHandleStateChanged_DotPulsar_ProducerStateChanged__
@@ -12145,6 +12163,24 @@ references:
   fullName.vb: DotPulsar.Internal.ProducerBuilder(Of TMessage).ProducerName
   nameWithType: ProducerBuilder<TMessage>.ProducerName
   nameWithType.vb: ProducerBuilder(Of TMessage).ProducerName
+- uid: DotPulsar.Internal.ProducerBuilder`1.ProducerProperty(System.String,System.String)
+  name: ProducerProperty(string, string)
+  href: api/DotPulsar.Internal.ProducerBuilder-1.html#DotPulsar_Internal_ProducerBuilder_1_ProducerProperty_System_String_System_String_
+  commentId: M:DotPulsar.Internal.ProducerBuilder`1.ProducerProperty(System.String,System.String)
+  name.vb: ProducerProperty(String, String)
+  fullName: DotPulsar.Internal.ProducerBuilder<TMessage>.ProducerProperty(string, string)
+  fullName.vb: DotPulsar.Internal.ProducerBuilder(Of TMessage).ProducerProperty(String, String)
+  nameWithType: ProducerBuilder<TMessage>.ProducerProperty(string, string)
+  nameWithType.vb: ProducerBuilder(Of TMessage).ProducerProperty(String, String)
+- uid: DotPulsar.Internal.ProducerBuilder`1.ProducerProperty*
+  name: ProducerProperty
+  href: api/DotPulsar.Internal.ProducerBuilder-1.html#DotPulsar_Internal_ProducerBuilder_1_ProducerProperty_
+  commentId: Overload:DotPulsar.Internal.ProducerBuilder`1.ProducerProperty
+  isSpec: "True"
+  fullName: DotPulsar.Internal.ProducerBuilder<TMessage>.ProducerProperty
+  fullName.vb: DotPulsar.Internal.ProducerBuilder(Of TMessage).ProducerProperty
+  nameWithType: ProducerBuilder<TMessage>.ProducerProperty
+  nameWithType.vb: ProducerBuilder(Of TMessage).ProducerProperty
 - uid: DotPulsar.Internal.ProducerBuilder`1.StateChangedHandler(DotPulsar.Abstractions.IHandleStateChanged{DotPulsar.ProducerStateChanged})
   name: StateChangedHandler(IHandleStateChanged<ProducerStateChanged>)
   href: api/DotPulsar.Internal.ProducerBuilder-1.html#DotPulsar_Internal_ProducerBuilder_1_StateChangedHandler_DotPulsar_Abstractions_IHandleStateChanged_DotPulsar_ProducerStateChanged__
@@ -12254,15 +12290,15 @@ references:
   commentId: T:DotPulsar.Internal.ProducerChannelFactory
   fullName: DotPulsar.Internal.ProducerChannelFactory
   nameWithType: ProducerChannelFactory
-- uid: DotPulsar.Internal.ProducerChannelFactory.#ctor(System.Guid,DotPulsar.Internal.Abstractions.IRegisterEvent,DotPulsar.Internal.Abstractions.IConnectionPool,System.String,System.String,DotPulsar.Internal.PulsarApi.ProducerAccessMode,DotPulsar.SchemaInfo,DotPulsar.Internal.Abstractions.ICompressorFactory)
-  name: ProducerChannelFactory(Guid, IRegisterEvent, IConnectionPool, string, string?, ProducerAccessMode, SchemaInfo, ICompressorFactory?)
-  href: api/DotPulsar.Internal.ProducerChannelFactory.html#DotPulsar_Internal_ProducerChannelFactory__ctor_System_Guid_DotPulsar_Internal_Abstractions_IRegisterEvent_DotPulsar_Internal_Abstractions_IConnectionPool_System_String_System_String_DotPulsar_Internal_PulsarApi_ProducerAccessMode_DotPulsar_SchemaInfo_DotPulsar_Internal_Abstractions_ICompressorFactory_
-  commentId: M:DotPulsar.Internal.ProducerChannelFactory.#ctor(System.Guid,DotPulsar.Internal.Abstractions.IRegisterEvent,DotPulsar.Internal.Abstractions.IConnectionPool,System.String,System.String,DotPulsar.Internal.PulsarApi.ProducerAccessMode,DotPulsar.SchemaInfo,DotPulsar.Internal.Abstractions.ICompressorFactory)
-  name.vb: New(Guid, IRegisterEvent, IConnectionPool, String, String, ProducerAccessMode, SchemaInfo, ICompressorFactory)
-  fullName: DotPulsar.Internal.ProducerChannelFactory.ProducerChannelFactory(System.Guid, DotPulsar.Internal.Abstractions.IRegisterEvent, DotPulsar.Internal.Abstractions.IConnectionPool, string, string?, DotPulsar.Internal.PulsarApi.ProducerAccessMode, DotPulsar.SchemaInfo, DotPulsar.Internal.Abstractions.ICompressorFactory?)
-  fullName.vb: DotPulsar.Internal.ProducerChannelFactory.New(System.Guid, DotPulsar.Internal.Abstractions.IRegisterEvent, DotPulsar.Internal.Abstractions.IConnectionPool, String, String, DotPulsar.Internal.PulsarApi.ProducerAccessMode, DotPulsar.SchemaInfo, DotPulsar.Internal.Abstractions.ICompressorFactory)
-  nameWithType: ProducerChannelFactory.ProducerChannelFactory(Guid, IRegisterEvent, IConnectionPool, string, string?, ProducerAccessMode, SchemaInfo, ICompressorFactory?)
-  nameWithType.vb: ProducerChannelFactory.New(Guid, IRegisterEvent, IConnectionPool, String, String, ProducerAccessMode, SchemaInfo, ICompressorFactory)
+- uid: DotPulsar.Internal.ProducerChannelFactory.#ctor(System.Guid,DotPulsar.Internal.Abstractions.IRegisterEvent,DotPulsar.Internal.Abstractions.IConnectionPool,System.String,System.String,DotPulsar.Internal.PulsarApi.ProducerAccessMode,DotPulsar.SchemaInfo,DotPulsar.Internal.Abstractions.ICompressorFactory,System.Collections.Generic.Dictionary{System.String,System.String})
+  name: ProducerChannelFactory(Guid, IRegisterEvent, IConnectionPool, string, string?, ProducerAccessMode, SchemaInfo, ICompressorFactory?, Dictionary<string, string>?)
+  href: api/DotPulsar.Internal.ProducerChannelFactory.html#DotPulsar_Internal_ProducerChannelFactory__ctor_System_Guid_DotPulsar_Internal_Abstractions_IRegisterEvent_DotPulsar_Internal_Abstractions_IConnectionPool_System_String_System_String_DotPulsar_Internal_PulsarApi_ProducerAccessMode_DotPulsar_SchemaInfo_DotPulsar_Internal_Abstractions_ICompressorFactory_System_Collections_Generic_Dictionary_System_String_System_String__
+  commentId: M:DotPulsar.Internal.ProducerChannelFactory.#ctor(System.Guid,DotPulsar.Internal.Abstractions.IRegisterEvent,DotPulsar.Internal.Abstractions.IConnectionPool,System.String,System.String,DotPulsar.Internal.PulsarApi.ProducerAccessMode,DotPulsar.SchemaInfo,DotPulsar.Internal.Abstractions.ICompressorFactory,System.Collections.Generic.Dictionary{System.String,System.String})
+  name.vb: New(Guid, IRegisterEvent, IConnectionPool, String, String, ProducerAccessMode, SchemaInfo, ICompressorFactory, Dictionary(Of String, String))
+  fullName: DotPulsar.Internal.ProducerChannelFactory.ProducerChannelFactory(System.Guid, DotPulsar.Internal.Abstractions.IRegisterEvent, DotPulsar.Internal.Abstractions.IConnectionPool, string, string?, DotPulsar.Internal.PulsarApi.ProducerAccessMode, DotPulsar.SchemaInfo, DotPulsar.Internal.Abstractions.ICompressorFactory?, System.Collections.Generic.Dictionary<string, string>?)
+  fullName.vb: DotPulsar.Internal.ProducerChannelFactory.New(System.Guid, DotPulsar.Internal.Abstractions.IRegisterEvent, DotPulsar.Internal.Abstractions.IConnectionPool, String, String, DotPulsar.Internal.PulsarApi.ProducerAccessMode, DotPulsar.SchemaInfo, DotPulsar.Internal.Abstractions.ICompressorFactory, System.Collections.Generic.Dictionary(Of String, String))
+  nameWithType: ProducerChannelFactory.ProducerChannelFactory(Guid, IRegisterEvent, IConnectionPool, string, string?, ProducerAccessMode, SchemaInfo, ICompressorFactory?, Dictionary<string, string>?)
+  nameWithType.vb: ProducerChannelFactory.New(Guid, IRegisterEvent, IConnectionPool, String, String, ProducerAccessMode, SchemaInfo, ICompressorFactory, Dictionary(Of String, String))
 - uid: DotPulsar.Internal.ProducerChannelFactory.#ctor*
   name: ProducerChannelFactory
   href: api/DotPulsar.Internal.ProducerChannelFactory.html#DotPulsar_Internal_ProducerChannelFactory__ctor_
@@ -28091,6 +28127,23 @@ references:
   fullName.vb: DotPulsar.ProducerOptions(Of TMessage).ProducerName
   nameWithType: ProducerOptions<TMessage>.ProducerName
   nameWithType.vb: ProducerOptions(Of TMessage).ProducerName
+- uid: DotPulsar.ProducerOptions`1.ProducerProperties
+  name: ProducerProperties
+  href: api/DotPulsar.ProducerOptions-1.html#DotPulsar_ProducerOptions_1_ProducerProperties
+  commentId: P:DotPulsar.ProducerOptions`1.ProducerProperties
+  fullName: DotPulsar.ProducerOptions<TMessage>.ProducerProperties
+  fullName.vb: DotPulsar.ProducerOptions(Of TMessage).ProducerProperties
+  nameWithType: ProducerOptions<TMessage>.ProducerProperties
+  nameWithType.vb: ProducerOptions(Of TMessage).ProducerProperties
+- uid: DotPulsar.ProducerOptions`1.ProducerProperties*
+  name: ProducerProperties
+  href: api/DotPulsar.ProducerOptions-1.html#DotPulsar_ProducerOptions_1_ProducerProperties_
+  commentId: Overload:DotPulsar.ProducerOptions`1.ProducerProperties
+  isSpec: "True"
+  fullName: DotPulsar.ProducerOptions<TMessage>.ProducerProperties
+  fullName.vb: DotPulsar.ProducerOptions(Of TMessage).ProducerProperties
+  nameWithType: ProducerOptions<TMessage>.ProducerProperties
+  nameWithType.vb: ProducerOptions(Of TMessage).ProducerProperties
 - uid: DotPulsar.ProducerOptions`1.Schema
   name: Schema
   href: api/DotPulsar.ProducerOptions-1.html#DotPulsar_ProducerOptions_1_Schema
