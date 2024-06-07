@@ -152,7 +152,7 @@ public sealed class ConnectionPool : IConnectionPool
             commandConnect = WithProxyToBroker(commandConnect, url.Logical);
 
         var connection = Connection.Connect(new PulsarStream(stream), _authentication, _keepAliveInterval, _closeInactiveConnectionsInterval);
-        _ = connection.OnStateChangeFrom(ConnectionState.Connected, CancellationToken.None).AsTask().ContinueWith(t => DisposeConnection(url, connection));
+        _ = connection.OnStateChangeFrom(ConnectionState.Connected, CancellationToken.None).AsTask().ContinueWith(t => DisposeConnection(url, connection), CancellationToken.None);
         var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
         response.Expect(BaseCommand.Type.Connected);
         _connections[url] = connection;
