@@ -159,7 +159,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var producerName = _options.ProducerName;
         var schema = _options.Schema;
         var producerAccessMode = (PulsarApi.ProducerAccessMode) _options.ProducerAccessMode;
-        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory);
+        var producerProperties = _options.ProducerProperties;
+        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory, producerProperties);
         var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);

@@ -48,6 +48,7 @@ public sealed class ProducerOptions<TMessage>
         Topic = topic;
         Schema = schema;
         MessageRouter = new RoundRobinPartitionRouter();
+        ProducerProperties = [];
     }
 
     /// <summary>
@@ -99,4 +100,9 @@ public sealed class ProducerOptions<TMessage>
     /// Set the max size of the queue holding the messages pending to receive an acknowledgment from the broker.
     /// </summary>
     public uint MaxPendingMessages { get; set; }
+
+    /// <summary>
+    /// Add/Set the producers's properties. This is optional.
+    /// </summary>
+    public Dictionary<string, string> ProducerProperties { get; set; }
 }
