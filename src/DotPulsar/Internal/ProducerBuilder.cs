@@ -21,6 +21,7 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
 {
     private readonly IPulsarClient _pulsarClient;
     private readonly ISchema<TMessage> _schema;
+    private readonly Dictionary<string, string> _producerProperties;
     private string? _producerName;
     private ProducerAccessMode _producerAccessMode;
     private bool _attachTraceInfoToMessages;
@@ -40,6 +41,7 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
         _initialSequenceId = ProducerOptions<TMessage>.DefaultInitialSequenceId;
         _maxPendingMessages = 500;
         _producerAccessMode = ProducerOptions<TMessage>.DefaultProducerAccessMode;
+        _producerProperties = [];
     }
 
     public IProducerBuilder<TMessage> AttachTraceInfoToMessages(bool attachTraceInfoToMessages)
@@ -96,6 +98,12 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
         return this;
     }
 
+    public IProducerBuilder<TMessage> ProducerProperty(string key, string value)
+    {
+        _producerProperties[key] = value;
+        return this;
+    }
+
     public IProducer<TMessage> Create()
     {
         if (string.IsNullOrEmpty(_topic))
@@ -112,7 +120,8 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
             InitialSequenceId = _initialSequenceId,
             ProducerName = _producerName,
             StateChangedHandler = _stateChangedHandler,
-            MaxPendingMessages = _maxPendingMessages
+            MaxPendingMessages = _maxPendingMessages,
+            ProducerProperties = _producerProperties
         };
 
         if (_messageRouter is not null)
