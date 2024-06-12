@@ -170,6 +170,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         process.Start();
         return producer;
     }
+
     public bool IsFinalState()
         => _state.IsFinalState();
 
@@ -202,9 +203,11 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     {
         if (_producerCount == 0)
         {
-            _ = await _state.StateChangedFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
+            var newState = await _state.StateChangedFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
             if (_faultException is not null)
                 throw new ProducerFaultedException(_faultException);
+            if (newState == ProducerState.Closed)
+                throw new ProducerClosedException();
         }
 
         if (_producerCount == 1)
