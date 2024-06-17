@@ -8,8 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Fixed
 
-- Fixed race condition in `Producer` between `Send(...)` and `DisposeAsync()` dispose causing an unintended
-  `DivideByZeroException`. It now correctly throws a `ProducerClosedException`
+- Fixed race condition in `Producer` between `Send(...)` and `DisposeAsync()` dispose causing an unintended `DivideByZeroException`.
+  It now throws a `ProducerClosedException`.
+- The `Process` extension method will hang when called with EnsureOrderedAcknowledgment set to true, a shared subscription and MaxDegreeOfParallelism above 1.
+  It now throws a `ProcessingException` when EnsureOrderedAcknowledgment is set to true and with a shared subscription type.
 
 ## [3.3.0] - 2024-06-10
 

@@ -36,12 +36,14 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
 
     public Uri ServiceUrl { get; }
     public string SubscriptionName { get; }
+    public SubscriptionType SubscriptionType { get; }
     public string Topic { get; }
 
     public SubConsumer(
         Guid correlationId,
         Uri serviceUrl,
         string subscriptionName,
+        SubscriptionType subscriptionType,
         string topic,
         IRegisterEvent eventRegister,
         IConsumerChannel<TMessage> initialChannel,
@@ -52,6 +54,7 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
         _correlationId = correlationId;
         ServiceUrl = serviceUrl;
         SubscriptionName = subscriptionName;
+        SubscriptionType = subscriptionType;
         Topic = topic;
         _eventRegister = eventRegister;
         _channel = initialChannel;

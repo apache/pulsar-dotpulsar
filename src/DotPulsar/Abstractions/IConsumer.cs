@@ -40,6 +40,11 @@ public interface IConsumer : IGetLastMessageIds, ISeek, IState<ConsumerState>, I
     public string SubscriptionName { get; }
 
     /// <summary>
+    /// The consumer's subscription type.
+    /// </summary>
+    public SubscriptionType SubscriptionType { get; }
+
+    /// <summary>
     /// The consumer's topic.
     /// </summary>
     string Topic { get; }
