@@ -25,9 +25,6 @@ using Xunit.Sdk;
 
 public class IntegrationFixture : IAsyncLifetime
 {
-    private const string AuthenticationPlugin = "org.apache.pulsar.client.impl.auth.AuthenticationToken";
-    private const string SecretKeyPath = "/pulsar/secret.key";
-    private const string UserName = "test-user";
     private const int PulsarPort = 6650;
     private const int ToxiProxyControlPort = 8474;
     private const int ToxiProxyPort = 15124;
