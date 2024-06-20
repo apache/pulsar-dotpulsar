@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.1-rc.1] - 2024-06-20
+
+### Added
+
+- The consumer's subscription type is now part of the `IConsumer` interface
+
+### Fixed
+
+- Fixed race condition in `Producer` between `Send(...)` and `DisposeAsync()` dispose causing an unintended `DivideByZeroException`.
+  It now throws a `ProducerClosedException`.
+- The `Process` extension method will hang when called with EnsureOrderedAcknowledgment set to true, a shared subscription and MaxDegreeOfParallelism above 1.
+  It now throws a `ProcessingException` when EnsureOrderedAcknowledgment is set to true and with a shared subscription type.
+
+## [3.3.0] - 2024-06-10
+
+### Added
+
+- Producer properties can be added when creating a producer
+
+### Changed
+
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 8.0.4 to 8.0.6
+
 ## [3.2.1] - 2024-04-24
 
 ### Fixed

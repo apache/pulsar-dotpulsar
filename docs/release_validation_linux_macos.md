@@ -22,9 +22,9 @@ dotnet --info
 
 ## Validating source release
 
-Set exvironment variables
+Set environment variables
 ```shell
-export DOTPULSAR_VERSION_RC=3.1.2-rc.1
+export DOTPULSAR_VERSION_RC=3.3.0-rc.1
 export DOTPULSAR_VERSION=${DOTPULSAR_VERSION_RC%-rc.*}
 ```
 
@@ -85,7 +85,7 @@ await consumer.Acknowledge(message);
 Console.WriteLine("Acknowledged message");
 EOF
 dotnet build
-docker run --name pulsar-standalone -d --rm -it -p 8080:8080 -p 6650:6650 apachepulsar/pulsar:3.0.4 /pulsar/bin/pulsar standalone -nss -nfw
+docker run --name pulsar-standalone -d --rm -it -p 8080:8080 -p 6650:6650 apachepulsar/pulsar:3.0.5 /pulsar/bin/pulsar standalone -nss -nfw
 dotnet run
 docker stop pulsar-standalone
 ```

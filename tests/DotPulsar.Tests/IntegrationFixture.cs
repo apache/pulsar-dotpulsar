@@ -18,22 +18,20 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Networks;
 using DotPulsar.Abstractions;
+using Testcontainers.Pulsar;
 using Toxiproxy.Net;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 public class IntegrationFixture : IAsyncLifetime
 {
-    private const string AuthenticationPlugin = "org.apache.pulsar.client.impl.auth.AuthenticationToken";
-    private const string SecretKeyPath = "/pulsar/secret.key";
-    private const string UserName = "test-user";
     private const int PulsarPort = 6650;
     private const int ToxiProxyControlPort = 8474;
     private const int ToxiProxyPort = 15124;
     private readonly CancellationTokenSource _cts;
     private readonly IMessageSink _messageSink;
     private readonly INetwork _network;
-    private readonly IContainer _pulsarCluster;
+    private readonly PulsarContainer _pulsarCluster;
     private readonly IContainer _toxiProxy;
     private Client _toxiProxyClient;
     private Connection _toxiProxyConnection;
@@ -45,31 +43,12 @@ public class IntegrationFixture : IAsyncLifetime
         _messageSink = messageSink;
         _cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
 
-        var environmentVariables = new Dictionary<string, string>
-        {
-            { "PULSAR_PREFIX_tokenSecretKey", $"file://{SecretKeyPath}" },
-            { "PULSAR_PREFIX_authenticationRefreshCheckSeconds", "5" },
-            { "superUserRoles", UserName },
-            { "authenticationEnabled", "true" },
-            { "authorizationEnabled", "true" },
-            { "authenticationProviders", "org.apache.pulsar.broker.authentication.AuthenticationProviderToken" },
-            { "authenticateOriginalAuthData", "false" },
-            { "brokerClientAuthenticationPlugin", AuthenticationPlugin },
-            { "CLIENT_PREFIX_authPlugin", AuthenticationPlugin }
-        };
-
-        var arguments =
-            $"bin/pulsar tokens create-secret-key --output {SecretKeyPath} && " +
-            $"export brokerClientAuthenticationParameters=token:$(bin/pulsar tokens create --secret-key {SecretKeyPath} --subject {UserName}) && " +
-            $"export CLIENT_PREFIX_authParams=$brokerClientAuthenticationParameters && bin/apply-config-from-env.py conf/standalone.conf && " +
-            $"bin/apply-config-from-env-with-prefix.py CLIENT_PREFIX_ conf/client.conf && bin/pulsar standalone --no-functions-worker";
-
         _network = new NetworkBuilder()
             .WithName(Guid.NewGuid().ToString("D"))
             .Build();
 
         _toxiProxy = new ContainerBuilder()
-            .WithImage("ghcr.io/shopify/toxiproxy:2.7.0")
+            .WithImage("ghcr.io/shopify/toxiproxy:2.9.0")
             .WithPortBinding(ToxiProxyControlPort, true)
             .WithPortBinding(ToxiProxyPort, true)
             .WithHostname("toxiproxy")
@@ -77,13 +56,10 @@ public class IntegrationFixture : IAsyncLifetime
             .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(strategy => strategy.ForPath("/version").ForPort(ToxiProxyControlPort)))
             .Build();
 
-        _pulsarCluster = new ContainerBuilder()
-            .WithImage("apachepulsar/pulsar:3.1.3")
-            .WithEnvironment(environmentVariables)
-            .WithHostname("pulsar")
+        _pulsarCluster = new PulsarBuilder()
+            .WithAuthentication()
             .WithNetwork(_network)
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted(["/bin/bash", "-c", "bin/pulsar-admin clusters list"]))
-            .WithCommand("/bin/bash", "-c", arguments)
+            .WithHostname("pulsar")
             .Build();
 
         ServiceUrl = new Uri($"pulsar://{_pulsarCluster.Hostname}:{PulsarPort}");
@@ -148,17 +124,7 @@ public class IntegrationFixture : IAsyncLifetime
 
     public async Task<string> CreateToken(TimeSpan expiryTime, CancellationToken cancellationToken)
     {
-        var arguments = $"bin/pulsar tokens create --secret-key {SecretKeyPath} --subject {UserName}";
-
-        if (expiryTime != Timeout.InfiniteTimeSpan)
-            arguments += $" --expiry-time {expiryTime.TotalSeconds}s";
-
-        var result = await _pulsarCluster.ExecAsync(["/bin/bash", "-c", arguments], cancellationToken);
-
-        if (result.ExitCode != 0)
-            throw new InvalidOperationException($"Could not create the token: {result.Stderr}");
-
-        return result.Stdout.Trim();
+        return await _pulsarCluster.CreateAuthenticationTokenAsync(expiryTime, cancellationToken);
     }
 
     private static string CreateTopicName() => $"persistent://public/default/{Guid.NewGuid():N}";

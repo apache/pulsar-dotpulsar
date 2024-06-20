@@ -29,7 +29,8 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
     private readonly Schema? _schema;
     private ulong? _topicEpoch;
 
-    public ProducerChannelFactory(Guid correlationId,
+    public ProducerChannelFactory(
+        Guid correlationId,
         IRegisterEvent eventRegister,
         IConnectionPool connectionPool,
         string topic,
@@ -37,7 +38,8 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         ProducerAccessMode producerAccessMode,
         SchemaInfo schemaInfo,
         ICompressorFactory? compressorFactory,
-        IMessageCrypto? messageCrypto)
+        IMessageCrypto? messageCrypto,
+        Dictionary<string, string>? properties)
     {
         _correlationId = correlationId;
         _eventRegister = eventRegister;
@@ -49,6 +51,9 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
             ProducerAccessMode = producerAccessMode,
             Topic = topic
         };
+
+        if (properties is not null)
+            _commandProducer.Metadatas.AddRange(properties.Select(x => new KeyValue { Key = x.Key, Value = x.Value }));
 
         _compressorFactory = compressorFactory;
         _messageCrypto = messageCrypto;

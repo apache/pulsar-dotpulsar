@@ -43,6 +43,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
     public Uri ServiceUrl { get; }
     public string SubscriptionName { get; }
+    public SubscriptionType SubscriptionType { get; }
     public string Topic { get; }
 
     public Consumer(
@@ -55,6 +56,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         _state = CreateStateManager();
         ServiceUrl = serviceUrl;
         SubscriptionName = consumerOptions.SubscriptionName;
+        SubscriptionType = consumerOptions.SubscriptionType;
         Topic = consumerOptions.Topic;
         _receiveTasks = Array.Empty<Task<IMessage<TMessage>>>();
         _cts = new CancellationTokenSource();
@@ -411,7 +413,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
-        var subConsumer = new SubConsumer<TMessage>(correlationId, ServiceUrl, _consumerOptions.SubscriptionName, topic, _processManager, initialChannel, executor, stateManager, consumerChannelFactory);
+        var subConsumer = new SubConsumer<TMessage>(correlationId, ServiceUrl, _consumerOptions.SubscriptionName, _consumerOptions.SubscriptionType, topic, _processManager, initialChannel, executor, stateManager, consumerChannelFactory);
         var process = new ConsumerProcess(correlationId, stateManager, subConsumer, _consumerOptions.SubscriptionType == SubscriptionType.Failover);
         _processManager.Add(process);
         process.Start();

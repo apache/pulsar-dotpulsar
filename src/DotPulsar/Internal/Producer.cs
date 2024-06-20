@@ -160,7 +160,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var schema = _options.Schema;
         var producerAccessMode = (PulsarApi.ProducerAccessMode) _options.ProducerAccessMode;
         var messageCrypto = GetMessageCrypto(_options);
-        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory, messageCrypto);
+        var producerProperties = _options.ProducerProperties;
+        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory, messageCrypto, producerProperties);
         var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
@@ -170,6 +171,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         process.Start();
         return producer;
     }
+
     private IMessageCrypto? GetMessageCrypto(ProducerOptions<TMessage> options)
     {
         if (options.EncryptionKeys.Count == 0 || options.CryptoKeyReader is null)
@@ -177,6 +179,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
         return new MessageCrypto();
     }
+
     public bool IsFinalState()
         => _state.IsFinalState();
 
@@ -209,9 +212,11 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     {
         if (_producerCount == 0)
         {
-            _ = await _state.StateChangedFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
+            var newState = await _state.StateChangedFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
             if (_faultException is not null)
                 throw new ProducerFaultedException(_faultException);
+            if (newState == ProducerState.Closed)
+                throw new ProducerClosedException();
         }
 
         if (_producerCount == 1)

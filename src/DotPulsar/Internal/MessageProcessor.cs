@@ -15,6 +15,7 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
+using DotPulsar.Exceptions;
 using DotPulsar.Internal.Extensions;
 using Microsoft.Extensions.ObjectPool;
 using System.Collections.Concurrent;
@@ -39,8 +40,16 @@ public sealed class MessageProcessor<TMessage> : IDisposable
     private readonly int _maxMessagesPerTask;
     private readonly TaskScheduler _taskScheduler;
 
-    public MessageProcessor(IConsumer<TMessage> consumer, Func<IMessage<TMessage>, CancellationToken, ValueTask> processor, ProcessingOptions options)
+    public MessageProcessor(
+        IConsumer<TMessage> consumer,
+        Func<IMessage<TMessage>, CancellationToken, ValueTask> processor,
+        ProcessingOptions options)
     {
+        if (options.EnsureOrderedAcknowledgment &&
+            (consumer.SubscriptionType == SubscriptionType.Shared ||
+            consumer.SubscriptionType == SubscriptionType.KeyShared))
+            throw new ProcessingException("Ordered acknowledgment can not be ensuring with shared subscription types");
+
         const string operation = "process";
         _operationName = $"{consumer.Topic} {operation}";
 

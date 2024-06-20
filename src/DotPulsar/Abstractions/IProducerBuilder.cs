@@ -76,6 +76,11 @@ public interface IProducerBuilder<TMessage>
     IProducerBuilder<TMessage> MaxPendingMessages(uint maxPendingMessages);
 
     /// <summary>
+    /// Add/Set a property key/value on the producer. This is optional.
+    /// </summary>
+    IProducerBuilder<TMessage> ProducerProperty(string key, string value);
+
+    /// <summary>
     /// Create the producer.
     /// </summary>
     IProducer<TMessage> Create();

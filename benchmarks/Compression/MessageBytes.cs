@@ -28,7 +28,7 @@ public static class MessageBytes
         SmallProtobufMessageBytes = new ReadOnlySequence<byte>(smallMessage.ToByteArray());
         SmallJsonMessageBytes = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(JsonFormatter.Default.Format(smallMessage)));
 
-        var largeMessage = CreateMessage(1024*1024); //1MB
+        var largeMessage = CreateMessage(1024 * 1024); //1MB
         LargeProtobufMessageBytes = new ReadOnlySequence<byte>(largeMessage.ToByteArray());
         LargeJsonMessageBytes = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(JsonFormatter.Default.Format(largeMessage)));
     }
