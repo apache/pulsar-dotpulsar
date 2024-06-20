@@ -15,8 +15,6 @@
 namespace DotPulsar;
 
 using DotPulsar.Abstractions;
-using DotPulsar.Internal;
-using System.Collections.Concurrent;
 
 /// <summary>
 /// The consumer building options.
@@ -39,16 +37,14 @@ public sealed class ConsumerOptions<TMessage>
     public static readonly int DefaultPriorityLevel = 0;
 
     /// <summary>
-    /// The default encryption keys (empty dictionary).
-    /// TODO: These keys probably don't need to be exposed in the options.
+    /// The default encryption keys.
     /// </summary>
-    public static readonly ConcurrentDictionary<string, string> DefaultEncryptionKeys = new();
+    public static readonly List<string> DefaultEncryptionKeys = new();
 
     /// <summary>
     /// The default crypto key reader.
-    /// TODO: This should be an enum instead.
     /// </summary>
-    public static readonly ICryptoKeyReader DefaultCryptoKeyReader = new LocalFileCryptoKeyReader();
+    public static readonly ICryptoKeyReader DefaultCryptoKeyReader = null;
 
     /// <summary>
     /// The default action to take when message decryption fails.
@@ -113,12 +109,12 @@ public sealed class ConsumerOptions<TMessage>
     /// <summary>
     /// Set the encryption keys.
     /// </summary>
-    public ConcurrentDictionary<string, string> EncryptionKeys { get; set; }
+    public List<string> EncryptionKeys { get; set; }
 
     /// <summary>
     /// Set the crypto key reader
     /// </summary>
-    public ICryptoKeyReader CryptoKeyReader { get; set; }
+    public ICryptoKeyReader? CryptoKeyReader { get; set; }
 
     /// <summary>
     /// Set the action to take when a crypto operation fails. The default is 'ConsumerCryptoFailureAction.Fail'.

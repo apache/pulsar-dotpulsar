@@ -25,7 +25,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
     private readonly IConnectionPool _connectionPool;
     private readonly CommandProducer _commandProducer;
     private readonly ICompressorFactory? _compressorFactory;
-    private readonly IEncryptorFactory _encryptorFactory;
+    private readonly IMessageCrypto? _messageCrypto;
     private readonly Schema? _schema;
     private ulong? _topicEpoch;
 
@@ -37,7 +37,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         ProducerAccessMode producerAccessMode,
         SchemaInfo schemaInfo,
         ICompressorFactory? compressorFactory,
-        IEncryptorFactory encryptorFactory)
+        IMessageCrypto? messageCrypto)
     {
         _correlationId = correlationId;
         _eventRegister = eventRegister;
@@ -51,7 +51,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         };
 
         _compressorFactory = compressorFactory;
-        _encryptorFactory = encryptorFactory;
+        _messageCrypto = messageCrypto;
         _schema = schemaInfo.PulsarSchema;
     }
 
@@ -71,7 +71,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         var response = await connection.Send(_commandProducer, channel, cancellationToken).ConfigureAwait(false);
         _topicEpoch = response.TopicEpoch;
         var schemaVersion = await GetSchemaVersion(connection, cancellationToken).ConfigureAwait(false);
-        return new ProducerChannel(response.ProducerId, response.ProducerName, connection, _compressorFactory, _encryptorFactory, schemaVersion);
+        return new ProducerChannel(response.ProducerId, response.ProducerName, connection, _compressorFactory, _messageCrypto, schemaVersion);
     }
 
     private async ValueTask<byte[]?> GetSchemaVersion(IConnection connection, CancellationToken cancellationToken)

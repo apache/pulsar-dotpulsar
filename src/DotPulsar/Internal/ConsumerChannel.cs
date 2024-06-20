@@ -17,6 +17,7 @@ namespace DotPulsar.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.Encryption;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 
@@ -28,8 +29,8 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
     private readonly BatchHandler<TMessage> _batchHandler;
     private readonly CommandFlow _cachedCommandFlow;
     private readonly IMessageFactory<TMessage> _messageFactory;
-    private readonly Dictionary<string, IDecryptor> _decryptors;
     private readonly IDecompress?[] _decompressors;
+    private readonly IMessageCrypto _messageCrypto;
     private readonly AsyncLock _lock;
     private readonly string _topic;
     private uint _sendWhenZero;
@@ -42,7 +43,6 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
         IConnection connection,
         BatchHandler<TMessage> batchHandler,
         IMessageFactory<TMessage> messageFactory,
-        IEnumerable<IDecryptorFactory> decryptorFactories,
         IEnumerable<IDecompressorFactory> decompressorFactories,
         string topic)
     {
@@ -53,17 +53,13 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
         _messageFactory = messageFactory;
         _topic = topic;
 
-        _decryptors = new Dictionary<string, IDecryptor>();
-        foreach (var decryptorFactory in decryptorFactories)
-        {
-            _decryptors.Add(decryptorFactory.EncryptionAlgo, decryptorFactory.Create());
-        }
-
         _decompressors = new IDecompress[5];
         foreach (var decompressorFactory in decompressorFactories)
         {
             _decompressors[(int) decompressorFactory.CompressionType] = decompressorFactory.Create();
         }
+
+        _messageCrypto = new MessageCrypto();
 
         _lock = new AsyncLock();
 
@@ -107,13 +103,9 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
 
                 if (metadata.EncryptionKeys.Count > 0)
                 {
-                    var decryptor = _decryptors[metadata.EncryptionAlgo];
-                    if (decryptor is null)
-                        throw new CryptoException($"Support for {metadata.EncryptionAlgo} encryption was not found");
-
                     try
                     {
-                        data = decryptor.Decrypt(data);
+                        data = _messageCrypto.Decrypt(data);
                     }
                     catch
                     {

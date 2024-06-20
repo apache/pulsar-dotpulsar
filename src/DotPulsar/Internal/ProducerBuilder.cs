@@ -25,6 +25,8 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
     private ProducerAccessMode _producerAccessMode;
     private bool _attachTraceInfoToMessages;
     private CompressionType _compressionType;
+    private ICryptoKeyReader _cryptoKeyReader;
+    private readonly List<string> _encryptionKeys;
     private ulong _initialSequenceId;
     private string? _topic;
     private IHandleStateChanged<ProducerStateChanged>? _stateChangedHandler;
@@ -37,6 +39,8 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
         _schema = schema;
         _attachTraceInfoToMessages = false;
         _compressionType = ProducerOptions<TMessage>.DefaultCompressionType;
+        _cryptoKeyReader = ProducerOptions<TMessage>.DefaultCryptoKeyReader;
+        _encryptionKeys = ProducerOptions<TMessage>.DefaultEncryptionKeys;
         _initialSequenceId = ProducerOptions<TMessage>.DefaultInitialSequenceId;
         _maxPendingMessages = 500;
         _producerAccessMode = ProducerOptions<TMessage>.DefaultProducerAccessMode;
@@ -51,6 +55,18 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
     public IProducerBuilder<TMessage> CompressionType(CompressionType compressionType)
     {
         _compressionType = compressionType;
+        return this;
+    }
+
+    public IProducerBuilder<TMessage> CryptoKeyReader(ICryptoKeyReader cryptoKeyReader)
+    {
+        _cryptoKeyReader = cryptoKeyReader;
+        return this;
+    }
+
+    public IProducerBuilder<TMessage> AddEncryptionKey(string keyName)
+    {
+        _encryptionKeys.Add(keyName);
         return this;
     }
 
@@ -109,6 +125,8 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
             ProducerAccessMode = _producerAccessMode,
             AttachTraceInfoToMessages = _attachTraceInfoToMessages,
             CompressionType = _compressionType,
+            CryptoKeyReader = _cryptoKeyReader,
+            EncryptionKeys = _encryptionKeys,
             InitialSequenceId = _initialSequenceId,
             ProducerName = _producerName,
             StateChangedHandler = _stateChangedHandler,

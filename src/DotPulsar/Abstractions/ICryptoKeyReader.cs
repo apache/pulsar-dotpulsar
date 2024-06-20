@@ -14,6 +14,9 @@
 
 namespace DotPulsar.Abstractions;
 
+using DotPulsar.Internal.Encryption;
+using DotPulsar.Internal.PulsarApi;
+
 public interface ICryptoKeyReader
 {
     /// <summary>
@@ -26,12 +29,12 @@ public interface ICryptoKeyReader
     /// </summary>
     /// <param name="keyName">Unique name to identify the key</param>
     /// <returns>byte array of the public key value</returns>
-    byte[] GetPublicKey(String keyName);
+    EncryptionKeyInfo GetPublicKey(String keyName);
 
     /// <summary>
     /// Return the decryption (private) key corresponding to the key name in the argument.
     /// </summary>
     /// <param name="keyName">Unique name to identify the key</param>
     /// <returns>byte array of the private key value</returns>
-    byte[] GetPrivateKey(String keyName);
+    (byte[], List<KeyValue>) GetPrivateKey(String keyName);
 }

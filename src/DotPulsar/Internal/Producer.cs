@@ -17,6 +17,7 @@ namespace DotPulsar.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
+using DotPulsar.Internal.Encryption;
 using DotPulsar.Internal.Extensions;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -32,7 +33,6 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     private readonly IConnectionPool _connectionPool;
     private readonly IHandleException _exceptionHandler;
     private readonly ICompressorFactory? _compressorFactory;
-    private readonly IEncryptorFactory _encryptorFactory;
     private readonly ProducerOptions<TMessage> _options;
     private readonly ProcessManager _processManager;
     private readonly ConcurrentDictionary<int, SubProducer> _producers;
@@ -52,8 +52,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         ProducerOptions<TMessage> options,
         IHandleException exceptionHandler,
         IConnectionPool connectionPool,
-        ICompressorFactory? compressorFactory,
-        IEncryptorFactory encryptorFactory)
+        ICompressorFactory? compressorFactory)
     {
         _operationName = $"{options.Topic} send";
         _activityTags =
@@ -77,7 +76,6 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         _exceptionHandler = exceptionHandler;
         _connectionPool = connectionPool;
         _compressorFactory = compressorFactory;
-        _encryptorFactory = encryptorFactory;
         _processManager = new ProcessManager();
         _messageRouter = options.MessageRouter;
         _cts = new CancellationTokenSource();
@@ -161,7 +159,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var producerName = _options.ProducerName;
         var schema = _options.Schema;
         var producerAccessMode = (PulsarApi.ProducerAccessMode) _options.ProducerAccessMode;
-        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory, _encryptorFactory);
+        var messageCrypto = GetMessageCrypto(_options);
+        var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory, messageCrypto);
         var stateManager = CreateStateManager();
         var initialChannel = new NotReadyChannel<TMessage>();
         var executor = new Executor(correlationId, _processManager, _exceptionHandler);
@@ -170,6 +169,13 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         _processManager.Add(process);
         process.Start();
         return producer;
+    }
+    private IMessageCrypto? GetMessageCrypto(ProducerOptions<TMessage> options)
+    {
+        if (options.EncryptionKeys.Count == 0 || options.CryptoKeyReader is null)
+            return null;
+
+        return new MessageCrypto();
     }
     public bool IsFinalState()
         => _state.IsFinalState();

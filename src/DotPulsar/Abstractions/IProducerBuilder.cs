@@ -30,6 +30,16 @@ public interface IProducerBuilder<TMessage>
     IProducerBuilder<TMessage> CompressionType(CompressionType compressionType);
 
     /// <summary>
+    /// Set the crypto key reader.
+    /// </summary>
+    IProducerBuilder<TMessage> CryptoKeyReader(ICryptoKeyReader cryptoKeyReader);
+
+    /// <summary>
+    /// Add the name of the public key used to encrypt the session key. There can be multiple public keys.
+    /// </summary>
+    IProducerBuilder<TMessage> AddEncryptionKey(string keyName);
+
+    /// <summary>
     /// Set the initial sequence id. The default is 0.
     /// </summary>
     IProducerBuilder<TMessage> InitialSequenceId(ulong initialSequenceId);
