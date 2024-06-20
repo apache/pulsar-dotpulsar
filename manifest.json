@@ -554,6 +554,16 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/DotPulsar.Exceptions.ProcessingException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/DotPulsar.Exceptions.ProcessingException.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/DotPulsar.Exceptions.ProducerBlockedQuotaExceededException.yml",
       "output": {
         ".html": {

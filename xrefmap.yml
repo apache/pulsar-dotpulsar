@@ -125,6 +125,19 @@ references:
   isSpec: "True"
   fullName: DotPulsar.Abstractions.IConsumer.SubscriptionName
   nameWithType: IConsumer.SubscriptionName
+- uid: DotPulsar.Abstractions.IConsumer.SubscriptionType
+  name: SubscriptionType
+  href: api/DotPulsar.Abstractions.IConsumer.html#DotPulsar_Abstractions_IConsumer_SubscriptionType
+  commentId: P:DotPulsar.Abstractions.IConsumer.SubscriptionType
+  fullName: DotPulsar.Abstractions.IConsumer.SubscriptionType
+  nameWithType: IConsumer.SubscriptionType
+- uid: DotPulsar.Abstractions.IConsumer.SubscriptionType*
+  name: SubscriptionType
+  href: api/DotPulsar.Abstractions.IConsumer.html#DotPulsar_Abstractions_IConsumer_SubscriptionType_
+  commentId: Overload:DotPulsar.Abstractions.IConsumer.SubscriptionType
+  isSpec: "True"
+  fullName: DotPulsar.Abstractions.IConsumer.SubscriptionType
+  nameWithType: IConsumer.SubscriptionType
 - uid: DotPulsar.Abstractions.IConsumer.Topic
   name: Topic
   href: api/DotPulsar.Abstractions.IConsumer.html#DotPulsar_Abstractions_IConsumer_Topic
@@ -3084,6 +3097,31 @@ references:
   fullName.vb: DotPulsar.Exceptions.PersistenceException.New
   nameWithType: PersistenceException.PersistenceException
   nameWithType.vb: PersistenceException.New
+- uid: DotPulsar.Exceptions.ProcessingException
+  name: ProcessingException
+  href: api/DotPulsar.Exceptions.ProcessingException.html
+  commentId: T:DotPulsar.Exceptions.ProcessingException
+  fullName: DotPulsar.Exceptions.ProcessingException
+  nameWithType: ProcessingException
+- uid: DotPulsar.Exceptions.ProcessingException.#ctor(System.String)
+  name: ProcessingException(string)
+  href: api/DotPulsar.Exceptions.ProcessingException.html#DotPulsar_Exceptions_ProcessingException__ctor_System_String_
+  commentId: M:DotPulsar.Exceptions.ProcessingException.#ctor(System.String)
+  name.vb: New(String)
+  fullName: DotPulsar.Exceptions.ProcessingException.ProcessingException(string)
+  fullName.vb: DotPulsar.Exceptions.ProcessingException.New(String)
+  nameWithType: ProcessingException.ProcessingException(string)
+  nameWithType.vb: ProcessingException.New(String)
+- uid: DotPulsar.Exceptions.ProcessingException.#ctor*
+  name: ProcessingException
+  href: api/DotPulsar.Exceptions.ProcessingException.html#DotPulsar_Exceptions_ProcessingException__ctor_
+  commentId: Overload:DotPulsar.Exceptions.ProcessingException.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: DotPulsar.Exceptions.ProcessingException.ProcessingException
+  fullName.vb: DotPulsar.Exceptions.ProcessingException.New
+  nameWithType: ProcessingException.ProcessingException
+  nameWithType.vb: ProcessingException.New
 - uid: DotPulsar.Exceptions.ProducerBlockedQuotaExceededException
   name: ProducerBlockedQuotaExceededException
   href: api/DotPulsar.Exceptions.ProducerBlockedQuotaExceededException.html
@@ -8621,6 +8659,23 @@ references:
   fullName.vb: DotPulsar.Internal.Consumer(Of TMessage).SubscriptionName
   nameWithType: Consumer<TMessage>.SubscriptionName
   nameWithType.vb: Consumer(Of TMessage).SubscriptionName
+- uid: DotPulsar.Internal.Consumer`1.SubscriptionType
+  name: SubscriptionType
+  href: api/DotPulsar.Internal.Consumer-1.html#DotPulsar_Internal_Consumer_1_SubscriptionType
+  commentId: P:DotPulsar.Internal.Consumer`1.SubscriptionType
+  fullName: DotPulsar.Internal.Consumer<TMessage>.SubscriptionType
+  fullName.vb: DotPulsar.Internal.Consumer(Of TMessage).SubscriptionType
+  nameWithType: Consumer<TMessage>.SubscriptionType
+  nameWithType.vb: Consumer(Of TMessage).SubscriptionType
+- uid: DotPulsar.Internal.Consumer`1.SubscriptionType*
+  name: SubscriptionType
+  href: api/DotPulsar.Internal.Consumer-1.html#DotPulsar_Internal_Consumer_1_SubscriptionType_
+  commentId: Overload:DotPulsar.Internal.Consumer`1.SubscriptionType
+  isSpec: "True"
+  fullName: DotPulsar.Internal.Consumer<TMessage>.SubscriptionType
+  fullName.vb: DotPulsar.Internal.Consumer(Of TMessage).SubscriptionType
+  nameWithType: Consumer<TMessage>.SubscriptionType
+  nameWithType.vb: Consumer(Of TMessage).SubscriptionType
 - uid: DotPulsar.Internal.Consumer`1.Topic
   name: Topic
   href: api/DotPulsar.Internal.Consumer-1.html#DotPulsar_Internal_Consumer_1_Topic
@@ -26387,15 +26442,15 @@ references:
   fullName.vb: DotPulsar.Internal.SubConsumer(Of TMessage)
   nameWithType: SubConsumer<TMessage>
   nameWithType.vb: SubConsumer(Of TMessage)
-- uid: DotPulsar.Internal.SubConsumer`1.#ctor(System.Guid,System.Uri,System.String,System.String,DotPulsar.Internal.Abstractions.IRegisterEvent,DotPulsar.Internal.Abstractions.IConsumerChannel{`0},DotPulsar.Internal.Abstractions.IExecute,DotPulsar.Internal.Abstractions.IStateChanged{DotPulsar.ConsumerState},DotPulsar.Internal.Abstractions.IConsumerChannelFactory{`0})
-  name: SubConsumer(Guid, Uri, string, string, IRegisterEvent, IConsumerChannel<TMessage>, IExecute, IStateChanged<ConsumerState>, IConsumerChannelFactory<TMessage>)
-  href: api/DotPulsar.Internal.SubConsumer-1.html#DotPulsar_Internal_SubConsumer_1__ctor_System_Guid_System_Uri_System_String_System_String_DotPulsar_Internal_Abstractions_IRegisterEvent_DotPulsar_Internal_Abstractions_IConsumerChannel__0__DotPulsar_Internal_Abstractions_IExecute_DotPulsar_Internal_Abstractions_IStateChanged_DotPulsar_ConsumerState__DotPulsar_Internal_Abstractions_IConsumerChannelFactory__0__
-  commentId: M:DotPulsar.Internal.SubConsumer`1.#ctor(System.Guid,System.Uri,System.String,System.String,DotPulsar.Internal.Abstractions.IRegisterEvent,DotPulsar.Internal.Abstractions.IConsumerChannel{`0},DotPulsar.Internal.Abstractions.IExecute,DotPulsar.Internal.Abstractions.IStateChanged{DotPulsar.ConsumerState},DotPulsar.Internal.Abstractions.IConsumerChannelFactory{`0})
-  name.vb: New(Guid, Uri, String, String, IRegisterEvent, IConsumerChannel(Of TMessage), IExecute, IStateChanged(Of ConsumerState), IConsumerChannelFactory(Of TMessage))
-  fullName: DotPulsar.Internal.SubConsumer<TMessage>.SubConsumer(System.Guid, System.Uri, string, string, DotPulsar.Internal.Abstractions.IRegisterEvent, DotPulsar.Internal.Abstractions.IConsumerChannel<TMessage>, DotPulsar.Internal.Abstractions.IExecute, DotPulsar.Internal.Abstractions.IStateChanged<DotPulsar.ConsumerState>, DotPulsar.Internal.Abstractions.IConsumerChannelFactory<TMessage>)
-  fullName.vb: DotPulsar.Internal.SubConsumer(Of TMessage).New(System.Guid, System.Uri, String, String, DotPulsar.Internal.Abstractions.IRegisterEvent, DotPulsar.Internal.Abstractions.IConsumerChannel(Of TMessage), DotPulsar.Internal.Abstractions.IExecute, DotPulsar.Internal.Abstractions.IStateChanged(Of DotPulsar.ConsumerState), DotPulsar.Internal.Abstractions.IConsumerChannelFactory(Of TMessage))
-  nameWithType: SubConsumer<TMessage>.SubConsumer(Guid, Uri, string, string, IRegisterEvent, IConsumerChannel<TMessage>, IExecute, IStateChanged<ConsumerState>, IConsumerChannelFactory<TMessage>)
-  nameWithType.vb: SubConsumer(Of TMessage).New(Guid, Uri, String, String, IRegisterEvent, IConsumerChannel(Of TMessage), IExecute, IStateChanged(Of ConsumerState), IConsumerChannelFactory(Of TMessage))
+- uid: DotPulsar.Internal.SubConsumer`1.#ctor(System.Guid,System.Uri,System.String,DotPulsar.SubscriptionType,System.String,DotPulsar.Internal.Abstractions.IRegisterEvent,DotPulsar.Internal.Abstractions.IConsumerChannel{`0},DotPulsar.Internal.Abstractions.IExecute,DotPulsar.Internal.Abstractions.IStateChanged{DotPulsar.ConsumerState},DotPulsar.Internal.Abstractions.IConsumerChannelFactory{`0})
+  name: SubConsumer(Guid, Uri, string, SubscriptionType, string, IRegisterEvent, IConsumerChannel<TMessage>, IExecute, IStateChanged<ConsumerState>, IConsumerChannelFactory<TMessage>)
+  href: api/DotPulsar.Internal.SubConsumer-1.html#DotPulsar_Internal_SubConsumer_1__ctor_System_Guid_System_Uri_System_String_DotPulsar_SubscriptionType_System_String_DotPulsar_Internal_Abstractions_IRegisterEvent_DotPulsar_Internal_Abstractions_IConsumerChannel__0__DotPulsar_Internal_Abstractions_IExecute_DotPulsar_Internal_Abstractions_IStateChanged_DotPulsar_ConsumerState__DotPulsar_Internal_Abstractions_IConsumerChannelFactory__0__
+  commentId: M:DotPulsar.Internal.SubConsumer`1.#ctor(System.Guid,System.Uri,System.String,DotPulsar.SubscriptionType,System.String,DotPulsar.Internal.Abstractions.IRegisterEvent,DotPulsar.Internal.Abstractions.IConsumerChannel{`0},DotPulsar.Internal.Abstractions.IExecute,DotPulsar.Internal.Abstractions.IStateChanged{DotPulsar.ConsumerState},DotPulsar.Internal.Abstractions.IConsumerChannelFactory{`0})
+  name.vb: New(Guid, Uri, String, SubscriptionType, String, IRegisterEvent, IConsumerChannel(Of TMessage), IExecute, IStateChanged(Of ConsumerState), IConsumerChannelFactory(Of TMessage))
+  fullName: DotPulsar.Internal.SubConsumer<TMessage>.SubConsumer(System.Guid, System.Uri, string, DotPulsar.SubscriptionType, string, DotPulsar.Internal.Abstractions.IRegisterEvent, DotPulsar.Internal.Abstractions.IConsumerChannel<TMessage>, DotPulsar.Internal.Abstractions.IExecute, DotPulsar.Internal.Abstractions.IStateChanged<DotPulsar.ConsumerState>, DotPulsar.Internal.Abstractions.IConsumerChannelFactory<TMessage>)
+  fullName.vb: DotPulsar.Internal.SubConsumer(Of TMessage).New(System.Guid, System.Uri, String, DotPulsar.SubscriptionType, String, DotPulsar.Internal.Abstractions.IRegisterEvent, DotPulsar.Internal.Abstractions.IConsumerChannel(Of TMessage), DotPulsar.Internal.Abstractions.IExecute, DotPulsar.Internal.Abstractions.IStateChanged(Of DotPulsar.ConsumerState), DotPulsar.Internal.Abstractions.IConsumerChannelFactory(Of TMessage))
+  nameWithType: SubConsumer<TMessage>.SubConsumer(Guid, Uri, string, SubscriptionType, string, IRegisterEvent, IConsumerChannel<TMessage>, IExecute, IStateChanged<ConsumerState>, IConsumerChannelFactory<TMessage>)
+  nameWithType.vb: SubConsumer(Of TMessage).New(Guid, Uri, String, SubscriptionType, String, IRegisterEvent, IConsumerChannel(Of TMessage), IExecute, IStateChanged(Of ConsumerState), IConsumerChannelFactory(Of TMessage))
 - uid: DotPulsar.Internal.SubConsumer`1.#ctor*
   name: SubConsumer
   href: api/DotPulsar.Internal.SubConsumer-1.html#DotPulsar_Internal_SubConsumer_1__ctor_
@@ -26704,6 +26759,23 @@ references:
   fullName.vb: DotPulsar.Internal.SubConsumer(Of TMessage).SubscriptionName
   nameWithType: SubConsumer<TMessage>.SubscriptionName
   nameWithType.vb: SubConsumer(Of TMessage).SubscriptionName
+- uid: DotPulsar.Internal.SubConsumer`1.SubscriptionType
+  name: SubscriptionType
+  href: api/DotPulsar.Internal.SubConsumer-1.html#DotPulsar_Internal_SubConsumer_1_SubscriptionType
+  commentId: P:DotPulsar.Internal.SubConsumer`1.SubscriptionType
+  fullName: DotPulsar.Internal.SubConsumer<TMessage>.SubscriptionType
+  fullName.vb: DotPulsar.Internal.SubConsumer(Of TMessage).SubscriptionType
+  nameWithType: SubConsumer<TMessage>.SubscriptionType
+  nameWithType.vb: SubConsumer(Of TMessage).SubscriptionType
+- uid: DotPulsar.Internal.SubConsumer`1.SubscriptionType*
+  name: SubscriptionType
+  href: api/DotPulsar.Internal.SubConsumer-1.html#DotPulsar_Internal_SubConsumer_1_SubscriptionType_
+  commentId: Overload:DotPulsar.Internal.SubConsumer`1.SubscriptionType
+  isSpec: "True"
+  fullName: DotPulsar.Internal.SubConsumer<TMessage>.SubscriptionType
+  fullName.vb: DotPulsar.Internal.SubConsumer(Of TMessage).SubscriptionType
+  nameWithType: SubConsumer<TMessage>.SubscriptionType
+  nameWithType.vb: SubConsumer(Of TMessage).SubscriptionType
 - uid: DotPulsar.Internal.SubConsumer`1.Topic
   name: Topic
   href: api/DotPulsar.Internal.SubConsumer-1.html#DotPulsar_Internal_SubConsumer_1_Topic
