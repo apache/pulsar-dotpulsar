@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 - Updated the Microsoft.Extensions.ObjectPool dependency from version 8.0.6 to 8.0.7
 
+### Fixed
+
+- Under some circumstances 'AuthenticateAsClientAsync' will hang after a network issue. Setting the receive and send timeouts on the TCP client should fix this
+
 ## [3.3.1] - 2024-06-24
 
 ### Added

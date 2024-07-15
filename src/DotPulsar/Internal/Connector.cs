@@ -62,7 +62,11 @@ public sealed class Connector
 
     private static async Task<Stream> GetStream(string host, int port, CancellationToken cancellationToken)
     {
-        var tcpClient = new TcpClient();
+        var tcpClient = new TcpClient
+        {
+            ReceiveTimeout = 30000,
+            SendTimeout = 30000
+        };
 
         try
         {
