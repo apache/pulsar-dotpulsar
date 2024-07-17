@@ -19,6 +19,8 @@ using System.Buffers;
 
 public static class Serializer
 {
+    static Serializer() => Serialize(new BaseCommand()); //Let's see if this fixes the bug in protobuf-net
+
     public static T Deserialize<T>(ReadOnlySequence<byte> sequence) => ProtoBuf.Serializer.Deserialize<T>(sequence);
 
     public static ReadOnlySequence<byte> Serialize(BaseCommand command)
