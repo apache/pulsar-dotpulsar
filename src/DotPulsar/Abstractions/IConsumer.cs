@@ -25,6 +25,11 @@ public interface IConsumer : IGetLastMessageIds, ISeek, IState<ConsumerState>, I
     ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Acknowledge the consumption of multiple messages using the MessageIds.
+    /// </summary>
+    ValueTask Acknowledge(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Acknowledge the consumption of all the messages in the topic up to and including the provided MessageId.
     /// </summary>
     ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken = default);

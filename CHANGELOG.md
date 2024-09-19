@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [Unreleased]
 
+### Added
+
+- Multiple messages can now be acknowledged with Acknowledge(IEnumerable\<MessageId> messageIds, CancellationToken cancellationToken)
+
 ### Changed
 
 - Updated the Microsoft.Extensions.ObjectPool dependency from version 8.0.7 to 8.0.8

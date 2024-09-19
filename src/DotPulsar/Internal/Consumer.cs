@@ -230,6 +230,26 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
             await _subConsumers[messageId.Partition].Acknowledge(messageId, cancellationToken).ConfigureAwait(false);
     }
 
+    public async ValueTask Acknowledge(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken = default)
+    {
+        await Guard(cancellationToken).ConfigureAwait(false);
+
+        if (!_isPartitionedTopic)
+        {
+            await _subConsumers[_subConsumerIndex].Acknowledge(messageIds, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        var groupedMessageIds = messageIds.GroupBy(messageIds => messageIds.Partition);
+        var acknowledgeTasks = new List<Task>();
+        foreach (var group in groupedMessageIds)
+        {
+            acknowledgeTasks.Add(_subConsumers[group.Key].Acknowledge(group, cancellationToken).AsTask());
+        }
+
+        await Task.WhenAll(acknowledgeTasks).ConfigureAwait(false);
+    }
+
     public async ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken)
     {
         await Guard(cancellationToken).ConfigureAwait(false);
@@ -250,32 +270,13 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
             return;
         }
 
-        var messageIdSortedIntoTopics = new Dictionary<int, LinkedList<MessageId>>(_numberOfPartitions);
-        //sort messageIds into topics
-        foreach (var messageId in messageIds)
+        var groupedMessageIds = messageIds.GroupBy(messageIds => messageIds.Partition);
+        var redeliverTasks = new List<Task>();
+        foreach (var group in groupedMessageIds)
         {
-            if (messageIdSortedIntoTopics.ContainsKey(messageId.Partition))
-            {
-                messageIdSortedIntoTopics[messageId.Partition].AddLast(messageId);
-            }
-            else
-            {
-                var linkedList = new LinkedList<MessageId>();
-                linkedList.AddLast(messageId);
-                messageIdSortedIntoTopics.Add(messageId.Partition, linkedList);
-            }
+            redeliverTasks.Add(_subConsumers[group.Key].RedeliverUnacknowledgedMessages(group, cancellationToken).AsTask());
         }
-        var redeliverUnacknowledgedMessagesTasks = new Task[messageIdSortedIntoTopics.Count];
-        var iterations = -1;
-        //Collect tasks from _subConsumers RedeliverUnacknowledgedMessages without waiting
-        foreach (var messageIdSortedByPartition in messageIdSortedIntoTopics)
-        {
-            iterations++;
-            var task = _subConsumers[messageIdSortedByPartition.Key].RedeliverUnacknowledgedMessages(messageIdSortedByPartition.Value, cancellationToken).AsTask();
-            redeliverUnacknowledgedMessagesTasks[iterations] = task;
-        }
-        //await all of the tasks.
-        await Task.WhenAll(redeliverUnacknowledgedMessagesTasks).ConfigureAwait(false);
+        await Task.WhenAll(redeliverTasks).ConfigureAwait(false);
     }
 
     public async ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken)
@@ -288,10 +289,12 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
             return;
         }
 
+        var redeliverTasks = new List<Task>(_numberOfPartitions);
         foreach (var subConsumer in _subConsumers)
         {
-            await subConsumer.RedeliverUnacknowledgedMessages(cancellationToken).ConfigureAwait(false);
+            redeliverTasks.Add(subConsumer.RedeliverUnacknowledgedMessages(cancellationToken).AsTask());
         }
+        await Task.WhenAll(redeliverTasks).ConfigureAwait(false);
     }
 
     public async ValueTask Unsubscribe(CancellationToken cancellationToken)
