@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Added
 
 - Multiple messages can now be acknowledged with Acknowledge(IEnumerable\<MessageId> messageIds, CancellationToken cancellationToken)
+- ProcessingOptions has a new ShutdownGracePeriod property for doing a graceful shutdown by allowing active tasks to finish 
 
 ### Changed
 

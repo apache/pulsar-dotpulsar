@@ -28,6 +28,7 @@ public sealed class ProcessingOptions
     private bool _linkTraces;
     private int _maxDegreeOfParallelism;
     private int _maxMessagesPerTask;
+    private TimeSpan _shutdownGracePeriod;
     private TaskScheduler _taskScheduler;
 
     /// <summary>
@@ -39,6 +40,7 @@ public sealed class ProcessingOptions
         _linkTraces = false;
         _maxDegreeOfParallelism = 1;
         _maxMessagesPerTask = Unbounded;
+        _shutdownGracePeriod = TimeSpan.Zero;
         _taskScheduler = TaskScheduler.Default;
     }
 
@@ -87,6 +89,20 @@ public sealed class ProcessingOptions
                 throw new ArgumentOutOfRangeException(nameof(value));
 
             _maxMessagesPerTask = value;
+        }
+    }
+
+    /// <summary>
+    /// The amount of time we give the active tasks to finish. The Default is TimeSpan.Zero, meaning no graceful shutdown.
+    /// </summary>
+    public TimeSpan ShutdownGracePeriod
+    {
+        get => _shutdownGracePeriod;
+        set
+        {
+            if (value < TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException(nameof(value), value, "ShutdownGracePeriod must be zero or above");
+            _shutdownGracePeriod = value;
         }
     }
 

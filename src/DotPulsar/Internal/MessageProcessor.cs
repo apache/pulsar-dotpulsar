@@ -38,6 +38,7 @@ public sealed class MessageProcessor<TMessage> : IDisposable
     private readonly bool _ensureOrderedAcknowledgment;
     private readonly int _maxDegreeOfParallelism;
     private readonly int _maxMessagesPerTask;
+    private readonly TimeSpan _shutdownGracePeriod;
     private readonly TaskScheduler _taskScheduler;
 
     public MessageProcessor(
@@ -81,6 +82,7 @@ public sealed class MessageProcessor<TMessage> : IDisposable
         _ensureOrderedAcknowledgment = options.EnsureOrderedAcknowledgment;
         _maxDegreeOfParallelism = options.MaxDegreeOfParallelism;
         _maxMessagesPerTask = options.MaxMessagesPerTask;
+        _shutdownGracePeriod = options.ShutdownGracePeriod;
         _taskScheduler = options.TaskScheduler;
     }
 
@@ -92,20 +94,34 @@ public sealed class MessageProcessor<TMessage> : IDisposable
 
     public async ValueTask Process(CancellationToken cancellationToken)
     {
+        using var cts = new CancellationTokenSource();
+        using var registration = Link(cts, cancellationToken);
+
         for (var i = 1; i < _maxDegreeOfParallelism; ++i)
         {
-            StartNewProcessorTask(cancellationToken);
+            StartNewProcessorTask(cts.Token);
         }
 
         while (true)
         {
-            StartNewProcessorTask(cancellationToken);
+            if (!cancellationToken.IsCancellationRequested)
+                StartNewProcessorTask(cts.Token);
+
+            if (_processorTasks.Count == 0)
+                return;
+
             var completedTask = await Task.WhenAny(_processorTasks).ConfigureAwait(false);
             if (completedTask.IsFaulted)
                 ExceptionDispatchInfo.Capture(completedTask.Exception!.InnerException!).Throw();
             _processorTasks.Remove(completedTask);
-            cancellationToken.ThrowIfCancellationRequested();
         }
+    }
+
+    private CancellationTokenRegistration Link(CancellationTokenSource cts, CancellationToken cancellationToken)
+    {
+        return _shutdownGracePeriod != TimeSpan.Zero
+            ? cancellationToken.Register(() => cts.CancelAfter(_shutdownGracePeriod))
+            : cancellationToken.Register(cts.Cancel);
     }
 
     private async ValueTask Processor(CancellationToken cancellationToken)
