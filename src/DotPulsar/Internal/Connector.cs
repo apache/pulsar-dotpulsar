@@ -118,10 +118,17 @@ public sealed class Connector
     private async Task<Stream> EncryptStream(Stream stream, string host, CancellationToken cancellationToken)
     {
         SslStream? sslStream = null;
+        var policyErrors = SslPolicyErrors.None;
+
+        bool Validate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
+        {
+            policyErrors = sslPolicyErrors;
+            return ValidateServerCertificate(sender, certificate, chain, sslPolicyErrors);
+        }
 
         try
         {
-            sslStream = new SslStream(stream, false, ValidateServerCertificate, null);
+            sslStream = new SslStream(stream, false, Validate, null);
             var options = new SslClientAuthenticationOptions
             {
                 TargetHost = host,
@@ -132,12 +139,15 @@ public sealed class Connector
             await sslStream.AuthenticateAsClientAsync(options, cancellationToken).ConfigureAwait(false);
             return sslStream;
         }
-        catch
+        catch (Exception exception)
         {
             if (sslStream is null)
                 await stream.DisposeAsync().ConfigureAwait(false);
             else
                 await sslStream.DisposeAsync().ConfigureAwait(false);
+
+            if (policyErrors != SslPolicyErrors.None)
+                exception.Data.Add("SslPolicyErrors", policyErrors);
 
             throw;
         }

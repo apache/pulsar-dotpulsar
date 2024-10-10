@@ -58,15 +58,20 @@ public sealed class AsyncLock : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
+            return;
+
+        IEnumerable<CancelableCompletionSource<IDisposable>> pending;
+
         lock (_pending)
         {
-            if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
-                return;
-
-            foreach (var pending in _pending)
-                pending.Dispose();
-
+            pending = _pending.ToArray();
             _pending.Clear();
+        }
+
+        foreach (var ccs in pending)
+        {
+            ccs.Dispose();
         }
 
         await _semaphoreSlim.WaitAsync().ConfigureAwait(false); //Wait for possible lock-holder to finish
@@ -82,30 +87,40 @@ public sealed class AsyncLock : IAsyncDisposable
             try
             {
                 _pending.Remove(node);
-                node.Value.Dispose();
             }
             catch
             {
                 // Ignore
             }
         }
+
+        try
+        {
+            node.Value.Dispose();
+        }
+        catch
+        {
+            // Ignore
+        }
     }
 
     private void Release()
     {
+        LinkedListNode<CancelableCompletionSource<IDisposable>>? node;
+
         lock (_pending)
         {
-            var node = _pending.First;
+            node = _pending.First;
             if (node is not null)
-            {
-                node.Value.SetResult(_releaser);
-                node.Value.Dispose();
                 _pending.RemoveFirst();
-                return;
-            }
-
-            if (_semaphoreSlim.CurrentCount == 0)
+            else if (_semaphoreSlim.CurrentCount == 0)
                 _semaphoreSlim.Release();
+        }
+
+        if (node is not null)
+        {
+            node.Value.SetResult(_releaser);
+            node.Value.Dispose();
         }
     }
 

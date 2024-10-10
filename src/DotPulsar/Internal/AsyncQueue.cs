@@ -33,20 +33,23 @@ public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
 
     public void Enqueue(T item)
     {
+        LinkedListNode<CancelableCompletionSource<T>>? node;
+
         lock (_lock)
         {
             ThrowIfDisposed();
 
-            var node = _pendingDequeues.First;
+            node = _pendingDequeues.First;
             if (node is not null)
             {
                 node.Value.SetResult(item);
-                node.Value.Dispose();
                 _pendingDequeues.RemoveFirst();
             }
             else
                 _queue.Enqueue(item);
         }
+
+        node?.Value.Dispose();
     }
 
     public ValueTask<T> Dequeue(CancellationToken cancellationToken = default)
@@ -72,13 +75,18 @@ public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
         if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
             return;
 
+        IEnumerable<CancelableCompletionSource<T>> pendingDequeues;
+
         lock (_lock)
         {
-            foreach (var pendingDequeue in _pendingDequeues)
-                pendingDequeue.Dispose();
-
+            pendingDequeues = _pendingDequeues.ToArray();
             _pendingDequeues.Clear();
             _queue.Clear();
+        }
+
+        foreach (var ccs in pendingDequeues)
+        {
+            ccs.Dispose();
         }
     }
 
@@ -88,13 +96,21 @@ public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
         {
             try
             {
-                node.Value.Dispose();
                 _pendingDequeues.Remove(node);
             }
             catch
             {
                 // ignored
             }
+        }
+
+        try
+        {
+            node.Value.Dispose();
+        }
+        catch
+        {
+            // ignored
         }
     }
 
