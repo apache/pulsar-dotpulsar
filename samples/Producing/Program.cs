@@ -12,61 +12,50 @@
  * limitations under the License.
  */
 
-namespace Producing;
-
 using DotPulsar;
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-internal static class Program
+var cts = new CancellationTokenSource();
+
+Console.CancelKeyPress += (sender, args) =>
 {
-    private static async Task Main()
+    cts.Cancel();
+    args.Cancel = true;
+};
+
+await using var client = PulsarClient.Builder().Build(); // Connecting to pulsar://localhost:6650
+
+await using var producer = client.NewProducer(Schema.String)
+    .StateChangedHandler(Monitor)
+    .Topic("persistent://public/default/mytopic")
+    .Create();
+
+Console.WriteLine("Press Ctrl+C to exit");
+
+await ProduceMessages(producer, cts.Token);
+
+async Task ProduceMessages(IProducer<string> producer, CancellationToken cancellationToken)
+{
+    var delay = TimeSpan.FromSeconds(5);
+
+    try
     {
-        var cts = new CancellationTokenSource();
-
-        Console.CancelKeyPress += (sender, args) =>
+        while (!cancellationToken.IsCancellationRequested)
         {
-            cts.Cancel();
-            args.Cancel = true;
-        };
-
-        await using var client = PulsarClient.Builder().Build(); // Connecting to pulsar://localhost:6650
-
-        await using var producer = client.NewProducer(Schema.String)
-            .StateChangedHandler(Monitor)
-            .Topic("persistent://public/default/mytopic")
-            .Create();
-
-        Console.WriteLine("Press Ctrl+C to exit");
-
-        await ProduceMessages(producer, cts.Token);
-    }
-
-    private static async Task ProduceMessages(IProducer<string> producer, CancellationToken cancellationToken)
-    {
-        var delay = TimeSpan.FromSeconds(5);
-
-        try
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var data = DateTime.UtcNow.ToLongTimeString();
-                _ = await producer.Send(data, cancellationToken);
-                Console.WriteLine($"Sent: {data}");
-                await Task.Delay(delay, cancellationToken);
-            }
+            var data = DateTime.UtcNow.ToLongTimeString();
+            _ = await producer.Send(data, cancellationToken);
+            Console.WriteLine($"Sent: {data}");
+            await Task.Delay(delay, cancellationToken);
         }
-        catch (OperationCanceledException) // If not using the cancellationToken, then just dispose the producer and catch ObjectDisposedException instead
-        { }
     }
+    catch (OperationCanceledException) // If not using the cancellationToken, then just dispose the producer and catch ObjectDisposedException instead
+    { }
+}
 
-    private static void Monitor(ProducerStateChanged stateChanged)
-    {
-        var topic = stateChanged.Producer.Topic;
-        var state = stateChanged.ProducerState;
-        Console.WriteLine($"The producer for topic '{topic}' changed state to '{state}'");
-    }
+void Monitor(ProducerStateChanged stateChanged)
+{
+    var topic = stateChanged.Producer.Topic;
+    var state = stateChanged.ProducerState;
+    Console.WriteLine($"The producer for topic '{topic}' changed state to '{state}'");
 }
