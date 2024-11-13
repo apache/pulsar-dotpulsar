@@ -6,9 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [Unreleased]
 
+### Added
+
+- .NET 9 added as a target framework
+
 ### Changed
 
 - Updated the protobuf-net dependency from version 3.2.30 to 3.2.45
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 8.0.10 to 9.0.0
+- Updated the Microsoft.Bcl.AsyncInterfaces dependency from version 8.0.0 to 9.0.0 for .NET Standard 2.0
+- Updated the Microsoft.Bcl.HashCode dependency from version 1.1.1 to 6.0.0 for .NET Standard 2.0
+- Updated the System.Diagnostics.DiagnosticSource dependency from version 8.0.1 to 9.0.0 for .NET Standard 2.0 and 2.1
+- Updated the System.IO.Pipelines dependency from version 8.0.0 to 9.0.0 for .NET 8 and 9
 
 ## [3.4.0] - 2024-10-25
 
