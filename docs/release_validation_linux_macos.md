@@ -6,19 +6,28 @@
 
 #### MacOS
 
-```
+```shell
 brew install --cask dotnet-sdk
 ```
 
 #### Linux
 
-You can find install [instructions here](https://learn.microsoft.com/en-us/dotnet/core/install/linux?WT.mc_id=dotnet-35129-website)
+Using [homebrew](https://brew.sh/) on Linux:
+
+```shell
+brew install --cask dotnet-sdk
+```
+
+You can find alternative installation [instructions here](https://learn.microsoft.com/en-us/dotnet/core/install/linux?WT.mc_id=dotnet-35129-website).
 
 ### Show dotnet-sdk version
 
 ```
 dotnet --info
 ```
+
+pulsar-dotpulsar requires dotnet sdk 9.0.x for building. Run `brew upgrade --cask dotnet-sdk` to upgrade to 9.0.x unless that is already installed.
+
 
 ## Validating source release
 
@@ -85,7 +94,8 @@ await consumer.Acknowledge(message);
 Console.WriteLine("Acknowledged message");
 EOF
 dotnet build
-docker run --name pulsar-standalone -d --rm -it -p 8080:8080 -p 6650:6650 apachepulsar/pulsar:3.0.5 /pulsar/bin/pulsar standalone -nss -nfw
+docker pull apachepulsar/pulsar:latest
+docker run --name pulsar-standalone -d --rm -it -p 8080:8080 -p 6650:6650 apachepulsar/pulsar:latest /pulsar/bin/pulsar standalone -nss -nfw
 dotnet run
 docker stop pulsar-standalone
 ```
