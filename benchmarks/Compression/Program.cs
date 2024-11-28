@@ -33,6 +33,8 @@ static void OutputCompressionInfo(MessageSize size, MessageType type)
         Console.WriteLine($"\tCompressed with IronSnappy: {compressor.Compress(data).Length}");
     using (var compressor = Factories.DotNetZipCompressorFactory.Create())
         Console.WriteLine($"\tCompressed with DotNetZip: {compressor.Compress(data).Length}");
+    using (var compressor = Factories.BuiltinZlibCompressionCompressorFactory.Create())
+        Console.WriteLine($"\tCompressed with System.IO.Compression: {compressor.Compress(data).Length}");
     using (var compressor = Factories.ZstdNetCompressorFactory.Create())
         Console.WriteLine($"\tCompressed with ZstdNet: {compressor.Compress(data).Length}");
     using (var compressor = Factories.ZstdSharpCompressorFactory.Create())

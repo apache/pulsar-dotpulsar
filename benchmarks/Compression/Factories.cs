@@ -31,6 +31,11 @@ public static class Factories
         IronSnappyCompressorFactory = compressor!;
         IronSnappyDecompressorFactory = decompressor!;
 
+        if (!BuiltinZlibCompression.TryLoading(out compressor, out decompressor))
+            throw new Exception("Could not load BuiltinZlibCompression");
+        BuiltinZlibCompressionCompressorFactory = compressor!;
+        BuiltinZlibCompressionDecompressorFactory = decompressor!;
+
         if (!ZlibCompression.TryLoading(out compressor, out decompressor))
             throw new Exception("Could not load DotNetZip");
         DotNetZipCompressorFactory = compressor!;
@@ -52,6 +57,9 @@ public static class Factories
 
     public static ICompressorFactory IronSnappyCompressorFactory { get; }
     public static IDecompressorFactory IronSnappyDecompressorFactory { get; }
+
+    public static ICompressorFactory BuiltinZlibCompressionCompressorFactory { get; }
+    public static IDecompressorFactory BuiltinZlibCompressionDecompressorFactory { get; }
 
     public static ICompressorFactory DotNetZipCompressorFactory { get; }
     public static IDecompressorFactory DotNetZipDecompressorFactory { get; }
