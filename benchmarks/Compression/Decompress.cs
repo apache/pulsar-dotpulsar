@@ -37,6 +37,8 @@ public class Decompress
             K4aosCompressionLz4Data = compressor.Compress(data);
         using (var compressor = Factories.IronSnappyCompressorFactory.Create())
             IronSnappyData = compressor.Compress(data);
+        using (var compressor = Factories.BuiltinZlibCompressionCompressorFactory.Create())
+            BuiltinZlibData = compressor.Compress(data);
         using (var compressor = Factories.DotNetZipCompressorFactory.Create())
             DotNetZipData = compressor.Compress(data);
         using (var compressor = Factories.ZstdNetCompressorFactory.Create())
@@ -48,6 +50,7 @@ public class Decompress
     public int DecompressedSize { get; private set; }
     public ReadOnlySequence<byte> K4aosCompressionLz4Data { get; private set; }
     public ReadOnlySequence<byte> IronSnappyData { get; private set; }
+    public ReadOnlySequence<byte> BuiltinZlibData { get; private set; }
     public ReadOnlySequence<byte> DotNetZipData { get; private set; }
     public ReadOnlySequence<byte> ZstdNetData { get; private set; }
     public ReadOnlySequence<byte> ZstdSharpData { get; private set; }
@@ -64,6 +67,13 @@ public class Decompress
     {
         using var decompressor = Factories.IronSnappyDecompressorFactory.Create();
         _ = decompressor.Decompress(IronSnappyData, DecompressedSize);
+    }
+
+    [Benchmark]
+    public void BuiltinZlib()
+    {
+        using var decompressor = Factories.BuiltinZlibCompressionDecompressorFactory.Create();
+        _ = decompressor.Decompress(BuiltinZlibData, DecompressedSize);
     }
 
     [Benchmark]

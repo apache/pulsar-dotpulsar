@@ -47,6 +47,13 @@ public class Compress
     }
 
     [Benchmark]
+    public void BuiltinZlib()
+    {
+        using var compressor = Factories.BuiltinZlibCompressionCompressorFactory.Create();
+        _ = compressor.Compress(Data);
+    }
+
+    [Benchmark]
     public void DotNetZip()
     {
         using var compressor = Factories.DotNetZipCompressorFactory.Create();

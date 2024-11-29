@@ -46,7 +46,9 @@ public static class CompressionFactories
 
     private static void LoadSupportForZlib()
     {
-        if (ZlibCompression.TryLoading(out var compressorFactory, out var decompressorFactory))
+        if (BuiltinZlibCompression.TryLoading(out var compressorFactory, out var decompressorFactory))
+            Add(compressorFactory, decompressorFactory);
+        else if (ZlibCompression.TryLoading(out compressorFactory, out decompressorFactory))
             Add(compressorFactory, decompressorFactory);
     }
 
