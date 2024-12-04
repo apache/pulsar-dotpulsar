@@ -57,7 +57,7 @@ public static class BuiltinZlibCompression
         {
             using var dataStream = new MemoryStream(data.ToArray());
             using var compressedStream = new MemoryStream();
-            using var compressor = (Stream) Activator.CreateInstance(zlibStreamType!, new object[] { compressedStream, compressionLevelOptimal! })!;
+            using var compressor = (Stream) Activator.CreateInstance(zlibStreamType!, [compressedStream, compressionLevelOptimal!])!;
             dataStream.CopyTo(compressor);
             compressor.Close();
             return new ReadOnlySequence<byte>(compressedStream.ToArray());
@@ -68,7 +68,7 @@ public static class BuiltinZlibCompression
         {
             using var dataStream = new MemoryStream(data.ToArray());
             using var decompressedStream = new MemoryStream();
-            using var decompressor = (Stream) Activator.CreateInstance(zlibStreamType!, new object[] { dataStream, compressionModeDecompress! })!;
+            using var decompressor = (Stream) Activator.CreateInstance(zlibStreamType!, [dataStream, compressionModeDecompress!])!;
             decompressor.CopyTo(decompressedStream);
             decompressor.Close();
             decompressedStream.Position = 0;
