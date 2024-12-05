@@ -74,20 +74,27 @@ using DotPulsar.Extensions;
 
 const string myTopic = "persistent://public/default/mytopic";
 
-// connecting to pulsar://localhost:6650
+Console.WriteLine("Connecting to pulsar://localhost:6650");
 await using var client = PulsarClient.Builder().Build();
+Console.WriteLine("Connected");
 
+Console.WriteLine("Creating consumer");
 // consume messages
 await using var consumer = client.NewConsumer(Schema.String)
     .SubscriptionName("MySubscription")
     .Topic(myTopic)
     .InitialPosition(SubscriptionInitialPosition.Earliest)
     .Create();
+Console.WriteLine("Created.");
 
 // produce a message
+Console.WriteLine("Creating a producer.");
 await using var producer = client.NewProducer(Schema.String).Topic(myTopic).Create();
+Console.WriteLine("Sending a message.");
 await producer.Send("Hello World");
+Console.WriteLine("Sent.");
 
+Console.WriteLine("Waiting for a message.");
 var message = consumer.Receive().Result;
 Console.WriteLine("Received: " + message.Value());
 await consumer.Acknowledge(message);
