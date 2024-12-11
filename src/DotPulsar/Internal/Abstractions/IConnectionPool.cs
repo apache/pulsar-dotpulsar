@@ -18,5 +18,5 @@ public interface IConnectionPool : IAsyncDisposable
 {
     ValueTask<IConnection> FindConnectionForTopic(string topic, CancellationToken cancellationToken = default);
 
-    ValueTask<uint> GetNumberOfPartitions(String topic, CancellationToken cancellationToken = default);
+    ValueTask<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken = default);
 }
