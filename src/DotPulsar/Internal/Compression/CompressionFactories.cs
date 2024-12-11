@@ -48,8 +48,6 @@ public static class CompressionFactories
     {
         if (BuiltinZlibCompression.TryLoading(out var compressorFactory, out var decompressorFactory))
             Add(compressorFactory, decompressorFactory);
-        else if (ZlibCompression.TryLoading(out compressorFactory, out decompressorFactory))
-            Add(compressorFactory, decompressorFactory);
     }
 
     private static void LoadSupportForZstd()

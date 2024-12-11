@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 - **Breaking**: The consumer, reader, and producer now implements IStateHolder instead of IState
 
+### Removed
+
+- Support for DotNetZip for ZLIB compression
+
 ## [3.6.0] - 2024-12-09
 
 ### Added

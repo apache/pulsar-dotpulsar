@@ -54,13 +54,6 @@ public class Compress
     }
 
     [Benchmark]
-    public void DotNetZip()
-    {
-        using var compressor = Factories.DotNetZipCompressorFactory.Create();
-        _ = compressor.Compress(Data);
-    }
-
-    [Benchmark]
     public void ZstdNet()
     {
         using var compressor = Factories.ZstdNetCompressorFactory.Create();

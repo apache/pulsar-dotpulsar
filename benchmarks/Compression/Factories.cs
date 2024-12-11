@@ -36,11 +36,6 @@ public static class Factories
         BuiltinZlibCompressionCompressorFactory = compressor!;
         BuiltinZlibCompressionDecompressorFactory = decompressor!;
 
-        if (!ZlibCompression.TryLoading(out compressor, out decompressor))
-            throw new Exception("Could not load DotNetZip");
-        DotNetZipCompressorFactory = compressor!;
-        DotNetZipDecompressorFactory = decompressor!;
-
         if (!ZstdCompression.TryLoading(out compressor, out decompressor))
             throw new Exception("Could not load ZstdNet");
         ZstdNetCompressorFactory = compressor!;
@@ -60,9 +55,6 @@ public static class Factories
 
     public static ICompressorFactory BuiltinZlibCompressionCompressorFactory { get; }
     public static IDecompressorFactory BuiltinZlibCompressionDecompressorFactory { get; }
-
-    public static ICompressorFactory DotNetZipCompressorFactory { get; }
-    public static IDecompressorFactory DotNetZipDecompressorFactory { get; }
 
     public static ICompressorFactory ZstdNetCompressorFactory { get; }
     public static IDecompressorFactory ZstdNetDecompressorFactory { get; }
