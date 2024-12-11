@@ -45,6 +45,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     public string SubscriptionName { get; }
     public SubscriptionType SubscriptionType { get; }
     public string Topic { get; }
+    public IState<ConsumerState> State => _state;
 
     public Consumer(
         Uri serviceUrl,
@@ -111,7 +112,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
             _receiveTasks[i] = _emptyTaskCompletionSource.Task;
             var topicName = _isPartitionedTopic ? GetPartitionedTopicName(i) : Topic;
             _subConsumers[i] = CreateSubConsumer(topicName);
-            monitoringTasks[i] = _subConsumers[i].OnStateChangeFrom(ConsumerState.Disconnected, _cts.Token).AsTask();
+            monitoringTasks[i] = _subConsumers[i].State.OnStateChangeFrom(ConsumerState.Disconnected, _cts.Token).AsTask();
         }
 
         _allSubConsumersAreReady = true;
@@ -129,7 +130,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
                 var state = task.Result;
                 states[i] = state;
-                monitoringTasks[i] = _subConsumers[i].OnStateChangeFrom(state, _cts.Token).AsTask();
+                monitoringTasks[i] = _subConsumers[i].State.OnStateChangeFrom(state, _cts.Token).AsTask();
             }
 
             if (!_isPartitionedTopic)
@@ -150,18 +151,6 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
                 _state.SetState(ConsumerState.Inactive);
         }
     }
-
-    public async ValueTask<ConsumerState> OnStateChangeTo(ConsumerState state, CancellationToken cancellationToken)
-        => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
-
-    public async ValueTask<ConsumerState> OnStateChangeFrom(ConsumerState state, CancellationToken cancellationToken)
-        => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
-
-    public bool IsFinalState()
-        => _state.IsFinalState();
-
-    public bool IsFinalState(ConsumerState state)
-        => _state.IsFinalState(state);
 
     public async ValueTask DisposeAsync()
     {

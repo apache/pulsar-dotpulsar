@@ -20,13 +20,15 @@ using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 using System.Buffers;
 
-public sealed class ChannelManager : IState<ChannelManagerState>, IDisposable
+public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposable
 {
     private readonly StateManager<ChannelManagerState> _stateManager;
     private readonly RequestResponseHandler _requestResponseHandler;
     private readonly IdLookup<IChannel> _consumerChannels;
     private readonly IdLookup<IChannel> _producerChannels;
     private readonly EnumLookup<BaseCommand.Type, Action<BaseCommand>> _incoming;
+
+    public IState<ChannelManagerState> State => _stateManager;
 
     public ChannelManager()
     {
@@ -302,14 +304,4 @@ public sealed class ChannelManager : IState<ChannelManagerState>, IDisposable
         if (_consumerChannels.IsEmpty() && _producerChannels.IsEmpty())
             _stateManager.SetState(ChannelManagerState.Inactive);
     }
-
-    public bool IsFinalState() => _stateManager.IsFinalState();
-
-    public bool IsFinalState(ChannelManagerState state) => _stateManager.IsFinalState(state);
-
-    public async ValueTask<ChannelManagerState> OnStateChangeTo(ChannelManagerState state, CancellationToken cancellationToken = default)
-        => await _stateManager.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
-
-    public async ValueTask<ChannelManagerState> OnStateChangeFrom(ChannelManagerState state, CancellationToken cancellationToken = default)
-        => await _stateManager.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 }

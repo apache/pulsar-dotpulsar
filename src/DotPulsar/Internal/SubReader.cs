@@ -26,13 +26,14 @@ public sealed class SubReader<TMessage> : IContainsChannel, IReader<TMessage>
     private readonly IRegisterEvent _eventRegister;
     private IConsumerChannel<TMessage> _channel;
     private readonly IExecute _executor;
-    private readonly IStateChanged<ReaderState> _state;
+    private readonly IState<ReaderState> _state;
     private readonly IConsumerChannelFactory<TMessage> _factory;
     private int _isDisposed;
     private Exception? _faultException;
 
     public Uri ServiceUrl { get; }
     public string Topic { get; }
+    public IState<ReaderState> State => _state;
 
     public SubReader(
         Guid correlationId,
@@ -41,7 +42,7 @@ public sealed class SubReader<TMessage> : IContainsChannel, IReader<TMessage>
         IRegisterEvent eventRegister,
         IConsumerChannel<TMessage> initialChannel,
         IExecute executor,
-        IStateChanged<ReaderState> state,
+        IState<ReaderState> state,
         IConsumerChannelFactory<TMessage> factory)
     {
         _correlationId = correlationId;
@@ -56,18 +57,6 @@ public sealed class SubReader<TMessage> : IContainsChannel, IReader<TMessage>
 
         _eventRegister.Register(new ReaderCreated(_correlationId));
     }
-
-    public async ValueTask<ReaderState> OnStateChangeTo(ReaderState state, CancellationToken cancellationToken)
-        => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
-
-    public async ValueTask<ReaderState> OnStateChangeFrom(ReaderState state, CancellationToken cancellationToken)
-        => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
-
-    public bool IsFinalState()
-        => _state.IsFinalState();
-
-    public bool IsFinalState(ReaderState state)
-        => _state.IsFinalState(state);
 
     public async ValueTask<MessageId> GetLastMessageId(CancellationToken cancellationToken)
     {

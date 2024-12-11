@@ -203,7 +203,7 @@ public sealed class ReaderTests : IDisposable
 
         await using var reader = CreateReader(client, MessageId.Earliest, await _fixture.CreateTopic(_cts.Token));
 
-        await reader.OnStateChangeTo(ReaderState.Faulted, _cts.Token);
+        await reader.State.OnStateChangeTo(ReaderState.Faulted, _cts.Token);
 
         //Act
         var exception = await Record.ExceptionAsync(reader.Receive(_cts.Token).AsTask);
@@ -277,7 +277,7 @@ public sealed class ReaderTests : IDisposable
         //Arrange
         await using var client = CreateClient();
         var reader = CreateReader(client, MessageId.Earliest, await _fixture.CreateTopic(_cts.Token));
-        await reader.OnStateChangeTo(ReaderState.Connected, _cts.Token);
+        await reader.State.OnStateChangeTo(ReaderState.Connected, _cts.Token);
 
         //Act
         await using var connectionDown = await _fixture.DisableThePulsarConnection();
@@ -297,14 +297,14 @@ public sealed class ReaderTests : IDisposable
         await using var producer = CreateProducer(client, topicName);
         await using var reader = CreateReader(client, MessageId.Earliest, topicName);
         await producer.Send("test-message", _cts.Token);
-        await reader.OnStateChangeTo(ReaderState.Connected, _cts.Token);
+        await reader.State.OnStateChangeTo(ReaderState.Connected, _cts.Token);
 
         //Act
         await using (await _fixture.DisableThePulsarConnection())
         {
             await reader.StateChangedTo(ReaderState.Disconnected, _cts.Token);
         }
-        await reader.OnStateChangeTo(ReaderState.Connected, _cts.Token);
+        await reader.State.OnStateChangeTo(ReaderState.Connected, _cts.Token);
         var exception = await Record.ExceptionAsync(reader.Receive(_cts.Token).AsTask);
 
         //Assert

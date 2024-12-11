@@ -25,7 +25,7 @@ public static class StateMonitor
 
         var state = ProducerState.Disconnected;
 
-        while (!producer.IsFinalState(state) && !handler.CancellationToken.IsCancellationRequested)
+        while (!producer.State.IsFinalState(state) && !handler.CancellationToken.IsCancellationRequested)
         {
             var stateChanged = await producer.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
             state = stateChanged.ProducerState;
@@ -47,7 +47,7 @@ public static class StateMonitor
 
         var state = ConsumerState.Disconnected;
 
-        while (!consumer.IsFinalState(state) && !handler.CancellationToken.IsCancellationRequested)
+        while (!consumer.State.IsFinalState(state) && !handler.CancellationToken.IsCancellationRequested)
         {
             var stateChanged = await consumer.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
             state = stateChanged.ConsumerState;
@@ -69,7 +69,7 @@ public static class StateMonitor
 
         var state = ReaderState.Disconnected;
 
-        while (!reader.IsFinalState(state) && !handler.CancellationToken.IsCancellationRequested)
+        while (!reader.State.IsFinalState(state) && !handler.CancellationToken.IsCancellationRequested)
         {
             var stateChanged = await reader.StateChangedFrom(state, handler.CancellationToken).ConfigureAwait(false);
             state = stateChanged.ReaderState;

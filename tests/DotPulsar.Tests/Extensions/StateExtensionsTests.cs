@@ -182,48 +182,4 @@ public class StateExtensionsTests
         // Assert
         exception.Should().BeOfType<OperationCanceledException>();
     }
-
-    [Theory, Tests.AutoData]
-    public async Task DelayedStateMonitor_WhenChangingToFinalStateInitially_ShouldInvokeOnStateLeft([Frozen] IState<ProducerState> uut)
-    {
-        // Arrange
-        const ProducerState expected = ProducerState.Faulted;
-        uut.OnStateChangeFrom(ProducerState.Connected, Arg.Any<CancellationToken>()).Returns(expected);
-        uut.IsFinalState(expected).Returns(true);
-        ProducerState? stateLeft = null;
-        ProducerState? stateReached = null;
-        void onStateLeft(IState<ProducerState> _, ProducerState state) => stateLeft = state;
-        void onStateReached(IState<ProducerState> _, ProducerState state) => stateReached = state;
-
-        // Act
-        await uut.DelayedStateMonitor(ProducerState.Connected, TimeSpan.FromSeconds(1), onStateLeft, onStateReached);
-
-        // Assert
-        stateLeft.HasValue.Should().BeTrue();
-        stateLeft!.Value.Should().Be(expected);
-        stateReached.HasValue.Should().BeFalse();
-    }
-
-    [Theory, Tests.AutoData]
-    public async Task DelayedStateMonitor_WhenChangingToFinalStateWhileWaiting_ShouldInvokeOnStateLeft([Frozen] IState<ProducerState> uut)
-    {
-        // Arrange
-        const ProducerState expected = ProducerState.Disconnected;
-        uut.OnStateChangeFrom(ProducerState.Connected, Arg.Any<CancellationToken>()).Returns(expected);
-        uut.IsFinalState(ProducerState.Disconnected).Returns(false);
-        uut.OnStateChangeTo(ProducerState.Connected, Arg.Any<CancellationToken>()).Returns(x => throw new OperationCanceledException(), x => ProducerState.Faulted);
-        uut.IsFinalState(ProducerState.Faulted).Returns(true);
-        ProducerState? stateLeft = null;
-        ProducerState? stateReached = null;
-        void onStateLeft(IState<ProducerState> _, ProducerState state) => stateLeft = state;
-        void onStateReached(IState<ProducerState> _, ProducerState state) => stateReached = state;
-
-        // Act
-        await uut.DelayedStateMonitor(ProducerState.Connected, TimeSpan.FromSeconds(1), onStateLeft, onStateReached);
-
-        // Assert
-        stateLeft.HasValue.Should().BeTrue();
-        stateLeft!.Value.Should().Be(expected);
-        stateReached.HasValue.Should().BeFalse();
-    }
 }

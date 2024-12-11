@@ -42,7 +42,7 @@ public sealed class PulsarClientTests : IDisposable
 
         // Act
         var exception = await Record.ExceptionAsync(() => producer.Send("Test", _cts.Token).AsTask());
-        var state = await producer.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
+        var state = await producer.State.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
 
         // Assert
         exception.Should().BeOfType<ProducerFaultedException>();
@@ -68,7 +68,7 @@ public sealed class PulsarClientTests : IDisposable
         // Act
         _ = await producer.Send("Test", _cts.Token); // Make sure we have a working connection
         throwException = true;
-        var state = await producer.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
+        var state = await producer.State.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
 
         // Assert
         state.Should().Be(ProducerState.Faulted);
@@ -88,7 +88,7 @@ public sealed class PulsarClientTests : IDisposable
 
         // Act
         var exception = await Record.ExceptionAsync(() => producer.Send("Test", _cts.Token).AsTask());
-        var state = await producer.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
+        var state = await producer.State.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
 
         // Assert
         exception.Should().BeOfType<ProducerFaultedException>();
@@ -119,7 +119,7 @@ public sealed class PulsarClientTests : IDisposable
         // Act
         _ = await producer.Send("Test", _cts.Token); // Make sure we have a working connection
         await tcs.Task;
-        var state = await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+        var state = await producer.State.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
         // Assert
         state.Should().Be(ProducerState.Connected);

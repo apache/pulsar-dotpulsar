@@ -44,8 +44,8 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
     public Uri ServiceUrl { get; }
     public string Topic { get; }
-
     public ISendChannel<TMessage> SendChannel { get; }
+    public IState<ProducerState> State => _state;
 
     public Producer(
         Uri serviceUrl,
@@ -116,7 +116,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
             var topicName = isPartitionedTopic ? GetPartitionedTopicName(i) : Topic;
             var producer = CreateSubProducer(topicName, isPartitionedTopic ? i : -1);
             _ = _producers.TryAdd(i, producer);
-            monitoringTasks[i] = producer.OnStateChangeFrom(ProducerState.Disconnected, _cts.Token).AsTask();
+            monitoringTasks[i] = producer.State.OnStateChangeFrom(ProducerState.Disconnected, _cts.Token).AsTask();
         }
 
         Interlocked.Exchange(ref _producerCount, monitoringTasks.Length);
@@ -133,7 +133,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
 
                 var state = task.Result;
                 states[i] = state;
-                monitoringTasks[i] = _producers[i].OnStateChangeFrom(state, _cts.Token).AsTask();
+                monitoringTasks[i] = _producers[i].State.OnStateChangeFrom(state, _cts.Token).AsTask();
             }
 
             if (!isPartitionedTopic)
@@ -171,18 +171,6 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         return producer;
     }
 
-    public bool IsFinalState()
-        => _state.IsFinalState();
-
-    public bool IsFinalState(ProducerState state)
-        => _state.IsFinalState(state);
-
-    public async ValueTask<ProducerState> OnStateChangeTo(ProducerState state, CancellationToken cancellationToken)
-        => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
-
-    public async ValueTask<ProducerState> OnStateChangeFrom(ProducerState state, CancellationToken cancellationToken)
-        => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
-
     public async ValueTask DisposeAsync()
     {
         if (Interlocked.Exchange(ref _isDisposed, 1) != 0)
@@ -203,7 +191,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     {
         if (_producerCount == 0)
         {
-            var newState = await _state.StateChangedFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
+            var newState = await _state.OnStateChangeFrom(ProducerState.Disconnected, cancellationToken).ConfigureAwait(false);
             if (_faultException is not null)
                 throw new ProducerFaultedException(_faultException);
             if (newState == ProducerState.Closed)

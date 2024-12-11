@@ -61,6 +61,8 @@ public sealed class Connection : IConnection
 
     public int MaxMessageSize { get; set; }
 
+    public IState<ConnectionState> State => _stateManager;
+
     public async Task<ProducerResponse> Send(CommandProducer command, IChannel channel, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
@@ -309,8 +311,8 @@ public sealed class Connection : IConnection
     private async Task Setup(CancellationToken cancellationToken)
     {
         var incoming = ProcessIncomingFrames(cancellationToken);
-        var channelManager = _channelManager.OnStateChangeTo(ChannelManagerState.Inactive, _closeOnInactiveInterval, cancellationToken).AsTask();
-        var pingPongTimeOut = _pingPongHandler.OnStateChangeTo(PingPongHandlerState.TimedOut, cancellationToken).AsTask();
+        var channelManager = _channelManager.State.OnStateChangeTo(ChannelManagerState.Inactive, _closeOnInactiveInterval, cancellationToken).AsTask();
+        var pingPongTimeOut = _pingPongHandler.State.OnStateChangeTo(PingPongHandlerState.TimedOut, cancellationToken).AsTask();
         _ = Task.Factory.StartNew(async () => await KeepAlive(PingPongHandlerState.Active, cancellationToken).ConfigureAwait(false));
         await Task.WhenAny(incoming, channelManager, pingPongTimeOut).ConfigureAwait(false);
         _stateManager.SetState(ConnectionState.Disconnected);
@@ -320,7 +322,7 @@ public sealed class Connection : IConnection
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            state = await _pingPongHandler.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
+            state = await _pingPongHandler.State.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
             if (state == PingPongHandlerState.TimedOut)
                 return;
             if (state == PingPongHandlerState.Active)
@@ -381,14 +383,4 @@ public sealed class Connection : IConnection
         if (_isDisposed != 0)
             throw new ConnectionDisposedException();
     }
-
-    public bool IsFinalState() => _stateManager.IsFinalState();
-
-    public bool IsFinalState(ConnectionState state) => _stateManager.IsFinalState(state);
-
-    public async ValueTask<ConnectionState> OnStateChangeTo(ConnectionState state, CancellationToken cancellationToken = default)
-        => await _stateManager.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
-
-    public async ValueTask<ConnectionState> OnStateChangeFrom(ConnectionState state, CancellationToken cancellationToken = default)
-        => await _stateManager.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 }

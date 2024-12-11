@@ -18,13 +18,15 @@ using DotPulsar.Abstractions;
 using DotPulsar.Internal.PulsarApi;
 using System.Diagnostics;
 
-public sealed class PingPongHandler : IState<PingPongHandlerState>, IAsyncDisposable
+public sealed class PingPongHandler : IStateHolder<PingPongHandlerState>, IAsyncDisposable
 {
     private readonly CancellationTokenSource _cts;
     private readonly StateManager<PingPongHandlerState> _stateManager;
     private readonly TimeSpan _keepAliveInterval;
     private long _lastCommand;
     private bool _waitForPong;
+
+    public IState<PingPongHandlerState> State => _stateManager;
 
     public PingPongHandler(TimeSpan keepAliveInterval)
     {
@@ -85,14 +87,4 @@ public sealed class PingPongHandler : IState<PingPongHandlerState>, IAsyncDispos
         _stateManager.SetState(PingPongHandlerState.Closed);
         return new ValueTask();
     }
-
-    public bool IsFinalState() => _stateManager.IsFinalState();
-
-    public bool IsFinalState(PingPongHandlerState state) => _stateManager.IsFinalState(state);
-
-    public async ValueTask<PingPongHandlerState> OnStateChangeTo(PingPongHandlerState state, CancellationToken cancellationToken = default)
-        => await _stateManager.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
-
-    public async ValueTask<PingPongHandlerState> OnStateChangeFrom(PingPongHandlerState state, CancellationToken cancellationToken = default)
-        => await _stateManager.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
 }

@@ -32,7 +32,7 @@ public static class ReaderExtensions
     /// </remarks>
     public static async ValueTask<ReaderStateChanged> StateChangedTo(this IReader reader, ReaderState state, CancellationToken cancellationToken = default)
     {
-        var currentState = await reader.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
+        var currentState = await reader.State.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
         return new ReaderStateChanged(reader, currentState);
     }
 
@@ -47,7 +47,7 @@ public static class ReaderExtensions
     /// </remarks>
     public static async ValueTask<ReaderStateChanged> StateChangedTo(this IReader reader, ReaderState state, TimeSpan delay, CancellationToken cancellationToken = default)
     {
-        var currentState = await reader.OnStateChangeTo(state, delay, cancellationToken).ConfigureAwait(false);
+        var currentState = await reader.State.OnStateChangeTo(state, delay, cancellationToken).ConfigureAwait(false);
         return new ReaderStateChanged(reader, currentState);
     }
 
@@ -62,7 +62,7 @@ public static class ReaderExtensions
     /// </remarks>
     public static async ValueTask<ReaderStateChanged> StateChangedFrom(this IReader reader, ReaderState state, CancellationToken cancellationToken = default)
     {
-        var currentState = await reader.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
+        var currentState = await reader.State.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
         return new ReaderStateChanged(reader, currentState);
     }
 
@@ -77,7 +77,7 @@ public static class ReaderExtensions
     /// </remarks>
     public static async ValueTask<ReaderStateChanged> StateChangedFrom(this IReader reader, ReaderState state, TimeSpan delay, CancellationToken cancellationToken = default)
     {
-        var currentState = await reader.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
+        var currentState = await reader.State.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
         return new ReaderStateChanged(reader, currentState);
     }
 }

@@ -66,7 +66,7 @@ public class StateManagerTests
     {
         //Arrange
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
-        var task = uut.StateChangedTo(newState, default);
+        var task = uut.OnStateChangeTo(newState, default);
 
         //Act
         _ = uut.SetState(newState);
@@ -84,7 +84,7 @@ public class StateManagerTests
     {
         //Arrange
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
-        var task = uut.StateChangedFrom(initialState, default);
+        var task = uut.OnStateChangeFrom(initialState, default);
 
         //Act
         _ = uut.SetState(newState);
@@ -97,13 +97,13 @@ public class StateManagerTests
     [InlineData(ProducerState.Connected)]
     [InlineData(ProducerState.Disconnected)]
     [InlineData(ProducerState.Closed)]
-    public void StateChangedTo_GivenStateIsAlreadyWanted_ShouldCompleteTask(ProducerState state)
+    public void OnStateChangeTo_GivenStateIsAlreadyWanted_ShouldCompleteTask(ProducerState state)
     {
         //Arrange
         var uut = new StateManager<ProducerState>(state, ProducerState.Closed);
 
         //Act
-        var task = uut.StateChangedTo(state, default);
+        var task = uut.OnStateChangeTo(state, default);
 
         //Assert
         Assert.True(task.IsCompleted);
@@ -114,13 +114,13 @@ public class StateManagerTests
     [InlineData(ProducerState.Connected, ProducerState.Closed)]
     [InlineData(ProducerState.Disconnected, ProducerState.Connected)]
     [InlineData(ProducerState.Disconnected, ProducerState.Closed)]
-    public void StateChangedTo_GivenStateIsNotWanted_ShouldNotCompleteTask(ProducerState initialState, ProducerState wantedState)
+    public void OnStateChangeTo_GivenStateIsNotWanted_ShouldNotCompleteTask(ProducerState initialState, ProducerState wantedState)
     {
         //Arrange
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = uut.StateChangedTo(wantedState, default);
+        var task = uut.OnStateChangeTo(wantedState, default);
 
         //Assert
         task.IsCompleted.Should().BeFalse();
@@ -129,13 +129,13 @@ public class StateManagerTests
     [Theory]
     [InlineData(ProducerState.Connected)]
     [InlineData(ProducerState.Disconnected)]
-    public void StateChangedTo_GivenStateIsFinal_ShouldCompleteTask(ProducerState state)
+    public void OnStateChangeTo_GivenStateIsFinal_ShouldCompleteTask(ProducerState state)
     {
         //Arrange
         var uut = new StateManager<ProducerState>(ProducerState.Closed, ProducerState.Closed);
 
         //Act
-        var task = uut.StateChangedTo(state, default);
+        var task = uut.OnStateChangeTo(state, default);
 
         //Assert
         task.IsCompleted.Should().BeTrue();
@@ -144,13 +144,13 @@ public class StateManagerTests
     [Theory]
     [InlineData(ProducerState.Connected)]
     [InlineData(ProducerState.Disconnected)]
-    public void StateChangedFrom_GivenStateHasNotChanged_ShouldNotCompleteTask(ProducerState state)
+    public void OnStateChangeFrom_GivenStateHasNotChanged_ShouldNotCompleteTask(ProducerState state)
     {
         //Arrange
         var uut = new StateManager<ProducerState>(state, ProducerState.Closed);
 
         //Act
-        var task = uut.StateChangedFrom(state, default);
+        var task = uut.OnStateChangeFrom(state, default);
 
         //Assert
         task.IsCompleted.Should().BeFalse();
@@ -161,13 +161,13 @@ public class StateManagerTests
     [InlineData(ProducerState.Connected, ProducerState.Closed)]
     [InlineData(ProducerState.Disconnected, ProducerState.Connected)]
     [InlineData(ProducerState.Disconnected, ProducerState.Closed)]
-    public void StateChangedFrom_GivenStateHasChanged_ShouldCompleteTask(ProducerState initialState, ProducerState fromState)
+    public void OnStateChangeFrom_GivenStateHasChanged_ShouldCompleteTask(ProducerState initialState, ProducerState fromState)
     {
         //Arrange
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = uut.StateChangedFrom(fromState, default);
+        var task = uut.OnStateChangeFrom(fromState, default);
 
         //Assert
         task.IsCompleted.Should().BeTrue();
@@ -177,13 +177,13 @@ public class StateManagerTests
     [InlineData(ProducerState.Connected)]
     [InlineData(ProducerState.Disconnected)]
     [InlineData(ProducerState.Closed)]
-    public void StateChangedFrom_GivenStateIsFinal_ShouldCompleteTask(ProducerState state)
+    public void OnStateChangeFrom_GivenStateIsFinal_ShouldCompleteTask(ProducerState state)
     {
         //Arrange
         var uut = new StateManager<ProducerState>(ProducerState.Closed, ProducerState.Closed);
 
         //Act
-        var task = uut.StateChangedFrom(state, default);
+        var task = uut.OnStateChangeFrom(state, default);
 
         //Assert
         task.IsCompleted.Should().BeTrue();
@@ -198,7 +198,7 @@ public class StateManagerTests
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = uut.StateChangedTo(wantedState, default);
+        var task = uut.OnStateChangeTo(wantedState, default);
         _ = uut.SetState(ProducerState.Closed);
 
         //Assert
@@ -214,7 +214,7 @@ public class StateManagerTests
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = uut.StateChangedTo(wantedState, default);
+        var task = uut.OnStateChangeTo(wantedState, default);
         _ = uut.SetState(newState);
 
         //Assert
@@ -229,7 +229,7 @@ public class StateManagerTests
         using var cts = new CancellationTokenSource();
 
         //Act
-        var task = uut.StateChangedFrom(ProducerState.Connected, cts.Token);
+        var task = uut.OnStateChangeFrom(ProducerState.Connected, cts.Token);
         cts.Cancel();
         var exception = await Record.ExceptionAsync(() => task.AsTask()); // xUnit can't record ValueTask yet
 
@@ -246,7 +246,7 @@ public class StateManagerTests
 
         //Act
         cts.Cancel();
-        var task = uut.StateChangedFrom(ProducerState.Connected, cts.Token);
+        var task = uut.OnStateChangeFrom(ProducerState.Connected, cts.Token);
         var exception = await Record.ExceptionAsync(() => task.AsTask()); // xUnit can't record ValueTask yet
 
         //Assert

@@ -107,14 +107,14 @@ public sealed class ProducerTests : IDisposable
         var topicName = await _fixture.CreateTopic(_cts.Token);
         await using var client = CreateClient();
         await using var producer1 = CreateProducer(client, topicName, accessModeForProducer1);
-        await producer1.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+        await producer1.State.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
         //Act
         await using var producer2 = CreateProducer(client, topicName, accessModeForProducer2);
 
         if (accessModeForProducer2 == ProducerAccessMode.ExclusiveWithFencing) // We need to send a message to trigger the state change
         {
-            await producer2.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+            await producer2.State.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
             try
             {
@@ -126,8 +126,8 @@ public sealed class ProducerTests : IDisposable
             }
         }
 
-        var actualStateForProducer1 = await producer1.OnStateChangeTo(expectedStateForProducer1, _cts.Token);
-        var actualStateForProducer2 = await producer2.OnStateChangeTo(expectedStateForProducer2, _cts.Token);
+        var actualStateForProducer1 = await producer1.State.OnStateChangeTo(expectedStateForProducer1, _cts.Token);
+        var actualStateForProducer2 = await producer2.State.OnStateChangeTo(expectedStateForProducer2, _cts.Token);
 
         //Assert
         actualStateForProducer1.Should().Be(expectedStateForProducer1);
@@ -275,7 +275,7 @@ public sealed class ProducerTests : IDisposable
         var topicName = await _fixture.CreateTopic(_cts.Token);
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, topicName);
-        await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+        await producer.State.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
         ValueTask<MessageId> sendTask;
         await using (await _fixture.DisableThePulsarConnection())
@@ -283,7 +283,7 @@ public sealed class ProducerTests : IDisposable
             await producer.StateChangedTo(ProducerState.Disconnected, _cts.Token);
             sendTask = producer.Send("test", _cts.Token);
         }
-        await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+        await producer.State.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
         //Act
         var exception = await Record.ExceptionAsync(sendTask.AsTask);
@@ -330,7 +330,7 @@ public sealed class ProducerTests : IDisposable
         //Arrange
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, await _fixture.CreateTopic(_cts.Token));
-        await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+        await producer.State.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
         //Act
         await using var connectionDown = await _fixture.DisableThePulsarConnection();
@@ -347,14 +347,14 @@ public sealed class ProducerTests : IDisposable
         //Arrange
         await using var client = CreateClient();
         await using var producer = CreateProducer(client, await _fixture.CreateTopic(_cts.Token));
-        await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+        await producer.State.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
         //Act
         await using (await _fixture.DisableThePulsarConnection())
         {
             await producer.StateChangedTo(ProducerState.Disconnected, _cts.Token);
         }
-        await producer.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+        await producer.State.OnStateChangeTo(ProducerState.Connected, _cts.Token);
         var exception = await Record.ExceptionAsync(producer.Send("test", _cts.Token).AsTask);
 
         //Assert

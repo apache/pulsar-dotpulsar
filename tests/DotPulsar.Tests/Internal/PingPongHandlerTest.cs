@@ -28,7 +28,7 @@ public class PingPongHandlerTest
         var uut = new PingPongHandler(TimeSpan.FromSeconds(1));
 
         // Act
-        var actual = await uut.OnStateChangeTo(PingPongHandlerState.TimedOut);
+        var actual = await uut.State.OnStateChangeTo(PingPongHandlerState.TimedOut);
 
         // Assert
         actual.Should().Be(expected);
@@ -42,9 +42,9 @@ public class PingPongHandlerTest
         var uut = new PingPongHandler(TimeSpan.FromSeconds(1));
 
         // Act
-        _ = await uut.OnStateChangeTo(PingPongHandlerState.ThresholdExceeded);
+        _ = await uut.State.OnStateChangeTo(PingPongHandlerState.ThresholdExceeded);
         uut.Incoming(DotPulsar.Internal.PulsarApi.BaseCommand.Type.Ack);
-        var actual = await uut.OnStateChangeTo(PingPongHandlerState.Active);
+        var actual = await uut.State.OnStateChangeTo(PingPongHandlerState.Active);
 
         // Assert
         actual.Should().Be(expected);
@@ -58,7 +58,7 @@ public class PingPongHandlerTest
         var uut = new PingPongHandler(TimeSpan.FromSeconds(1));
 
         // Act
-        var actual = uut.OnStateChangeTo(PingPongHandlerState.Closed);
+        var actual = uut.State.OnStateChangeTo(PingPongHandlerState.Closed);
         await uut.DisposeAsync();
 
         // Assert

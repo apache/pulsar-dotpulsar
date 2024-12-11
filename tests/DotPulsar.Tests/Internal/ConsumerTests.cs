@@ -183,7 +183,7 @@ public sealed class ConsumerTests : IDisposable
 
         await using var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
 
-        await consumer.OnStateChangeTo(ConsumerState.Faulted, _cts.Token);
+        await consumer.State.OnStateChangeTo(ConsumerState.Faulted, _cts.Token);
 
         //Act
         var exception = await Record.ExceptionAsync(consumer.Receive(_cts.Token).AsTask);
@@ -257,7 +257,7 @@ public sealed class ConsumerTests : IDisposable
         //Arrange
         await using var client = CreateClient();
         var consumer = CreateConsumer(client, await _fixture.CreateTopic(_cts.Token));
-        await consumer.OnStateChangeTo(ConsumerState.Active, _cts.Token);
+        await consumer.State.OnStateChangeTo(ConsumerState.Active, _cts.Token);
 
         //Act
         await using var connectionDown = await _fixture.DisableThePulsarConnection();
@@ -277,14 +277,14 @@ public sealed class ConsumerTests : IDisposable
         await using var producer = CreateProducer(client, topicName);
         await using var consumer = CreateConsumer(client, topicName);
         await ProduceMessages(producer, 1, "test-message", _cts.Token);
-        await consumer.OnStateChangeTo(ConsumerState.Active, _cts.Token);
+        await consumer.State.OnStateChangeTo(ConsumerState.Active, _cts.Token);
 
         //Act
         await using (await _fixture.DisableThePulsarConnection())
         {
             await consumer.StateChangedTo(ConsumerState.Disconnected, _cts.Token);
         }
-        await consumer.OnStateChangeTo(ConsumerState.Active, _cts.Token);
+        await consumer.State.OnStateChangeTo(ConsumerState.Active, _cts.Token);
         var exception = await Record.ExceptionAsync(consumer.Receive(_cts.Token).AsTask);
 
         //Assert

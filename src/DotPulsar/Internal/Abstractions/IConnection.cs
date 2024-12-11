@@ -17,7 +17,7 @@ namespace DotPulsar.Internal.Abstractions;
 using DotPulsar.Abstractions;
 using DotPulsar.Internal.PulsarApi;
 
-public interface IConnection : IState<ConnectionState>, IAsyncDisposable
+public interface IConnection : IStateHolder<ConnectionState>, IAsyncDisposable
 {
     public int MaxMessageSize { get; }
 

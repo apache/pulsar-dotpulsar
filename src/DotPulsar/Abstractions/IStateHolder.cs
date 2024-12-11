@@ -15,17 +15,12 @@
 namespace DotPulsar.Abstractions;
 
 /// <summary>
-/// A producer abstraction.
+/// A state holder abstraction.
 /// </summary>
-public interface IProducer : IStateHolder<ProducerState>, IAsyncDisposable
+public interface IStateHolder<TState> where TState : notnull
 {
     /// <summary>
-    /// The producer's service url.
+    /// The state abstraction of the holder.
     /// </summary>
-    public Uri ServiceUrl { get; }
-
-    /// <summary>
-    /// The producer's topic.
-    /// </summary>
-    string Topic { get; }
+    IState<TState> State { get; }
 }

@@ -39,7 +39,7 @@ public static class ProducerExtensions
     /// </remarks>
     public static async ValueTask<ProducerStateChanged> StateChangedTo(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
     {
-        var currentState = await producer.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
+        var currentState = await producer.State.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
         return new ProducerStateChanged(producer, currentState);
     }
 
@@ -54,7 +54,7 @@ public static class ProducerExtensions
     /// </remarks>
     public static async ValueTask<ProducerStateChanged> StateChangedTo(this IProducer producer, ProducerState state, TimeSpan delay, CancellationToken cancellationToken = default)
     {
-        var currentState = await producer.OnStateChangeTo(state, delay, cancellationToken).ConfigureAwait(false);
+        var currentState = await producer.State.OnStateChangeTo(state, delay, cancellationToken).ConfigureAwait(false);
         return new ProducerStateChanged(producer, currentState);
     }
 
@@ -69,7 +69,7 @@ public static class ProducerExtensions
     /// </remarks>
     public static async ValueTask<ProducerStateChanged> StateChangedFrom(this IProducer producer, ProducerState state, CancellationToken cancellationToken = default)
     {
-        var currentState = await producer.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
+        var currentState = await producer.State.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
         return new ProducerStateChanged(producer, currentState);
     }
 
@@ -84,7 +84,7 @@ public static class ProducerExtensions
     /// </remarks>
     public static async ValueTask<ProducerStateChanged> StateChangedFrom(this IProducer producer, ProducerState state, TimeSpan delay, CancellationToken cancellationToken = default)
     {
-        var currentState = await producer.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
+        var currentState = await producer.State.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
         return new ProducerStateChanged(producer, currentState);
     }
 }

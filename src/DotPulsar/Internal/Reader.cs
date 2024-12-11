@@ -43,6 +43,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
 
     public Uri ServiceUrl { get; }
     public string Topic { get; }
+    public IState<ReaderState> State => _state;
 
     public Reader(
         Uri serviceUrl,
@@ -104,7 +105,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
             _receiveTasks[i] = _emptyTaskCompletionSource.Task;
             var topicName = _isPartitionedTopic ? GetPartitionedTopicName(i) : Topic;
             _subReaders[i] = CreateSubReader(topicName);
-            monitoringTasks[i] = _subReaders[i].OnStateChangeFrom(ReaderState.Disconnected, _cts.Token).AsTask();
+            monitoringTasks[i] = _subReaders[i].State.OnStateChangeFrom(ReaderState.Disconnected, _cts.Token).AsTask();
         }
 
         _allSubReadersAreReady = true;
@@ -122,7 +123,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
 
                 var state = task.Result;
                 states[i] = state;
-                monitoringTasks[i] = _subReaders[i].OnStateChangeFrom(state, _cts.Token).AsTask();
+                monitoringTasks[i] = _subReaders[i].State.OnStateChangeFrom(state, _cts.Token).AsTask();
             }
 
             if (!_isPartitionedTopic)
@@ -139,18 +140,6 @@ public sealed class Reader<TMessage> : IReader<TMessage>
                 _state.SetState(ReaderState.PartiallyConnected);
         }
     }
-
-    public async ValueTask<ReaderState> OnStateChangeTo(ReaderState state, CancellationToken cancellationToken)
-        => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
-
-    public async ValueTask<ReaderState> OnStateChangeFrom(ReaderState state, CancellationToken cancellationToken)
-        => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
-
-    public bool IsFinalState()
-        => _state.IsFinalState();
-
-    public bool IsFinalState(ReaderState state)
-        => _state.IsFinalState(state);
 
     public async ValueTask<IEnumerable<MessageId>> GetLastMessageIds(CancellationToken cancellationToken)
     {

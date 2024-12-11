@@ -67,7 +67,7 @@ public static class ConsumerExtensions
     /// </remarks>
     public static async ValueTask<ConsumerStateChanged> StateChangedTo(this IConsumer consumer, ConsumerState state, CancellationToken cancellationToken = default)
     {
-        var currentState = await consumer.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
+        var currentState = await consumer.State.OnStateChangeTo(state, cancellationToken).ConfigureAwait(false);
         return new ConsumerStateChanged(consumer, currentState);
     }
 
@@ -82,7 +82,7 @@ public static class ConsumerExtensions
     /// </remarks>
     public static async ValueTask<ConsumerStateChanged> StateChangedTo(this IConsumer consumer, ConsumerState state, TimeSpan delay, CancellationToken cancellationToken = default)
     {
-        var currentState = await consumer.OnStateChangeTo(state, delay, cancellationToken).ConfigureAwait(false);
+        var currentState = await consumer.State.OnStateChangeTo(state, delay, cancellationToken).ConfigureAwait(false);
         return new ConsumerStateChanged(consumer, currentState);
     }
 
@@ -97,7 +97,7 @@ public static class ConsumerExtensions
     /// </remarks>
     public static async ValueTask<ConsumerStateChanged> StateChangedFrom(this IConsumer consumer, ConsumerState state, CancellationToken cancellationToken = default)
     {
-        var currentState = await consumer.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
+        var currentState = await consumer.State.OnStateChangeFrom(state, cancellationToken).ConfigureAwait(false);
         return new ConsumerStateChanged(consumer, currentState);
     }
 
@@ -112,7 +112,7 @@ public static class ConsumerExtensions
     /// </remarks>
     public static async ValueTask<ConsumerStateChanged> StateChangedFrom(this IConsumer consumer, ConsumerState state, TimeSpan delay, CancellationToken cancellationToken = default)
     {
-        var currentState = await consumer.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
+        var currentState = await consumer.State.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
         return new ConsumerStateChanged(consumer, currentState);
     }
 }

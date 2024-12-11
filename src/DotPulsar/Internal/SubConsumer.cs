@@ -29,7 +29,7 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
     private IConsumerChannel<TMessage> _channel;
     private readonly ObjectPool<CommandAck> _commandAckPool;
     private readonly IExecute _executor;
-    private readonly IStateChanged<ConsumerState> _state;
+    private readonly IState<ConsumerState> _state;
     private readonly IConsumerChannelFactory<TMessage> _factory;
     private int _isDisposed;
     private Exception? _faultException;
@@ -38,6 +38,7 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
     public string SubscriptionName { get; }
     public SubscriptionType SubscriptionType { get; }
     public string Topic { get; }
+    public IState<ConsumerState> State => _state;
 
     public SubConsumer(
         Guid correlationId,
@@ -48,7 +49,7 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
         IRegisterEvent eventRegister,
         IConsumerChannel<TMessage> initialChannel,
         IExecute executor,
-        IStateChanged<ConsumerState> state,
+        IState<ConsumerState> state,
         IConsumerChannelFactory<TMessage> factory)
     {
         _correlationId = correlationId;
@@ -66,18 +67,6 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
 
         _eventRegister.Register(new ConsumerCreated(_correlationId));
     }
-
-    public async ValueTask<ConsumerState> OnStateChangeTo(ConsumerState state, CancellationToken cancellationToken)
-        => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
-
-    public async ValueTask<ConsumerState> OnStateChangeFrom(ConsumerState state, CancellationToken cancellationToken)
-        => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
-
-    public bool IsFinalState()
-        => _state.IsFinalState();
-
-    public bool IsFinalState(ConsumerState state)
-        => _state.IsFinalState(state);
 
     public async ValueTask DisposeAsync()
     {

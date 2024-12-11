@@ -51,7 +51,7 @@ public sealed class StateManager<TState> : IStateManager<TState> where TState : 
         }
     }
 
-    public ValueTask<TState> StateChangedTo(TState state, CancellationToken cancellationToken)
+    public ValueTask<TState> OnStateChangeTo(TState state, CancellationToken cancellationToken)
     {
         lock (_lock)
         {
@@ -61,7 +61,7 @@ public sealed class StateManager<TState> : IStateManager<TState> where TState : 
         }
     }
 
-    public ValueTask<TState> StateChangedFrom(TState state, CancellationToken cancellationToken)
+    public ValueTask<TState> OnStateChangeFrom(TState state, CancellationToken cancellationToken)
     {
         lock (_lock)
         {

@@ -22,7 +22,7 @@ using DotPulsar.Internal.Exceptions;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 
-public sealed class SubProducer : IContainsChannel, IState<ProducerState>
+public sealed class SubProducer : IContainsChannel, IStateHolder<ProducerState>
 {
     private readonly AsyncQueueWithCursor<SendOp> _sendQueue;
     private CancellationTokenSource? _dispatcherCts;
@@ -31,20 +31,21 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
     private readonly IRegisterEvent _eventRegister;
     private IProducerChannel _channel;
     private readonly IExecute _executor;
-    private readonly IStateChanged<ProducerState> _state;
+    private readonly IState<ProducerState> _state;
     private readonly IProducerChannelFactory _factory;
     private readonly int _partition;
     private int _isDisposed;
     private Exception? _faultException;
 
     public string Topic { get; }
+    public IState<ProducerState> State => _state;
 
     public SubProducer(
         Guid correlationId,
         IRegisterEvent registerEvent,
         IProducerChannel initialChannel,
         IExecute executor,
-        IStateChanged<ProducerState> state,
+        IState<ProducerState> state,
         IProducerChannelFactory factory,
         int partition,
         uint maxPendingMessages,
@@ -63,18 +64,6 @@ public sealed class SubProducer : IContainsChannel, IState<ProducerState>
 
         _eventRegister.Register(new ProducerCreated(_correlationId));
     }
-
-    public async ValueTask<ProducerState> OnStateChangeTo(ProducerState state, CancellationToken cancellationToken)
-        => await _state.StateChangedTo(state, cancellationToken).ConfigureAwait(false);
-
-    public async ValueTask<ProducerState> OnStateChangeFrom(ProducerState state, CancellationToken cancellationToken)
-        => await _state.StateChangedFrom(state, cancellationToken).ConfigureAwait(false);
-
-    public bool IsFinalState()
-        => _state.IsFinalState();
-
-    public bool IsFinalState(ProducerState state)
-        => _state.IsFinalState(state);
 
     public async ValueTask DisposeAsync()
     {
