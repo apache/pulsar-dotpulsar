@@ -27,9 +27,12 @@
     <PackageReference Include="Testcontainers.Pulsar" Version="4.1.0" />
     <PackageReference Include="ToxiproxyNetCore" Version="1.0.35" />
     <PackageReference Include="xunit" Version="2.9.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="ZstdNet" Version="1.4.5" />
-    <PackageReference Include="ZstdSharp.Port" Version="0.8.3" />
+    <PackageReference Include="ZstdSharp.Port" Version="0.8.4" />
   </ItemGroup>
 
   <ItemGroup>
