@@ -24,10 +24,13 @@ Console.CancelKeyPress += (sender, args) =>
     args.Cancel = true;
 };
 
-await using var client = PulsarClient.Builder().Build(); // Connecting to pulsar://localhost:6650
+await using var client = PulsarClient
+    .Builder()
+    .ExceptionHandler(ExceptionHandler)
+    .Build(); // Connecting to pulsar://localhost:6650
 
 await using var consumer = client.NewConsumer(Schema.String)
-    .StateChangedHandler(Monitor)
+    .StateChangedHandler(StateChangedHandler)
     .SubscriptionName("MySubscription")
     .Topic("persistent://public/default/mytopic")
     .Create();
@@ -49,9 +52,8 @@ async Task ConsumeMessages(IConsumer<string> consumer, CancellationToken cancell
     catch (OperationCanceledException) { }
 }
 
-void Monitor(ConsumerStateChanged stateChanged)
-{
-    var topic = stateChanged.Consumer.Topic;
-    var state = stateChanged.ConsumerState;
-    Console.WriteLine($"The consumer for topic '{topic}' changed state to '{state}'");
-}
+void ExceptionHandler(ExceptionContext context) =>
+    Console.WriteLine($"The PulsarClient got an exception: {context.Exception}");
+
+void StateChangedHandler(ConsumerStateChanged stateChanged) =>
+    Console.WriteLine($"The consumer for topic '{stateChanged.Consumer.Topic}' changed state to '{stateChanged.ConsumerState}'");

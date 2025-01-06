@@ -24,11 +24,14 @@ Console.CancelKeyPress += (sender, args) =>
     args.Cancel = true;
 };
 
-await using var client = PulsarClient.Builder().Build(); // Connecting to pulsar://localhost:6650
+await using var client = PulsarClient
+    .Builder()
+    .ExceptionHandler(ExceptionHandler)
+    .Build(); // Connecting to pulsar://localhost:6650
 
 await using var reader = client.NewReader(Schema.String)
     .StartMessageId(MessageId.Earliest)
-    .StateChangedHandler(Monitor)
+    .StateChangedHandler(StateChangedHandler)
     .Topic("persistent://public/default/mytopic")
     .Create();
 
@@ -48,9 +51,8 @@ async Task ReadMessages(IReader<string> reader, CancellationToken cancellationTo
     catch (OperationCanceledException) { }
 }
 
-void Monitor(ReaderStateChanged stateChanged)
-{
-    var topic = stateChanged.Reader.Topic;
-    var state = stateChanged.ReaderState;
-    Console.WriteLine($"The reader for topic '{topic}' changed state to '{state}'");
-}
+void ExceptionHandler(ExceptionContext context) =>
+    Console.WriteLine($"The PulsarClient got an exception: {context.Exception}");
+
+void StateChangedHandler(ReaderStateChanged stateChanged) =>
+    Console.WriteLine($"The reader for topic '{stateChanged.Reader.Topic}' changed state to '{stateChanged.ReaderState}'");

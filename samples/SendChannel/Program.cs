@@ -24,7 +24,10 @@ Console.CancelKeyPress += (sender, args) =>
     args.Cancel = true;
 };
 
-await using var client = PulsarClient.Builder().Build(); // Connecting to pulsar://localhost:6650
+await using var client = PulsarClient
+    .Builder()
+    .ExceptionHandler(ExceptionHandler)
+    .Build(); // Connecting to pulsar://localhost:6650
 
 await using var producer = client.NewProducer(Schema.String)
     .StateChangedHandler(Monitor)
@@ -63,9 +66,8 @@ async Task ProduceMessages(ISendChannel<string> sendChannel, int messages, Cance
     { }
 }
 
-void Monitor(ProducerStateChanged stateChanged)
-{
-    var topic = stateChanged.Producer.Topic;
-    var state = stateChanged.ProducerState;
-    Console.WriteLine($"The producer for topic '{topic}' changed state to '{state}'");
-}
+void ExceptionHandler(ExceptionContext context) =>
+    Console.WriteLine($"The PulsarClient got an exception: {context.Exception}");
+
+void Monitor(ProducerStateChanged stateChanged) =>
+    Console.WriteLine($"The producer for topic '{stateChanged.Producer.Topic}' changed state to '{stateChanged.ProducerState}'");
