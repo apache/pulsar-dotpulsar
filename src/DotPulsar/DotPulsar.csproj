@@ -12,6 +12,7 @@
     <PackageTags>Apache;Pulsar</PackageTags>
     <PackageIcon>PackageIcon.png</PackageIcon>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>Please refer to CHANGELOG.md for details</PackageReleaseNotes>
     <Description>The official .NET client library for Apache Pulsar</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -25,7 +26,6 @@
   <ItemGroup>
     <PackageReference Include="HashDepot" Version="2.0.3" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="protobuf-net" Version="3.2.45" />
   </ItemGroup>
  
@@ -59,6 +59,7 @@
 
   <ItemGroup>
     <None Include="PackageIcon.png" Pack="true" PackagePath="/" Visible="False" />
+    <None Include="README.md" Pack="true" PackagePath="/"/>
   </ItemGroup>
 
 </Project>
