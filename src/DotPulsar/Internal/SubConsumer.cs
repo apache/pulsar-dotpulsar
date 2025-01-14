@@ -86,6 +86,9 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
     public async ValueTask<IMessage<TMessage>> Receive(CancellationToken cancellationToken)
         => await _executor.Execute(() => InternalReceive(cancellationToken), cancellationToken).ConfigureAwait(false);
 
+    public async ValueTask<IMessage<TMessage>> Peek(CancellationToken cancellationToken = default)
+        => await _executor.Execute(() => InternalPeek(cancellationToken), cancellationToken).ConfigureAwait(false);
+
     public async ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken)
         => await InternalAcknowledge(messageId, CommandAck.AckType.Individual, cancellationToken).ConfigureAwait(false);
 
@@ -186,6 +189,12 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
     {
         Guard();
         return await _channel.Receive(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async ValueTask<IMessage<TMessage>> InternalPeek(CancellationToken cancellationToken)
+    {
+        Guard();
+        return await _channel.Peek(cancellationToken).ConfigureAwait(false);
     }
 
     private async ValueTask InternalUnsubscribe(CommandUnsubscribe command, CancellationToken cancellationToken)

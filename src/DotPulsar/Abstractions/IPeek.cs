@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,12 @@
 namespace DotPulsar.Abstractions;
 
 /// <summary>
-/// A generic consumer abstraction.
+/// An abstraction for receiving a single message.
 /// </summary>
-public interface IConsumer<TMessage> : IConsumer, IReceive<IMessage<TMessage>>, IPeek<IMessage<TMessage>> { }
+public interface IPeek<TMessage>
+{
+    /// <summary>
+    /// Peek a single message.
+    /// </summary>
+    ValueTask<TMessage> Peek(CancellationToken cancellationToken = default);
+}
