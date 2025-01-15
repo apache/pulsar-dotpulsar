@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Changed
 
 - **Breaking**: The consumer, reader, and producer now implements IStateHolder instead of IState
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 9.0.0 to 9.0.1
+- Updated the Microsoft.Bcl.AsyncInterfaces dependency from version 9.0.0 to 9.0.1 for .NET Standard 2.0
+- Updated the System.Diagnostics.DiagnosticSource dependency from version 9.0.0 to 9.0.1 for .NET Standard 2.0 and 2.1
+- Updated the System.IO.Pipelines dependency from version 9.0.0 to 9.0.1 for .NET 8 and 9
 
 ### Removed
 
