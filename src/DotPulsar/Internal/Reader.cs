@@ -270,6 +270,11 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     {
         var correlationId = Guid.NewGuid();
         var subscription = $"Reader-{correlationId:N}";
+        if (!string.IsNullOrEmpty(_readerOptions.SubscriptionNamePrefix))
+        {
+            subscription = $"{_readerOptions.SubscriptionNamePrefix}-{subscription}";
+        }
+
         var subscribe = new CommandSubscribe
         {
             ConsumerName = _readerOptions.ReaderName ?? subscription,

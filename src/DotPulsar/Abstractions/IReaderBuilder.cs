@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,6 +48,11 @@ public interface IReaderBuilder<TMessage>
     /// Set the topic for this reader. This is required.
     /// </summary>
     IReaderBuilder<TMessage> Topic(string topic);
+
+    /// <summary>
+    /// Set the prefix for the subscription being created by this reader. This is optional.
+    /// </summary>
+    IReaderBuilder<TMessage> SubscriptionNamePrefix(string subscriptionNamePrefix);
 
     /// <summary>
     /// Create the reader.

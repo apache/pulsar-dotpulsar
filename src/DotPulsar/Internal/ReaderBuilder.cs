@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,6 +26,8 @@ public sealed class ReaderBuilder<TMessage> : IReaderBuilder<TMessage>
     private bool _readCompacted;
     private MessageId? _startMessageId;
     private string? _topic;
+    private string? _subscriptionNamePrefix;
+
     private IHandleStateChanged<ReaderStateChanged>? _stateChangedHandler;
 
     public ReaderBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
@@ -72,6 +74,12 @@ public sealed class ReaderBuilder<TMessage> : IReaderBuilder<TMessage>
         return this;
     }
 
+    public IReaderBuilder<TMessage> SubscriptionNamePrefix(string subscriptionNamePrefix)
+    {
+        _subscriptionNamePrefix = subscriptionNamePrefix;
+        return this;
+    }
+
     public IReader<TMessage> Create()
     {
         if (_startMessageId is null)
@@ -85,7 +93,8 @@ public sealed class ReaderBuilder<TMessage> : IReaderBuilder<TMessage>
             MessagePrefetchCount = _messagePrefetchCount,
             ReadCompacted = _readCompacted,
             ReaderName = _readerName,
-            StateChangedHandler = _stateChangedHandler
+            StateChangedHandler = _stateChangedHandler,
+            SubscriptionNamePrefix = _subscriptionNamePrefix ?? string.Empty
         };
 
         return _pulsarClient.CreateReader(options);

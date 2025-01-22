@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -77,4 +77,10 @@ public sealed class ReaderOptions<TMessage>
     /// Set the topic for this reader. This is required.
     /// </summary>
     public string Topic { get; set; }
+
+    /// <summary>
+    /// The prefix for the subscription being created behind the scenes for the reader. This is optional
+    /// It can be necessary to set this if the policy for access is set to SubscriptionPrefix.
+    /// </summary>
+    public string SubscriptionNamePrefix { get; set; } = string.Empty;
 }
