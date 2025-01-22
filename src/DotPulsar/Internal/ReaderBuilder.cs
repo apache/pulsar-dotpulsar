@@ -26,7 +26,8 @@ public sealed class ReaderBuilder<TMessage> : IReaderBuilder<TMessage>
     private bool _readCompacted;
     private MessageId? _startMessageId;
     private string? _topic;
-    private string? _subscriptionNamePrefix;
+    private string? _subscriptionName;
+    private string _subscriptionRolePrefix;
 
     private IHandleStateChanged<ReaderStateChanged>? _stateChangedHandler;
 
@@ -36,6 +37,7 @@ public sealed class ReaderBuilder<TMessage> : IReaderBuilder<TMessage>
         _schema = schema;
         _messagePrefetchCount = ReaderOptions<TMessage>.DefaultMessagePrefetchCount;
         _readCompacted = ReaderOptions<TMessage>.DefaultReadCompacted;
+        _subscriptionRolePrefix = ReaderOptions<TMessage>.DefaultSubscriptionRolePrefix;
     }
 
     public IReaderBuilder<TMessage> MessagePrefetchCount(uint count)
@@ -68,15 +70,21 @@ public sealed class ReaderBuilder<TMessage> : IReaderBuilder<TMessage>
         return this;
     }
 
-    public IReaderBuilder<TMessage> Topic(string topic)
+    public IReaderBuilder<TMessage> SubscriptionName(string subscriptionName)
     {
-        _topic = topic;
+        _subscriptionName = subscriptionName;
         return this;
     }
 
-    public IReaderBuilder<TMessage> SubscriptionNamePrefix(string subscriptionNamePrefix)
+    public IReaderBuilder<TMessage> SubscriptionRolePrefix(string subscriptionRolePrefix)
     {
-        _subscriptionNamePrefix = subscriptionNamePrefix;
+        _subscriptionRolePrefix = subscriptionRolePrefix;
+        return this;
+    }
+
+    public IReaderBuilder<TMessage> Topic(string topic)
+    {
+        _topic = topic;
         return this;
     }
 
@@ -94,7 +102,8 @@ public sealed class ReaderBuilder<TMessage> : IReaderBuilder<TMessage>
             ReadCompacted = _readCompacted,
             ReaderName = _readerName,
             StateChangedHandler = _stateChangedHandler,
-            SubscriptionNamePrefix = _subscriptionNamePrefix ?? string.Empty
+            SubscriptionName = _subscriptionName,
+            SubscriptionRolePrefix = _subscriptionRolePrefix
         };
 
         return _pulsarClient.CreateReader(options);

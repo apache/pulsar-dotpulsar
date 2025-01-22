@@ -45,14 +45,19 @@ public interface IReaderBuilder<TMessage>
     IReaderBuilder<TMessage> StateChangedHandler(IHandleStateChanged<ReaderStateChanged> handler);
 
     /// <summary>
+    /// Set the subscription name for this reader. This is optional.
+    /// </summary>
+    IReaderBuilder<TMessage> SubscriptionName(string name);
+
+    /// <summary>
+    /// Set the subscription role prefix for this reader. The default is 'Reader'. This is optional.
+    /// </summary>
+    IReaderBuilder<TMessage> SubscriptionRolePrefix(string subscriptionRolePrefix);
+
+    /// <summary>
     /// Set the topic for this reader. This is required.
     /// </summary>
     IReaderBuilder<TMessage> Topic(string topic);
-
-    /// <summary>
-    /// Set the prefix for the subscription being created by this reader. This is optional.
-    /// </summary>
-    IReaderBuilder<TMessage> SubscriptionNamePrefix(string subscriptionNamePrefix);
 
     /// <summary>
     /// Create the reader.

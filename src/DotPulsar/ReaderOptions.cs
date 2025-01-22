@@ -32,6 +32,11 @@ public sealed class ReaderOptions<TMessage>
     public static readonly bool DefaultReadCompacted = false;
 
     /// <summary>
+    /// The default subscription role prefix.
+    /// </summary>
+    public static readonly string DefaultSubscriptionRolePrefix = "Reader";
+
+    /// <summary>
     /// Initializes a new instance using the specified startMessageId and topic.
     /// </summary>
     public ReaderOptions(MessageId startMessageId, string topic, ISchema<TMessage> schema)
@@ -39,6 +44,7 @@ public sealed class ReaderOptions<TMessage>
         MessagePrefetchCount = DefaultMessagePrefetchCount;
         ReadCompacted = DefaultReadCompacted;
         StartMessageId = startMessageId;
+        SubscriptionRolePrefix = DefaultSubscriptionRolePrefix;
         Topic = topic;
         Schema = schema;
     }
@@ -74,13 +80,17 @@ public sealed class ReaderOptions<TMessage>
     public IHandleStateChanged<ReaderStateChanged>? StateChangedHandler { get; set; }
 
     /// <summary>
+    /// Set the subscription name for this reader. This is optional.
+    /// </summary>
+    public string? SubscriptionName { get; set; }
+
+    /// <summary>
+    /// Set the subscription role prefix for this reader. The default is 'Reader'. This is optional.
+    /// </summary>
+    public string SubscriptionRolePrefix { get; set; }
+
+    /// <summary>
     /// Set the topic for this reader. This is required.
     /// </summary>
     public string Topic { get; set; }
-
-    /// <summary>
-    /// The prefix for the subscription being created behind the scenes for the reader. This is optional
-    /// It can be necessary to set this if the policy for access is set to SubscriptionPrefix.
-    /// </summary>
-    public string SubscriptionNamePrefix { get; set; } = string.Empty;
 }

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [Unreleased]
 
+### Added
+
+- The subscription name and role prefix can now be set for the reader
+
 ### Changed
 
 - **Breaking**: The consumer, reader, and producer now implements IStateHolder instead of IState

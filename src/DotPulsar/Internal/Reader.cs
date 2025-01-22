@@ -269,11 +269,8 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     private SubReader<TMessage> CreateSubReader(string topic)
     {
         var correlationId = Guid.NewGuid();
-        var subscription = $"Reader-{correlationId:N}";
-        if (!string.IsNullOrEmpty(_readerOptions.SubscriptionNamePrefix))
-        {
-            subscription = $"{_readerOptions.SubscriptionNamePrefix}-{subscription}";
-        }
+
+        var subscription = _readerOptions.SubscriptionName is not null ? _readerOptions.SubscriptionName : $"{_readerOptions.SubscriptionRolePrefix}-{correlationId:N}";
 
         var subscribe = new CommandSubscribe
         {
