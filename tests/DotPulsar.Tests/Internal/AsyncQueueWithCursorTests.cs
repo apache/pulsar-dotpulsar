@@ -31,7 +31,7 @@ public class AsyncQueueWithCursorTests
         var actual = sut.TryPeek(out _);
 
         //Assert
-        actual.Should().BeFalse();
+        actual.ShouldBeFalse();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -49,9 +49,9 @@ public class AsyncQueueWithCursorTests
         var actual = sut.TryPeek(out var result);
 
         //Assert
-        actual.Should().BeTrue();
-        result.Should().NotBeNull();
-        result!.Should().Be(expected);
+        actual.ShouldBeTrue();
+        result.ShouldNotBeNull();
+        result!.ShouldBe(expected);
 
         //Annihilate
         await sut.DisposeAsync();
@@ -69,7 +69,7 @@ public class AsyncQueueWithCursorTests
         var actual = sut.TryPeek(out _);
 
         //Assert
-        actual.Should().BeFalse();
+        actual.ShouldBeFalse();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -85,7 +85,7 @@ public class AsyncQueueWithCursorTests
         var act = () => sut.Dequeue();
 
         //Assert
-        act.Should().Throw<InvalidOperationException>();
+        act.ShouldThrow<InvalidOperationException>();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -103,9 +103,9 @@ public class AsyncQueueWithCursorTests
         var actual = sut.TryPeek(out var result);
 
         //Assert
-        actual.Should().BeTrue();
-        result.Should().NotBeNull();
-        result!.Should().Be(expected);
+        actual.ShouldBeTrue();
+        result.ShouldNotBeNull();
+        result!.ShouldBe(expected);
 
         //Annihilate
         await sut.DisposeAsync();
@@ -122,9 +122,9 @@ public class AsyncQueueWithCursorTests
         var actual = sut.Enqueue(Substitute.For<IDisposable>(), CancellationToken.None);
 
         //Assert
-        actual.IsCompleted.Should().BeFalse();
-        actual.IsFaulted.Should().BeFalse();
-        actual.IsCanceled.Should().BeFalse();
+        actual.IsCompleted.ShouldBeFalse();
+        actual.IsFaulted.ShouldBeFalse();
+        actual.IsCanceled.ShouldBeFalse();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -145,9 +145,9 @@ public class AsyncQueueWithCursorTests
         await pendingEnqueue;
 
         //Assert
-        pendingEnqueue.IsCompleted.Should().BeTrue();
-        pendingEnqueue.IsFaulted.Should().BeFalse();
-        pendingEnqueue.IsCanceled.Should().BeFalse();
+        pendingEnqueue.IsCompleted.ShouldBeTrue();
+        pendingEnqueue.IsFaulted.ShouldBeFalse();
+        pendingEnqueue.IsCanceled.ShouldBeFalse();
 
         //Annihilate
         cts.Dispose();
@@ -168,10 +168,10 @@ public class AsyncQueueWithCursorTests
         var exception = await Record.ExceptionAsync(() => pendingEnqueue);
 
         //Assert
-        exception.Should().BeOfType<TaskCanceledException>();
-        pendingEnqueue.IsCompleted.Should().BeTrue();
-        pendingEnqueue.IsFaulted.Should().BeFalse();
-        pendingEnqueue.IsCanceled.Should().BeTrue();
+        exception.ShouldBeOfType<TaskCanceledException>();
+        pendingEnqueue.IsCompleted.ShouldBeTrue();
+        pendingEnqueue.IsFaulted.ShouldBeFalse();
+        pendingEnqueue.IsCanceled.ShouldBeTrue();
 
         //Annihilate
         cts.Dispose();
@@ -193,8 +193,8 @@ public class AsyncQueueWithCursorTests
         var actual2 = await sut.NextItem(CancellationToken.None);
 
         //Assert
-        actual1.Should().Be(expected1);
-        actual2.Should().Be(expected2);
+        actual1.ShouldBe(expected1);
+        actual2.ShouldBe(expected2);
 
         //Annihilate
         await sut.DisposeAsync();
@@ -212,9 +212,9 @@ public class AsyncQueueWithCursorTests
         var actual = sut.NextItem(CancellationToken.None);
 
         //Assert
-        actual.IsCompleted.Should().BeFalse();
-        actual.IsFaulted.Should().BeFalse();
-        actual.IsCanceled.Should().BeFalse();
+        actual.IsCompleted.ShouldBeFalse();
+        actual.IsFaulted.ShouldBeFalse();
+        actual.IsCanceled.ShouldBeFalse();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -233,10 +233,10 @@ public class AsyncQueueWithCursorTests
         var actual = await task;
 
         //Assert
-        actual.Should().Be(expected);
-        task.IsCompleted.Should().BeTrue();
-        task.IsFaulted.Should().BeFalse();
-        task.IsCanceled.Should().BeFalse();
+        actual.ShouldBe(expected);
+        task.IsCompleted.ShouldBeTrue();
+        task.IsFaulted.ShouldBeFalse();
+        task.IsCanceled.ShouldBeFalse();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -255,7 +255,7 @@ public class AsyncQueueWithCursorTests
         var exception = await Record.ExceptionAsync(() => task.AsTask());
 
         //Assert
-        exception.Should().BeOfType<TaskCanceledException>();
+        exception.ShouldBeOfType<TaskCanceledException>();
     }
 
     [Fact]
@@ -275,8 +275,8 @@ public class AsyncQueueWithCursorTests
         var after = await sut.NextItem(CancellationToken.None);
 
         //Assert
-        before.Should().Be(expected2);
-        after.Should().Be(expected1);
+        before.ShouldBe(expected2);
+        after.ShouldBe(expected1);
 
         //Annihilate
         await sut.DisposeAsync();
@@ -292,7 +292,7 @@ public class AsyncQueueWithCursorTests
         var exception = Record.Exception(() => sut.RemoveCurrentItem());
 
         //Assert
-        exception.Should().BeOfType<AsyncQueueWithCursorNoItemException>();
+        exception.ShouldBeOfType<AsyncQueueWithCursorNoItemException>();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -309,7 +309,7 @@ public class AsyncQueueWithCursorTests
         var exception = Record.Exception(() => sut.RemoveCurrentItem());
 
         //Assert
-        exception.Should().BeOfType<AsyncQueueWithCursorNoItemException>();
+        exception.ShouldBeOfType<AsyncQueueWithCursorNoItemException>();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -327,7 +327,7 @@ public class AsyncQueueWithCursorTests
         sut.RemoveCurrentItem();
 
         //Assert
-        sut.TryPeek(out _).Should().BeFalse();
+        sut.TryPeek(out _).ShouldBeFalse();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -350,7 +350,7 @@ public class AsyncQueueWithCursorTests
         var result = await sut.NextItem(CancellationToken.None);
 
         //Assert
-        result.Should().Be(expected);
+        result.ShouldBe(expected);
 
         //Annihilate
         await sut.DisposeAsync();
@@ -369,9 +369,9 @@ public class AsyncQueueWithCursorTests
         var act = async () => await enqueueTask;
 
         //Assert
-        await act.Should().ThrowAsync<TaskCanceledException>();
-        enqueueTask.IsCompleted.Should().BeTrue();
-        enqueueTask.IsCanceled.Should().BeTrue();
+        await act.ShouldThrowAsync<TaskCanceledException>();
+        enqueueTask.IsCompleted.ShouldBeTrue();
+        enqueueTask.IsCanceled.ShouldBeTrue();
     }
 
     [Fact]
@@ -385,7 +385,7 @@ public class AsyncQueueWithCursorTests
         var act = async () => await sut.Enqueue(Substitute.For<IDisposable>(), CancellationToken.None);
 
         //Assert
-        await act.Should().ThrowAsync<AsyncLockDisposedException>();
+        await act.ShouldThrowAsync<AsyncLockDisposedException>();
     }
 
     [Fact]
@@ -400,9 +400,9 @@ public class AsyncQueueWithCursorTests
         var act = async () => await nextItemTask;
 
         //Assert
-        await act.Should().ThrowAsync<TaskCanceledException>();
-        nextItemTask.IsCompleted.Should().BeTrue();
-        nextItemTask.IsCanceled.Should().BeTrue();
+        await act.ShouldThrowAsync<TaskCanceledException>();
+        nextItemTask.IsCompleted.ShouldBeTrue();
+        nextItemTask.IsCanceled.ShouldBeTrue();
     }
 
     [Fact]
@@ -418,9 +418,9 @@ public class AsyncQueueWithCursorTests
         var act = async () => await waitForEmptyTask;
 
         //Assert
-        await act.Should().ThrowAsync<TaskCanceledException>();
-        waitForEmptyTask.IsCompleted.Should().BeTrue();
-        waitForEmptyTask.IsCanceled.Should().BeTrue();
+        await act.ShouldThrowAsync<TaskCanceledException>();
+        waitForEmptyTask.IsCompleted.ShouldBeTrue();
+        waitForEmptyTask.IsCanceled.ShouldBeTrue();
     }
 
     [Fact]

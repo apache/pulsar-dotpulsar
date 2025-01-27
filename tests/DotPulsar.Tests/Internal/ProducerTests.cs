@@ -47,8 +47,8 @@ public sealed class ProducerTests : IDisposable
         var message = await consumer.Receive(_cts.Token);
 
         //Assert
-        message.MessageId.Should().Be(messageId);
-        message.Value().Should().Be(content);
+        message.MessageId.ShouldBe(messageId);
+        message.Value().ShouldBe(content);
     }
 
     [Fact]
@@ -76,8 +76,8 @@ public sealed class ProducerTests : IDisposable
         var expected = await idTask.Task;
 
         //Assert
-        message.MessageId.Should().Be(expected);
-        message.Value().Should().Be(content);
+        message.MessageId.ShouldBe(expected);
+        message.Value().ShouldBe(content);
     }
 
     [Theory]
@@ -130,8 +130,8 @@ public sealed class ProducerTests : IDisposable
         var actualStateForProducer2 = await producer2.State.OnStateChangeTo(expectedStateForProducer2, _cts.Token);
 
         //Assert
-        actualStateForProducer1.Should().Be(expectedStateForProducer1);
-        actualStateForProducer2.Should().Be(expectedStateForProducer2);
+        actualStateForProducer1.ShouldBe(expectedStateForProducer1);
+        actualStateForProducer2.ShouldBe(expectedStateForProducer2);
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public sealed class ProducerTests : IDisposable
             for (var msgIndex = 0; msgIndex < msgCount; ++msgIndex)
             {
                 var message = await consumer.Receive(_cts.Token);
-                message.Value().Should().Be($"{content}-{i}-{msgIndex}");
+                message.Value().ShouldBe($"{content}-{i}-{msgIndex}");
             }
         }
     }
@@ -202,7 +202,7 @@ public sealed class ProducerTests : IDisposable
         //Assert
         for (var i = 0; i < partitions; ++i)
         {
-            (await consumers[i].Receive(_cts.Token)).Value().Should().Be($"{content}-{i}");
+            (await consumers[i].Receive(_cts.Token)).Value().ShouldBe($"{content}-{i}");
         }
     }
 
@@ -234,7 +234,7 @@ public sealed class ProducerTests : IDisposable
                 foundNonNegativeOne = true;
         }
 
-        foundNonNegativeOne.Should().Be(false);
+        foundNonNegativeOne.ShouldBeFalse();
     }
 
     [Fact]
@@ -265,7 +265,7 @@ public sealed class ProducerTests : IDisposable
                 foundNonNegativeOne = true;
         }
 
-        foundNonNegativeOne.Should().Be(true);
+        foundNonNegativeOne.ShouldBeTrue();
     }
 
     [Fact]
@@ -289,7 +289,7 @@ public sealed class ProducerTests : IDisposable
         var exception = await Record.ExceptionAsync(sendTask.AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -304,7 +304,7 @@ public sealed class ProducerTests : IDisposable
         var exception = await Record.ExceptionAsync(producer.DisposeAsync().AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -321,7 +321,7 @@ public sealed class ProducerTests : IDisposable
         var exception = await Record.ExceptionAsync(producer.Send("test", _cts.Token).AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -338,7 +338,7 @@ public sealed class ProducerTests : IDisposable
         var exception = await Record.ExceptionAsync(producer.DisposeAsync().AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -358,7 +358,7 @@ public sealed class ProducerTests : IDisposable
         var exception = await Record.ExceptionAsync(producer.Send("test", _cts.Token).AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<string> producer, int numberOfMessages, CancellationToken ct)

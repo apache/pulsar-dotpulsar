@@ -30,7 +30,7 @@ public class ReadOnlySequenceExtensionsTests
         var actual = sequence.StartsWith(new byte[] { 0x00, 0x01 });
 
         //Assert
-        actual.Should().BeFalse();
+        actual.ShouldBeFalse();
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class ReadOnlySequenceExtensionsTests
         var actual = sequence.StartsWith(new byte[] { 0x00, 0x01 });
 
         //Assert
-        actual.Should().BeFalse();
+        actual.ShouldBeFalse();
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class ReadOnlySequenceExtensionsTests
         var actual = sequence.StartsWith(new byte[] { 0x00, 0x01 });
 
         //Assert
-        actual.Should().BeTrue();
+        actual.ShouldBeTrue();
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public class ReadOnlySequenceExtensionsTests
         var actual = sequence.StartsWith(new byte[] { 0x00, 0x01, 0x02, 0x03 });
 
         //Assert
-        actual.Should().BeFalse();
+        actual.ShouldBeFalse();
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class ReadOnlySequenceExtensionsTests
         var actual = sequence.StartsWith(new byte[] { 0x00, 0x01, 0x02 });
 
         //Assert
-        actual.Should().BeFalse();
+        actual.ShouldBeFalse();
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class ReadOnlySequenceExtensionsTests
         var actual = sequence.StartsWith(new byte[] { 0x00, 0x01, 0x02 });
 
         //Assert
-        actual.Should().BeTrue();
+        actual.ShouldBeTrue();
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class ReadOnlySequenceExtensionsTests
 
         //Assert
         const uint expected = 66051;
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class ReadOnlySequenceExtensionsTests
 
         //Assert
         const uint expected = 66051;
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Theory]
@@ -155,7 +155,7 @@ public class ReadOnlySequenceExtensionsTests
 
         //Assert
         const uint expected = 0x02030405;
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Theory]
@@ -175,6 +175,6 @@ public class ReadOnlySequenceExtensionsTests
 
         //Assert
         const uint expected = 0x02030405;
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 }

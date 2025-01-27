@@ -24,7 +24,7 @@ public class SnappyCompressionTests
     {
         // Arrange
         var couldLoad = SnappyCompression.TryLoading(out var compressorFactory, out var decompressorFactory);
-        couldLoad.Should().BeTrue();
+        couldLoad.ShouldBeTrue();
         using var compressor = compressorFactory!.Create();
         using var decompressor = decompressorFactory!.Create();
 
@@ -32,6 +32,6 @@ public class SnappyCompressionTests
         var compressionWorks = CompressionTester.TestCompression(compressorFactory, decompressorFactory);
 
         // Assert
-        compressionWorks.Should().BeTrue();
+        compressionWorks.ShouldBeTrue();
     }
 }

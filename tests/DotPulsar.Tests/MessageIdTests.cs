@@ -25,11 +25,11 @@ public class MessageIdTests
         var m1 = new MessageId(1, 2, 3, 4);
         var m2 = new MessageId(1, 2, 3, 4);
 
-        m1.CompareTo(m2).Should().Be(0);
-        (m1 < m2).Should().BeFalse();
-        (m1 > m2).Should().BeFalse();
-        (m1 >= m2).Should().BeTrue();
-        (m1 <= m2).Should().BeTrue();
+        m1.CompareTo(m2).ShouldBe(0);
+        (m1 < m2).ShouldBeFalse();
+        (m1 > m2).ShouldBeFalse();
+        (m1 >= m2).ShouldBeTrue();
+        (m1 <= m2).ShouldBeTrue();
     }
 
     [Fact]
@@ -38,11 +38,11 @@ public class MessageIdTests
         var m1 = new MessageId(1, 2, 3, 4, "persistent://public/default/my-topic-partition-0");
         var m2 = new MessageId(1, 2, 3, 4, "persistent://public/default/my-topic-partition-0");
 
-        m1.CompareTo(m2).Should().Be(0);
-        (m1 < m2).Should().BeFalse();
-        (m1 > m2).Should().BeFalse();
-        (m1 >= m2).Should().BeTrue();
-        (m1 <= m2).Should().BeTrue();
+        m1.CompareTo(m2).ShouldBe(0);
+        (m1 < m2).ShouldBeFalse();
+        (m1 > m2).ShouldBeFalse();
+        (m1 >= m2).ShouldBeTrue();
+        (m1 <= m2).ShouldBeTrue();
     }
 
     [Fact]
@@ -51,10 +51,10 @@ public class MessageIdTests
         MessageId m1 = null;
         MessageId m2 = null;
 
-        (m1 < m2).Should().BeFalse();
-        (m1 > m2).Should().BeFalse();
-        (m1 <= m2).Should().BeTrue();
-        (m1 >= m2).Should().BeTrue();
+        (m1 < m2).ShouldBeFalse();
+        (m1 > m2).ShouldBeFalse();
+        (m1 <= m2).ShouldBeTrue();
+        (m1 >= m2).ShouldBeTrue();
     }
 
     [Fact]
@@ -63,16 +63,16 @@ public class MessageIdTests
         var m1 = new MessageId(1, 2, 3, 4);
         MessageId m2 = null;
 
-        m1.CompareTo(m2).Should().BePositive();
-        (m1 < m2).Should().BeFalse();
-        (m1 > m2).Should().BeTrue();
-        (m1 <= m2).Should().BeFalse();
-        (m1 >= m2).Should().BeTrue();
+        m1.CompareTo(m2).ShouldBePositive();
+        (m1 < m2).ShouldBeFalse();
+        (m1 > m2).ShouldBeTrue();
+        (m1 <= m2).ShouldBeFalse();
+        (m1 >= m2).ShouldBeTrue();
 
-        (m2 < m1).Should().BeTrue();
-        (m2 > m1).Should().BeFalse();
-        (m2 <= m1).Should().BeTrue();
-        (m2 >= m1).Should().BeFalse();
+        (m2 < m1).ShouldBeTrue();
+        (m2 > m1).ShouldBeFalse();
+        (m2 <= m1).ShouldBeTrue();
+        (m2 >= m1).ShouldBeFalse();
     }
 
     [Theory]
@@ -85,9 +85,9 @@ public class MessageIdTests
         var m1 = new MessageId(ledgerId, entryId, partition, batchIndex);
         var m2 = new MessageId(1, 2, 3, 4);
 
-        m1.CompareTo(m2).Should().BePositive();
-        (m1 > m2).Should().BeTrue();
-        (m1 < m2).Should().BeFalse();
+        m1.CompareTo(m2).ShouldBePositive();
+        (m1 > m2).ShouldBeTrue();
+        (m1 < m2).ShouldBeFalse();
     }
 
     [Theory]
@@ -100,9 +100,9 @@ public class MessageIdTests
         var m1 = new MessageId(ledgerId, entryId, partition, batchIndex);
         var m2 = new MessageId(1, 2, 3, 4);
 
-        m1.CompareTo(m2).Should().BeNegative();
-        (m1 < m2).Should().BeTrue();
-        (m1 > m2).Should().BeFalse();
+        m1.CompareTo(m2).ShouldBeNegative();
+        (m1 < m2).ShouldBeTrue();
+        (m1 > m2).ShouldBeFalse();
     }
 
     [Fact]
@@ -111,9 +111,9 @@ public class MessageIdTests
         var m1 = new MessageId(1, 2, 3, 4);
         var m2 = m1;
 
-        m1.Equals(m2).Should().BeTrue();
-        (m1 == m2).Should().BeTrue();
-        (m1 != m2).Should().BeFalse();
+        m1.Equals(m2).ShouldBeTrue();
+        (m1 == m2).ShouldBeTrue();
+        (m1 != m2).ShouldBeFalse();
     }
 
     [Fact]
@@ -122,9 +122,9 @@ public class MessageIdTests
         var m1 = new MessageId(1, 2, 3, 4);
         var m2 = new MessageId(1, 2, 3, 4);
 
-        m1.Equals(m2).Should().BeTrue();
-        (m1 == m2).Should().BeTrue();
-        (m1 != m2).Should().BeFalse();
+        m1.Equals(m2).ShouldBeTrue();
+        (m1 == m2).ShouldBeTrue();
+        (m1 != m2).ShouldBeFalse();
     }
 
     [Fact]
@@ -133,9 +133,9 @@ public class MessageIdTests
         var m1 = new MessageId(1, 2, 3, 4, "persistent://public/default/my-topic-partition-0");
         var m2 = new MessageId(1, 2, 3, 4, "persistent://public/default/my-topic-partition-0");
 
-        m1.Equals(m2).Should().BeTrue();
-        (m1 == m2).Should().BeTrue();
-        (m1 != m2).Should().BeFalse();
+        m1.Equals(m2).ShouldBeTrue();
+        (m1 == m2).ShouldBeTrue();
+        (m1 != m2).ShouldBeFalse();
     }
 
     [Theory]
@@ -148,9 +148,9 @@ public class MessageIdTests
         var m1 = new MessageId(ledgerId, entryId, partition, batchIndex);
         var m2 = new MessageId(1, 2, 3, 4);
 
-        m1.Equals(m2).Should().BeFalse();
-        (m1 == m2).Should().BeFalse();
-        (m1 != m2).Should().BeTrue();
+        m1.Equals(m2).ShouldBeFalse();
+        (m1 == m2).ShouldBeFalse();
+        (m1 != m2).ShouldBeTrue();
     }
 
     [Theory]
@@ -164,9 +164,9 @@ public class MessageIdTests
         var m1 = new MessageId(ledgerId, entryId, partition, batchIndex, topic);
         var m2 = new MessageId(1, 2, 3, 4, "persistent://public/default/my-topic-partition-1");
 
-        m1.Equals(m2).Should().BeFalse();
-        (m1 == m2).Should().BeFalse();
-        (m1 != m2).Should().BeTrue();
+        m1.Equals(m2).ShouldBeFalse();
+        (m1 == m2).ShouldBeFalse();
+        (m1 != m2).ShouldBeTrue();
     }
 
     [Fact]
@@ -175,9 +175,9 @@ public class MessageIdTests
         MessageId m1 = null;
         MessageId m2 = null;
 
-        (m1 == m2).Should().BeTrue();
-        (m1 is null).Should().BeTrue();
-        (m1 != m2).Should().BeFalse();
+        (m1 == m2).ShouldBeTrue();
+        (m1 is null).ShouldBeTrue();
+        (m1 != m2).ShouldBeFalse();
     }
 
     [Fact]
@@ -186,10 +186,10 @@ public class MessageIdTests
         var m1 = new MessageId(1, 2, 3, 4);
         MessageId m2 = null;
 
-        (m1 is null).Should().BeFalse();
-        (m1 == m2).Should().BeFalse();
-        m1.Equals(m2).Should().BeFalse();
-        (m1 != m2).Should().BeTrue();
+        (m1 is null).ShouldBeFalse();
+        (m1 == m2).ShouldBeFalse();
+        m1.Equals(m2).ShouldBeFalse();
+        (m1 != m2).ShouldBeTrue();
     }
 
     [Theory]
@@ -212,8 +212,8 @@ public class MessageIdTests
         var result = MessageId.TryParse(input, out var actual);
 
         // Assert
-        result.Should().BeFalse();
-        actual.Should().Be(expected);
+        result.ShouldBeFalse();
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -226,8 +226,8 @@ public class MessageIdTests
         var result = MessageId.TryParse(expected.ToString(), out var actual);
 
         // Assert
-        result.Should().BeTrue();
-        actual.Should().Be(expected);
+        result.ShouldBeTrue();
+        actual.ShouldBe(expected);
     }
 }
 

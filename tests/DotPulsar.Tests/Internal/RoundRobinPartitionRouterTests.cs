@@ -17,7 +17,7 @@ public class RoundRobinPartitionRouterTests
         var result = router.ChoosePartition(messageMetadata, 4);
 
         //Assert
-        result.Should().BeInRange(0, 3);
+        result.ShouldBeInRange(0, 3);
     }
 
     [Theory]
@@ -33,6 +33,6 @@ public class RoundRobinPartitionRouterTests
         var result = router.ChoosePartition(messageMetadata, numberOfPartitions);
 
         //Assert
-        result.Should().BeInRange(0, numberOfPartitions);
+        result.ShouldBeInRange(0, numberOfPartitions);
     }
 }

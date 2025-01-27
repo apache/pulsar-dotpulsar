@@ -45,7 +45,7 @@ public sealed class ReaderTests : IDisposable
         var actual = await reader.GetLastMessageIds(_cts.Token);
 
         //Assert
-        actual.Should().BeEquivalentTo(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public sealed class ReaderTests : IDisposable
         var actual = await reader.GetLastMessageIds(_cts.Token);
 
         //Assert
-        actual.Should().BeEquivalentTo(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public sealed class ReaderTests : IDisposable
         var actual = await reader.GetLastMessageIds(_cts.Token);
 
         //Assert
-        actual.Should().BeEquivalentTo(expected);
+        actual.ShouldBeEquivalentTo(expected);
     }
 
     [Fact]
@@ -131,7 +131,7 @@ public sealed class ReaderTests : IDisposable
         }
 
         //Assert
-        actual.Should().BeEquivalentTo(expected);
+        actual.ShouldBeEquivalentTo(expected);
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public sealed class ReaderTests : IDisposable
         }
 
         //Assert
-        actual.Should().BeEquivalentTo(expected);
+        actual.ShouldBe(expected, true);
     }
 
     [Fact]
@@ -187,7 +187,7 @@ public sealed class ReaderTests : IDisposable
         var exception = await Record.ExceptionAsync(() => receiveTask);
 
         //Assert
-        exception.Should().BeOfType<ReaderFaultedException>();
+        exception.ShouldBeOfType<ReaderFaultedException>();
     }
 
     [Fact]
@@ -209,7 +209,7 @@ public sealed class ReaderTests : IDisposable
         var exception = await Record.ExceptionAsync(reader.Receive(_cts.Token).AsTask);
 
         //Assert
-        exception.Should().BeOfType<ReaderFaultedException>();
+        exception.ShouldBeOfType<ReaderFaultedException>();
     }
 
     [Fact]
@@ -233,7 +233,7 @@ public sealed class ReaderTests : IDisposable
         var exception = await Record.ExceptionAsync(receiveTask.AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -253,7 +253,7 @@ public sealed class ReaderTests : IDisposable
         var exception = await Record.ExceptionAsync(reader.Receive(_cts.Token).AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -268,7 +268,7 @@ public sealed class ReaderTests : IDisposable
         var exception = await Record.ExceptionAsync(reader.DisposeAsync().AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -285,7 +285,7 @@ public sealed class ReaderTests : IDisposable
         var exception = await Record.ExceptionAsync(reader.DisposeAsync().AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -308,7 +308,7 @@ public sealed class ReaderTests : IDisposable
         var exception = await Record.ExceptionAsync(reader.Receive(_cts.Token).AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     private IProducer<string> CreateProducer(IPulsarClient pulsarClient, string topicName)

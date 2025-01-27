@@ -31,7 +31,7 @@ public class PingPongHandlerTest
         var actual = await uut.State.OnStateChangeTo(PingPongHandlerState.TimedOut);
 
         // Assert
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class PingPongHandlerTest
         var actual = await uut.State.OnStateChangeTo(PingPongHandlerState.Active);
 
         // Assert
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -62,6 +62,6 @@ public class PingPongHandlerTest
         await uut.DisposeAsync();
 
         // Assert
-        (await actual).Should().Be(expected);
+        (await actual).ShouldBe(expected);
     }
 }

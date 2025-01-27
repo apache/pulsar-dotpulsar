@@ -32,7 +32,7 @@ public class Crc32CTests
 
         //Assert
         const uint expected = 2355953212;
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -55,6 +55,6 @@ public class Crc32CTests
 
         //Assert
         const uint expected = 1079987866;
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 }

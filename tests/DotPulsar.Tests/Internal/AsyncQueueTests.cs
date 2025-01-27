@@ -32,7 +32,7 @@ public class AsyncQueueTests
         var actual = await dequeueTask;
 
         //Assert
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
 
         //Annihilate
         queue.Dispose();
@@ -50,7 +50,7 @@ public class AsyncQueueTests
         var actual = await queue.Dequeue();
 
         //Assert
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
 
         //Annihilate
         queue.Dispose();
@@ -72,8 +72,8 @@ public class AsyncQueueTests
         var actual2 = await dequeue2;
 
         //Assert
-        actual1.Should().Be(expected1);
-        actual2.Should().Be(expected2);
+        actual1.ShouldBe(expected1);
+        actual2.ShouldBe(expected2);
 
         //Annihilate
         queue.Dispose();
@@ -93,8 +93,8 @@ public class AsyncQueueTests
         var actual2 = await queue.Dequeue();
 
         //Assert
-        actual1.Should().Be(expected1);
-        actual2.Should().Be(expected2);
+        actual1.ShouldBe(expected1);
+        actual2.ShouldBe(expected2);
 
         //Annihilate
         queue.Dispose();
@@ -117,8 +117,8 @@ public class AsyncQueueTests
         var actual = await task2;
 
         //Assert
-        exception.Should().BeOfType<TaskCanceledException>();
-        actual.Should().Be(excepted);
+        exception.ShouldBeOfType<TaskCanceledException>();
+        actual.ShouldBe(excepted);
 
         //Annihilate
         source1.Dispose();

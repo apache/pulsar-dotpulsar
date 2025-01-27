@@ -35,7 +35,7 @@ public class StateExtensionsTests
         var actual = await uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
 
         // Assert
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Theory, Tests.AutoData]
@@ -52,7 +52,7 @@ public class StateExtensionsTests
         var actual = await uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
 
         // Assert
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Theory, Tests.AutoData]
@@ -68,7 +68,7 @@ public class StateExtensionsTests
         var actual = await uut.OnStateChangeTo(expected, TimeSpan.FromSeconds(1));
 
         // Assert
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Theory, Tests.AutoData]
@@ -83,7 +83,7 @@ public class StateExtensionsTests
         var exception = await Record.ExceptionAsync(() => uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1), cts.Token).AsTask());
 
         // Assert
-        exception.Should().BeOfType<OperationCanceledException>();
+        exception.ShouldBeOfType<OperationCanceledException>();
     }
 
     [Theory, Tests.AutoData]
@@ -100,7 +100,7 @@ public class StateExtensionsTests
         var exception = await Record.ExceptionAsync(() => uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1), cts.Token).AsTask());
 
         // Assert
-        exception.Should().BeOfType<OperationCanceledException>();
+        exception.ShouldBeOfType<OperationCanceledException>();
     }
 
     [Theory, Tests.AutoData]
@@ -115,7 +115,7 @@ public class StateExtensionsTests
         var actual = await uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
 
         // Assert
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Theory, Tests.AutoData]
@@ -132,7 +132,7 @@ public class StateExtensionsTests
         var actual = await uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
 
         // Assert
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Theory, Tests.AutoData]
@@ -148,7 +148,7 @@ public class StateExtensionsTests
         var actual = await uut.OnStateChangeFrom(ProducerState.Connected, TimeSpan.FromSeconds(1));
 
         // Assert
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Theory, Tests.AutoData]
@@ -163,7 +163,7 @@ public class StateExtensionsTests
         var exception = await Record.ExceptionAsync(() => uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1), cts.Token).AsTask());
 
         // Assert
-        exception.Should().BeOfType<OperationCanceledException>();
+        exception.ShouldBeOfType<OperationCanceledException>();
     }
 
     [Theory, Tests.AutoData]
@@ -180,6 +180,6 @@ public class StateExtensionsTests
         var exception = await Record.ExceptionAsync(() => uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1), cts.Token).AsTask());
 
         // Assert
-        exception.Should().BeOfType<OperationCanceledException>();
+        exception.ShouldBeOfType<OperationCanceledException>();
     }
 }

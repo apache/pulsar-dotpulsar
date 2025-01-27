@@ -30,7 +30,7 @@ public class AsyncLockTests
         var actual = sut.Lock(CancellationToken.None);
 
         //Assert
-        actual.IsCompleted.Should().BeTrue();
+        actual.IsCompleted.ShouldBeTrue();
 
         //Annihilate 
         (await actual).Dispose();
@@ -47,7 +47,7 @@ public class AsyncLockTests
         var actual = sut.Lock(CancellationToken.None);
 
         //Assert
-        actual.IsCompleted.Should().BeFalse();
+        actual.IsCompleted.ShouldBeFalse();
 
         //Annihilate
         alreadyTaken.Dispose();
@@ -65,7 +65,7 @@ public class AsyncLockTests
         var exception = await Record.ExceptionAsync(() => sut.Lock(CancellationToken.None));
 
         //Assert
-        exception.Should().BeOfType<AsyncLockDisposedException>();
+        exception.ShouldBeOfType<AsyncLockDisposedException>();
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class AsyncLockTests
         var exception = await Record.ExceptionAsync(() => awaiting);
 
         //Assert
-        exception.Should().BeOfType<TaskCanceledException>();
+        exception.ShouldBeOfType<TaskCanceledException>();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -102,7 +102,7 @@ public class AsyncLockTests
         var exception = await Record.ExceptionAsync(() => awaiting);
 
         //Assert
-        exception.Should().BeOfType<TaskCanceledException>();
+        exception.ShouldBeOfType<TaskCanceledException>();
 
         //Annihilate
         cts.Dispose();
@@ -124,7 +124,7 @@ public class AsyncLockTests
         await disposeTask;
 
         //Assert
-        disposeTask.IsCompleted.Should().BeTrue();
+        disposeTask.IsCompleted.ShouldBeTrue();
 
         //Annihilate
         await sut.DisposeAsync();
@@ -141,6 +141,6 @@ public class AsyncLockTests
         var exception = await Record.ExceptionAsync(() => sut.DisposeAsync().AsTask()); // xUnit can't record ValueTask yet
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 }

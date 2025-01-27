@@ -35,7 +35,7 @@ public class SequenceBuilderTests
 
         //Assert
         var expected = CreateRange(0, 10);
-        actual.Should().Equal(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class SequenceBuilderTests
 
         //Assert
         var expected = CreateRange(0, 10);
-        actual.Should().Equal(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public class SequenceBuilderTests
 
         //Assert
         var expected = CreateRange(0, 10);
-        actual.Should().Equal(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class SequenceBuilderTests
 
         //Assert
         var expected = CreateRange(0, 10);
-        actual.Should().Equal(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -113,8 +113,8 @@ public class SequenceBuilderTests
 
         //Assert
         var expected = CreateRange(0, 4);
-        actual1.Should().Equal(expected);
-        actual2.Should().Equal(expected);
+        actual1.ShouldBe(expected);
+        actual2.ShouldBe(expected);
     }
 
     private static byte[] CreateRange(int start, int count)
@@ -122,7 +122,7 @@ public class SequenceBuilderTests
         var bytes = new byte[count];
 
         for (var i = 0; i < count; ++i)
-            bytes[i] = System.Convert.ToByte(start + i);
+            bytes[i] = Convert.ToByte(start + i);
 
         return bytes;
     }

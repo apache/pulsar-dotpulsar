@@ -51,7 +51,7 @@ public sealed class MessageProcessorTests : IDisposable
         var exception = Record.Exception(() => new MessageProcessor<byte[]>(consumer, ProcessMessage, options));
 
         //Assert
-        exception.Should().BeOfType<ProcessingException>();
+        exception.ShouldBeOfType<ProcessingException>();
     }
 
     [Theory, AutoData]
@@ -72,7 +72,7 @@ public sealed class MessageProcessorTests : IDisposable
         _semaphore.Release();
 
         //Assert
-        _taskHasCompleted.Should().BeFalse();
+        _taskHasCompleted.ShouldBeFalse();
     }
 
     [Theory, AutoData]
@@ -94,7 +94,7 @@ public sealed class MessageProcessorTests : IDisposable
         await processTask;
 
         //Assert
-        _taskHasCompleted.Should().BeTrue();
+        _taskHasCompleted.ShouldBeTrue();
     }
 
     private async ValueTask ProcessMessage(IMessage<byte[]> _, CancellationToken token)

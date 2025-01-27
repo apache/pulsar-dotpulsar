@@ -39,8 +39,8 @@ public class ChunkingPipelineTests
         //Assert
         var expected = sequence.ToArray();
         var actual = mockStream.GetReadOnlySequence();
-        actual.ToArray().Should().Equal(expected);
-        actual.IsSingleSegment.Should().BeTrue();
+        actual.ToArray().ShouldBe(expected);
+        actual.IsSingleSegment.ShouldBeTrue();
     }
 
     [Theory]
@@ -63,8 +63,8 @@ public class ChunkingPipelineTests
         //Assert
         var expected = sequence.ToArray();
         var actual = mockStream.GetReadOnlySequence();
-        actual.ToArray().Should().Equal(expected);
-        GetNumberOfSegments(actual).Should().Be(expected3.HasValue ? 3 : 2);
+        actual.ToArray().ShouldBe(expected);
+        GetNumberOfSegments(actual).ShouldBe(expected3.HasValue ? 3 : 2);
 
         var segmentNumber = 0;
         foreach (var segment in actual)
@@ -72,14 +72,14 @@ public class ChunkingPipelineTests
             switch (segmentNumber)
             {
                 case 0:
-                    segment.Length.Should().Be(expected1);
+                    segment.Length.ShouldBe(expected1);
                     break;
                 case 1:
-                    segment.Length.Should().Be(expected2);
+                    segment.Length.ShouldBe(expected2);
                     break;
                 case 2:
-                    expected3.Should().NotBeNull();
-                    segment.Length.Should().Be(expected3);
+                    expected3.ShouldNotBeNull();
+                    segment.Length.ShouldBe(expected3.Value);
                     break;
             }
             ++segmentNumber;

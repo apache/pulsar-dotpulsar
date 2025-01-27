@@ -30,6 +30,6 @@ public class SerializerTests
 
         //Assert
         var expected = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-        actual.Should().Equal(expected);
+        actual.ShouldBe(expected);
     }
 }

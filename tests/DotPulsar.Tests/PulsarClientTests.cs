@@ -45,8 +45,8 @@ public sealed class PulsarClientTests : IDisposable
         var state = await producer.State.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
 
         // Assert
-        exception.Should().BeOfType<ProducerFaultedException>();
-        state.Should().Be(ProducerState.Faulted);
+        exception.ShouldBeOfType<ProducerFaultedException>();
+        state.ShouldBe(ProducerState.Faulted);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class PulsarClientTests : IDisposable
         var state = await producer.State.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
 
         // Assert
-        state.Should().Be(ProducerState.Faulted);
+        state.ShouldBe(ProducerState.Faulted);
     }
 
     [Fact]
@@ -91,9 +91,9 @@ public sealed class PulsarClientTests : IDisposable
         var state = await producer.State.OnStateChangeTo(ProducerState.Faulted, _cts.Token);
 
         // Assert
-        exception.Should().BeOfType<ProducerFaultedException>();
-        exception.InnerException.Should().BeOfType<AuthenticationException>();
-        state.Should().Be(ProducerState.Faulted);
+        exception.ShouldBeOfType<ProducerFaultedException>();
+        exception.InnerException.ShouldBeOfType<AuthenticationException>();
+        state.ShouldBe(ProducerState.Faulted);
     }
 
     [Fact]
@@ -122,7 +122,7 @@ public sealed class PulsarClientTests : IDisposable
         var state = await producer.State.OnStateChangeTo(ProducerState.Connected, _cts.Token);
 
         // Assert
-        state.Should().Be(ProducerState.Connected);
+        state.ShouldBe(ProducerState.Connected);
     }
 
     private IPulsarClient CreateClient(Func<CancellationToken, ValueTask<string>> tokenSupplier)

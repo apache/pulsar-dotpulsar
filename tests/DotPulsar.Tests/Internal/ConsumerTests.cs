@@ -58,7 +58,7 @@ public sealed class ConsumerTests : IDisposable
         var actual = await consumer.GetLastMessageIds(_cts.Token);
 
         //Assert
-        actual.Should().BeEquivalentTo(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public sealed class ConsumerTests : IDisposable
         var actual = await consumer.GetLastMessageIds(_cts.Token);
 
         //Assert
-        actual.Should().BeEquivalentTo(expected);
+        actual.ShouldBeEquivalentTo(expected);
     }
 
     [Fact]
@@ -102,7 +102,7 @@ public sealed class ConsumerTests : IDisposable
         var actual = await consumer.GetLastMessageIds(_cts.Token);
 
         //Assert
-        actual.Should().BeEquivalentTo(expected);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public sealed class ConsumerTests : IDisposable
         var consumed = await ConsumeMessages(consumer, numberOfMessages, _cts.Token);
 
         //Assert
-        consumed.Should().BeEquivalentTo(produced);
+        consumed.ShouldBe(produced);
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public sealed class ConsumerTests : IDisposable
         var consumed = await ConsumeMessages(consumer, numberOfMessages, _cts.Token);
 
         //Assert
-        consumed.Should().BeEquivalentTo(produced);
+        consumed.ShouldBe(produced, true);
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public sealed class ConsumerTests : IDisposable
         var exception = await Record.ExceptionAsync(receiveTask.AsTask);
 
         //Assert
-        exception.Should().BeOfType<ConsumerFaultedException>();
+        exception.ShouldBeOfType<ConsumerFaultedException>();
     }
 
     [Fact]
@@ -189,7 +189,7 @@ public sealed class ConsumerTests : IDisposable
         var exception = await Record.ExceptionAsync(consumer.Receive(_cts.Token).AsTask);
 
         //Assert
-        exception.Should().BeOfType<ConsumerFaultedException>();
+        exception.ShouldBeOfType<ConsumerFaultedException>();
     }
 
     [Fact]
@@ -213,7 +213,7 @@ public sealed class ConsumerTests : IDisposable
         var exception = await Record.ExceptionAsync(receiveTask.AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -233,7 +233,7 @@ public sealed class ConsumerTests : IDisposable
         var exception = await Record.ExceptionAsync(consumer.Receive(_cts.Token).AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -248,7 +248,7 @@ public sealed class ConsumerTests : IDisposable
         var exception = await Record.ExceptionAsync(consumer.DisposeAsync().AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -265,7 +265,7 @@ public sealed class ConsumerTests : IDisposable
         var exception = await Record.ExceptionAsync(consumer.DisposeAsync().AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     [Fact]
@@ -288,7 +288,7 @@ public sealed class ConsumerTests : IDisposable
         var exception = await Record.ExceptionAsync(consumer.Receive(_cts.Token).AsTask);
 
         //Assert
-        exception.Should().BeNull();
+        exception.ShouldBeNull();
     }
 
     private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<string> producer, int numberOfMessages, string content, CancellationToken ct)

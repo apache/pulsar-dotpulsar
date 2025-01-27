@@ -38,7 +38,7 @@ public class StateManagerTests
         var actual = uut.SetState(newState);
 
         //Assert
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
 
     [Theory]
@@ -54,7 +54,7 @@ public class StateManagerTests
         _ = uut.SetState(newState);
 
         //Assert
-        uut.CurrentState.Should().Be(ProducerState.Closed);
+        uut.CurrentState.ShouldBe(ProducerState.Closed);
     }
 
     [Theory]
@@ -72,7 +72,7 @@ public class StateManagerTests
         _ = uut.SetState(newState);
 
         //Assert
-        task.IsCompleted.Should().BeTrue();
+        task.IsCompleted.ShouldBeTrue();
     }
 
     [Theory]
@@ -90,7 +90,7 @@ public class StateManagerTests
         _ = uut.SetState(newState);
 
         //Assert
-        task.IsCompleted.Should().BeTrue();
+        task.IsCompleted.ShouldBeTrue();
     }
 
     [Theory]
@@ -123,7 +123,7 @@ public class StateManagerTests
         var task = uut.OnStateChangeTo(wantedState, default);
 
         //Assert
-        task.IsCompleted.Should().BeFalse();
+        task.IsCompleted.ShouldBeFalse();
     }
 
     [Theory]
@@ -138,7 +138,7 @@ public class StateManagerTests
         var task = uut.OnStateChangeTo(state, default);
 
         //Assert
-        task.IsCompleted.Should().BeTrue();
+        task.IsCompleted.ShouldBeTrue();
     }
 
     [Theory]
@@ -153,7 +153,7 @@ public class StateManagerTests
         var task = uut.OnStateChangeFrom(state, default);
 
         //Assert
-        task.IsCompleted.Should().BeFalse();
+        task.IsCompleted.ShouldBeFalse();
     }
 
     [Theory]
@@ -170,7 +170,7 @@ public class StateManagerTests
         var task = uut.OnStateChangeFrom(fromState, default);
 
         //Assert
-        task.IsCompleted.Should().BeTrue();
+        task.IsCompleted.ShouldBeTrue();
     }
 
     [Theory]
@@ -186,7 +186,7 @@ public class StateManagerTests
         var task = uut.OnStateChangeFrom(state, default);
 
         //Assert
-        task.IsCompleted.Should().BeTrue();
+        task.IsCompleted.ShouldBeTrue();
     }
 
     [Theory]
@@ -202,7 +202,7 @@ public class StateManagerTests
         _ = uut.SetState(ProducerState.Closed);
 
         //Assert
-        task.IsCompleted.Should().BeTrue();
+        task.IsCompleted.ShouldBeTrue();
     }
 
     [Theory]
@@ -218,7 +218,7 @@ public class StateManagerTests
         _ = uut.SetState(newState);
 
         //Assert
-        task.IsCompleted.Should().BeFalse();
+        task.IsCompleted.ShouldBeFalse();
     }
 
     [Fact]
@@ -234,7 +234,7 @@ public class StateManagerTests
         var exception = await Record.ExceptionAsync(() => task.AsTask()); // xUnit can't record ValueTask yet
 
         //Assert
-        exception.Should().BeOfType<TaskCanceledException>();
+        exception.ShouldBeOfType<TaskCanceledException>();
     }
 
     [Fact]
@@ -250,6 +250,6 @@ public class StateManagerTests
         var exception = await Record.ExceptionAsync(() => task.AsTask()); // xUnit can't record ValueTask yet
 
         //Assert
-        exception.Should().BeOfType<TaskCanceledException>();
+        exception.ShouldBeOfType<TaskCanceledException>();
     }
 }

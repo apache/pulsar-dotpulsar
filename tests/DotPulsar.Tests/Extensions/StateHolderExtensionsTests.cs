@@ -38,9 +38,9 @@ public class StateHolderExtensionsTests
         await uut.DelayedStateMonitor(ProducerState.Connected, TimeSpan.FromSeconds(1), onStateLeft, onStateReached);
 
         // Assert
-        stateLeft.HasValue.Should().BeTrue();
-        stateLeft!.Value.Should().Be(expected);
-        stateReached.HasValue.Should().BeFalse();
+        stateLeft.HasValue.ShouldBeTrue();
+        stateLeft!.Value.ShouldBe(expected);
+        stateReached.HasValue.ShouldBeFalse();
     }
 
     [Theory, Tests.AutoData]
@@ -61,8 +61,8 @@ public class StateHolderExtensionsTests
         await uut.DelayedStateMonitor(ProducerState.Connected, TimeSpan.FromSeconds(1), onStateLeft, onStateReached);
 
         // Assert
-        stateLeft.HasValue.Should().BeTrue();
-        stateLeft!.Value.Should().Be(expected);
-        stateReached.HasValue.Should().BeFalse();
+        stateLeft.HasValue.ShouldBeTrue();
+        stateLeft!.Value.ShouldBe(expected);
+        stateReached.HasValue.ShouldBeFalse();
     }
 }

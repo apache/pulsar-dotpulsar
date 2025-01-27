@@ -49,7 +49,7 @@ public class ReceiveExtensionsTests
         var actual = receiver.TryReceive(out var message);
 
         //Assert
-        actual.Should().BeTrue();
+        actual.ShouldBe(true);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class ReceiveExtensionsTests
         var actual = receiver.TryReceive(out var message);
 
         //Assert
-        actual.Should().BeFalse();
+        actual.ShouldBe(false);
     }
 
     private static string CreateSubscriptionName() => $"subscription-{Guid.NewGuid():N}";

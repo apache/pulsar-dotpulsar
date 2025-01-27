@@ -24,7 +24,7 @@ public class ZstdSharpCompressionTests
     {
         // Arrange
         var couldLoad = ZstdSharpCompression.TryLoading(out var compressorFactory, out var decompressorFactory);
-        couldLoad.Should().BeTrue();
+        couldLoad.ShouldBeTrue();
         using var compressor = compressorFactory!.Create();
         using var decompressor = decompressorFactory!.Create();
 
@@ -32,6 +32,6 @@ public class ZstdSharpCompressionTests
         var compressionWorks = CompressionTester.TestCompression(compressorFactory, decompressorFactory);
 
         // Assert
-        compressionWorks.Should().BeTrue();
+        compressionWorks.ShouldBeTrue();
     }
 }
