@@ -22,7 +22,7 @@ public interface IProducer : IStateHolder<ProducerState>, IAsyncDisposable
     /// <summary>
     /// The producer's service url.
     /// </summary>
-    public Uri ServiceUrl { get; }
+    Uri ServiceUrl { get; }
 
     /// <summary>
     /// The producer's topic.

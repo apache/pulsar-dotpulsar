@@ -37,17 +37,17 @@ public interface IConsumer : IGetLastMessageIds, ISeek, IStateHolder<ConsumerSta
     /// <summary>
     /// The consumer's service url.
     /// </summary>
-    public Uri ServiceUrl { get; }
+    Uri ServiceUrl { get; }
 
     /// <summary>
     /// The consumer's subscription name.
     /// </summary>
-    public string SubscriptionName { get; }
+    string SubscriptionName { get; }
 
     /// <summary>
     /// The consumer's subscription type.
     /// </summary>
-    public SubscriptionType SubscriptionType { get; }
+    SubscriptionType SubscriptionType { get; }
 
     /// <summary>
     /// The consumer's topic.

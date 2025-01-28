@@ -22,7 +22,7 @@ public interface IReader : IGetLastMessageIds, ISeek, IStateHolder<ReaderState>,
     /// <summary>
     /// The reader's service url.
     /// </summary>
-    public Uri ServiceUrl { get; }
+    Uri ServiceUrl { get; }
 
     /// <summary>
     /// The reader's topic.

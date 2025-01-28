@@ -64,12 +64,12 @@ public interface IMessage
     /// <summary>
     /// The event time of the message as an UTC DateTime.
     /// </summary>
-    public DateTime EventTimeAsDateTime { get; }
+    DateTime EventTimeAsDateTime { get; }
 
     /// <summary>
     /// The event time of the message as a DateTimeOffset with an offset of 0.
     /// </summary>
-    public DateTimeOffset EventTimeAsDateTimeOffset { get; }
+    DateTimeOffset EventTimeAsDateTimeOffset { get; }
 
     /// <summary>
     /// Check whether the key been base64 encoded.
@@ -109,15 +109,15 @@ public interface IMessage
     /// <summary>
     /// The publish time of the message as an UTC DateTime.
     /// </summary>
-    public DateTime PublishTimeAsDateTime { get; }
+    DateTime PublishTimeAsDateTime { get; }
 
     /// <summary>
     /// The publish time of the message as a DateTimeOffset with an offset of 0.
     /// </summary>
-    public DateTimeOffset PublishTimeAsDateTimeOffset { get; }
+    DateTimeOffset PublishTimeAsDateTimeOffset { get; }
 
     /// <summary>
     /// The properties of the message.
     /// </summary>
-    public IReadOnlyDictionary<string, string> Properties { get; }
+    IReadOnlyDictionary<string, string> Properties { get; }
 }

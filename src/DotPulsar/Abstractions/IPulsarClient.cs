@@ -37,5 +37,5 @@ public interface IPulsarClient : IAsyncDisposable
     /// <summary>
     /// The client's service url.
     /// </summary>
-    public Uri ServiceUrl { get; }
+    Uri ServiceUrl { get; }
 }

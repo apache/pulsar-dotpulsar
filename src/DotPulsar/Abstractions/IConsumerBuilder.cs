@@ -62,7 +62,7 @@ public interface IConsumerBuilder<TMessage>
     /// <summary>
     /// Add/Set a property key/value on the subscription. This is optional.
     /// </summary>
-    public IConsumerBuilder<TMessage> SubscriptionProperty(string key, string value);
+    IConsumerBuilder<TMessage> SubscriptionProperty(string key, string value);
 
     /// <summary>
     /// Set the subscription type for this consumer. The default is 'Exclusive'.

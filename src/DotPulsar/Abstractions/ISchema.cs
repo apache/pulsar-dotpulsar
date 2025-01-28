@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,15 +24,15 @@ public interface ISchema<T>
     /// <summary>
     /// Decode the raw bytes.
     /// </summary>
-    public T Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null);
+    T Decode(ReadOnlySequence<byte> bytes, byte[]? schemaVersion = null);
 
     /// <summary>
     /// Encode the message.
     /// </summary>
-    public ReadOnlySequence<byte> Encode(T message);
+    ReadOnlySequence<byte> Encode(T message);
 
     /// <summary>
     /// The schema info.
     /// </summary>
-    public SchemaInfo SchemaInfo { get; }
+    SchemaInfo SchemaInfo { get; }
 }
