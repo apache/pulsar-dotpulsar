@@ -22,7 +22,8 @@ using DotPulsar.Internal.PulsarApi;
 
 public sealed class Consumer<TMessage> : IConsumer<TMessage>
 {
-    private readonly TaskCompletionSource<IMessage<TMessage>> _emptyTaskCompletionSource;
+    private readonly TaskCompletionSource<IMessage<TMessage>> _emptyReceiveTaskCompletionSource;
+    private readonly TaskCompletionSource<IMessage<TMessage>> _emptyPeekTaskCompletionSource;
     private readonly IConnectionPool _connectionPool;
     private readonly ProcessManager _processManager;
     private readonly StateManager<ConsumerState> _state;
@@ -38,6 +39,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     private bool _isPartitionedTopic;
     private int _numberOfPartitions;
     private Task<IMessage<TMessage>>[] _receiveTasks;
+    private Task<IMessage<TMessage>>[] _peekTasks;
     private int _subConsumerIndex;
     private Exception? _faultException;
 
@@ -60,6 +62,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         SubscriptionType = consumerOptions.SubscriptionType;
         Topic = consumerOptions.Topic;
         _receiveTasks = Array.Empty<Task<IMessage<TMessage>>>();
+        _peekTasks = Array.Empty<Task<IMessage<TMessage>>>();
         _cts = new CancellationTokenSource();
         _exceptionHandler = exceptionHandler;
         _semaphoreSlim = new SemaphoreSlim(1);
@@ -73,7 +76,8 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         _isDisposed = 0;
         _subConsumers = Array.Empty<SubConsumer<TMessage>>();
 
-        _emptyTaskCompletionSource = new TaskCompletionSource<IMessage<TMessage>>();
+        _emptyReceiveTaskCompletionSource = new TaskCompletionSource<IMessage<TMessage>>();
+        _emptyPeekTaskCompletionSource = new TaskCompletionSource<IMessage<TMessage>>();
 
         _ = Setup();
     }
@@ -102,6 +106,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         _isPartitionedTopic = _numberOfPartitions != 0;
         var numberOfSubConsumers = _isPartitionedTopic ? _numberOfPartitions : 1;
         _receiveTasks = new Task<IMessage<TMessage>>[numberOfSubConsumers];
+        _peekTasks = new Task<IMessage<TMessage>>[numberOfSubConsumers];
         _subConsumers = new SubConsumer<TMessage>[numberOfSubConsumers];
         var monitoringTasks = new Task<ConsumerState>[numberOfSubConsumers];
         var states = new ConsumerState[numberOfSubConsumers];
@@ -109,7 +114,8 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
         for (var i = 0; i < numberOfSubConsumers; i++)
         {
-            _receiveTasks[i] = _emptyTaskCompletionSource.Task;
+            _receiveTasks[i] = _emptyReceiveTaskCompletionSource.Task;
+            _peekTasks[i] = _emptyPeekTaskCompletionSource.Task;
             var topicName = _isPartitionedTopic ? GetPartitionedTopicName(i) : Topic;
             _subConsumers[i] = CreateSubConsumer(topicName);
             monitoringTasks[i] = _subConsumers[i].State.OnStateChangeFrom(ConsumerState.Disconnected, _cts.Token).AsTask();
@@ -189,7 +195,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
                     _subConsumerIndex = 0;
 
                 var receiveTask = _receiveTasks[_subConsumerIndex];
-                if (receiveTask == _emptyTaskCompletionSource.Task)
+                if (receiveTask == _emptyReceiveTaskCompletionSource.Task)
                 {
                     var receiveTaskValueTask = _subConsumers[_subConsumerIndex].Receive(cancellationToken);
                     if (receiveTaskValueTask.IsCompleted)
@@ -200,13 +206,52 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
                 {
                     if (receiveTask.IsCompleted)
                     {
-                        _receiveTasks[_subConsumerIndex] = _emptyTaskCompletionSource.Task;
+                        _receiveTasks[_subConsumerIndex] = _emptyReceiveTaskCompletionSource.Task;
                         return receiveTask.Result;
                     }
                 }
                 if (iterations == _subConsumers.Length)
                     await Task.WhenAny(_receiveTasks).ConfigureAwait(false);
             }
+    }
+
+    public async ValueTask<IMessage<TMessage>> Peek(CancellationToken cancellationToken = default)
+    {
+        await Guard(cancellationToken).ConfigureAwait(false);
+
+        if (!_isPartitionedTopic)
+            return await _subConsumers[_subConsumerIndex].Peek(cancellationToken).ConfigureAwait(false);
+
+        var iterations = 0;
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            while (true)
+            {
+                iterations++;
+                _subConsumerIndex++;
+                if (_subConsumerIndex == _subConsumers.Length)
+                    _subConsumerIndex = 0;
+
+                var peekTask = _peekTasks[_subConsumerIndex];
+                if (peekTask == _emptyPeekTaskCompletionSource.Task)
+                {
+                    var peekTaskValueTask = _subConsumers[_subConsumerIndex].Peek(cancellationToken);
+                    if (peekTaskValueTask.IsCompleted)
+                        return peekTaskValueTask.Result;
+                    _peekTasks[_subConsumerIndex] = peekTaskValueTask.AsTask();
+                }
+                else
+                {
+                    if (peekTask.IsCompleted)
+                    {
+                        _peekTasks[_subConsumerIndex] = _emptyPeekTaskCompletionSource.Task;
+                        return peekTask.Result;
+                    }
+                }
+                if (iterations == _subConsumers.Length)
+                    await Task.WhenAny(_peekTasks).ConfigureAwait(false);
+            }
+        }
     }
 
     public async ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken)

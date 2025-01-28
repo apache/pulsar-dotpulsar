@@ -17,7 +17,7 @@ namespace DotPulsar.Internal;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Exceptions;
 
-public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
+public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IPeek<T>, IDisposable
 {
     private readonly object _lock;
     private readonly Queue<T> _queue;
@@ -68,6 +68,32 @@ public sealed class AsyncQueue<T> : IEnqueue<T>, IDequeue<T>, IDisposable
 
         node.Value.SetupCancellation(() => Cancel(node), cancellationToken);
         return new ValueTask<T>(node.Value.Task);
+    }
+
+    public bool TryPeek(out T? result)
+    {
+        lock (_lock)
+        {
+            ThrowIfDisposed();
+
+            if (_queue.Count > 0)
+            {
+                try
+                {
+                    // .NetStandard 2.0 does not have Queue.TryPeek()
+                    result = _queue.Peek();
+                    return true;
+                }
+                catch
+                {
+                    result = default;
+                    return false;
+                }
+            }
+        }
+
+        result = default;
+        return false;
     }
 
     public void Dispose()
