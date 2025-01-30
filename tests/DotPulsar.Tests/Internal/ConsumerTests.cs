@@ -146,6 +146,31 @@ public sealed class ConsumerTests : IDisposable
     }
 
     [Fact]
+    public async Task Receive_GivenMultipleTopics_ShouldReceiveAll()
+    {
+        //Arrange
+        const int numberOfMessages = 100;
+        const int partitions = 3;
+
+        var topic = await _fixture.CreateTopic(_cts.Token);
+        var partitionedTopic = await _fixture.CreatePartitionedTopic(partitions, _cts.Token);
+
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, [topic, partitionedTopic]);
+        await using var producer = CreateProducer(client, topic);
+        await using var partitionedProducer = CreateProducer(client, partitionedTopic);
+
+        //Act
+        var produced = new List<MessageId>();
+        produced.AddRange(await ProduceMessages(producer, numberOfMessages, "test-message", _cts.Token));
+        produced.AddRange(await ProduceMessages(partitionedProducer, numberOfMessages, "test-message", _cts.Token));
+        var consumed = await ConsumeMessages(consumer, produced.Count, _cts.Token);
+
+        //Assert
+        consumed.ShouldBe(produced, true);
+    }
+
+    [Fact]
     public async Task Receive_WhenFaultedAfterInvokingReceive_ShouldThrowConsumerFaultedException()
     {
         //Arrange
@@ -335,6 +360,14 @@ public sealed class ConsumerTests : IDisposable
         .InitialPosition(SubscriptionInitialPosition.Earliest)
         .SubscriptionName(CreateSubscriptionName())
         .Topic(topicName)
+        .StateChangedHandler(_testOutputHelper.Log)
+        .Create();
+
+    private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, IEnumerable<string> topics)
+        => pulsarClient.NewConsumer(Schema.String)
+        .InitialPosition(SubscriptionInitialPosition.Earliest)
+        .SubscriptionName(CreateSubscriptionName())
+        .Topics(topics)
         .StateChangedHandler(_testOutputHelper.Log)
         .Create();
 

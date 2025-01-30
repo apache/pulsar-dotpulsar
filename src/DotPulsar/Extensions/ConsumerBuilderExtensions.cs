@@ -57,4 +57,15 @@ public static class ConsumerBuilderExtensions
         builder.StateChangedHandler(new FuncStateChangedHandler<ConsumerStateChanged>(handler, cancellationToken));
         return builder;
     }
+
+    /// <summary>
+    /// Set the topics for this consumer. This, or setting a single topic, is required.
+    /// </summary>
+    public static IConsumerBuilder<TMessage> Topics<TMessage>(
+        this IConsumerBuilder<TMessage> builder,
+        params string[] topics)
+    {
+        builder.Topics(topics);
+        return builder;
+    }
 }

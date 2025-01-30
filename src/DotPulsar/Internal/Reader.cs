@@ -177,6 +177,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
 
         var iterations = 0;
         using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
             while (true)
             {
                 iterations++;
@@ -203,6 +204,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
                 if (iterations == _subReaders.Length)
                     await Task.WhenAny(_receiveTasks).ConfigureAwait(false);
             }
+        }
     }
 
     public async ValueTask Seek(MessageId messageId, CancellationToken cancellationToken)

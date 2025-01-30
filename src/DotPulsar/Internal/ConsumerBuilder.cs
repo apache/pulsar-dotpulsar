@@ -30,7 +30,8 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
     private string? _subscriptionName;
     private readonly Dictionary<string, string> _subscriptionProperties;
     private SubscriptionType _subscriptionType;
-    private string? _topic;
+    private string _topic;
+    private readonly HashSet<string> _topics;
     private IHandleStateChanged<ConsumerStateChanged>? _stateChangedHandler;
 
     public ConsumerBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
@@ -44,6 +45,8 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
         _replicateSubscriptionState = ConsumerOptions<TMessage>.DefaultReplicateSubscriptionState;
         _subscriptionProperties = [];
         _subscriptionType = ConsumerOptions<TMessage>.DefaultSubscriptionType;
+        _topic = string.Empty;
+        _topics = [];
     }
 
     public IConsumerBuilder<TMessage> ConsumerName(string name)
@@ -112,15 +115,27 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
         return this;
     }
 
+    public IConsumerBuilder<TMessage> Topics(IEnumerable<string> topics)
+    {
+        _topics.Clear();
+
+        foreach (var topic in topics)
+        {
+            _topics.Add(topic);
+        }
+
+        return this;
+    }
+
     public IConsumer<TMessage> Create()
     {
         if (string.IsNullOrEmpty(_subscriptionName))
             throw new ConfigurationException("SubscriptionName may not be null or empty");
 
-        if (string.IsNullOrEmpty(_topic))
-            throw new ConfigurationException("Topic may not be null or empty");
+        if (string.IsNullOrEmpty(_topic) && _topics.Count == 0)
+            throw new ConfigurationException("A 'Topic' or multiple 'Topics' must be set");
 
-        var options = new ConsumerOptions<TMessage>(_subscriptionName!, _topic!, _schema)
+        var options = new ConsumerOptions<TMessage>(_subscriptionName!, _topic, _schema)
         {
             ConsumerName = _consumerName,
             InitialPosition = _initialPosition,
@@ -130,7 +145,8 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
             ReplicateSubscriptionState = _replicateSubscriptionState,
             StateChangedHandler = _stateChangedHandler,
             SubscriptionProperties = _subscriptionProperties,
-            SubscriptionType = _subscriptionType
+            SubscriptionType = _subscriptionType,
+            Topics = _topics
         };
 
         return _pulsarClient.CreateConsumer(options);

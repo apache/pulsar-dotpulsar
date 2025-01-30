@@ -51,10 +51,9 @@ public sealed class ConsumerOptions<TMessage>
     /// </summary>
     public static readonly SubscriptionType DefaultSubscriptionType = SubscriptionType.Exclusive;
 
-    /// <summary>
-    /// Initializes a new instance using the specified subscription name and topic.
-    /// </summary>
-    public ConsumerOptions(string subscriptionName, string topic, ISchema<TMessage> schema)
+    private readonly HashSet<string> _topics;
+
+    private ConsumerOptions(string subscriptionName, ISchema<TMessage> schema, string topic, IEnumerable<string> topics)
     {
         InitialPosition = DefaultInitialPosition;
         PriorityLevel = DefaultPriorityLevel;
@@ -64,9 +63,26 @@ public sealed class ConsumerOptions<TMessage>
         SubscriptionType = DefaultSubscriptionType;
         SubscriptionProperties = [];
         SubscriptionName = subscriptionName;
-        Topic = topic;
         Schema = schema;
+        Topic = topic;
+        _topics = [];
+        foreach (var t in topics)
+        {
+            _topics.Add(t);
+        }
     }
+
+    /// <summary>
+    /// Initializes a new instance using the specified subscription name, topic and schema.
+    /// </summary>
+    public ConsumerOptions(string subscriptionName, string topic, ISchema<TMessage> schema)
+        : this (subscriptionName, schema, topic, Array.Empty<string>()) { }
+
+    /// <summary>
+    /// Initializes a new instance using the specified subscription name, topics and schema.
+    /// </summary>
+    public ConsumerOptions(string subscriptionName, IEnumerable<string> topics, ISchema<TMessage> schema)
+        : this(subscriptionName, schema, string.Empty, topics) { }
 
     /// <summary>
     /// Set the consumer name. This is optional.
@@ -124,7 +140,24 @@ public sealed class ConsumerOptions<TMessage>
     public SubscriptionType SubscriptionType { get; set; }
 
     /// <summary>
-    /// Set the topic for this consumer. This is required.
+    /// Set the topic for this consumer. This, or setting multiple topics, is required.
     /// </summary>
     public string Topic { get; set; }
+
+    /// <summary>
+    /// Set the topics for this consumer. This, or setting a single topic, is required.
+    /// </summary>
+    public IEnumerable<string> Topics
+    {
+        get => _topics;
+        set
+        {
+            _topics.Clear();
+
+            foreach (var topic in value)
+            {
+                _topics.Add(topic);
+            }
+        }
+    }
 }

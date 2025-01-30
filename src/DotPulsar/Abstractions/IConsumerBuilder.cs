@@ -70,9 +70,14 @@ public interface IConsumerBuilder<TMessage>
     IConsumerBuilder<TMessage> SubscriptionType(SubscriptionType type);
 
     /// <summary>
-    /// Set the topic for this consumer. This is required.
+    /// Set the topic for this consumer. This, or setting multiple topics, is required.
     /// </summary>
     IConsumerBuilder<TMessage> Topic(string topic);
+
+    /// <summary>
+    /// Set the topics for this consumer. This, or setting a single topic, is required.
+    /// </summary>
+    IConsumerBuilder<TMessage> Topics(IEnumerable<string> topics);
 
     /// <summary>
     /// Create the consumer.

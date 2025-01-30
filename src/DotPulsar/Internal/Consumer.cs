@@ -16,13 +16,13 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
+using DotPulsar.Extensions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Compression;
 using DotPulsar.Internal.PulsarApi;
 
 public sealed class Consumer<TMessage> : IConsumer<TMessage>
 {
-    private readonly TaskCompletionSource<IMessage<TMessage>> _emptyTaskCompletionSource;
     private readonly IConnectionPool _connectionPool;
     private readonly ProcessManager _processManager;
     private readonly StateManager<ConsumerState> _state;
@@ -32,13 +32,13 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     private readonly IExecute _executor;
     private readonly SemaphoreSlim _semaphoreSlim;
     private readonly AsyncLock _lock;
-    private SubConsumer<TMessage>[] _subConsumers;
+    private readonly Dictionary<string, SubConsumer<TMessage>> _subConsumers;
+    private readonly LinkedList<Task<IMessage<TMessage>>> _receiveTasks;
+    private Dictionary<string, SubConsumer<TMessage>>.Enumerator _receiveEnumerator;
+    private SubConsumer<TMessage>? _singleSubConsumer;
     private bool _allSubConsumersAreReady;
     private int _isDisposed;
-    private bool _isPartitionedTopic;
-    private int _numberOfPartitions;
-    private Task<IMessage<TMessage>>[] _receiveTasks;
-    private int _subConsumerIndex;
+    private int _numberOfSubConsumers;
     private Exception? _faultException;
 
     public Uri ServiceUrl { get; }
@@ -58,8 +58,11 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         ServiceUrl = serviceUrl;
         SubscriptionName = consumerOptions.SubscriptionName;
         SubscriptionType = consumerOptions.SubscriptionType;
-        Topic = consumerOptions.Topic;
-        _receiveTasks = Array.Empty<Task<IMessage<TMessage>>>();
+        if (!string.IsNullOrEmpty(consumerOptions.Topic))
+            Topic = consumerOptions.Topic;
+        else
+            Topic = string.Join(",", consumerOptions.Topics);
+        _receiveTasks = [];
         _cts = new CancellationTokenSource();
         _exceptionHandler = exceptionHandler;
         _semaphoreSlim = new SemaphoreSlim(1);
@@ -68,12 +71,11 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         _consumerOptions = consumerOptions;
         _connectionPool = connectionPool;
         _exceptionHandler = exceptionHandler;
-        _isPartitionedTopic = false;
         _allSubConsumersAreReady = false;
         _isDisposed = 0;
-        _subConsumers = Array.Empty<SubConsumer<TMessage>>();
-
-        _emptyTaskCompletionSource = new TaskCompletionSource<IMessage<TMessage>>();
+        _subConsumers = [];
+        _receiveEnumerator = _subConsumers.GetEnumerator();
+        _singleSubConsumer = null;
 
         _ = Setup();
     }
@@ -98,42 +100,62 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
     private async Task Monitor()
     {
-        _numberOfPartitions = Convert.ToInt32(await _connectionPool.GetNumberOfPartitions(Topic, _cts.Token).ConfigureAwait(false));
-        _isPartitionedTopic = _numberOfPartitions != 0;
-        var numberOfSubConsumers = _isPartitionedTopic ? _numberOfPartitions : 1;
-        _receiveTasks = new Task<IMessage<TMessage>>[numberOfSubConsumers];
-        _subConsumers = new SubConsumer<TMessage>[numberOfSubConsumers];
-        var monitoringTasks = new Task<ConsumerState>[numberOfSubConsumers];
-        var states = new ConsumerState[numberOfSubConsumers];
-        _subConsumerIndex = _isPartitionedTopic ? -1 : 0;
+        var userDefinedTopics = new List<string>(_consumerOptions.Topics);
+        if (!string.IsNullOrEmpty(_consumerOptions.Topic))
+            userDefinedTopics.Add(_consumerOptions.Topic);
 
-        for (var i = 0; i < numberOfSubConsumers; i++)
+        var topics = new List<string>();
+        foreach (var topic in userDefinedTopics)
         {
-            _receiveTasks[i] = _emptyTaskCompletionSource.Task;
-            var topicName = _isPartitionedTopic ? GetPartitionedTopicName(i) : Topic;
-            _subConsumers[i] = CreateSubConsumer(topicName);
-            monitoringTasks[i] = _subConsumers[i].State.OnStateChangeFrom(ConsumerState.Disconnected, _cts.Token).AsTask();
+            var numberOfPartitions = await _connectionPool.GetNumberOfPartitions(topic, _cts.Token).ConfigureAwait(false);
+            if (numberOfPartitions == 0)
+            {
+                topics.Add(topic);
+                continue;
+            }
+            
+            for (var i = 0; i < numberOfPartitions; ++i)
+            {
+                topics.Add(GetPartitionedTopicName(topic, i));
+            }
         }
 
-        _allSubConsumersAreReady = true;
+        _numberOfSubConsumers = topics.Count;
+        var monitoringTasks = new Task<ConsumerStateChanged>[_numberOfSubConsumers];
+        var states = new ConsumerState[_numberOfSubConsumers];
+
+        for (var i = 0; i < _numberOfSubConsumers; ++i)
+        {
+            var topic = topics[i];
+            var subConsumer = CreateSubConsumer(topic);
+            _subConsumers[topic] = subConsumer;
+            monitoringTasks[i] = subConsumer.StateChangedFrom(ConsumerState.Disconnected, _cts.Token).AsTask();
+        }
+
+        if (_numberOfSubConsumers == 1)
+            _singleSubConsumer = _subConsumers.First().Value;
+
+        _receiveEnumerator = _subConsumers.GetEnumerator();
+        _receiveEnumerator.MoveNext();_allSubConsumersAreReady = true;
         _semaphoreSlim.Release();
 
         while (true)
         {
             await Task.WhenAny(monitoringTasks).ConfigureAwait(false);
 
-            for (var i = 0; i < numberOfSubConsumers; ++i)
+            for (var i = 0; i < _numberOfSubConsumers; ++i)
             {
                 var task = monitoringTasks[i];
                 if (!task.IsCompleted)
                     continue;
 
-                var state = task.Result;
+                var consumerStateChanged = task.Result;
+                var state = consumerStateChanged.ConsumerState;
                 states[i] = state;
-                monitoringTasks[i] = _subConsumers[i].State.OnStateChangeFrom(state, _cts.Token).AsTask();
+                monitoringTasks[i] = consumerStateChanged.Consumer.StateChangedFrom(state, _cts.Token).AsTask();
             }
 
-            if (!_isPartitionedTopic)
+            if (_singleSubConsumer is not null)
                 _state.SetState(states[0]);
             else if (states.Any(x => x == ConsumerState.Faulted))
                 _state.SetState(ConsumerState.Faulted);
@@ -164,8 +186,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
         foreach (var subConsumer in _subConsumers)
         {
-            if (subConsumer is not null)
-                await subConsumer.DisposeAsync().ConfigureAwait(false);
+            await subConsumer.Value.DisposeAsync().ConfigureAwait(false);
         }
 
         await _lock.DisposeAsync().ConfigureAwait(false);
@@ -176,60 +197,77 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitionedTopic)
-            return await _subConsumers[_subConsumerIndex].Receive(cancellationToken).ConfigureAwait(false);
+        if (_singleSubConsumer is not null)
+            return await _singleSubConsumer.Receive(cancellationToken).ConfigureAwait(false);
 
-        var iterations = 0;
         using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            var startTopic = string.Empty;
+
             while (true)
             {
-                iterations++;
-                _subConsumerIndex++;
-                if (_subConsumerIndex == _subConsumers.Length)
-                    _subConsumerIndex = 0;
-
-                var receiveTask = _receiveTasks[_subConsumerIndex];
-                if (receiveTask == _emptyTaskCompletionSource.Task)
+                var receiveTaskNode = _receiveTasks.First;
+                while (receiveTaskNode is not null)
                 {
-                    var receiveTaskValueTask = _subConsumers[_subConsumerIndex].Receive(cancellationToken);
-                    if (receiveTaskValueTask.IsCompleted)
-                        return receiveTaskValueTask.Result;
-                    _receiveTasks[_subConsumerIndex] = receiveTaskValueTask.AsTask();
-                }
-                else
-                {
-                    if (receiveTask.IsCompleted)
+                    if (receiveTaskNode.Value.IsCompleted)
                     {
-                        _receiveTasks[_subConsumerIndex] = _emptyTaskCompletionSource.Task;
-                        return receiveTask.Result;
+                        _receiveTasks.Remove(receiveTaskNode);
+                        return receiveTaskNode.Value.Result;
                     }
+                    receiveTaskNode = receiveTaskNode.Next;
                 }
-                if (iterations == _subConsumers.Length)
+
+                if (_receiveEnumerator.Current.Key is not null)
+                    startTopic = _receiveEnumerator.Current.Key;
+
+                if (!_receiveEnumerator.MoveNext())
+                {
+                    _receiveEnumerator = _subConsumers.GetEnumerator();
+                    _receiveEnumerator.MoveNext();
+                }
+
+                var subConsumer = _receiveEnumerator.Current;
+
+                var receiveTask = subConsumer.Value.Receive(_cts.Token);
+                if (receiveTask.IsCompleted)
+                    return receiveTask.Result;
+
+                _receiveTasks.AddLast(receiveTask.AsTask());
+
+                if (startTopic == subConsumer.Key)
+                {
+                    var tcs = new TaskCompletionSource<IMessage<TMessage>>();
+                    using var registration = cancellationToken.Register(() => tcs.TrySetCanceled());
+                    _receiveTasks.AddLast(tcs.Task);
                     await Task.WhenAny(_receiveTasks).ConfigureAwait(false);
+                    _receiveTasks.RemoveLast();
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
             }
+        }
     }
 
     public async ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken)
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitionedTopic)
-            await _subConsumers[_subConsumerIndex].Acknowledge(messageId, cancellationToken).ConfigureAwait(false);
+        if (_singleSubConsumer is not null)
+            await _singleSubConsumer.Acknowledge(messageId, cancellationToken).ConfigureAwait(false);
         else
-            await _subConsumers[messageId.Partition].Acknowledge(messageId, cancellationToken).ConfigureAwait(false);
+            await _subConsumers[messageId.Topic].Acknowledge(messageId, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask Acknowledge(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken = default)
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitionedTopic)
+        if (_singleSubConsumer is not null)
         {
-            await _subConsumers[_subConsumerIndex].Acknowledge(messageIds, cancellationToken).ConfigureAwait(false);
+            await _singleSubConsumer.Acknowledge(messageIds, cancellationToken).ConfigureAwait(false);
             return;
         }
 
-        var groupedMessageIds = messageIds.GroupBy(messageIds => messageIds.Partition);
+        var groupedMessageIds = messageIds.GroupBy(messageIds => messageIds.Topic);
         var acknowledgeTasks = new List<Task>();
         foreach (var group in groupedMessageIds)
         {
@@ -243,23 +281,23 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitionedTopic)
-            await _subConsumers[_subConsumerIndex].AcknowledgeCumulative(messageId, cancellationToken).ConfigureAwait(false);
+        if (_singleSubConsumer is not null)
+            await _singleSubConsumer.AcknowledgeCumulative(messageId, cancellationToken).ConfigureAwait(false);
         else
-            await _subConsumers[messageId.Partition].AcknowledgeCumulative(messageId, cancellationToken).ConfigureAwait(false);
+            await _subConsumers[messageId.Topic].AcknowledgeCumulative(messageId, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken)
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitionedTopic)
+        if (_singleSubConsumer is not null)
         {
-            await _subConsumers[_subConsumerIndex].RedeliverUnacknowledgedMessages(messageIds, cancellationToken).ConfigureAwait(false);
+            await _singleSubConsumer.RedeliverUnacknowledgedMessages(messageIds, cancellationToken).ConfigureAwait(false);
             return;
         }
 
-        var groupedMessageIds = messageIds.GroupBy(messageIds => messageIds.Partition);
+        var groupedMessageIds = messageIds.GroupBy(messageIds => messageIds.Topic);
         var redeliverTasks = new List<Task>();
         foreach (var group in groupedMessageIds)
         {
@@ -272,16 +310,16 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitionedTopic)
+        if (_singleSubConsumer is not null)
         {
-            await _subConsumers[_subConsumerIndex].RedeliverUnacknowledgedMessages(cancellationToken).ConfigureAwait(false);
+            await _singleSubConsumer.RedeliverUnacknowledgedMessages(cancellationToken).ConfigureAwait(false);
             return;
         }
 
-        var redeliverTasks = new List<Task>(_numberOfPartitions);
+        var redeliverTasks = new List<Task>(_numberOfSubConsumers);
         foreach (var subConsumer in _subConsumers)
         {
-            redeliverTasks.Add(subConsumer.RedeliverUnacknowledgedMessages(cancellationToken).AsTask());
+            redeliverTasks.Add(subConsumer.Value.RedeliverUnacknowledgedMessages(cancellationToken).AsTask());
         }
         await Task.WhenAll(redeliverTasks).ConfigureAwait(false);
     }
@@ -290,16 +328,16 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitionedTopic)
+        if (_singleSubConsumer is not null)
         {
-            await _subConsumers[_subConsumerIndex].Unsubscribe(cancellationToken).ConfigureAwait(false);
+            await _singleSubConsumer.Unsubscribe(cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            var unsubscribeTasks = new List<Task>(_numberOfPartitions);
+            var unsubscribeTasks = new List<Task>(_numberOfSubConsumers);
             foreach (var subConsumer in _subConsumers)
             {
-                var getLastMessageIdTask = subConsumer.Unsubscribe(cancellationToken);
+                var getLastMessageIdTask = subConsumer.Value.Unsubscribe(cancellationToken);
                 unsubscribeTasks.Add(getLastMessageIdTask.AsTask());
             }
 
@@ -313,16 +351,16 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitionedTopic)
+        if (_singleSubConsumer is not null)
         {
-            await _subConsumers[_subConsumerIndex].Seek(messageId, cancellationToken).ConfigureAwait(false);
+            await _singleSubConsumer.Seek(messageId, cancellationToken).ConfigureAwait(false);
             return;
         }
 
-        var seekTasks = new List<Task>(_numberOfPartitions);
+        var seekTasks = new List<Task>(_numberOfSubConsumers);
         foreach (var subConsumer in _subConsumers)
         {
-            var getLastMessageIdTask = subConsumer.Seek(messageId, cancellationToken);
+            var getLastMessageIdTask = subConsumer.Value.Seek(messageId, cancellationToken);
             seekTasks.Add(getLastMessageIdTask.AsTask());
         }
         await Task.WhenAll(seekTasks).ConfigureAwait(false);
@@ -332,16 +370,16 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitionedTopic)
+        if (_singleSubConsumer is not null)
         {
-            await _subConsumers[_subConsumerIndex].Seek(publishTime, cancellationToken).ConfigureAwait(false);
+            await _singleSubConsumer.Seek(publishTime, cancellationToken).ConfigureAwait(false);
             return;
         }
 
-        var seekTasks = new List<Task>(_numberOfPartitions);
+        var seekTasks = new List<Task>(_numberOfSubConsumers);
         foreach (var subConsumer in _subConsumers)
         {
-            var getLastMessageIdTask = subConsumer.Seek(publishTime, cancellationToken);
+            var getLastMessageIdTask = subConsumer.Value.Seek(publishTime, cancellationToken);
             seekTasks.Add(getLastMessageIdTask.AsTask());
         }
         await Task.WhenAll(seekTasks).ConfigureAwait(false);
@@ -351,14 +389,14 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     {
         await Guard(cancellationToken).ConfigureAwait(false);
 
-        if (!_isPartitionedTopic)
-            return [await _subConsumers[_subConsumerIndex].GetLastMessageId(cancellationToken).ConfigureAwait(false)];
+        if (_singleSubConsumer is not null)
+            return [await _singleSubConsumer.GetLastMessageId(cancellationToken).ConfigureAwait(false)];
 
-        var getLastMessageIdsTasks = new List<Task<MessageId>>(_numberOfPartitions);
+        var getLastMessageIdsTasks = new List<Task<MessageId>>(_numberOfSubConsumers);
 
         foreach (var subConsumer in _subConsumers)
         {
-            var getLastMessageIdTask = subConsumer.GetLastMessageId(cancellationToken);
+            var getLastMessageIdTask = subConsumer.Value.GetLastMessageId(cancellationToken);
             getLastMessageIdsTasks.Add(getLastMessageIdTask.AsTask());
         }
 
@@ -367,7 +405,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
         //collect MessageIds
         var messageIds = new List<MessageId>();
-        for (var i = 0; i < _subConsumers.Length; i++)
+        for (var i = 0; i < _subConsumers.Count; i++)
         {
             messageIds.Add(getLastMessageIdsTasks[i].Result);
         }
@@ -412,7 +450,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         return subConsumer;
     }
 
-    private string GetPartitionedTopicName(int partitionNumber) => $"{Topic}-partition-{partitionNumber}";
+    private string GetPartitionedTopicName(string topic, int partitionNumber) => $"{topic}-partition-{partitionNumber}";
 
     private static StateManager<ConsumerState> CreateStateManager()
         => new(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);
