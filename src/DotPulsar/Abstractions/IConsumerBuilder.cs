@@ -14,6 +14,8 @@
 
 namespace DotPulsar.Abstractions;
 
+using System.Text.RegularExpressions;
+
 /// <summary>
 /// A consumer building abstraction.
 /// </summary>
@@ -45,6 +47,11 @@ public interface IConsumerBuilder<TMessage>
     IConsumerBuilder<TMessage> ReadCompacted(bool readCompacted);
 
     /// <summary>
+    /// Determines which topics this consumer should be subscribed to - Persistent, Non-Persistent, or both. The default is 'Persistent'.
+    /// </summary>
+    IConsumerBuilder<TMessage> RegexSubscriptionMode(RegexSubscriptionMode regexSubscriptionMode);
+
+    /// <summary>
     /// Whether to replicate the subscription's state across clusters (when using geo-replication). The default is 'false'.
     /// </summary>
     IConsumerBuilder<TMessage> ReplicateSubscriptionState(bool replicateSubscriptionState);
@@ -70,14 +77,19 @@ public interface IConsumerBuilder<TMessage>
     IConsumerBuilder<TMessage> SubscriptionType(SubscriptionType type);
 
     /// <summary>
-    /// Set the topic for this consumer. This, or setting multiple topics, is required.
+    /// Set the topic for this consumer. This, or setting multiple topics or a topic pattern, is required.
     /// </summary>
     IConsumerBuilder<TMessage> Topic(string topic);
 
     /// <summary>
-    /// Set the topics for this consumer. This, or setting a single topic, is required.
+    /// Set the topics for this consumer. This, or setting a single topic or a topic pattern, is required.
     /// </summary>
     IConsumerBuilder<TMessage> Topics(IEnumerable<string> topics);
+
+    /// <summary>
+    /// Specify a pattern for topics that this consumer subscribes to. This, or setting a single topic or multiple topics, is required.
+    /// </summary>
+    IConsumerBuilder<TMessage> TopicsPattern(Regex topicsPattern);
 
     /// <summary>
     /// Create the consumer.

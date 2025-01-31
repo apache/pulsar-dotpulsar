@@ -12,15 +12,25 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions;
+namespace DotPulsar;
 
-using System.Text.RegularExpressions;
-
-public interface IConnectionPool : IAsyncDisposable
+/// <summary>
+/// When subscribing to topics using a regular expression, one can specify to only pick a certain type of topics.
+/// </summary>
+public enum RegexSubscriptionMode : byte
 {
-    ValueTask<IConnection> FindConnectionForTopic(string topic, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Only subscribe to persistent topics.
+    /// </summary>
+    Persistent = 0,
 
-    ValueTask<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Only subscribe to non-persistent topics.
+    /// </summary>
+    NonPersistent = 1,
 
-    ValueTask<IEnumerable<string>> GetTopicsOfNamespace(RegexSubscriptionMode mode, Regex topicsPattern, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Subscribe to both persistent and non-persistent topics.
+    /// </summary>
+    All = 2,
 }

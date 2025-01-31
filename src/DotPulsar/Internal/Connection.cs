@@ -296,6 +296,22 @@ public sealed class Connection : IConnection
         return await responseTask.ConfigureAwait(false);
     }
 
+    public async Task<BaseCommand> Send(CommandGetTopicsOfNamespace command, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        Task<BaseCommand>? responseTask;
+
+        using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
+        {
+            responseTask = _channelManager.Outgoing(command);
+            var sequence = Serializer.Serialize(command.AsBaseCommand());
+            await _stream.Send(sequence).ConfigureAwait(false);
+        }
+
+        return await responseTask.ConfigureAwait(false);
+    }
+
     private async Task Send(BaseCommand command, CancellationToken cancellationToken)
     {
         ThrowIfDisposed();

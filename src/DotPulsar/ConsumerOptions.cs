@@ -15,6 +15,7 @@
 namespace DotPulsar;
 
 using DotPulsar.Abstractions;
+using System.Text.RegularExpressions;
 
 /// <summary>
 /// The consumer building options.
@@ -42,6 +43,11 @@ public sealed class ConsumerOptions<TMessage>
     public static readonly bool DefaultReadCompacted = false;
 
     /// <summary>
+    /// The default regex subscription mode.
+    /// </summary>
+    public static readonly RegexSubscriptionMode DefaultRegexSubscriptionMode = DotPulsar.RegexSubscriptionMode.Persistent;
+
+    /// <summary>
     /// The default of whether to replicate the subscription's state.
     /// </summary>
     public static readonly bool DefaultReplicateSubscriptionState = false;
@@ -53,12 +59,13 @@ public sealed class ConsumerOptions<TMessage>
 
     private readonly HashSet<string> _topics;
 
-    private ConsumerOptions(string subscriptionName, ISchema<TMessage> schema, string topic, IEnumerable<string> topics)
+    private ConsumerOptions(string subscriptionName, ISchema<TMessage> schema, string topic, Regex? topicsPattern, IEnumerable<string> topics)
     {
         InitialPosition = DefaultInitialPosition;
         PriorityLevel = DefaultPriorityLevel;
         MessagePrefetchCount = DefaultMessagePrefetchCount;
         ReadCompacted = DefaultReadCompacted;
+        RegexSubscriptionMode = DefaultRegexSubscriptionMode;
         ReplicateSubscriptionState = DefaultReplicateSubscriptionState;
         SubscriptionType = DefaultSubscriptionType;
         SubscriptionProperties = [];
@@ -70,19 +77,26 @@ public sealed class ConsumerOptions<TMessage>
         {
             _topics.Add(t);
         }
+        TopicsPattern = topicsPattern;
     }
 
     /// <summary>
     /// Initializes a new instance using the specified subscription name, topic and schema.
     /// </summary>
     public ConsumerOptions(string subscriptionName, string topic, ISchema<TMessage> schema)
-        : this (subscriptionName, schema, topic, Array.Empty<string>()) { }
+        : this (subscriptionName, schema, topic, null, Array.Empty<string>()) { }
 
     /// <summary>
     /// Initializes a new instance using the specified subscription name, topics and schema.
     /// </summary>
     public ConsumerOptions(string subscriptionName, IEnumerable<string> topics, ISchema<TMessage> schema)
-        : this(subscriptionName, schema, string.Empty, topics) { }
+        : this(subscriptionName, schema, string.Empty, null, topics) { }
+
+    /// <summary>
+    /// Initializes a new instance using the specified subscription name, topics pattern and schema.
+    /// </summary>
+    public ConsumerOptions(string subscriptionName, Regex topicsPattern, ISchema<TMessage> schema)
+        : this(subscriptionName, schema, string.Empty, topicsPattern, Array.Empty<string>()) { }
 
     /// <summary>
     /// Set the consumer name. This is optional.
@@ -108,6 +122,11 @@ public sealed class ConsumerOptions<TMessage>
     /// Whether to read from the compacted topic. The default is 'false'.
     /// </summary>
     public bool ReadCompacted { get; set; }
+
+    /// <summary>
+    /// Determines which topics this consumer should be subscribed to - Persistent, Non-Persistent, or both. The default is 'Persistent'.
+    /// </summary>
+    public RegexSubscriptionMode RegexSubscriptionMode { get; set; }
 
     /// <summary>
     /// Whether to replicate the subscription's state across clusters (when using geo-replication). The default is 'false'.
@@ -140,12 +159,12 @@ public sealed class ConsumerOptions<TMessage>
     public SubscriptionType SubscriptionType { get; set; }
 
     /// <summary>
-    /// Set the topic for this consumer. This, or setting multiple topics, is required.
+    /// Set the topic for this consumer. This, or setting multiple topics or a topic pattern, is required.
     /// </summary>
     public string Topic { get; set; }
 
     /// <summary>
-    /// Set the topics for this consumer. This, or setting a single topic, is required.
+    /// Set the topics for this consumer. This, or setting a single topic or a topic pattern, is required.
     /// </summary>
     public IEnumerable<string> Topics
     {
@@ -160,4 +179,9 @@ public sealed class ConsumerOptions<TMessage>
             }
         }
     }
+
+    /// <summary>
+    /// Specify a pattern for topics that this consumer subscribes to. This, or setting a single topic or multiple topics, is required.
+    /// </summary>
+    public Regex? TopicsPattern { get; set; }
 }

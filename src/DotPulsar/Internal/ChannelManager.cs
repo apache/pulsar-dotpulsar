@@ -171,6 +171,9 @@ public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposa
     public Task<BaseCommand> Outgoing(CommandPartitionedTopicMetadata command)
         => _requestResponseHandler.Outgoing(command);
 
+    public Task<BaseCommand> Outgoing(CommandGetTopicsOfNamespace command)
+        => _requestResponseHandler.Outgoing(command);
+
     public Task<BaseCommand> Outgoing(CommandSeek command)
     {
         using (TakeConsumerSenderLock(command.ConsumerId))

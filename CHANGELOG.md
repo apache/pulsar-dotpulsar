@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Added
 
-- Multi-topic subscriptions
+- Support for multi-topic subscriptions given either a list of topics and/or a topics pattern
 
 ### Changed
 

@@ -136,6 +136,14 @@ public class IntegrationFixture : IAsyncLifetime
         return topic;
     }
 
+    public async Task CreateTopics(IEnumerable<string> topics, CancellationToken cancellationToken)
+    {
+        foreach (var topic in topics)
+        {
+            await CreateTopic(topic, cancellationToken);
+        }
+    }
+
     public async Task CreateTopic(string topic, CancellationToken cancellationToken)
     {
         var arguments = $"bin/pulsar-admin topics create {topic}";

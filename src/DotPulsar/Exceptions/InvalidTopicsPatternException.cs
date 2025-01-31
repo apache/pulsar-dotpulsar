@@ -12,15 +12,12 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Internal.Abstractions;
+namespace DotPulsar.Exceptions;
 
-using System.Text.RegularExpressions;
-
-public interface IConnectionPool : IAsyncDisposable
+/// <summary>
+/// The topics pattern is not valid
+/// </summary>
+public sealed class InvalidTopicsPatternException : DotPulsarException
 {
-    ValueTask<IConnection> FindConnectionForTopic(string topic, CancellationToken cancellationToken = default);
-
-    ValueTask<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken = default);
-
-    ValueTask<IEnumerable<string>> GetTopicsOfNamespace(RegexSubscriptionMode mode, Regex topicsPattern, CancellationToken cancellationToken = default);
+    public InvalidTopicsPatternException(string message) : base(message) { }
 }

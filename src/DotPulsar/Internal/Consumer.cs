@@ -29,7 +29,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     private readonly ConsumerOptions<TMessage> _consumerOptions;
     private readonly CancellationTokenSource _cts;
     private readonly IHandleException _exceptionHandler;
-    private readonly IExecute _executor;
+    private readonly Executor _executor;
     private readonly SemaphoreSlim _semaphoreSlim;
     private readonly AsyncLock _lock;
     private readonly Dictionary<string, SubConsumer<TMessage>> _subConsumers;
@@ -60,6 +60,8 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         SubscriptionType = consumerOptions.SubscriptionType;
         if (!string.IsNullOrEmpty(consumerOptions.Topic))
             Topic = consumerOptions.Topic;
+        else if (consumerOptions.TopicsPattern is not null)
+            Topic = consumerOptions.TopicsPattern.ToString();
         else
             Topic = string.Join(",", consumerOptions.Topics);
         _receiveTasks = [];
@@ -101,6 +103,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     private async Task Monitor()
     {
         var userDefinedTopics = new List<string>(_consumerOptions.Topics);
+
         if (!string.IsNullOrEmpty(_consumerOptions.Topic))
             userDefinedTopics.Add(_consumerOptions.Topic);
 
@@ -119,6 +122,14 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
                 topics.Add(GetPartitionedTopicName(topic, i));
             }
         }
+
+        if (_consumerOptions.TopicsPattern is not null)
+        {
+            topics.AddRange(await _connectionPool.GetTopicsOfNamespace(_consumerOptions.RegexSubscriptionMode, _consumerOptions.TopicsPattern, _cts.Token).ConfigureAwait(false));
+        }
+
+        if (topics.Count == 0)
+            throw new TopicNotFoundException("No topics were found");
 
         _numberOfSubConsumers = topics.Count;
         var monitoringTasks = new Task<ConsumerStateChanged>[_numberOfSubConsumers];
@@ -450,7 +461,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         return subConsumer;
     }
 
-    private string GetPartitionedTopicName(string topic, int partitionNumber) => $"{topic}-partition-{partitionNumber}";
+    private static string GetPartitionedTopicName(string topic, int partitionNumber) => $"{topic}-partition-{partitionNumber}";
 
     private static StateManager<ConsumerState> CreateStateManager()
         => new(ConsumerState.Disconnected, ConsumerState.Closed, ConsumerState.ReachedEndOfTopic, ConsumerState.Faulted);

@@ -40,6 +40,7 @@ public sealed class RequestResponseHandler : IDisposable
         _getResponseIdentifier.Set(BaseCommand.Type.CloseProducer, cmd => StandardRequest.WithProducerId(cmd.CloseProducer.RequestId, cmd.CloseProducer.ProducerId));
         _getResponseIdentifier.Set(BaseCommand.Type.LookupResponse, cmd => StandardRequest.WithRequestId(cmd.LookupTopicResponse.RequestId));
         _getResponseIdentifier.Set(BaseCommand.Type.PartitionedMetadataResponse, cmd => StandardRequest.WithRequestId(cmd.PartitionMetadataResponse.RequestId));
+        _getResponseIdentifier.Set(BaseCommand.Type.GetTopicsOfNamespaceResponse, cmd => StandardRequest.WithRequestId(cmd.getTopicsOfNamespaceResponse.RequestId));
         _getResponseIdentifier.Set(BaseCommand.Type.GetLastMessageIdResponse, cmd => StandardRequest.WithRequestId(cmd.GetLastMessageIdResponse.RequestId));
         _getResponseIdentifier.Set(BaseCommand.Type.GetOrCreateSchemaResponse, cmd => StandardRequest.WithRequestId(cmd.GetOrCreateSchemaResponse.RequestId));
         _getResponseIdentifier.Set(BaseCommand.Type.Success, cmd => StandardRequest.WithRequestId(cmd.Success.RequestId));
@@ -113,6 +114,12 @@ public sealed class RequestResponseHandler : IDisposable
     }
 
     public Task<BaseCommand> Outgoing(CommandPartitionedTopicMetadata command)
+    {
+        command.RequestId = _requestId.FetchNext();
+        return _requests.CreateTask(StandardRequest.WithRequestId(command.RequestId));
+    }
+
+    public Task<BaseCommand> Outgoing(CommandGetTopicsOfNamespace command)
     {
         command.RequestId = _requestId.FetchNext();
         return _requests.CreateTask(StandardRequest.WithRequestId(command.RequestId));

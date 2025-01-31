@@ -20,6 +20,7 @@ using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
 using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 
 public sealed class ConnectionPool : IConnectionPool
 {
@@ -231,5 +232,53 @@ public sealed class ConnectionPool : IConnectionPool
             response.PartitionMetadataResponse.Throw();
 
         return response.PartitionMetadataResponse.Partitions;
+    }
+
+    public async ValueTask<IEnumerable<string>> GetTopicsOfNamespace(RegexSubscriptionMode mode, Regex topicsPattern, CancellationToken cancellationToken = default)
+    {
+        var topicUriPattern = new Regex(@"^(persistent|non-persistent)://([^/]+)/([^/]+)/(.+)$", RegexOptions.Compiled);
+
+        var patternString = topicsPattern.ToString();
+
+        var match = topicUriPattern.Match(patternString);
+        if (!match.Success)
+            throw new InvalidTopicsPatternException($"The topics pattern '{patternString}' is not valid");
+
+        var persistence = match.Groups[1].Value;
+        var tenant = match.Groups[2].Value;
+        var ns = match.Groups[3].Value;
+
+        if (!string.IsNullOrEmpty(persistence))
+        {
+            if (persistence.Equals("persistent"))
+                mode = RegexSubscriptionMode.Persistent;
+            else
+                mode = RegexSubscriptionMode.NonPersistent;
+        }
+
+        var getTopicsOfNamespace = new CommandGetTopicsOfNamespace
+        {
+            mode = (CommandGetTopicsOfNamespace.Mode) mode,
+            Namespace =$"{tenant}/{ns}",
+            TopicsPattern = patternString
+        };
+
+        var connection = await GetConnection(_serviceUrl, cancellationToken).ConfigureAwait(false);
+        var response = await connection.Send(getTopicsOfNamespace, cancellationToken).ConfigureAwait(false);
+
+        response.Expect(BaseCommand.Type.GetTopicsOfNamespaceResponse);
+
+        if (response.getTopicsOfNamespaceResponse.Filtered)
+            return response.getTopicsOfNamespaceResponse.Topics;
+
+        var topics = new List<string>();
+
+        foreach (var topic in response.getTopicsOfNamespaceResponse.Topics)
+        {
+            if (topicsPattern.Match(topic).Success)
+                topics.Add(topic);
+        }
+
+        return topics;
     }
 }

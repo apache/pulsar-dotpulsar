@@ -17,6 +17,7 @@ namespace DotPulsar.Tests.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
+using System.Text.RegularExpressions;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
@@ -164,6 +165,36 @@ public sealed class ConsumerTests : IDisposable
         var produced = new List<MessageId>();
         produced.AddRange(await ProduceMessages(producer, numberOfMessages, "test-message", _cts.Token));
         produced.AddRange(await ProduceMessages(partitionedProducer, numberOfMessages, "test-message", _cts.Token));
+        var consumed = await ConsumeMessages(consumer, produced.Count, _cts.Token);
+
+        //Assert
+        consumed.ShouldBe(produced, true);
+    }
+
+    [Fact]
+    public async Task Receive_GivenTopicsPattern_ShouldReceiveAll()
+    {
+        //Arrange
+        var match1 = $"persistent://public/default/match-{Guid.NewGuid():N}";
+        var match2 = $"persistent://public/default/match-{Guid.NewGuid():N}";
+        var nomatch1 = $"non-persistent://public/default/match-{Guid.NewGuid():N}";
+        const string nomatch2 = "persistent://public/default/nomatch";
+
+        await _fixture.CreateTopics([match1, match2, nomatch1, nomatch2], _cts.Token);
+
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, new Regex(@"persistent://public/default/match.*"));
+        await using var producer1 = CreateProducer(client, match1);
+        await using var producer2 = CreateProducer(client, match2);
+        await using var producer3 = CreateProducer(client, nomatch1);
+        await using var producer4 = CreateProducer(client, nomatch2);
+
+        //Act
+        var produced = new List<MessageId>();
+        produced.AddRange(await ProduceMessages(producer1, 10, "test message", _cts.Token));
+        produced.AddRange(await ProduceMessages(producer2, 10, "test message", _cts.Token));
+        _ = await ProduceMessages(producer3, 10, "test message", _cts.Token);
+        _ = await ProduceMessages(producer4, 10, "test message", _cts.Token);
         var consumed = await ConsumeMessages(consumer, produced.Count, _cts.Token);
 
         //Assert
@@ -368,6 +399,14 @@ public sealed class ConsumerTests : IDisposable
         .InitialPosition(SubscriptionInitialPosition.Earliest)
         .SubscriptionName(CreateSubscriptionName())
         .Topics(topics)
+        .StateChangedHandler(_testOutputHelper.Log)
+        .Create();
+
+    private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, Regex topicsPattern)
+        => pulsarClient.NewConsumer(Schema.String)
+        .InitialPosition(SubscriptionInitialPosition.Earliest)
+        .SubscriptionName(CreateSubscriptionName())
+        .TopicsPattern(topicsPattern)
         .StateChangedHandler(_testOutputHelper.Log)
         .Create();
 

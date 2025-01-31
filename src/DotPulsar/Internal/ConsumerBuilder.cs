@@ -16,6 +16,7 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
+using System.Text.RegularExpressions;
 
 public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
 {
@@ -26,12 +27,14 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
     private int _priorityLevel;
     private uint _messagePrefetchCount;
     private bool _readCompacted;
+    private RegexSubscriptionMode _regexSubscriptionMode;
     private bool _replicateSubscriptionState;
     private string? _subscriptionName;
     private readonly Dictionary<string, string> _subscriptionProperties;
     private SubscriptionType _subscriptionType;
     private string _topic;
     private readonly HashSet<string> _topics;
+    private Regex? _topicsPattern;
     private IHandleStateChanged<ConsumerStateChanged>? _stateChangedHandler;
 
     public ConsumerBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
@@ -42,6 +45,7 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
         _priorityLevel = ConsumerOptions<TMessage>.DefaultPriorityLevel;
         _messagePrefetchCount = ConsumerOptions<TMessage>.DefaultMessagePrefetchCount;
         _readCompacted = ConsumerOptions<TMessage>.DefaultReadCompacted;
+        _regexSubscriptionMode = ConsumerOptions<TMessage>.DefaultRegexSubscriptionMode;
         _replicateSubscriptionState = ConsumerOptions<TMessage>.DefaultReplicateSubscriptionState;
         _subscriptionProperties = [];
         _subscriptionType = ConsumerOptions<TMessage>.DefaultSubscriptionType;
@@ -76,6 +80,12 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
     public IConsumerBuilder<TMessage> ReadCompacted(bool readCompacted)
     {
         _readCompacted = readCompacted;
+        return this;
+    }
+
+    public IConsumerBuilder<TMessage> RegexSubscriptionMode(RegexSubscriptionMode regexSubscriptionMode)
+    {
+        _regexSubscriptionMode = regexSubscriptionMode;
         return this;
     }
 
@@ -127,13 +137,19 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
         return this;
     }
 
+    public IConsumerBuilder<TMessage> TopicsPattern(Regex topicsPattern)
+    {
+        _topicsPattern = topicsPattern;
+        return this;
+    }
+
     public IConsumer<TMessage> Create()
     {
         if (string.IsNullOrEmpty(_subscriptionName))
             throw new ConfigurationException("SubscriptionName may not be null or empty");
 
-        if (string.IsNullOrEmpty(_topic) && _topics.Count == 0)
-            throw new ConfigurationException("A 'Topic' or multiple 'Topics' must be set");
+        if (string.IsNullOrEmpty(_topic) && _topics.Count == 0 && _topicsPattern is null)
+            throw new ConfigurationException("A 'Topic', multiple 'Topics', or a 'TopicsPattern' must be set");
 
         var options = new ConsumerOptions<TMessage>(_subscriptionName!, _topic, _schema)
         {
@@ -142,11 +158,13 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
             MessagePrefetchCount = _messagePrefetchCount,
             PriorityLevel = _priorityLevel,
             ReadCompacted = _readCompacted,
+            RegexSubscriptionMode = _regexSubscriptionMode,
             ReplicateSubscriptionState = _replicateSubscriptionState,
             StateChangedHandler = _stateChangedHandler,
             SubscriptionProperties = _subscriptionProperties,
             SubscriptionType = _subscriptionType,
-            Topics = _topics
+            Topics = _topics,
+            TopicsPattern = _topicsPattern
         };
 
         return _pulsarClient.CreateConsumer(options);
