@@ -234,7 +234,7 @@ public sealed class ConnectionPool : IConnectionPool
         return response.PartitionMetadataResponse.Partitions;
     }
 
-    public async ValueTask<IEnumerable<string>> GetTopicsOfNamespace(RegexSubscriptionMode mode, Regex topicsPattern, CancellationToken cancellationToken = default)
+    public async ValueTask<IEnumerable<string>> GetTopicsOfNamespace(CommandGetTopicsOfNamespace.Mode mode, Regex topicsPattern, CancellationToken cancellationToken = default)
     {
         var topicUriPattern = new Regex(@"^(persistent|non-persistent)://([^/]+)/([^/]+)/(.+)$", RegexOptions.Compiled);
 
@@ -251,15 +251,15 @@ public sealed class ConnectionPool : IConnectionPool
         if (!string.IsNullOrEmpty(persistence))
         {
             if (persistence.Equals("persistent"))
-                mode = RegexSubscriptionMode.Persistent;
+                mode = CommandGetTopicsOfNamespace.Mode.Persistent;
             else
-                mode = RegexSubscriptionMode.NonPersistent;
+                mode = CommandGetTopicsOfNamespace.Mode.NonPersistent;
         }
 
         var getTopicsOfNamespace = new CommandGetTopicsOfNamespace
         {
-            mode = (CommandGetTopicsOfNamespace.Mode) mode,
-            Namespace =$"{tenant}/{ns}",
+            mode = mode,
+            Namespace = $"{tenant}/{ns}",
             TopicsPattern = patternString
         };
 

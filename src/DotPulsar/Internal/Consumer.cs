@@ -116,20 +116,22 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
                 topics.Add(topic);
                 continue;
             }
-            
+
             for (var i = 0; i < numberOfPartitions; ++i)
             {
                 topics.Add(GetPartitionedTopicName(topic, i));
             }
         }
 
-        if (_consumerOptions.TopicsPattern is not null)
+        var pattern = _consumerOptions.TopicsPattern;
+        if (pattern is not null)
         {
-            topics.AddRange(await _connectionPool.GetTopicsOfNamespace(_consumerOptions.RegexSubscriptionMode, _consumerOptions.TopicsPattern, _cts.Token).ConfigureAwait(false));
+            var mode = (CommandGetTopicsOfNamespace.Mode) _consumerOptions.RegexSubscriptionMode;
+            var foundTopics = await _connectionPool.GetTopicsOfNamespace(mode, pattern, _cts.Token).ConfigureAwait(false);
+            topics.AddRange(foundTopics);
+            if (topics.Count == 0)
+                throw new TopicNotFoundException($"No topics were found using the pattern '{pattern}'");
         }
-
-        if (topics.Count == 0)
-            throw new TopicNotFoundException("No topics were found");
 
         _numberOfSubConsumers = topics.Count;
         var monitoringTasks = new Task<ConsumerStateChanged>[_numberOfSubConsumers];
@@ -147,7 +149,8 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
             _singleSubConsumer = _subConsumers.First().Value;
 
         _receiveEnumerator = _subConsumers.GetEnumerator();
-        _receiveEnumerator.MoveNext();_allSubConsumersAreReady = true;
+        _receiveEnumerator.MoveNext();
+        _allSubConsumersAreReady = true;
         _semaphoreSlim.Release();
 
         while (true)

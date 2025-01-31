@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Internal.Abstractions;
 
+using DotPulsar.Internal.PulsarApi;
 using System.Text.RegularExpressions;
 
 public interface IConnectionPool : IAsyncDisposable
@@ -22,5 +23,5 @@ public interface IConnectionPool : IAsyncDisposable
 
     ValueTask<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken = default);
 
-    ValueTask<IEnumerable<string>> GetTopicsOfNamespace(RegexSubscriptionMode mode, Regex topicsPattern, CancellationToken cancellationToken = default);
+    ValueTask<IEnumerable<string>> GetTopicsOfNamespace(CommandGetTopicsOfNamespace.Mode mode, Regex topicsPattern, CancellationToken cancellationToken = default);
 }

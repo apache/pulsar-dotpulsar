@@ -84,7 +84,7 @@ public sealed class ConsumerOptions<TMessage>
     /// Initializes a new instance using the specified subscription name, topic and schema.
     /// </summary>
     public ConsumerOptions(string subscriptionName, string topic, ISchema<TMessage> schema)
-        : this (subscriptionName, schema, topic, null, Array.Empty<string>()) { }
+        : this(subscriptionName, schema, topic, null, Array.Empty<string>()) { }
 
     /// <summary>
     /// Initializes a new instance using the specified subscription name, topics and schema.

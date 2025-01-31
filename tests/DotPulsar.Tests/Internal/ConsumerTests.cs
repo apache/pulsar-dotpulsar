@@ -202,6 +202,34 @@ public sealed class ConsumerTests : IDisposable
     }
 
     [Fact]
+    public async Task Receive_GivenTopicsPatternWithNoMatches_ShouldFaultConsumer()
+    {
+        //Arrange
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, new Regex(@"persistent://public/default/nosuchtopics.*"));
+
+        //Act
+        var exception = await Record.ExceptionAsync(consumer.Receive(_cts.Token).AsTask);
+
+        //Assert
+        exception.ShouldBeOfType<ConsumerFaultedException>();
+    }
+
+    [Fact]
+    public async Task Receive_GivenInvalidTopicsPattern_ShouldFaultConsumer()
+    {
+        //Arrange
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, new Regex(@"invalid://public/default/match.*"));
+
+        //Act
+        var exception = await Record.ExceptionAsync(consumer.Receive(_cts.Token).AsTask);
+
+        //Assert
+        exception.ShouldBeOfType<ConsumerFaultedException>();
+    }
+
+    [Fact]
     public async Task Receive_WhenFaultedAfterInvokingReceive_ShouldThrowConsumerFaultedException()
     {
         //Arrange
