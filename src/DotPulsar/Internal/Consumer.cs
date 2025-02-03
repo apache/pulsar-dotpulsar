@@ -149,7 +149,6 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
             _singleSubConsumer = _subConsumers.First().Value;
 
         _receiveEnumerator = _subConsumers.GetEnumerator();
-        _receiveEnumerator.MoveNext();
         _allSubConsumersAreReady = true;
         _semaphoreSlim.Release();
 
@@ -216,8 +215,6 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
         using (await _lock.Lock(cancellationToken).ConfigureAwait(false))
         {
-            var startTopic = string.Empty;
-
             while (true)
             {
                 var receiveTaskNode = _receiveTasks.First;
@@ -231,32 +228,29 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
                     receiveTaskNode = receiveTaskNode.Next;
                 }
 
-                if (_receiveEnumerator.Current.Key is not null)
-                    startTopic = _receiveEnumerator.Current.Key;
-
-                if (!_receiveEnumerator.MoveNext())
+                for (var i = 0; i < _numberOfSubConsumers; ++i)
                 {
-                    _receiveEnumerator = _subConsumers.GetEnumerator();
-                    _receiveEnumerator.MoveNext();
+                    if (!_receiveEnumerator.MoveNext())
+                    {
+                        _receiveEnumerator = _subConsumers.GetEnumerator();
+                        _receiveEnumerator.MoveNext();
+                    }
+
+                    var subConsumer = _receiveEnumerator.Current.Value;
+
+                    var receiveTask = subConsumer.Receive(_cts.Token);
+                    if (receiveTask.IsCompleted)
+                        return receiveTask.Result;
+
+                    _receiveTasks.AddLast(receiveTask.AsTask());
                 }
 
-                var subConsumer = _receiveEnumerator.Current;
-
-                var receiveTask = subConsumer.Value.Receive(_cts.Token);
-                if (receiveTask.IsCompleted)
-                    return receiveTask.Result;
-
-                _receiveTasks.AddLast(receiveTask.AsTask());
-
-                if (startTopic == subConsumer.Key)
-                {
-                    var tcs = new TaskCompletionSource<IMessage<TMessage>>();
-                    using var registration = cancellationToken.Register(() => tcs.TrySetCanceled());
-                    _receiveTasks.AddLast(tcs.Task);
-                    await Task.WhenAny(_receiveTasks).ConfigureAwait(false);
-                    _receiveTasks.RemoveLast();
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
+                var tcs = new TaskCompletionSource<IMessage<TMessage>>();
+                using var registration = cancellationToken.Register(() => tcs.TrySetCanceled());
+                _receiveTasks.AddLast(tcs.Task);
+                await Task.WhenAny(_receiveTasks).ConfigureAwait(false);
+                _receiveTasks.RemoveLast();
+                cancellationToken.ThrowIfCancellationRequested();
             }
         }
     }
