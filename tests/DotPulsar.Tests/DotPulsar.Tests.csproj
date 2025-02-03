@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2012</NoWarn>
+    <NoWarn>SYSLIB1045,CA2012</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-﻿# DotPulsar
+# DotPulsar
 
 ![CI - Unit](https://github.com/apache/pulsar-dotpulsar/workflows/CI%20-%20Unit/badge.svg)
 
@@ -59,6 +59,7 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
 - [X] Producer - partitioned topics
 - [X] Consumer - subscription with initial position and priority level
 - [X] Consumer - subscription types exclusive, shared, failover, and key shared
+- [X] Consumer - multi-topic subscriptions
 - [X] Consumer - receive and single + cumulative acknowledge
 - [X] Consumer/Reader - seek on message-id and publish time
 - [X] Consumer - unsubscribe
