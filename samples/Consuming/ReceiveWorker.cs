@@ -17,7 +17,6 @@ namespace Consuming;
 using DotPulsar;
 using DotPulsar.Extensions;
 using Extensions;
-using System.Threading;
 
 public sealed class ReceiveWorker : BackgroundService
 {

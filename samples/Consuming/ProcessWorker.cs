@@ -18,7 +18,6 @@ using DotPulsar;
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 using Extensions;
-using System.Threading;
 
 public sealed class ProcessWorker : BackgroundService
 {
