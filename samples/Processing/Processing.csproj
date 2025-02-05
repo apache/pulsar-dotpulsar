@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DotPulsar\DotPulsar.csproj" />
+    <ProjectReference Include="..\Extensions\Extensions.csproj" />
   </ItemGroup>
   
 </Project>

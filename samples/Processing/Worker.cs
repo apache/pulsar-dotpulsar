@@ -17,8 +17,9 @@ namespace Processing;
 using DotPulsar;
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
+using Extensions;
 
-public class Worker : BackgroundService
+public sealed class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
 
