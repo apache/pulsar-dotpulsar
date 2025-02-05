@@ -40,14 +40,10 @@ public static partial class LoggerExtensions
     /// Default logger for an IMessage with a string value
     /// </summary>
     public static void OutputMessage(this ILogger logger, IMessage<string> message)
-    {
-        var publishedOn = message.PublishTimeAsDateTime;
-        var payload = message.Value();
-        logger.OutputMessage(publishedOn, payload);
-    }
+        => logger.OutputMessage(message.Value(), message.PublishTimeAsDateTime, message.MessageId);
 
-    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Received: '{payload}' published on {publishedOn}")]
-    static partial void OutputMessage(this ILogger logger, DateTime publishedOn, string payload);
+    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Received: '{payload}' published on '{publishedOn}' with message id '{messageId}'")]
+    static partial void OutputMessage(this ILogger logger, string payload, DateTime publishedOn, MessageId messageId);
 
     /// <summary>
     /// Default logger for consumer state monitoring

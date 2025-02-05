@@ -12,48 +12,13 @@
  * limitations under the License.
  */
 
-using DotPulsar;
-using DotPulsar.Abstractions;
-using DotPulsar.Extensions;
+using Consuming;
+using Extensions;
 
-var cts = new CancellationTokenSource();
-
-Console.CancelKeyPress += (sender, args) =>
-{
-    cts.Cancel();
-    args.Cancel = true;
-};
-
-await using var client = PulsarClient
-    .Builder()
-    .ExceptionHandler(ExceptionHandler)
-    .Build(); // Connecting to pulsar://localhost:6650
-
-await using var consumer = client.NewConsumer(Schema.String)
-    .StateChangedHandler(StateChangedHandler)
-    .SubscriptionName("MySubscription")
-    .Topic("persistent://public/default/mytopic")
-    .Create();
-
-Console.WriteLine("Press Ctrl+C to exit");
-
-await ConsumeMessages(consumer, cts.Token);
-
-async Task ConsumeMessages(IConsumer<string> consumer, CancellationToken cancellationToken)
-{
-    try
-    {
-        await foreach (var message in consumer.Messages(cancellationToken))
-        {
-            Console.WriteLine($"Received: {message.Value()}");
-            await consumer.Acknowledge(message, cancellationToken);
-        }
-    }
-    catch (OperationCanceledException) { }
-}
-
-void ExceptionHandler(ExceptionContext context) =>
-    Console.WriteLine($"The PulsarClient got an exception: {context.Exception}");
-
-void StateChangedHandler(ConsumerStateChanged stateChanged) =>
-    Console.WriteLine($"The consumer for topic '{stateChanged.Consumer.Topic}' changed state to '{stateChanged.ConsumerState}'");
+await Host
+    .CreateApplicationBuilder(args)
+    //.AddHostedService<ReceiveWorker>()  // Using 'Receive'
+    //.AddHostedService<MessagesWorker>() // Using 'Messages'
+    .AddHostedService<ProcessWorker>()  // Using 'Process' (recommended)
+    .Build()
+    .RunAsync();

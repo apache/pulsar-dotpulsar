@@ -12,20 +12,20 @@
  * limitations under the License.
  */
 
-namespace Processing;
+namespace Consuming;
 
 using DotPulsar;
-using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 using Extensions;
+using System.Threading;
 
-public sealed class Worker : BackgroundService
+public sealed class ReceiveWorker : BackgroundService
 {
-    private readonly ILogger<Worker> _logger;
+    private readonly ILogger _logger;
 
-    public Worker(ILogger<Worker> logger) => _logger = logger;
+    public ReceiveWorker(ILogger<ReceiveWorker> logger) => _logger = logger;
 
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await using var client = PulsarClient.Builder()
             .ExceptionHandler(_logger.PulsarClientException) // Optional
@@ -37,19 +37,13 @@ public sealed class Worker : BackgroundService
             .Topic("persistent://public/default/mytopic")
             .Create();
 
-        _ = consumer.DelayedStateMonitor(       // Recommended way of ignoring the short disconnects expected when working with a distributed system
-            ConsumerState.Active,               // Operational state
-            TimeSpan.FromSeconds(5),            // The amount of time allowed in non-operational state before we act
-            _logger.ConsumerLostConnection,     // Invoked if we are NOT back in operational state after 5 seconds
-            _logger.ConsumerRegainedConnection, // Invoked when we are in operational state again
-            cancellationToken);
+        _logger.LogInformation("Will start receiving messages with 'Receive'");
 
-        await consumer.Process(ProcessMessage, cancellationToken);
-    }
-
-    private ValueTask ProcessMessage(IMessage<string> message, CancellationToken cancellationToken)
-    {
-        _logger.OutputMessage(message);
-        return ValueTask.CompletedTask;
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            var message = await consumer.Receive(stoppingToken);
+            _logger.OutputMessage(message);
+            await consumer.Acknowledge(message, stoppingToken);
+        }
     }
 }
