@@ -37,7 +37,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
     private readonly ConcurrentDictionary<int, SubProducer> _producers;
     private readonly IMessageRouter _messageRouter;
     private readonly CancellationTokenSource _cts;
-    private readonly IExecute _executor;
+    private readonly Executor _executor;
     private int _isDisposed;
     private int _producerCount;
     private Exception? _faultException;

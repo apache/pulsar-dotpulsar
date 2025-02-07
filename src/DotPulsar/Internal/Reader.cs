@@ -28,7 +28,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     private readonly IConnectionPool _connectionPool;
     private readonly ProcessManager _processManager;
     private readonly CancellationTokenSource _cts;
-    private readonly IExecute _executor;
+    private readonly Executor _executor;
     private readonly StateManager<ReaderState> _state;
     private readonly SemaphoreSlim _semaphoreSlim;
     private readonly AsyncLock _lock;
@@ -146,7 +146,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
         await Guard(cancellationToken).ConfigureAwait(false);
 
         if (!_isPartitionedTopic)
-            return new[] { await _subReaders[_subReaderIndex].GetLastMessageId(cancellationToken).ConfigureAwait(false) };
+            return [await _subReaders[_subReaderIndex].GetLastMessageId(cancellationToken).ConfigureAwait(false)];
 
         var getLastMessageIdsTasks = new List<Task<MessageId>>(_numberOfPartitions);
 

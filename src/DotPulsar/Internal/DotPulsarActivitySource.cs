@@ -39,7 +39,7 @@ public static class DotPulsarActivitySource
         {
             var activityLink = GetActivityLink(message);
             if (activityLink is not null)
-                activityLinks = new ActivityLink[] { activityLink.Value };
+                activityLinks = [activityLink.Value];
         }
 
         return StartActivity(operationName, ActivityKind.Consumer, tags, activityLinks, message.GetConversationId());

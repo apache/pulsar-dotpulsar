@@ -48,7 +48,7 @@ public class IntegrationFixture : IAsyncLifetime
             .Build();
 
         _toxiProxy = new ContainerBuilder()
-            .WithImage("ghcr.io/shopify/toxiproxy:2.9.0")
+            .WithImage("ghcr.io/shopify/toxiproxy:2.11.0")
             .WithPortBinding(ToxiProxyControlPort, true)
             .WithPortBinding(ToxiProxyPort, true)
             .WithHostname("toxiproxy")
