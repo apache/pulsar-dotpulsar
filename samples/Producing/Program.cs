@@ -17,6 +17,7 @@ using Producing;
 
 await Host
     .CreateApplicationBuilder(args)
+    //.AddHostedService<SendChannelWorker>()
     .AddHostedService<SendWorker>()
     .Build()
     .RunAsync();
