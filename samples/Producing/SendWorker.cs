@@ -37,7 +37,7 @@ public sealed class SendWorker : BackgroundService
 
         var delay = TimeSpan.FromSeconds(5);
 
-        _logger.LogInformation($"Will start sending messages every {delay.TotalSeconds} seconds");
+        _logger.LogInformation($"Will start sending messages every {delay.TotalSeconds} seconds with 'Send'");
 
         while (!stoppingToken.IsCancellationRequested)
         {

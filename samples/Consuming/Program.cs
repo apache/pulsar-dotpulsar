@@ -15,10 +15,19 @@
 using Consuming;
 using Extensions;
 
-await Host
-    .CreateApplicationBuilder(args)
-    //.AddHostedService<ReceiveWorker>()  // Using 'Receive'
-    //.AddHostedService<MessagesWorker>() // Using 'Messages'
-    .AddHostedService<ProcessWorker>()  // Using 'Process' (recommended)
-    .Build()
-    .RunAsync();
+var builder = Host.CreateApplicationBuilder(args);
+
+switch (args)
+{
+    case ["ReceiveWorker"]:
+        builder.AddHostedService<ReceiveWorker>();  // Using 'Receive'
+        break;
+    case ["MessagesWorker"]:
+        builder.AddHostedService<MessagesWorker>(); // Using 'Messages'
+        break;
+    default:
+        builder.AddHostedService<ProcessWorker>();  // Using 'Process' (recommended)
+        break;
+}
+
+await builder.Build().RunAsync();

@@ -1,6 +1,22 @@
 ﻿{
   "profiles": {
-    "Processing": {
+    "MessagesWorker": {
+      "commandName": "Project",
+      "commandLineArgs": "MessagesWorker",
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    "ReceiveWorker": {
+      "commandName": "Project",
+      "commandLineArgs": "ReceiveWorker",
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    "ProcessWorker": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "environmentVariables": {

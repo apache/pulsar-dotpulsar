@@ -1,6 +1,14 @@
 ﻿{
   "profiles": {
-    "Processing": {
+    "SendChannelWorker": {
+      "commandName": "Project",
+      "commandLineArgs": "SendChannelWorker",
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    "SendWorker": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "environmentVariables": {
