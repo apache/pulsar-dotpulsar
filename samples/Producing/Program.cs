@@ -15,9 +15,16 @@
 using Extensions;
 using Producing;
 
-await Host
-    .CreateApplicationBuilder(args)
-    //.AddHostedService<SendChannelWorker>()
-    .AddHostedService<SendWorker>()
-    .Build()
-    .RunAsync();
+var builder = Host.CreateApplicationBuilder(args);
+
+switch (args)
+{
+    case ["SendChannelWorker"]:
+        builder.AddHostedService<SendChannelWorker>();
+        break;
+    default:
+        builder.AddHostedService<SendWorker>();
+        break;
+}
+
+await builder.Build().RunAsync();
