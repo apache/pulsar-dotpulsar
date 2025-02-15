@@ -42,19 +42,19 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         _correlationId = correlationId;
         _eventRegister = eventRegister;
         _connectionPool = connectionPool;
-
+        _schema = schemaInfo.PulsarSchema;
         _commandProducer = new CommandProducer
         {
             ProducerName = producerName,
             ProducerAccessMode = producerAccessMode,
-            Topic = topic
+            Topic = topic,
+            Schema = _schema
         };
 
         if (properties is not null)
             _commandProducer.Metadatas.AddRange(properties.Select(x => new KeyValue { Key = x.Key, Value = x.Value }));
 
         _compressorFactory = compressorFactory;
-        _schema = schemaInfo.PulsarSchema;
     }
 
     public async Task<IProducerChannel> Create(CancellationToken cancellationToken)
