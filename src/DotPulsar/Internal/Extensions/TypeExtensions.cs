@@ -12,20 +12,24 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions;
+namespace DotPulsar.Internal.Extensions;
 
 using System;
-
-/// <summary>
-/// Any error related to AvroISpecificSchema
-/// </summary>
-public sealed class AvroISpecificRecordSchemaException : DotPulsarException
+public static class TypeExtensions
 {
-    public AvroISpecificRecordSchemaException(string message) : base(message)
+    public static bool ImplementsBaseTypeFullName(this Type typeToCheck, string fullNameToCheckAgainst)
     {
-    }
-
-    public AvroISpecificRecordSchemaException(string message, Exception innerException) : base(message, innerException)
-    {
+        Type? tempType = typeToCheck;
+        while (true)
+        {
+            if (tempType is null)
+                break;
+            if (string.IsNullOrEmpty(tempType.FullName))
+                continue;
+            if (tempType.FullName.Equals(fullNameToCheckAgainst))
+                return true;
+            tempType = tempType.BaseType;
+        }
+        return false;
     }
 }
