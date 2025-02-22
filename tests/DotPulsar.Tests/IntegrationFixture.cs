@@ -18,6 +18,8 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Networks;
 using DotPulsar.Abstractions;
+using System.Text;
+using System.Text.Json;
 using Testcontainers.Pulsar;
 using Toxiproxy.Net;
 using Xunit.Abstractions;
@@ -169,6 +171,23 @@ public class IntegrationFixture : IAsyncLifetime
 
         if (result.ExitCode != 0)
             throw new Exception($"Could not create the partitioned topic: {result.Stderr}");
+    }
+    public async Task AddSchemaToExistingTopic(string topic, SchemaInfo pulsarSchemaInfo, CancellationToken cancellationToken)
+    {
+        var schDef = new
+        {
+            type = pulsarSchemaInfo.Type.ToString().ToUpper(),
+            schema = Encoding.UTF8.GetString(pulsarSchemaInfo.Data),
+            properties = new Dictionary<string, string>()
+        };
+        string schemaFilename = $"{Guid.NewGuid().ToString()}.sch";
+        await _pulsarCluster.CopyAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(schDef)), $"pulsar/{schemaFilename}", ct: cancellationToken);
+        string arguments = $"bin/pulsar-admin schemas upload --filename {schemaFilename} {topic}";
+        var result = await _pulsarCluster.ExecAsync(["/bin/bash", "-c", arguments], cancellationToken);
+
+        if (result.ExitCode != 0)
+            throw new Exception($"Could not upload a schema to topic: {result.Stderr}");
+
     }
 
     public async Task<IAsyncDisposable> DisableThePulsarConnection()

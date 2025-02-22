@@ -16,6 +16,8 @@ namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
+using DotPulsar.Tests.Schemas.TestSamples.AvroModels;
+using System.Text;
 using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
@@ -267,7 +269,28 @@ public sealed class ProducerTests : IDisposable
 
         foundNonNegativeOne.ShouldBeTrue();
     }
-
+    [Fact]
+    public async Task Send_WhenProducingToTopicWithSchemaAndProducerHasWrongSchema_ShouldThrowException()
+    {
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
+        var client = CreateClient();
+        await using var producer = CreateProducer(client, topicName, Schema.ByteSequence);
+        var exception = await Record.ExceptionAsync(producer.Send(Encoding.UTF8.GetBytes("test"), _cts.Token).AsTask);
+        exception.ShouldBeAssignableTo<Exception>();
+    }
+    [Fact]
+    public async Task Send_WhenProducingToTopicWithSchemaAndProducerHasRightSchema_ShouldBeAbleToSend()
+    {
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
+        var client = CreateClient();
+        await using var producer = CreateProducer(client, topicName, pulsarSchema);
+        var exception = await Record.ExceptionAsync(producer.Send(new AvroSampleModel(), _cts.Token).AsTask);
+        exception.ShouldBeNull();
+    }
     [Fact]
     public async Task Connectivity_WhenConnectionIsInitiallyUpAndGoesDown_ShouldBeAbleToSendWhileDown()
     {
@@ -394,23 +417,33 @@ public sealed class ProducerTests : IDisposable
 
     private static string CreateSubscriptionName() => $"subscription-{Guid.NewGuid():N}";
 
-    private IProducer<string> CreateProducer(
+
+    private IProducer<T> CreateProducer<T>(
         IPulsarClient pulsarClient,
         string topicName,
+        ISchema<T> schema,
         ProducerAccessMode producerAccessMode = ProducerAccessMode.Shared)
-        => pulsarClient.NewProducer(Schema.String)
+        => pulsarClient.NewProducer(schema)
         .Topic(topicName)
         .ProducerAccessMode(producerAccessMode)
         .StateChangedHandler(_testOutputHelper.Log)
         .Create();
+    private IProducer<string> CreateProducer(
+        IPulsarClient pulsarClient,
+        string topicName,
+        ProducerAccessMode producerAccessMode = ProducerAccessMode.Shared)
+        => CreateProducer(pulsarClient, topicName, Schema.String, producerAccessMode);
+
 
     private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string topicName)
-        => pulsarClient.NewConsumer(Schema.String)
-        .InitialPosition(SubscriptionInitialPosition.Earliest)
-        .SubscriptionName(CreateSubscriptionName())
-        .Topic(topicName)
-        .StateChangedHandler(_testOutputHelper.Log)
-        .Create();
+        => CreateConsumer(pulsarClient, topicName, Schema.String);
+    private IConsumer<T> CreateConsumer<T>(IPulsarClient pulsarClient, string topicName, ISchema<T> schema)
+       => pulsarClient.NewConsumer(schema)
+       .InitialPosition(SubscriptionInitialPosition.Earliest)
+       .SubscriptionName(CreateSubscriptionName())
+       .Topic(topicName)
+       .StateChangedHandler(_testOutputHelper.Log)
+       .Create();
 
     private IPulsarClient CreateClient()
         => PulsarClient

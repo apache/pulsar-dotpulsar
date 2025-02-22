@@ -18,6 +18,7 @@ using Avro.Specific;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Schemas;
+using DotPulsar.Tests.Schemas.TestSamples.AvroModels;
 using System.Buffers;
 
 [Trait("Category", "Unit")]
@@ -60,70 +61,4 @@ public sealed class AvroISpecificRecordSchemaTests
         res.Surname.ShouldBe("Ceta");
         res.Age.ShouldBe(29);
     }
-
-    private class AvroSampleModel : ISpecificRecord
-    {
-        public static readonly Avro.Schema _SCHEMA = Avro.Schema.Parse(@"
-        {
-            ""type"": ""record"",
-            ""name"": ""AvroSampleModel"",
-            ""fields"": [
-                { ""name"": ""Name"", ""type"": ""string"" },
-                { ""name"": ""Surname"", ""type"": ""string"" },
-                { ""name"": ""Age"", ""type"": ""int"" }
-            ]
-        }");
-
-        public virtual Avro.Schema Schema => _SCHEMA;
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public int Age { get; set; }
-        public object Get(int fieldPos)
-        {
-            return fieldPos switch
-            {
-                0 => Name,
-                1 => Surname,
-                2 => Age,
-                _ => throw new ArgumentOutOfRangeException(nameof(fieldPos), "Invalid field position")
-            };
-        }
-
-        public void Put(int fieldPos, object value)
-        {
-            switch (fieldPos)
-            {
-                case 0:
-                    Name = value as string ?? throw new ArgumentException("Name must be a string");
-                    break;
-                case 1:
-                    Surname = value as string ?? throw new ArgumentException("Name must be a string");
-                    break;
-                case 2:
-                    Age = value is int intValue ? intValue : throw new ArgumentException("Age must be an int");
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(fieldPos), "Invalid field position");
-            }
-        }
-    }
-    private class AvroBlankSampleModel
-    {
-    }
-    private class AvroSampleModelWithWrongSCHEMAField : ISpecificRecord
-    {
-        public static string _SCHEMA = "WRONG!";
-        public Avro.Schema Schema => throw new NotImplementedException();
-
-        public object Get(int fieldPos)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Put(int fieldPos, object fieldValue)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
 }
