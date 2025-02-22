@@ -12,20 +12,23 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions;
+namespace DotPulsar.Tests.Schemas.TestSamples.AvroModels;
 
+using Avro.Specific;
 using System;
 
-/// <summary>
-/// Any error related to AvroISpecificSchema
-/// </summary>
-public sealed class AvroISpecificRecordSchemaException : DotPulsarException
+public class AvroSampleModelWithWrongSCHEMAField : ISpecificRecord
 {
-    public AvroISpecificRecordSchemaException(string message) : base(message)
+    public static string _SCHEMA = "WRONG!";
+    public Avro.Schema Schema => throw new NotImplementedException();
+
+    public object Get(int fieldPos)
     {
+        throw new NotImplementedException();
     }
 
-    public AvroISpecificRecordSchemaException(string message, Exception innerException) : base(message, innerException)
+    public void Put(int fieldPos, object fieldValue)
     {
+        throw new NotImplementedException();
     }
 }

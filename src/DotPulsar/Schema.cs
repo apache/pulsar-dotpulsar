@@ -14,7 +14,6 @@
 
 namespace DotPulsar;
 
-using Avro.Specific;
 using DotPulsar.Schemas;
 
 /// <summary>
@@ -100,6 +99,6 @@ public static class Schema
     /// <summary>
     /// Avro schema for classes that use ISpecificRecord
     /// </summary>
-    public static AvroISpecificRecordSchema<T> AvroISpecificRecord<T>() where T : ISpecificRecord =>
+    public static AvroISpecificRecordSchema<T> AvroISpecificRecord<T>() =>
         new AvroISpecificRecordSchema<T>();
 }
