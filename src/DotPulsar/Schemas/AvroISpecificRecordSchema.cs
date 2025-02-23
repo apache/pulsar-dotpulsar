@@ -149,8 +149,12 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
             if (parameters.Length != 2)
                 continue;
 
+            var param1Fullname = parameters[1].ParameterType.FullName;
+            if (param1Fullname == null)
+                continue;
+
             if (parameters[0].ParameterType != typeof(T) ||
-                !parameters[1].ParameterType.FullName.Equals(secondParamFullname))
+                !param1Fullname.Equals(secondParamFullname))
                 continue;
 
             return method;
@@ -170,8 +174,12 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
             if (parameters.Length != 2)
                 continue;
 
+            var param1Fullname = parameters[1].ParameterType.FullName;
+            if (param1Fullname == null)
+                continue;
+
             if (parameters[0].ParameterType != typeof(T) ||
-                !parameters[1].ParameterType.FullName.Equals(secondParamFullname))
+                !param1Fullname.Equals(secondParamFullname))
                 continue;
 
             return method;
