@@ -33,7 +33,6 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
     private static readonly Type _avroWriterTypeInfo;
     private static readonly Type _avroReaderTypeInfo;
     private static readonly SchemaInfo _schemaInfo;
-    private static readonly IEnumerable<TypeInfo> _AvroAssemblyTypeInfos;
     private static readonly Exception _constructorException;
 
     private readonly object _avroWriter;
@@ -53,7 +52,6 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
         try
         {
             var assembly = Assembly.Load("Avro");
-            _AvroAssemblyTypeInfos = assembly.DefinedTypes.ToArray();
             if (!_typeT.GetInterfaces().Any(i => i.FullName == ISpecificRecordFullName))
                 throw new SchemaException(string.Format("The type {0} must implement {1}", _typeT, ISpecificRecordFullName));
             _avroSchema = _typeT.GetField("_SCHEMA")?.GetValue(null) ??
