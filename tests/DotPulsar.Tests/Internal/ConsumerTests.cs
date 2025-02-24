@@ -283,7 +283,7 @@ public sealed class ConsumerTests : IDisposable
         var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
         var client = CreateClient();
-        await using var consumer = CreateConsumer(client, topicName,Schema.String);
+        await using var consumer = CreateConsumer(client, topicName, Schema.String);
         await using var producer = CreateProducer(client, topicName, pulsarSchema);
         await producer.Send(new AvroSampleModel(), _cts.Token);
         var exception = await Record.ExceptionAsync(consumer.Receive().AsTask);

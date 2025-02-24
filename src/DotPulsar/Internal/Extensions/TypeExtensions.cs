@@ -14,7 +14,6 @@
 
 namespace DotPulsar.Internal.Extensions;
 
-using System;
 public static class TypeExtensions
 {
     public static bool ImplementsBaseTypeFullName(this Type typeToCheck, string fullNameToCheckAgainst)

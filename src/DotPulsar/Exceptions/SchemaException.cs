@@ -14,10 +14,8 @@
 
 namespace DotPulsar.Exceptions;
 
-using System;
-
 /// <summary>
-/// Any error related to AvroISpecificSchema
+/// Any error related to schemas
 /// </summary>
 public sealed class SchemaException : DotPulsarException
 {

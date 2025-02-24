@@ -13,9 +13,6 @@
  */
 
 namespace DotPulsar.Tests.Schemas;
-
-using Avro.Specific;
-using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Schemas;
 using DotPulsar.Tests.Schemas.TestSamples.AvroModels;
