@@ -23,6 +23,8 @@ using System.Text;
 
 public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
 {
+    private const string SchemaField = "_SCHEMA";
+
     private static readonly Type _typeT;
     private static readonly object _avroSchema;
     private static readonly MethodInfo _avroWriterWriteMethod;
@@ -37,7 +39,8 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
     private readonly object _avroWriter;
     private readonly object _avroReader;
 
-    public SchemaInfo SchemaInfo { get => _schemaInfo; }
+    public SchemaInfo SchemaInfo => _schemaInfo;
+
 #pragma warning disable CS8618 // Supressed because if there is an init error the non-static constructor will throw it instead. This is done in case of if there is a wrong implementation of ISpecificRecord in T in order not to stop the whole runtime.
     static AvroISpecificRecordSchema()
 #pragma warning restore CS8618 // Supressed because if there is an init error the non-static constructor will throw it instead. This is done in case of if there is a wrong implementation of ISpecificRecord in T in order not to stop the whole runtime.
@@ -53,16 +56,16 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
             var assembly = Assembly.Load("Avro");
 
             if (!_typeT.GetInterfaces().Any(i => i.FullName == ISpecificRecordFullName))
-                throw new SchemaException(string.Format("The type {0} must implement {1}", _typeT, ISpecificRecordFullName));
+                throw new SchemaException($"The type {_typeT} must implement {ISpecificRecordFullName}");
 
-            _avroSchema = _typeT.GetField("_SCHEMA")?.GetValue(null) ?? throw new SchemaException($"The static field named '_SCHEMA' must not be null in type: {_typeT}");
+            _avroSchema = _typeT.GetField(SchemaField)?.GetValue(null) ?? throw new SchemaException($"The static field '{SchemaField}' must not be null in type: {_typeT}");
 
             var avroSchemaType = _avroSchema.GetType();
             if (!avroSchemaType.ImplementsBaseTypeFullName(schemaFullName))
-                throw new SchemaException(string.Format("field '_SCHEMA' must be of type {0}", schemaFullName));
+                throw new SchemaException($"The static field '{SchemaField}' must be of type {schemaFullName}");
             
             SchemaName = (string) (avroSchemaType.GetProperty("Name")?.GetValue(_avroSchema) ?? string.Empty);
-            SchemaData = (string) (avroSchemaType.GetMethod("ToString", Type.EmptyTypes)?.Invoke(_avroSchema, null) ?? throw new SchemaException($"Schema toString() must not return null for type {_typeT}"));
+            SchemaData = (string) (avroSchemaType.GetMethod("ToString", Type.EmptyTypes)?.Invoke(_avroSchema, null) ?? throw new SchemaException($"Schema ToString() must not return null for type {_typeT}"));
             TryLoadStatic(out Type avroWriterType, out Type avroReaderType, out TypeInfo binaryEncoderType, out TypeInfo binaryDecoderType, out MethodInfo avroWriterMethod, out MethodInfo avroReaderMethod);
             _avroWriterTypeInfo = avroWriterType;
             _avroReaderTypeInfo = avroReaderType;
@@ -91,7 +94,7 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
     {
         using var stream = new MemoryStream(bytes.ToArray());
         T? def = default;
-        return (T) (_avroReaderReadMethod.Invoke(_avroReader, [def, GetBinaryDecoder(stream)]) ?? throw new SchemaSerializationException($"Could not Deserialize object of type {_typeT}"));
+        return (T) (_avroReaderReadMethod.Invoke(_avroReader, [def, GetBinaryDecoder(stream)]) ?? throw new SchemaSerializationException($"Could not deserialize object of type {_typeT}"));
     }
 
     public ReadOnlySequence<byte> Encode(T message)
@@ -130,16 +133,11 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
 
         foreach (var type in types)
         {
-            if (type.FullName is null || !type.FullName.Equals(fullName))
-                continue;
-
-            if (type.IsPublic && type.IsClass)
+            if (type.IsPublic && type.IsClass && type.IsGenericType && type.FullName is not null && type.FullName.Equals(fullName))
                 return type.MakeGenericType(typeof(T));
-
-            break;
         }
 
-        throw new SchemaException($"{fullName} as a public class was not found");
+        throw new SchemaException($"{fullName} as a generic public class was not found");
     }
 
     private static Type LoadSpecificDatumReaderType(IEnumerable<TypeInfo> types)
@@ -148,23 +146,18 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
 
         foreach (var type in types)
         {
-            if (type.FullName is null || !type.FullName.Equals(fullName))
-                continue;
-
-            if (type.IsPublic && type.IsClass)
+            if (type.IsPublic && type.IsClass && type.IsGenericType && type.FullName is not null && type.FullName.Equals(fullName))
                 return type.MakeGenericType(typeof(T));
-            
-            break;
         }
 
-        throw new SchemaException($"{fullName} as a public class was not found");
+        throw new SchemaException($"{fullName} as a generic public class was not found");
     }
 
     private static object LoadSpecificDatumWriter()
-        => Activator.CreateInstance(_avroWriterTypeInfo, _avroSchema) ?? throw new SchemaException("Could not load SpecificDatumWriter");
+        => Activator.CreateInstance(_avroWriterTypeInfo, _avroSchema) ?? throw new SchemaException("Could not create SpecificDatumWriter");
 
     private static object LoadSpecificDatumReader()
-        => Activator.CreateInstance(_avroReaderTypeInfo, _avroSchema, _avroSchema) ?? throw new SchemaException("Could not load SpecificDatumReader");
+        => Activator.CreateInstance(_avroReaderTypeInfo, _avroSchema, _avroSchema) ?? throw new SchemaException("Could not create SpecificDatumReader");
 
     private static MethodInfo LoadSpecificDatumReaderMethod(IEnumerable<MethodInfo> methods)
     {
@@ -193,6 +186,7 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
 
         throw new SchemaException($"A method with the name '{name}' matching the delegate was not found");
     }
+
     private static MethodInfo LoadSpecificDatumWriterMethod(IEnumerable<MethodInfo> methods)
     {
         const string name = "Write";
@@ -227,13 +221,8 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
 
         foreach (var type in types)
         {
-            if (type.FullName is null || !type.FullName.Equals(fullName))
-                continue;
-
-            if (type.IsPublic && type.IsClass)
+            if (type.IsPublic && type.IsClass && type.FullName is not null && type.FullName.Equals(fullName))
                 return type;
-
-            break;
         }
 
         throw new SchemaException($"{fullName} as a public class was not found");
@@ -245,22 +234,17 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
 
         foreach (var type in types)
         {
-            if (type.FullName is null || !type.FullName.Equals(fullName))
-                continue;
-
-            if (type.IsPublic && type.IsClass)
+            if (type.IsPublic && type.IsClass && type.FullName is not null && type.FullName.Equals(fullName))
                 return type;
-
-            break;
         }
 
         throw new SchemaException($"{fullName} as a public class was not found");
     }
 
     private static object GetBinaryEncoder(MemoryStream stream)
-        => Activator.CreateInstance(_binaryEncoderTypeInfo, stream) ?? throw new SchemaException("There was a problem while instanciating BinaryEncoder");
+        => Activator.CreateInstance(_binaryEncoderTypeInfo, stream) ?? throw new SchemaException("There was a problem while instantiating BinaryEncoder");
 
     private static object GetBinaryDecoder(MemoryStream stream)
-        => Activator.CreateInstance(_binaryDecoderTypeInfo, stream) ?? throw new SchemaException("There was a problem while instanciating BinaryDecoder");
+        => Activator.CreateInstance(_binaryDecoderTypeInfo, stream) ?? throw new SchemaException("There was a problem while instantiating BinaryDecoder");
 
 }
