@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -96,4 +96,9 @@ public static class Schema
     /// Time schema using TimeSpan.
     /// </summary>
     public static TimeSchema Time { get; }
+    /// <summary>
+    /// Avro schema for classes that use ISpecificRecord
+    /// </summary>
+    public static AvroISpecificRecordSchema<T> AvroISpecificRecord<T>() =>
+        new AvroISpecificRecordSchema<T>();
 }

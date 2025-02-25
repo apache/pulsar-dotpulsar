@@ -434,7 +434,8 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
             ReplicateSubscriptionState = _consumerOptions.ReplicateSubscriptionState,
             Subscription = _consumerOptions.SubscriptionName,
             Topic = topic,
-            Type = (CommandSubscribe.SubType) _consumerOptions.SubscriptionType
+            Type = (CommandSubscribe.SubType) _consumerOptions.SubscriptionType,
+            Schema = _consumerOptions.Schema.SchemaInfo.PulsarSchema
         };
 
         foreach (var property in _consumerOptions.SubscriptionProperties)

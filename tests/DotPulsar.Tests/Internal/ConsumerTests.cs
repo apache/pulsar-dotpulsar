@@ -17,6 +17,7 @@ namespace DotPulsar.Tests.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
+using DotPulsar.Tests.Schemas.TestSamples.AvroModels;
 using System.Text.RegularExpressions;
 using Xunit.Abstractions;
 
@@ -275,6 +276,35 @@ public sealed class ConsumerTests : IDisposable
         //Assert
         exception.ShouldBeOfType<ConsumerFaultedException>();
     }
+    [Fact]
+    public async Task Receive_WhenReceivingToTopicWithSchemaAndReceiverHasWrongSchema_ShouldThrowException()
+    {
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
+        var client = CreateClient();
+        await using var consumer = CreateConsumer(client, topicName, Schema.String);
+        await using var producer = CreateProducer(client, topicName, pulsarSchema);
+        await producer.Send(new AvroSampleModel(), _cts.Token);
+        var exception = await Record.ExceptionAsync(consumer.Receive().AsTask);
+        exception.ShouldBeOfType<IncompatibleSchemaException>();
+    }
+    [Fact]
+    public async Task Receive_WhenReceivingToTopicWithSchemaAndReceiverHasRightSchema_ShouldBeAbleToRecieve()
+    {
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
+        var client = CreateClient();
+        await using var consumer = CreateConsumer(client, topicName, pulsarSchema);
+        await using var producer = CreateProducer(client, topicName, pulsarSchema);
+        var modelProduced = new AvroSampleModel();
+        await producer.Send(modelProduced, _cts.Token);
+        var consumed = await consumer.Receive(_cts.Token);
+        consumed.Value().Name.ShouldBe(modelProduced.Name);
+        consumed.Value().Surname.ShouldBe(modelProduced.Surname);
+        consumed.Value().Age.ShouldBe(modelProduced.Age);
+    }
 
     [Fact]
     public async Task Connectivity_WhenInitiallyConnectedWithNoMessagesThenGoesDown_ShouldBeAbleToReceiveWhenUpAgain()
@@ -408,19 +438,30 @@ public sealed class ConsumerTests : IDisposable
 
     private static string CreateSubscriptionName() => $"subscription-{Guid.NewGuid():N}";
 
-    private IProducer<string> CreateProducer(IPulsarClient pulsarClient, string topicName)
-        => pulsarClient.NewProducer(Schema.String)
+    private IProducer<T> CreateProducer<T>(
+        IPulsarClient pulsarClient,
+        string topicName,
+        ISchema<T> schema)
+        => pulsarClient.NewProducer(schema)
         .Topic(topicName)
         .StateChangedHandler(_testOutputHelper.Log)
         .Create();
+    private IProducer<string> CreateProducer(
+        IPulsarClient pulsarClient,
+        string topicName,
+        ProducerAccessMode producerAccessMode = ProducerAccessMode.Shared)
+        => CreateProducer(pulsarClient, topicName, Schema.String);
+
 
     private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string topicName)
-        => pulsarClient.NewConsumer(Schema.String)
-        .InitialPosition(SubscriptionInitialPosition.Earliest)
-        .SubscriptionName(CreateSubscriptionName())
-        .Topic(topicName)
-        .StateChangedHandler(_testOutputHelper.Log)
-        .Create();
+        => CreateConsumer(pulsarClient, topicName, Schema.String);
+    private IConsumer<T> CreateConsumer<T>(IPulsarClient pulsarClient, string topicName, ISchema<T> schema)
+       => pulsarClient.NewConsumer(schema)
+       .InitialPosition(SubscriptionInitialPosition.Earliest)
+       .SubscriptionName(CreateSubscriptionName())
+       .Topic(topicName)
+       .StateChangedHandler(_testOutputHelper.Log)
+       .Create();
 
     private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, IEnumerable<string> topics)
         => pulsarClient.NewConsumer(Schema.String)
