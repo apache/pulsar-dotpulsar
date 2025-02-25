@@ -96,9 +96,9 @@ public static class Schema
     /// Time schema using TimeSpan.
     /// </summary>
     public static TimeSchema Time { get; }
+
     /// <summary>
     /// Avro schema for classes that use ISpecificRecord
     /// </summary>
-    public static AvroISpecificRecordSchema<T> AvroISpecificRecord<T>() =>
-        new AvroISpecificRecordSchema<T>();
+    public static AvroISpecificRecordSchema<T> AvroISpecificRecord<T>() => new();
 }

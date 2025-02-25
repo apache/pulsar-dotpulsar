@@ -15,8 +15,6 @@
 namespace DotPulsar.Tests.Schemas.TestSamples.AvroModels;
 
 using Avro.Specific;
-using System;
-
 
 public class AvroSampleModel : ISpecificRecord
 {
@@ -30,16 +28,22 @@ public class AvroSampleModel : ISpecificRecord
                 { ""name"": ""Age"", ""type"": ""int"" }
             ]
         }");
+
     public AvroSampleModel()
     {
         Name = "Jon";
         Surname = "Klinaku";
         Age = 27;
     }
+
     public virtual Avro.Schema Schema => _SCHEMA;
+
     public string Name { get; set; }
+
     public string Surname { get; set; }
+
     public int Age { get; set; }
+
     public object Get(int fieldPos)
     {
         return fieldPos switch

@@ -172,6 +172,7 @@ public class IntegrationFixture : IAsyncLifetime
         if (result.ExitCode != 0)
             throw new Exception($"Could not create the partitioned topic: {result.Stderr}");
     }
+
     public async Task AddSchemaToExistingTopic(string topic, SchemaInfo pulsarSchemaInfo, CancellationToken cancellationToken)
     {
         var schDef = new
@@ -180,14 +181,14 @@ public class IntegrationFixture : IAsyncLifetime
             schema = Encoding.UTF8.GetString(pulsarSchemaInfo.Data),
             properties = new Dictionary<string, string>()
         };
-        string schemaFilename = $"{Guid.NewGuid().ToString()}.sch";
-        await _pulsarCluster.CopyAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(schDef)), $"pulsar/{schemaFilename}", ct: cancellationToken);
-        string arguments = $"bin/pulsar-admin schemas upload --filename {schemaFilename} {topic}";
+        var schemaFilename = $"{Guid.NewGuid()}.sch";
+        var content = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(schDef));
+        await _pulsarCluster.CopyAsync(content, $"pulsar/{schemaFilename}", ct: cancellationToken);
+        var arguments = $"bin/pulsar-admin schemas upload --filename {schemaFilename} {topic}";
         var result = await _pulsarCluster.ExecAsync(["/bin/bash", "-c", arguments], cancellationToken);
 
         if (result.ExitCode != 0)
             throw new Exception($"Could not upload a schema to topic: {result.Stderr}");
-
     }
 
     public async Task<IAsyncDisposable> DisableThePulsarConnection()

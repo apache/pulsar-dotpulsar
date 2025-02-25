@@ -276,9 +276,11 @@ public sealed class ConsumerTests : IDisposable
         //Assert
         exception.ShouldBeOfType<ConsumerFaultedException>();
     }
+
     [Fact]
-    public async Task Receive_WhenReceivingToTopicWithSchemaAndReceiverHasWrongSchema_ShouldThrowException()
+    public async Task Receive_WhenReceivingFromTopicWithSchemaAndReceiverHasWrongSchema_ShouldThrowException()
     {
+        //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
         var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
@@ -286,24 +288,35 @@ public sealed class ConsumerTests : IDisposable
         await using var consumer = CreateConsumer(client, topicName, Schema.String);
         await using var producer = CreateProducer(client, topicName, pulsarSchema);
         await producer.Send(new AvroSampleModel(), _cts.Token);
+
+        //Act
         var exception = await Record.ExceptionAsync(consumer.Receive().AsTask);
+
+        //Assert
         exception.ShouldBeOfType<IncompatibleSchemaException>();
     }
+
     [Fact]
-    public async Task Receive_WhenReceivingToTopicWithSchemaAndReceiverHasRightSchema_ShouldBeAbleToRecieve()
+    public async Task Receive_WhenReceivingFromTopicWithSchemaAndReceiverHasRightSchema_ShouldBeAbleToRecieve()
     {
+        //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
         var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
         var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName, pulsarSchema);
         await using var producer = CreateProducer(client, topicName, pulsarSchema);
-        var modelProduced = new AvroSampleModel();
-        await producer.Send(modelProduced, _cts.Token);
-        var consumed = await consumer.Receive(_cts.Token);
-        consumed.Value().Name.ShouldBe(modelProduced.Name);
-        consumed.Value().Surname.ShouldBe(modelProduced.Surname);
-        consumed.Value().Age.ShouldBe(modelProduced.Age);
+        var expected = new AvroSampleModel();
+        await producer.Send(expected, _cts.Token);
+
+        //Act
+        var message = await consumer.Receive(_cts.Token);
+        var actual = message.Value();
+
+        //Assert
+        actual.Name.ShouldBe(expected.Name);
+        actual.Surname.ShouldBe(expected.Surname);
+        actual.Age.ShouldBe(expected.Age);
     }
 
     [Fact]
@@ -446,15 +459,15 @@ public sealed class ConsumerTests : IDisposable
         .Topic(topicName)
         .StateChangedHandler(_testOutputHelper.Log)
         .Create();
+
     private IProducer<string> CreateProducer(
         IPulsarClient pulsarClient,
-        string topicName,
-        ProducerAccessMode producerAccessMode = ProducerAccessMode.Shared)
-        => CreateProducer(pulsarClient, topicName, Schema.String);
+        string topicName) => CreateProducer(pulsarClient, topicName, Schema.String);
 
 
     private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string topicName)
         => CreateConsumer(pulsarClient, topicName, Schema.String);
+
     private IConsumer<T> CreateConsumer<T>(IPulsarClient pulsarClient, string topicName, ISchema<T> schema)
        => pulsarClient.NewConsumer(schema)
        .InitialPosition(SubscriptionInitialPosition.Earliest)

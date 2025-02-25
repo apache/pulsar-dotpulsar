@@ -13,49 +13,64 @@
  */
 
 namespace DotPulsar.Tests.Schemas;
+
 using DotPulsar.Exceptions;
-using DotPulsar.Schemas;
 using DotPulsar.Tests.Schemas.TestSamples.AvroModels;
 using System.Buffers;
 
 [Trait("Category", "Unit")]
 public sealed class AvroISpecificRecordSchemaTests
 {
+    [Fact]
+    public void Constructor_GivenModelThatDoNotImplementISpecificRecord_ShouldThrowException()
+    {
+        var exception = Record.Exception(Schema.AvroISpecificRecord<AvroBlankSampleModel>);
+        exception.ShouldBeOfType<SchemaException>();
+    }
 
     [Fact]
-    public void Schema_ClassNotImplementingISpecific_ShouldThrowException()
+    public void Constructor_GivenModelWithWrongSchemaField_ShouldThrowException()
     {
-        var ex = Record.Exception(Schema.AvroISpecificRecord<AvroBlankSampleModel>);
-        ex.ShouldBeOfType<SchemaException>();
+        var exception = Record.Exception(Schema.AvroISpecificRecord<AvroSampleModelWithWrongSchemaField>);
+        exception.ShouldBeOfType<SchemaException>();
     }
+
     [Fact]
-    public void Schema_ClassStaticSchemaFIeldWrongType_ShouldThrowException()
+    public void Constructor_GivenValidModel_ShouldReturnSchema()
     {
-        var ex = Record.Exception(Schema.AvroISpecificRecord<AvroSampleModelWithWrongSCHEMAField>);
-        ex.ShouldBeOfType<SchemaException>();
+        var exception = Record.Exception(Schema.AvroISpecificRecord<AvroSampleModel>);
+        exception.ShouldBeNull();
     }
+
     [Fact]
-    public void Schema_ClassImplementsISpecificRecordCorrectly_ShouldReturnSchema()
+    public void Encode_GivenValidModel_ShouldReturnCorrectBytes()
     {
-        var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
-        pulsarSchema.ShouldBeOfType<AvroISpecificRecordSchema<AvroSampleModel>>();
+        //Arrange
+        var schema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        var expected = new ReadOnlySequence<byte>([16, 77, 97, 114, 105, 103, 111, 110, 97, 8, 67, 101, 116, 97, 58]);
+        var model = new AvroSampleModel { Name = "Marigona", Surname = "Ceta", Age = 29 };
+
+        //Act
+        var actual = schema.Encode(model);
+
+        //Assert
+        actual.ToArray().ShouldBe(expected.ToArray());
     }
+
     [Fact]
-    public void Schema_GivenDataAndImplementsEncodeProperly_ShouldReturnReadOnlySequenceOfBytes()
+    public void Decode_GivenValidBytes_ShouldReturnCorrectModel()
     {
-        var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
-        var res = pulsarSchema.Encode(new AvroSampleModel() { Name = "Jon", Surname = "Klinaku", Age = 27 });
-        res.ShouldBeOfType<ReadOnlySequence<byte>>();
-    }
-    [Fact]
-    public void Schema_GivenDataAndImplementsDecodeProperly_ShouldReturnCorrectObject()
-    {
-        var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
-        ReadOnlySequence<byte> bytes = new ReadOnlySequence<byte>([16, 77, 97, 114, 105, 103, 111, 110, 97, 8, 67, 101, 116, 97, 58]);
-        var res = pulsarSchema.Decode(bytes);
-        res.ShouldBeOfType<AvroSampleModel>();
-        res.Name.ShouldBe("Marigona");
-        res.Surname.ShouldBe("Ceta");
-        res.Age.ShouldBe(29);
+        //Arrange
+        var schema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        var bytes = new ReadOnlySequence<byte>([16, 77, 97, 114, 105, 103, 111, 110, 97, 8, 67, 101, 116, 97, 58]);
+        var expected = new AvroSampleModel { Name = "Marigona", Surname = "Ceta", Age = 29 };
+
+        //Act
+        var actual = schema.Decode(bytes);
+
+        //Assert
+        actual.Name.ShouldBe(expected.Name);
+        actual.Surname.ShouldBe(expected.Surname);
+        actual.Age.ShouldBe(expected.Age);
     }
 }

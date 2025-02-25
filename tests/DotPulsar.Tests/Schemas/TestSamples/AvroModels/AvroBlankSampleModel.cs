@@ -14,7 +14,4 @@
 
 namespace DotPulsar.Tests.Schemas.TestSamples.AvroModels;
 
-
-public class AvroBlankSampleModel
-{
-}
+public class AvroBlankSampleModel { }

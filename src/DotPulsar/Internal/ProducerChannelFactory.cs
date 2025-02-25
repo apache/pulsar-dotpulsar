@@ -43,6 +43,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         _eventRegister = eventRegister;
         _connectionPool = connectionPool;
         _schema = schemaInfo.PulsarSchema;
+
         _commandProducer = new CommandProducer
         {
             ProducerName = producerName,

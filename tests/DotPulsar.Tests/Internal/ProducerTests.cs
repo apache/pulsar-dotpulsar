@@ -269,28 +269,41 @@ public sealed class ProducerTests : IDisposable
 
         foundNonNegativeOne.ShouldBeTrue();
     }
+
     [Fact]
-    public async Task Send_WhenProducingToTopicWithSchemaAndProducerHasWrongSchema_ShouldThrowException()
+    public async Task Send_WhenSendingToTopicWithSchemaAndProducerHasWrongSchema_ShouldThrowException()
     {
+        //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
         var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
         var client = CreateClient();
         await using var producer = CreateProducer(client, topicName, Schema.ByteSequence);
+
+        //Act
         var exception = await Record.ExceptionAsync(producer.Send(Encoding.UTF8.GetBytes("test"), _cts.Token).AsTask);
-        exception.ShouldBeAssignableTo<Exception>();
+
+        //Assert
+        exception.ShouldNotBeNull();
     }
+
     [Fact]
-    public async Task Send_WhenProducingToTopicWithSchemaAndProducerHasRightSchema_ShouldBeAbleToSend()
+    public async Task Send_WhenSendingToTopicWithSchemaAndProducerHasRightSchema_ShouldBeAbleToSend()
     {
+        //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
         var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
         var client = CreateClient();
         await using var producer = CreateProducer(client, topicName, pulsarSchema);
+
+        //Act
         var exception = await Record.ExceptionAsync(producer.Send(new AvroSampleModel(), _cts.Token).AsTask);
+
+        //Assert
         exception.ShouldBeNull();
     }
+
     [Fact]
     public async Task Connectivity_WhenConnectionIsInitiallyUpAndGoesDown_ShouldBeAbleToSendWhileDown()
     {
@@ -417,7 +430,6 @@ public sealed class ProducerTests : IDisposable
 
     private static string CreateSubscriptionName() => $"subscription-{Guid.NewGuid():N}";
 
-
     private IProducer<T> CreateProducer<T>(
         IPulsarClient pulsarClient,
         string topicName,
@@ -428,6 +440,7 @@ public sealed class ProducerTests : IDisposable
         .ProducerAccessMode(producerAccessMode)
         .StateChangedHandler(_testOutputHelper.Log)
         .Create();
+
     private IProducer<string> CreateProducer(
         IPulsarClient pulsarClient,
         string topicName,
@@ -437,6 +450,7 @@ public sealed class ProducerTests : IDisposable
 
     private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string topicName)
         => CreateConsumer(pulsarClient, topicName, Schema.String);
+
     private IConsumer<T> CreateConsumer<T>(IPulsarClient pulsarClient, string topicName, ISchema<T> schema)
        => pulsarClient.NewConsumer(schema)
        .InitialPosition(SubscriptionInitialPosition.Earliest)
