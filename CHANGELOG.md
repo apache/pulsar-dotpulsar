@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [Unreleased]
 
+### Added
+
+- Support for [Apache.Avro](https://www.nuget.org/packages/Apache.Avro)
+
 ### Changed
 
 - Updated the Microsoft.Extensions.ObjectPool dependency from version 9.0.1 to 9.0.2

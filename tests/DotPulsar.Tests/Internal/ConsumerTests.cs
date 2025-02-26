@@ -282,12 +282,12 @@ public sealed class ConsumerTests : IDisposable
     {
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
-        var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        var pulsarSchema = Schema.AvroISpecificRecord<ValidModel>();
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
         var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName, Schema.String);
         await using var producer = CreateProducer(client, topicName, pulsarSchema);
-        await producer.Send(new AvroSampleModel(), _cts.Token);
+        await producer.Send(new ValidModel(), _cts.Token);
 
         //Act
         var exception = await Record.ExceptionAsync(consumer.Receive().AsTask);
@@ -301,12 +301,12 @@ public sealed class ConsumerTests : IDisposable
     {
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
-        var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        var pulsarSchema = Schema.AvroISpecificRecord<ValidModel>();
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
         var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName, pulsarSchema);
         await using var producer = CreateProducer(client, topicName, pulsarSchema);
-        var expected = new AvroSampleModel();
+        var expected = new ValidModel();
         await producer.Send(expected, _cts.Token);
 
         //Act

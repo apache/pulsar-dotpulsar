@@ -16,12 +16,12 @@ namespace DotPulsar.Tests.Schemas.TestSamples.AvroModels;
 
 using Avro.Specific;
 
-public class AvroSampleModel : ISpecificRecord
+public class ValidModel : ISpecificRecord
 {
     public static readonly Avro.Schema _SCHEMA = Avro.Schema.Parse(@"
         {
             ""type"": ""record"",
-            ""name"": ""AvroSampleModel"",
+            ""name"": ""ValidModel"",
             ""fields"": [
                 { ""name"": ""Name"", ""type"": ""string"" },
                 { ""name"": ""Surname"", ""type"": ""string"" },
@@ -29,7 +29,7 @@ public class AvroSampleModel : ISpecificRecord
             ]
         }");
 
-    public AvroSampleModel()
+    public ValidModel()
     {
         Name = "Jon";
         Surname = "Klinaku";
@@ -63,7 +63,7 @@ public class AvroSampleModel : ISpecificRecord
                 Name = value as string ?? throw new ArgumentException("Name must be a string");
                 break;
             case 1:
-                Surname = value as string ?? throw new ArgumentException("Name must be a string");
+                Surname = value as string ?? throw new ArgumentException("Surname must be a string");
                 break;
             case 2:
                 Age = value is int intValue ? intValue : throw new ArgumentException("Age must be an int");

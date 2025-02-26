@@ -24,21 +24,21 @@ public sealed class AvroISpecificRecordSchemaTests
     [Fact]
     public void Constructor_GivenModelThatDoNotImplementISpecificRecord_ShouldThrowException()
     {
-        var exception = Record.Exception(Schema.AvroISpecificRecord<AvroBlankSampleModel>);
+        var exception = Record.Exception(Schema.AvroISpecificRecord<EmptyModel>);
         exception.ShouldBeOfType<SchemaException>();
     }
 
     [Fact]
-    public void Constructor_GivenModelWithWrongSchemaField_ShouldThrowException()
+    public void Constructor_GivenModelWithInvalidSchemaField_ShouldThrowException()
     {
-        var exception = Record.Exception(Schema.AvroISpecificRecord<AvroSampleModelWithWrongSchemaField>);
+        var exception = Record.Exception(Schema.AvroISpecificRecord<InvalidSchemaFieldModel>);
         exception.ShouldBeOfType<SchemaException>();
     }
 
     [Fact]
     public void Constructor_GivenValidModel_ShouldReturnSchema()
     {
-        var exception = Record.Exception(Schema.AvroISpecificRecord<AvroSampleModel>);
+        var exception = Record.Exception(Schema.AvroISpecificRecord<ValidModel>);
         exception.ShouldBeNull();
     }
 
@@ -46,9 +46,9 @@ public sealed class AvroISpecificRecordSchemaTests
     public void Encode_GivenValidModel_ShouldReturnCorrectBytes()
     {
         //Arrange
-        var schema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        var schema = Schema.AvroISpecificRecord<ValidModel>();
         var expected = new ReadOnlySequence<byte>([16, 77, 97, 114, 105, 103, 111, 110, 97, 8, 67, 101, 116, 97, 58]);
-        var model = new AvroSampleModel { Name = "Marigona", Surname = "Ceta", Age = 29 };
+        var model = new ValidModel { Name = "Marigona", Surname = "Ceta", Age = 29 };
 
         //Act
         var actual = schema.Encode(model);
@@ -61,9 +61,9 @@ public sealed class AvroISpecificRecordSchemaTests
     public void Decode_GivenValidBytes_ShouldReturnCorrectModel()
     {
         //Arrange
-        var schema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        var schema = Schema.AvroISpecificRecord<ValidModel>();
         var bytes = new ReadOnlySequence<byte>([16, 77, 97, 114, 105, 103, 111, 110, 97, 8, 67, 101, 116, 97, 58]);
-        var expected = new AvroSampleModel { Name = "Marigona", Surname = "Ceta", Age = 29 };
+        var expected = new ValidModel { Name = "Marigona", Surname = "Ceta", Age = 29 };
 
         //Act
         var actual = schema.Decode(bytes);

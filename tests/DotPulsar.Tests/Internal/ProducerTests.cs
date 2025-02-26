@@ -275,7 +275,7 @@ public sealed class ProducerTests : IDisposable
     {
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
-        var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        var pulsarSchema = Schema.AvroISpecificRecord<ValidModel>();
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
         var client = CreateClient();
         await using var producer = CreateProducer(client, topicName, Schema.ByteSequence);
@@ -292,13 +292,13 @@ public sealed class ProducerTests : IDisposable
     {
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
-        var pulsarSchema = Schema.AvroISpecificRecord<AvroSampleModel>();
+        var pulsarSchema = Schema.AvroISpecificRecord<ValidModel>();
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
         var client = CreateClient();
         await using var producer = CreateProducer(client, topicName, pulsarSchema);
 
         //Act
-        var exception = await Record.ExceptionAsync(producer.Send(new AvroSampleModel(), _cts.Token).AsTask);
+        var exception = await Record.ExceptionAsync(producer.Send(new ValidModel(), _cts.Token).AsTask);
 
         //Assert
         exception.ShouldBeNull();
