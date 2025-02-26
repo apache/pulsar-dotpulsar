@@ -101,4 +101,9 @@ public static class Schema
     /// Avro schema for classes that use ISpecificRecord
     /// </summary>
     public static AvroISpecificRecordSchema<T> AvroISpecificRecord<T>() => new();
+
+    /// <summary>
+    /// Avro schema for generic avro record, always give Avro.Generic.GenericRecord
+    /// </summary>
+    public static AvroGenericRecordSchema<T> avroGenericRecordSchema<T>(string jsonAvroSchema) => new(jsonAvroSchema);
 }

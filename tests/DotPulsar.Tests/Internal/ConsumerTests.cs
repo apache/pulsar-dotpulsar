@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Tests.Internal;
 
+using Avro.Generic;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
@@ -278,7 +279,7 @@ public sealed class ConsumerTests : IDisposable
     }
 
     [Fact]
-    public async Task Receive_WhenReceivingFromTopicWithSchemaAndReceiverHasWrongSchema_ShouldThrowException()
+    public async Task Receive_WhenReceivingFromTopicWithSchemaAndReceiverHasWrongAvroISpecificRecordSchema_ShouldThrowException()
     {
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
@@ -297,7 +298,7 @@ public sealed class ConsumerTests : IDisposable
     }
 
     [Fact]
-    public async Task Receive_WhenReceivingFromTopicWithSchemaAndReceiverHasRightSchema_ShouldBeAbleToRecieve()
+    public async Task Receive_WhenReceivingFromTopicWithSchemaAndReceiverHasRightAvroISpecificRecordSchema_ShouldBeAbleToRecieve()
     {
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
@@ -317,6 +318,34 @@ public sealed class ConsumerTests : IDisposable
         actual.Name.ShouldBe(expected.Name);
         actual.Surname.ShouldBe(expected.Surname);
         actual.Age.ShouldBe(expected.Age);
+    }
+    [Fact]
+    public async Task Receive_WhenReceivingFromTopicWithSchemaAndReceiverHasRightAvroGenericRecordSchema_ShouldBeAbleToRecieve()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        var pulsarISpecificSchema = Schema.AvroISpecificRecord<ValidModel>();
+        var pulsarGenericRecordSchema = Schema.avroGenericRecordSchema<GenericRecord>(ValidModel._SCHEMA.ToString());
+        await _fixture.AddSchemaToExistingTopic(topicName, pulsarISpecificSchema.SchemaInfo, _cts.Token);
+        var client = CreateClient();
+        await using var consumer = CreateConsumer(client, topicName, pulsarGenericRecordSchema);
+        await using var producer = CreateProducer(client, topicName, pulsarISpecificSchema);
+        var expected = new ValidModel
+        {
+            Name = "Shukri",
+            Surname = "Klinaku",
+            Age = 57
+        };
+        await producer.Send(expected, _cts.Token);
+
+        //Act
+        var message = await consumer.Receive(_cts.Token);
+        var actual = message.Value();
+
+        //Assert
+        actual["Name"].ShouldBe(expected.Name);
+        actual["Surname"].ShouldBe(expected.Surname);
+        actual["Age"].ShouldBe(expected.Age);
     }
 
     [Fact]

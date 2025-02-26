@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Tests.Internal;
 
+using Avro.Generic;
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 using DotPulsar.Tests.Schemas.TestSamples.AvroModels;
@@ -288,7 +289,7 @@ public sealed class ProducerTests : IDisposable
     }
 
     [Fact]
-    public async Task Send_WhenSendingToTopicWithSchemaAndProducerHasRightSchema_ShouldBeAbleToSend()
+    public async Task Send_WhenSendingToTopicWithSchemaAndProducerHasRightISpecificRecordSchema_ShouldBeAbleToSend()
     {
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
@@ -299,6 +300,25 @@ public sealed class ProducerTests : IDisposable
 
         //Act
         var exception = await Record.ExceptionAsync(producer.Send(new ValidModel(), _cts.Token).AsTask);
+
+        //Assert
+        exception.ShouldBeNull();
+    }
+    [Fact]
+    public async Task Send_WhenSendingToTopicWithSchemaAndProducerHasRightGenericRecordSchema_ShouldBeAbleToSend()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        var pulsarSchema = Schema.avroGenericRecordSchema<GenericRecord>(ValidModel._SCHEMA.ToString());
+        await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
+        var client = CreateClient();
+        await using var producer = CreateProducer(client, topicName, pulsarSchema);
+        var model = new GenericRecord((Avro.RecordSchema) ValidModel._SCHEMA);
+        model.Add("Name", "Valbona");
+        model.Add("Surname", "Berisha");
+        model.Add("Age", 55);
+        //Act
+        var exception = await Record.ExceptionAsync(producer.Send(model, _cts.Token).AsTask);
 
         //Assert
         exception.ShouldBeNull();

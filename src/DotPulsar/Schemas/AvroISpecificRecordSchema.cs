@@ -120,7 +120,7 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
         avroReaderMethod = LoadSpecificDatumReaderMethod(avroReader.GetMethods());
     }
 
-    private static void TryLoad(out object avroWriter, out object avroReader)
+    private void TryLoad(out object avroWriter, out object avroReader)
     {
         avroWriter = LoadSpecificDatumWriter();
         avroReader = LoadSpecificDatumReader();
@@ -152,10 +152,10 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
         throw new SchemaException($"'{fullName}' as a generic public class was not found");
     }
 
-    private static object LoadSpecificDatumWriter()
+    private object LoadSpecificDatumWriter()
         => Activator.CreateInstance(_avroWriterTypeInfo, _avroSchema) ?? throw new SchemaException("Could not create SpecificDatumWriter");
 
-    private static object LoadSpecificDatumReader()
+    private object LoadSpecificDatumReader()
         => Activator.CreateInstance(_avroReaderTypeInfo, _avroSchema, _avroSchema) ?? throw new SchemaException("Could not create SpecificDatumReader");
 
     private static MethodInfo LoadSpecificDatumReaderMethod(IEnumerable<MethodInfo> methods)
