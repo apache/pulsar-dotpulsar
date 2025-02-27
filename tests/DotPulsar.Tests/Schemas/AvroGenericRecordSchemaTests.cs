@@ -25,21 +25,21 @@ public sealed class AvroGenericRecordSchemaTests
     [Fact]
     public void Constructor_GivenModelIsNotGenericRecord_ShouldThrowException()
     {
-        var exception = Record.Exception(() => Schema.avroGenericRecordSchema<EmptyModel>(""));
+        var exception = Record.Exception(() => Schema.AvroGenericRecordSchema<EmptyModel>(""));
         exception.ShouldBeOfType<SchemaException>();
     }
 
     [Fact]
     public void Constructor_GivenGenericWithUnParsableSchema_ShouldThrowException()
     {
-        var exception = Record.Exception(() => Schema.avroGenericRecordSchema<GenericRecord>(""));
+        var exception = Record.Exception(() => Schema.AvroGenericRecordSchema<GenericRecord>(""));
         exception.ShouldBeOfType<SchemaException>();
     }
 
     [Fact]
     public void Constructor_GivenGenericRecordWithParsableSchema_ShouldReturnSchema()
     {
-        var exception = Record.Exception(() => Schema.avroGenericRecordSchema<GenericRecord>(ValidModel._SCHEMA.ToString()));
+        var exception = Record.Exception(() => Schema.AvroGenericRecordSchema<GenericRecord>(ValidModel._SCHEMA.ToString()));
         exception.ShouldBeNull();
     }
 
@@ -47,7 +47,7 @@ public sealed class AvroGenericRecordSchemaTests
     public void Encode_GivenValidModel_ShouldReturnCorrectBytes()
     {
         //Arrange
-        var schema = Schema.avroGenericRecordSchema<GenericRecord>(ValidModel._SCHEMA.ToString());
+        var schema = Schema.AvroGenericRecordSchema<GenericRecord>(ValidModel._SCHEMA.ToString());
         var expected = new ReadOnlySequence<byte>([6, 66, 101, 110, 14, 75, 108, 105, 110, 97, 107, 117, 44]);
         var model = new GenericRecord((Avro.RecordSchema) ValidModel._SCHEMA);
         model.Add("Name", "Ben");
@@ -64,7 +64,7 @@ public sealed class AvroGenericRecordSchemaTests
     public void Decode_GivenValidBytes_ShouldReturnCorrectModel()
     {
         //Arrange
-        var schema = Schema.avroGenericRecordSchema<GenericRecord>(ValidModel._SCHEMA.ToString());
+        var schema = Schema.AvroGenericRecordSchema<GenericRecord>(ValidModel._SCHEMA.ToString());
         var bytes = new ReadOnlySequence<byte>([8, 65, 100, 101, 97, 14, 75, 108, 105, 110, 97, 107, 117, 50]);
         var expected = new ValidModel { Name = "Adea", Surname = "Klinaku", Age = 25 };
 
