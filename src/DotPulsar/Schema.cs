@@ -105,5 +105,5 @@ public static class Schema
     /// <summary>
     /// Avro schema for generic avro record, always give Avro.Generic.GenericRecord
     /// </summary>
-    public static AvroGenericRecordSchema<T> avroGenericRecordSchema<T>(string jsonAvroSchema) => new(jsonAvroSchema);
+    public static AvroGenericRecordSchema<T> AvroGenericRecordSchema<T>(string jsonAvroSchema) => new(jsonAvroSchema);
 }

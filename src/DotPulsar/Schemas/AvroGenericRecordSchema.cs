@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 namespace DotPulsar.Schemas;
 
 using DotPulsar.Abstractions;
@@ -33,7 +34,6 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
     private static readonly Type _avroWriterTypeInfo;
     private static readonly Exception _constructorException;
     private static readonly TypeInfo _schemaTypeInfo;
-    
 
     private readonly object _avroReader;
     private readonly object _avroWriter;
@@ -80,7 +80,6 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
         }
         catch (Exception exception)
         {
-
             throw new SchemaException($"Could not create schema from jsonSchema '{jsonAvroSchema}'", exception);
         }
         var schemaName = (string) (_schemaTypeInfo.GetProperty("Name")?.GetValue(avroSchema) ?? string.Empty);
@@ -131,6 +130,7 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
         avroReader = LoadGenericDatumReader();
         avroWriter = LoadGenericDatumWriter();
     }
+
     private static Type LoadGenericDatumReaderType(IEnumerable<TypeInfo> types)
     {
         const string fullName = "Avro.Generic.GenericDatumReader`1";
@@ -143,6 +143,7 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
 
         throw new SchemaException($"'{fullName}' as a generic public class was not found");
     }
+
     private static Type LoadGenericDatumWriterType(IEnumerable<TypeInfo> types)
     {
         const string fullName = "Avro.Generic.GenericDatumWriter`1";
@@ -155,10 +156,9 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
 
         throw new SchemaException($"'{fullName}' as a generic public class was not found");
     }
+
     private static TypeInfo LoadSchemaType(IEnumerable<TypeInfo> types)
     {
-        
-
         foreach (var type in types)
         {
             if (type.IsPublic && type.IsClass && !type.IsGenericType && type.FullName is not null && type.FullName.Equals(AvroSchemafullName))
@@ -167,6 +167,7 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
 
         throw new SchemaException($"'{AvroSchemafullName}' as a generic public class was not found");
     }
+
     private MethodInfo LoadAvroSchemaParseMethod(IEnumerable<MethodInfo> methods)
     {
         const string name = "Parse";
@@ -179,7 +180,6 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
             if (parameters.Length != 1)
                 continue;
 
-
             if (parameters[0].ParameterType != typeof(string))
                 continue;
 
@@ -188,8 +188,10 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
 
         throw new SchemaException($"A method with the name '{name}' matching the delegate was not found");
     }
+
     private object LoadGenericDatumReader()
         => Activator.CreateInstance(_avroReaderTypeInfo, avroSchema, avroSchema) ?? throw new SchemaException("Could not create GenericDatumReader");
+
     private object LoadGenericDatumWriter()
         => Activator.CreateInstance(_avroWriterTypeInfo, avroSchema) ?? throw new SchemaException("Could not create GenericDatumWriter");
 
@@ -219,6 +221,7 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
 
         throw new SchemaException($"A method with the name '{name}' matching the delegate was not found");
     }
+
     private static MethodInfo LoadGenericDatumWriterMethod(IEnumerable<MethodInfo> methods)
     {
         const string name = "Write";
@@ -245,6 +248,7 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
 
         throw new SchemaException($"A method with the name '{name}' matching the delegate was not found");
     }
+
     private static TypeInfo LoadBinaryDecoderType(IEnumerable<TypeInfo> types)
     {
         const string fullName = "Avro.IO.BinaryDecoder";
@@ -257,6 +261,7 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
 
         throw new SchemaException($"'{fullName}' as a public class was not found");
     }
+
     private static TypeInfo LoadBinaryEncoderType(IEnumerable<TypeInfo> types)
     {
         const string fullName = "Avro.IO.BinaryEncoder";
@@ -269,9 +274,10 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
 
         throw new SchemaException($"'{fullName}' as a public class was not found");
     }
+
     private static object GetBinaryEncoder(MemoryStream stream)
         => Activator.CreateInstance(_binaryEncoderTypeInfo, stream) ?? throw new SchemaException("There was a problem while instantiating BinaryEncoder");
+
     private static object GetBinaryDecoder(MemoryStream stream)
         => Activator.CreateInstance(_binaryDecoderTypeInfo, stream) ?? throw new SchemaException("There was a problem while instantiating BinaryDecoder");
 }
-
