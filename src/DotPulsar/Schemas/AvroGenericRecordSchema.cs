@@ -76,7 +76,6 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
         try
         {
             avroSchema = schemaParseMethod.Invoke(null, [jsonAvroSchema]) ?? throw new SchemaException($"Could not create schema from jsonSchema '{jsonAvroSchema}'");
-
         }
         catch (Exception exception)
         {
