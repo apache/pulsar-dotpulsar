@@ -325,7 +325,7 @@ public sealed class ConsumerTests : IDisposable
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
         var pulsarISpecificSchema = Schema.AvroISpecificRecord<ValidModel>();
-        var pulsarGenericRecordSchema = Schema.AvroGenericRecordSchema<GenericRecord>(ValidModel._SCHEMA.ToString());
+        var pulsarGenericRecordSchema = Schema.AvroGenericRecord<GenericRecord>(ValidModel._SCHEMA.ToString());
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarISpecificSchema.SchemaInfo, _cts.Token);
         var client = CreateClient();
         await using var consumer = CreateConsumer(client, topicName, pulsarGenericRecordSchema);

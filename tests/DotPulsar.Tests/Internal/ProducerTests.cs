@@ -309,7 +309,7 @@ public sealed class ProducerTests : IDisposable
     {
         //Arrange
         var topicName = await _fixture.CreateTopic(_cts.Token);
-        var pulsarSchema = Schema.AvroGenericRecordSchema<GenericRecord>(ValidModel._SCHEMA.ToString());
+        var pulsarSchema = Schema.AvroGenericRecord<GenericRecord>(ValidModel._SCHEMA.ToString());
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
         var client = CreateClient();
         await using var producer = CreateProducer(client, topicName, pulsarSchema);
