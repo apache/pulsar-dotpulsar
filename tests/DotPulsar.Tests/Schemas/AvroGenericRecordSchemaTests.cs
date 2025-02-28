@@ -30,14 +30,14 @@ public sealed class AvroGenericRecordSchemaTests
     }
 
     [Fact]
-    public void Constructor_GivenGenericWithUnParsableSchema_ShouldThrowException()
+    public void Constructor_GivenGenericRecordWithInvalidSchema_ShouldThrowException()
     {
         var exception = Record.Exception(() => Schema.AvroGenericRecord<GenericRecord>(""));
         exception.ShouldBeOfType<SchemaException>();
     }
 
     [Fact]
-    public void Constructor_GivenGenericRecordWithParsableSchema_ShouldReturnSchema()
+    public void Constructor_GivenGenericRecordWithValidSchema_ShouldReturnSchema()
     {
         var exception = Record.Exception(() => Schema.AvroGenericRecord<GenericRecord>(ValidModel._SCHEMA.ToString()));
         exception.ShouldBeNull();
@@ -53,6 +53,7 @@ public sealed class AvroGenericRecordSchemaTests
         model.Add("Name", "Ben");
         model.Add("Surname", "Klinaku");
         model.Add("Age", 22);
+
         //Act
         var actual = schema.Encode(model);
 
@@ -70,6 +71,7 @@ public sealed class AvroGenericRecordSchemaTests
 
         //Act
         var actual = schema.Decode(bytes);
+
         //Assert
         actual["Name"].ShouldBe(expected.Name);
         actual["Surname"].ShouldBe(expected.Surname);

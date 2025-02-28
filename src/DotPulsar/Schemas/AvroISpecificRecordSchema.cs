@@ -59,7 +59,7 @@ public sealed class AvroISpecificRecordSchema<T> : ISchema<T>
             var avroSchemaType = _avroSchema.GetType();
             if (!avroSchemaType.ImplementsBaseTypeFullName(AvroSchemaFullName))
                 throw new SchemaException($"The static field '{SchemaField}' must be of type '{AvroSchemaFullName}'");
-            
+
             TryLoadStatic(out Type avroWriterType, out Type avroReaderType, out TypeInfo binaryEncoderType, out TypeInfo binaryDecoderType, out MethodInfo avroWriterMethod, out MethodInfo avroReaderMethod);
             _avroWriterTypeInfo = avroWriterType;
             _avroReaderTypeInfo = avroReaderType;

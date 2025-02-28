@@ -319,6 +319,7 @@ public sealed class ConsumerTests : IDisposable
         actual.Surname.ShouldBe(expected.Surname);
         actual.Age.ShouldBe(expected.Age);
     }
+
     [Fact]
     public async Task Receive_WhenReceivingFromTopicWithSchemaAndReceiverHasRightAvroGenericRecordSchema_ShouldBeAbleToRecieve()
     {

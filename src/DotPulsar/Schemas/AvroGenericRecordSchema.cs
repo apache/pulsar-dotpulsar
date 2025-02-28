@@ -60,7 +60,6 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
             _avroReaderReadMethod = avroReaderMethod;
             _avroWriterWriteMethod = avroWriterMethod;
             _schemaTypeInfo = schemaType;
-
         }
         catch (Exception exception)
         {
@@ -72,6 +71,7 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
     {
         if (_constructorException is not null)
             throw _constructorException;
+
         var schemaParseMethod = LoadAvroSchemaParseMethod(_schemaTypeInfo.GetMethods());
         try
         {
@@ -85,7 +85,7 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
         var schemaData = (string) (_schemaTypeInfo.GetMethod("ToString", Type.EmptyTypes)?.Invoke(avroSchema, null) ?? throw new SchemaException($"Schema 'ToString()' must not return null for type '{_typeT}'"));
         SchemaInfo = new SchemaInfo(schemaName, Encoding.UTF8.GetBytes(schemaData), SchemaType.Avro, new Dictionary<string, string>());
 
-        TryLoad(out object avroReader,out object avroWriter);
+        TryLoad(out object avroReader, out object avroWriter);
         _avroReader = avroReader;
         _avroWriter = avroWriter;
     }
@@ -167,9 +167,10 @@ public sealed class AvroGenericRecordSchema<T> : ISchema<T>
         throw new SchemaException($"'{AvroSchemafullName}' as a generic public class was not found");
     }
 
-    private MethodInfo LoadAvroSchemaParseMethod(IEnumerable<MethodInfo> methods)
+    private static MethodInfo LoadAvroSchemaParseMethod(IEnumerable<MethodInfo> methods)
     {
         const string name = "Parse";
+
         foreach (var method in methods)
         {
             if (method.Name != name || method.ReturnType.FullName != AvroSchemafullName || !method.IsStatic)

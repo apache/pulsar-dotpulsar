@@ -304,6 +304,7 @@ public sealed class ProducerTests : IDisposable
         //Assert
         exception.ShouldBeNull();
     }
+
     [Fact]
     public async Task Send_WhenSendingToTopicWithSchemaAndProducerHasRightGenericRecordSchema_ShouldBeAbleToSend()
     {
@@ -317,6 +318,7 @@ public sealed class ProducerTests : IDisposable
         model.Add("Name", "Valbona");
         model.Add("Surname", "Berisha");
         model.Add("Age", 55);
+
         //Act
         var exception = await Record.ExceptionAsync(producer.Send(model, _cts.Token).AsTask);
 
