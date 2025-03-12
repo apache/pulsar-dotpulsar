@@ -279,10 +279,10 @@ public sealed class ProducerTests : IDisposable
         var pulsarSchema = Schema.AvroISpecificRecord<ValidModel>();
         await _fixture.AddSchemaToExistingTopic(topicName, pulsarSchema.SchemaInfo, _cts.Token);
         var client = CreateClient();
-        await using var producer = CreateProducer(client, topicName, Schema.ByteSequence);
+        await using var producer = CreateProducer(client, topicName, Schema.String);
 
         //Act
-        var exception = await Record.ExceptionAsync(producer.Send(Encoding.UTF8.GetBytes("test"), _cts.Token).AsTask);
+        var exception = await Record.ExceptionAsync(producer.Send("test", _cts.Token).AsTask);
 
         //Assert
         exception.ShouldNotBeNull();
@@ -324,6 +324,28 @@ public sealed class ProducerTests : IDisposable
 
         //Assert
         exception.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Send_WhenSendingToTopicWithSchemaAndProducerNoSchema_ShouldBeAbleToSend()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await _fixture.AddSchemaToExistingTopic(topicName, Schema.String.SchemaInfo, _cts.Token);
+        await using var client = CreateClient();
+        await using var stringProducer = CreateProducer(client, topicName, Schema.String);
+        await using var byteArrayProducer = CreateProducer(client, topicName, Schema.ByteArray);
+        await using var byteSequenceProducer = CreateProducer(client, topicName, Schema.ByteSequence);
+
+        //Act
+        var stringException = await Record.ExceptionAsync(stringProducer.Send("test", _cts.Token).AsTask);
+        var byteArrayException = await Record.ExceptionAsync(byteArrayProducer.Send(Encoding.UTF8.GetBytes("test"), _cts.Token).AsTask);
+        var byteSequenceException = await Record.ExceptionAsync(byteSequenceProducer.Send(Encoding.UTF8.GetBytes("test"), _cts.Token).AsTask);
+
+        //Assert
+        stringException.ShouldBeNull();
+        byteArrayException.ShouldBeNull();
+        byteSequenceException.ShouldBeNull();
     }
 
     [Fact]

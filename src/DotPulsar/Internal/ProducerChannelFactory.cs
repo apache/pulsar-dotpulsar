@@ -48,9 +48,11 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         {
             ProducerName = producerName,
             ProducerAccessMode = producerAccessMode,
-            Topic = topic,
-            Schema = _schema
+            Topic = topic
         };
+
+        if (_schema.Type != Schema.SchemaType.None)
+            _commandProducer.Schema = _schema;
 
         if (properties is not null)
             _commandProducer.Metadatas.AddRange(properties.Select(x => new KeyValue { Key = x.Key, Value = x.Value }));
