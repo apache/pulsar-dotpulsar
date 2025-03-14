@@ -103,6 +103,9 @@ EOF
 dotnet build
 docker pull apachepulsar/pulsar:latest
 docker run --name pulsar-standalone -d --rm -it -p 8080:8080 -p 6650:6650 apachepulsar/pulsar:latest /pulsar/bin/pulsar standalone -nss -nfw
+echo "Waiting 10 seconds for Pulsar to start..."
+sleep 10
+echo "Running application..."
 dotnet run
 docker stop pulsar-standalone
 ```
