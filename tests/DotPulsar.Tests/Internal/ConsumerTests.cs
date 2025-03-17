@@ -19,6 +19,7 @@ using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
 using DotPulsar.Tests.Schemas.TestSamples.AvroModels;
+using System.Text;
 using System.Text.RegularExpressions;
 using Xunit.Abstractions;
 
@@ -347,6 +348,24 @@ public sealed class ConsumerTests : IDisposable
         actual["Name"].ShouldBe(expected.Name);
         actual["Surname"].ShouldBe(expected.Surname);
         actual["Age"].ShouldBe(expected.Age);
+    }
+
+    [Fact]
+    public async Task Subscription_WhenSubscribingToAnExistingTopicWithNoSchema_ShouldNotSubscribeWithSchemaTypeNone()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await using var client = CreateClient();
+        await using var producer = CreateProducer(client, topicName, Schema.ByteSequence);
+        await producer.Send(Encoding.UTF8.GetBytes("Test"), _cts.Token);
+        await using var consumer = CreateConsumer(client, topicName, Schema.ByteSequence);
+        var receiveTask = consumer.Receive(_cts.Token);
+
+        //Act
+        var exception = await Record.ExceptionAsync(receiveTask.AsTask);
+
+        //Assert
+        exception.ShouldBeNull();
     }
 
     [Fact]
