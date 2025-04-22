@@ -420,6 +420,36 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         return messageIds;
     }
 
+    public async ValueTask NegativeAcknowledge(MessageId messageId, CancellationToken cancellationToken)
+    {
+        await Guard(cancellationToken).ConfigureAwait(false);
+
+        if (_singleSubConsumer is not null)
+            await _singleSubConsumer.NegativeAcknowledge(messageId, cancellationToken).ConfigureAwait(false);
+        else
+            await _subConsumers[messageId.Topic].NegativeAcknowledge(messageId, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async ValueTask NegativeAcknowledge(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken = default)
+    {
+        await Guard(cancellationToken).ConfigureAwait(false);
+
+        if (_singleSubConsumer is not null)
+        {
+            await _singleSubConsumer.NegativeAcknowledge(messageIds, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        var groupedMessageIds = messageIds.GroupBy(messageIds => messageIds.Topic);
+        var nackTasks = new List<Task>();
+        foreach (var group in groupedMessageIds)
+        {
+            nackTasks.Add(_subConsumers[group.Key].NegativeAcknowledge(group, cancellationToken).AsTask());
+        }
+
+        await Task.WhenAll(nackTasks).ConfigureAwait(false);
+    }
+
     private SubConsumer<TMessage> CreateSubConsumer(string topic)
     {
         var correlationId = Guid.NewGuid();
