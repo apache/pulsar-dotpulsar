@@ -115,4 +115,11 @@ public static class ConsumerExtensions
         var currentState = await consumer.State.OnStateChangeFrom(state, delay, cancellationToken).ConfigureAwait(false);
         return new ConsumerStateChanged(consumer, currentState);
     }
+
+    /// <summary>
+    /// Negative acknowledge the consumption of a single message.
+    /// This will tell the broker the message was not processed successfully and should be redelivered later.
+    /// </summary>
+    public static async ValueTask NegativeAcknowledge(this IConsumer consumer, IMessage message, CancellationToken cancellationToken = default)
+        => await consumer.NegativeAcknowledge(message.MessageId, cancellationToken).ConfigureAwait(false);
 }

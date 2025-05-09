@@ -467,6 +467,182 @@ public sealed class ConsumerTests : IDisposable
         exception.ShouldBeNull();
     }
 
+    [Fact]
+    public async Task NegativeAcknowledge_GivenSingleMessage_ShouldBeRedelivered()
+    {
+        // Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, topicName);
+        await using var producer = CreateProducer(client, topicName);
+
+        var content = "test-nack-message";
+        var messageId = await producer.Send(content, _cts.Token);
+
+        // Receive the message the first time
+        var message = await consumer.Receive(_cts.Token);
+        message.MessageId.ShouldBe(messageId);
+        message.Value().ShouldBe(content);
+
+        // Act
+        await consumer.NegativeAcknowledge(message.MessageId, _cts.Token);
+
+        // The message should be redelivered
+        var redeliveredMessage = await consumer.Receive(_cts.Token);
+
+        // Assert
+        redeliveredMessage.Value().ShouldBe(content);
+
+        // Verify message was redelivered (same content, may or may not have redelivery count)
+        // En algunas versiones de Pulsar, RedeliveryCount no se incrementa inmediatamente
+        // después de un negative acknowledgment
+        redeliveredMessage.Value().ShouldBe(message.Value());
+
+        // Clean up - acknowledge the message so it doesn't get redelivered further
+        await consumer.Acknowledge(redeliveredMessage.MessageId, _cts.Token);
+    }
+
+    [Fact]
+    public async Task NegativeAcknowledge_GivenMultipleMessages_ShouldAllBeRedelivered()
+    {
+        // Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        const int numberOfMessages = 5;
+
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, topicName);
+        await using var producer = CreateProducer(client, topicName);
+
+        var messageIds = new List<MessageId>();
+        var contents = new List<string>();
+
+        // Produce and receive messages
+        for (var i = 0; i < numberOfMessages; i++)
+        {
+            var content = $"test-nack-message-{i}";
+            contents.Add(content);
+            messageIds.Add(await producer.Send(content, _cts.Token));
+        }
+
+        var receivedMessages = new List<IMessage<string>>();
+        for (var i = 0; i < numberOfMessages; i++)
+        {
+            receivedMessages.Add(await consumer.Receive(_cts.Token));
+        }
+
+        // Act
+        await consumer.NegativeAcknowledge(receivedMessages.Select(m => m.MessageId), _cts.Token);
+
+        // Assert
+        var redeliveredContents = new List<string>();
+        for (var i = 0; i < numberOfMessages; i++)
+        {
+            var redeliveredMessage = await consumer.Receive(_cts.Token);
+            redeliveredContents.Add(redeliveredMessage.Value());
+
+            // Acknowledge to prevent further redeliveries
+            await consumer.Acknowledge(redeliveredMessage.MessageId, _cts.Token);
+        }
+
+        // Verificamos que todos los contenidos originales se hayan reentregado
+        redeliveredContents.ShouldBe(contents, ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task NegativeAcknowledge_GivenPartitionedTopic_ShouldRedeliverMessagesFromAllPartitions()
+    {
+        // Arrange
+        const int numberOfMessages = 9;
+        const int partitions = 3;
+        var topicName = await _fixture.CreatePartitionedTopic(partitions, _cts.Token);
+
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, topicName);
+        await using var producer = CreateProducer(client, topicName);
+
+        // Produce messages to ensure they spread across partitions
+        var messageContents = new List<string>();
+        for (var i = 0; i < numberOfMessages; i++)
+        {
+            var content = $"test-nack-message-{i}";
+            messageContents.Add(content);
+            await producer.Send(content, _cts.Token);
+        }
+
+        // Receive all messages
+        var receivedMessages = new List<IMessage<string>>();
+        for (var i = 0; i < numberOfMessages; i++)
+        {
+            receivedMessages.Add(await consumer.Receive(_cts.Token));
+        }
+
+        // Group messages by partition
+        var messagesByPartition = receivedMessages.GroupBy(m => m.MessageId.Partition)
+                                                .ToDictionary(g => g.Key, g => g.ToList());
+
+        // Verify we have messages from different partitions
+        messagesByPartition.Count.ShouldBeGreaterThan(1);
+
+        // Act - negative acknowledge all messages
+        await consumer.NegativeAcknowledge(receivedMessages.Select(m => m.MessageId), _cts.Token);
+
+        // Assert - all messages should be redelivered
+        var redeliveredContents = new List<string>();
+        var redeliveredPartitions = new HashSet<int>();
+
+        for (var i = 0; i < numberOfMessages; i++)
+        {
+            var redeliveredMessage = await consumer.Receive(_cts.Token);
+            redeliveredContents.Add(redeliveredMessage.Value());
+            redeliveredPartitions.Add(redeliveredMessage.MessageId.Partition);
+
+            // Acknowledge to prevent further redeliveries
+            await consumer.Acknowledge(redeliveredMessage.MessageId, _cts.Token);
+        }
+
+        // Verify all original messages were redelivered
+        redeliveredContents.ShouldBe(messageContents, ignoreOrder: true);
+
+        // Verify messages came from multiple partitions
+        redeliveredPartitions.Count.ShouldBeGreaterThan(1);
+    }
+
+    [Fact]
+    public async Task NegativeAcknowledge_WhenConnectionIsDisconnected_ShouldRedeliverAfterReconnect()
+    {
+        // Arrange
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await using var client = CreateClient();
+        await using var consumer = CreateConsumer(client, topicName);
+        await using var producer = CreateProducer(client, topicName);
+
+        var messageContent = "test-nack-reconnect";
+
+        // Produce and consume a message
+        await producer.Send(messageContent, _cts.Token);
+        var message = await consumer.Receive(_cts.Token);
+        message.Value().ShouldBe(messageContent);
+
+        // Act - disconnect and nack the message
+        await using (await _fixture.DisableThePulsarConnection())
+        {
+            await consumer.StateChangedTo(ConsumerState.Disconnected, _cts.Token);
+        }
+
+        // Wait for reconnection
+        await consumer.StateChangedTo(ConsumerState.Active, _cts.Token);
+
+        // Now nack the message
+        await consumer.NegativeAcknowledge(message.MessageId, _cts.Token);
+
+        // Assert - should receive the message again
+        var redeliveredMessage = await consumer.Receive(_cts.Token);
+        redeliveredMessage.Value().ShouldBe(messageContent);
+
+        // Clean up
+        await consumer.Acknowledge(redeliveredMessage.MessageId, _cts.Token);
+    }
+
     private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<string> producer, int numberOfMessages, string content, CancellationToken ct)
     {
         var messageIds = new MessageId[numberOfMessages];

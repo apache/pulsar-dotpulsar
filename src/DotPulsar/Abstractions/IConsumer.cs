@@ -68,4 +68,19 @@ public interface IConsumer : IGetLastMessageIds, ISeek, IStateHolder<ConsumerSta
     /// Redeliver all pending messages that were pushed to this consumer that are not yet acknowledged.
     /// </summary>
     ValueTask RedeliverUnacknowledgedMessages(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Acknowledge the consumption of a single message using the MessageId.
+    /// </summary>
+    /// <summary>
+    /// Negative acknowledge the consumption of a single message using the MessageId.
+    /// This will tell the broker the message was not processed successfully and should be redelivered later.
+    /// </summary>
+    ValueTask NegativeAcknowledge(MessageId messageId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Negative acknowledge the consumption of multiple messages using the MessageIds.
+    /// This will tell the broker the messages were not processed successfully and should be redelivered later.
+    /// </summary>
+    ValueTask NegativeAcknowledge(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken = default);
 }
