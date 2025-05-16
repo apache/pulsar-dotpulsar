@@ -237,4 +237,18 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
 
     public ValueTask<IEnumerable<MessageId>> GetLastMessageIds(CancellationToken cancellationToken = default) =>
         throw new NotImplementedException();
+
+    public async ValueTask NegativeAcknowledge(MessageId messageId, CancellationToken cancellationToken)
+    {
+        var command = new CommandRedeliverUnacknowledgedMessages();
+        command.MessageIds.Add(messageId.ToMessageIdData());
+        await _executor.Execute(() => InternalRedeliverUnacknowledgedMessages(command, cancellationToken), cancellationToken).ConfigureAwait(false);
+    }
+
+    public async ValueTask NegativeAcknowledge(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken = default)
+    {
+        var command = new CommandRedeliverUnacknowledgedMessages();
+        command.MessageIds.AddRange(messageIds.Select(messageId => messageId.ToMessageIdData()));
+        await _executor.Execute(() => InternalRedeliverUnacknowledgedMessages(command, cancellationToken), cancellationToken).ConfigureAwait(false);
+    }
 }
