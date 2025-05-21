@@ -14,6 +14,7 @@
 
 namespace DotPulsar.Internal;
 
+using System;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -97,21 +98,31 @@ public sealed class Connector
     private async Task<Stream> EncryptStream(Stream stream, string host, CancellationToken _)
     {
         SslStream? sslStream = null;
+        var policyErrors = SslPolicyErrors.None;
+
+        bool Validate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
+        {
+            policyErrors = sslPolicyErrors;
+            return ValidateServerCertificate(certificate, chain, sslPolicyErrors);
+        }
 
         try
         {
-            sslStream = new SslStream(stream, false, ValidateServerCertificate, null);
+            sslStream = new SslStream(stream, false, Validate, null);
             await sslStream.AuthenticateAsClientAsync(host, _clientCertificates, SslProtocols.None, _checkCertificateRevocation).ConfigureAwait(false);
             return sslStream;
         }
-        catch
+        catch (Exception exception)
         {
             if (sslStream is null)
                 stream.Dispose();
             else
                 sslStream.Dispose();
 
-            throw;
+            if (policyErrors == SslPolicyErrors.None)
+                throw;
+
+            throw new AuthenticationException($"The remote certificate validation failed with SSL policy errors '{policyErrors}'", exception);
         }
     }
 #else
@@ -123,7 +134,7 @@ public sealed class Connector
         bool Validate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
         {
             policyErrors = sslPolicyErrors;
-            return ValidateServerCertificate(sender, certificate, chain, sslPolicyErrors);
+            return ValidateServerCertificate(certificate, chain, sslPolicyErrors);
         }
 
         try
@@ -146,15 +157,15 @@ public sealed class Connector
             else
                 await sslStream.DisposeAsync().ConfigureAwait(false);
 
-            if (policyErrors != SslPolicyErrors.None)
-                exception.Data.Add("SslPolicyErrors", policyErrors);
+            if (policyErrors == SslPolicyErrors.None)
+                throw;
 
-            throw;
+            throw new AuthenticationException($"The remote certificate validation failed with SSL policy errors '{policyErrors}'", exception);
         }
     }
 #endif
 
-    private bool ValidateServerCertificate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
+    private bool ValidateServerCertificate(X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
     {
         if (sslPolicyErrors == SslPolicyErrors.None)
             return true;
