@@ -92,6 +92,11 @@ public interface IConsumerBuilder<TMessage>
     IConsumerBuilder<TMessage> TopicsPattern(Regex topicsPattern);
 
     /// <summary>
+    /// Whether to allow out-of-order delivery on key_shared subscriptions. The default is 'false'.
+    /// </summary>
+    IConsumerBuilder<TMessage> AllowOutOfOrderDeliver(bool allowOutOfOrderDeliver);
+
+    /// <summary>
     /// Create the consumer.
     /// </summary>
     IConsumer<TMessage> Create();
