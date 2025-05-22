@@ -18,6 +18,7 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Networks;
 using DotPulsar.Abstractions;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Testcontainers.Pulsar;
@@ -64,13 +65,16 @@ public class IntegrationFixture : IAsyncLifetime
             .WithHostname("pulsar")
             .Build();
 
-        ServiceUrl = new Uri($"pulsar://{_pulsarCluster.Hostname}:{PulsarPort}");
         _toxiProxyConnection = new Connection();
         _toxiProxyClient = _toxiProxyConnection.Client();
         _toxiProxyPulsarProxy = new Proxy();
     }
 
     public Uri ServiceUrl { get; private set; }
+
+    public Uri AdminUrl { get; private set; }
+
+    public AuthenticationHeaderValue AuthorizationHeader => new("Bearer", _token);
 
     public IAuthentication Authentication => AuthenticationFactory.Token(ct => ValueTask.FromResult(_token!));
 
@@ -92,6 +96,9 @@ public class IntegrationFixture : IAsyncLifetime
         _messageSink.OnMessage(new DiagnosticMessage("Starting Pulsar Cluster"));
         await _pulsarCluster.StartAsync(_cts.Token);
         _messageSink.OnMessage(new DiagnosticMessage("The containers has initiated. Next, we'll configure Toxiproxy mappings."));
+
+        ServiceUrl = new Uri(_pulsarCluster.GetBrokerAddress());
+        AdminUrl = new Uri(_pulsarCluster.GetServiceAddress());
 
         _toxiProxyConnection = new Connection(_toxiProxy.Hostname, _toxiProxy.GetMappedPublicPort(ToxiProxyControlPort));
         _toxiProxyClient = _toxiProxyConnection.Client();
@@ -126,7 +133,7 @@ public class IntegrationFixture : IAsyncLifetime
 
     public async Task<string> CreateToken(TimeSpan expiryTime, CancellationToken cancellationToken)
     {
-        return await _pulsarCluster.CreateAuthenticationTokenAsync(expiryTime, cancellationToken);
+        return (await _pulsarCluster.CreateAuthenticationTokenAsync(expiryTime, cancellationToken)).TrimEnd();
     }
 
     private static string CreateTopicName() => $"persistent://public/default/{Guid.NewGuid():N}";
