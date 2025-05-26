@@ -184,4 +184,12 @@ public sealed class ConsumerOptions<TMessage>
     /// Specify a pattern for topics that this consumer subscribes to. This, or setting a single topic or multiple topics, is required.
     /// </summary>
     public Regex? TopicsPattern { get; set; }
+
+    /// <summary>
+    /// Allow out-of-order delivery on key_shared subscriptions. The default is 'false'.
+    /// </summary>
+    /// <remarks>
+    /// https://pulsar.apache.org/docs/3.3.x/concepts-messaging/#preserving-order-of-processing
+    /// </remarks>
+    public bool AllowOutOfOrderDeliver { get; set; }
 }

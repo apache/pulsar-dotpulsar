@@ -450,6 +450,14 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
             subscribe.SubscriptionProperties.Add(keyValue);
         }
 
+        if (_consumerOptions is { SubscriptionType: SubscriptionType.KeyShared, AllowOutOfOrderDeliver: true })
+        {
+            subscribe.keySharedMeta = new KeySharedMeta
+            {
+                allowOutOfOrderDelivery = true
+            };
+        }
+
         var messagePrefetchCount = _consumerOptions.MessagePrefetchCount;
         var messageFactory = new MessageFactory<TMessage>(_consumerOptions.Schema);
         var batchHandler = new BatchHandler<TMessage>(true, messageFactory);

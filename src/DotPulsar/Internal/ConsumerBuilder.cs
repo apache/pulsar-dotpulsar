@@ -36,6 +36,7 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
     private readonly HashSet<string> _topics;
     private Regex? _topicsPattern;
     private IHandleStateChanged<ConsumerStateChanged>? _stateChangedHandler;
+    private bool _allowOutOfOrderDeliver;
 
     public ConsumerBuilder(IPulsarClient pulsarClient, ISchema<TMessage> schema)
     {
@@ -143,6 +144,12 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
         return this;
     }
 
+    public IConsumerBuilder<TMessage> AllowOutOfOrderDeliver(bool allowOutOfOrderDeliver)
+    {
+        _allowOutOfOrderDeliver = allowOutOfOrderDeliver;
+        return this;
+    }
+
     public IConsumer<TMessage> Create()
     {
         if (string.IsNullOrEmpty(_subscriptionName))
@@ -164,7 +171,8 @@ public sealed class ConsumerBuilder<TMessage> : IConsumerBuilder<TMessage>
             SubscriptionProperties = _subscriptionProperties,
             SubscriptionType = _subscriptionType,
             Topics = _topics,
-            TopicsPattern = _topicsPattern
+            TopicsPattern = _topicsPattern,
+            AllowOutOfOrderDeliver = _allowOutOfOrderDeliver
         };
 
         return _pulsarClient.CreateConsumer(options);
