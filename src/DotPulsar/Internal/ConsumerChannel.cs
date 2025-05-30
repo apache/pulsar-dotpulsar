@@ -80,58 +80,66 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
                     await SendFlow(cancellationToken).ConfigureAwait(false);
 
                 _sendWhenZero--;
-
-                var message = _batchHandler.GetNext();
-
-                if (message is not null)
-                    return message;
-
-                var messagePackage = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);
-
-                if (!messagePackage.ValidateMagicNumberAndChecksum())
+                try
                 {
-                    await RejectPackage(messagePackage, CommandAck.ValidationErrorType.ChecksumMismatch, cancellationToken).ConfigureAwait(false);
-                    continue;
-                }
+                    var message = _batchHandler.GetNext();
 
-                var metadataSize = messagePackage.GetMetadataSize();
-                var metadata = messagePackage.ExtractMetadata(metadataSize);
-                var data = messagePackage.ExtractData(metadataSize);
+                    if (message is not null)
+                        return message;
 
-                if (metadata.Compression != CompressionType.None)
-                {
-                    var decompressor = _decompressors[(int) metadata.Compression];
-                    if (decompressor is null)
-                        throw new CompressionException($"Support for {metadata.Compression} compression was not found");
+                    var messagePackage = await _queue.Dequeue(cancellationToken).ConfigureAwait(false);
 
-                    try
+                    if (!messagePackage.ValidateMagicNumberAndChecksum())
                     {
-                        data = decompressor.Decompress(data, (int) metadata.UncompressedSize);
-                    }
-                    catch
-                    {
-                        await RejectPackage(messagePackage, CommandAck.ValidationErrorType.DecompressionError, cancellationToken).ConfigureAwait(false);
+                        await RejectPackage(messagePackage, CommandAck.ValidationErrorType.ChecksumMismatch, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
+
+                    var metadataSize = messagePackage.GetMetadataSize();
+                    var metadata = messagePackage.ExtractMetadata(metadataSize);
+                    var data = messagePackage.ExtractData(metadataSize);
+
+                    if (metadata.Compression != CompressionType.None)
+                    {
+                        var decompressor = _decompressors[(int) metadata.Compression];
+                        if (decompressor is null)
+                            throw new CompressionException($"Support for {metadata.Compression} compression was not found");
+
+                        try
+                        {
+                            data = decompressor.Decompress(data, (int) metadata.UncompressedSize);
+                        }
+                        catch
+                        {
+                            await RejectPackage(messagePackage, CommandAck.ValidationErrorType.DecompressionError, cancellationToken).ConfigureAwait(false);
+                            continue;
+                        }
+                    }
+
+                    var messageId = messagePackage.MessageId;
+                    var redeliveryCount = messagePackage.RedeliveryCount;
+
+                    if (metadata.ShouldSerializeNumMessagesInBatch())
+                    {
+                        try
+                        {
+                            return _batchHandler.Add(messageId, redeliveryCount, metadata, data);
+                        }
+                        catch
+                        {
+                            await RejectPackage(messagePackage, CommandAck.ValidationErrorType.BatchDeSerializeError, cancellationToken).ConfigureAwait(false);
+                            continue;
+                        }
+                    }
+
+                    return _messageFactory.Create(messageId.ToMessageId(_topic), redeliveryCount, data, metadata);
                 }
-
-                var messageId = messagePackage.MessageId;
-                var redeliveryCount = messagePackage.RedeliveryCount;
-
-                if (metadata.ShouldSerializeNumMessagesInBatch())
+                catch (Exception e) when (e is not CompressionException)
                 {
-                    try
-                    {
-                        return _batchHandler.Add(messageId, redeliveryCount, metadata, data);
-                    }
-                    catch
-                    {
-                        await RejectPackage(messagePackage, CommandAck.ValidationErrorType.BatchDeSerializeError, cancellationToken).ConfigureAwait(false);
-                        continue;
-                    }
+                    // Undo decrementing since we didn't actually receive anything
+                    _sendWhenZero++;
+                    throw;
                 }
-
-                return _messageFactory.Create(messageId.ToMessageId(_topic), redeliveryCount, data, metadata);
             }
         }
     }
