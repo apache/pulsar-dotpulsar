@@ -70,9 +70,9 @@ public class IntegrationFixture : IAsyncLifetime
         _toxiProxyPulsarProxy = new Proxy();
     }
 
-    public Uri ServiceUrl { get; private set; }
+    public Uri ServiceUrl { get; private set; } = null!; // This will be set in `InitializeAsync`
 
-    public Uri AdminUrl { get; private set; }
+    public Uri AdminUrl { get; private set; } = null!; // This will be set in `InitializeAsync`
 
     public AuthenticationHeaderValue AuthorizationHeader => new("Bearer", _token);
 

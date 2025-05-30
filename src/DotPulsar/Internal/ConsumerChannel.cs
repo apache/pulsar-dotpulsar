@@ -91,7 +91,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
 
                     if (!messagePackage.ValidateMagicNumberAndChecksum())
                     {
-                        await RejectPackage(messagePackage, CommandAck.ValidationErrorType.ChecksumMismatch).ConfigureAwait(false);
+                        await RejectPackage(messagePackage, CommandAck.ValidationErrorType.ChecksumMismatch, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
 
@@ -111,7 +111,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
                         }
                         catch
                         {
-                            await RejectPackage(messagePackage, CommandAck.ValidationErrorType.DecompressionError).ConfigureAwait(false);
+                            await RejectPackage(messagePackage, CommandAck.ValidationErrorType.DecompressionError, cancellationToken).ConfigureAwait(false);
                             continue;
                         }
                     }
@@ -127,7 +127,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
                         }
                         catch
                         {
-                            await RejectPackage(messagePackage, CommandAck.ValidationErrorType.BatchDeSerializeError).ConfigureAwait(false);
+                            await RejectPackage(messagePackage, CommandAck.ValidationErrorType.BatchDeSerializeError, cancellationToken).ConfigureAwait(false);
                             continue;
                         }
                     }
@@ -222,7 +222,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
         _sendWhenZero = _cachedCommandFlow.MessagePermits;
     }
 
-    private async Task RejectPackage(MessagePackage messagePackage, CommandAck.ValidationErrorType validationErrorType)
+    private async Task RejectPackage(MessagePackage messagePackage, CommandAck.ValidationErrorType validationErrorType, CancellationToken cancellationToken)
     {
         var ack = new CommandAck
         {
@@ -232,9 +232,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
 
         ack.MessageIds.Add(messagePackage.MessageId);
 
-        // Don't allow RejectPackage to be cancelled since it only happens in the receive loop after messages
-        // have already been dequeued
-        await Send(ack, CancellationToken.None).ConfigureAwait(false);
+        await Send(ack, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask ClosedByClient(CancellationToken cancellationToken)

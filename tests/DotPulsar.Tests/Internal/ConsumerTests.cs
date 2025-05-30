@@ -20,6 +20,7 @@ using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
 using DotPulsar.Tests.Schemas.TestSamples.AvroModels;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Xunit.Abstractions;
 
@@ -467,6 +468,41 @@ public sealed class ConsumerTests : IDisposable
         exception.ShouldBeNull();
     }
 
+    [Fact]
+    public async Task Should_Not_Increase_Permits_On_TryReceive()
+    {
+        //Arrange
+        var topicName = await _fixture.CreateTopic(CancellationToken.None);
+        var subscription = CreateSubscriptionName();
+        var maxPrefetch = 2;
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        using var httpClient = CreateAdminClient();
+        await using var pulsarClient = CreateClient();
+        await using var consumer = CreateConsumer(pulsarClient, topicName, subscription, Schema.ByteSequence, (uint)maxPrefetch);
+        await using var producer = CreateProducer(pulsarClient, topicName, Schema.ByteSequence);
+
+        await consumer.StateChangedTo(ConsumerState.Active, cts.Token);
+
+        // Wait until we get our first message
+        await producer.Send([1], cts.Token);
+        var message = await consumer.Receive(cts.Token);
+        await consumer.Acknowledge(message, cts.Token);
+
+        //Act
+        var maxPermits = 0L;
+        for (int i = 0; i < maxPrefetch * 5; i++)
+        {
+            consumer.TryReceive(out _).ShouldBe(false);
+            await Task.Delay(50, cts.Token);
+            var permits = await GetPermits(httpClient, topicName, subscription, cts.Token);
+            maxPermits = Math.Max(maxPermits, permits);
+        }
+
+        //Assert
+        Assert.True(maxPermits <= maxPrefetch, $"availablePermits increased above the threshold of {maxPrefetch} to {maxPermits}");
+    }
+
     private static async Task<IEnumerable<MessageId>> ProduceMessages(IProducer<string> producer, int numberOfMessages, string content, CancellationToken ct)
     {
         var messageIds = new MessageId[numberOfMessages];
@@ -513,7 +549,6 @@ public sealed class ConsumerTests : IDisposable
         IPulsarClient pulsarClient,
         string topicName) => CreateProducer(pulsarClient, topicName, Schema.String);
 
-
     private IConsumer<string> CreateConsumer(IPulsarClient pulsarClient, string topicName)
         => CreateConsumer(pulsarClient, topicName, Schema.String);
 
@@ -541,6 +576,15 @@ public sealed class ConsumerTests : IDisposable
         .StateChangedHandler(_testOutputHelper.Log)
         .Create();
 
+    private IConsumer<T> CreateConsumer<T>(IPulsarClient pulsarClient, string topicName, string subscription, ISchema<T> schema, uint maxPrefetch)
+        => pulsarClient.NewConsumer(schema)
+       .InitialPosition(SubscriptionInitialPosition.Earliest)
+       .SubscriptionName(subscription)
+       .Topic(topicName)
+       .StateChangedHandler(_testOutputHelper.Log)
+       .MessagePrefetchCount(maxPrefetch)
+       .Create();
+
     private IPulsarClient CreateClient()
         => PulsarClient
         .Builder()
@@ -548,6 +592,52 @@ public sealed class ConsumerTests : IDisposable
         .ExceptionHandler(_testOutputHelper.Log)
         .ServiceUrl(_fixture.ServiceUrl)
         .Build();
+
+    private HttpClient CreateAdminClient() => new()
+    {
+        BaseAddress = _fixture.AdminUrl,
+        DefaultRequestHeaders =
+        {
+            Authorization = _fixture.AuthorizationHeader
+        }
+    };
+
+    private static async ValueTask<long> GetPermits(HttpClient httpClient, string topic, string subscription, CancellationToken cancellationToken)
+    {
+        topic = topic.Replace("persistent://", string.Empty);
+        using var response = await httpClient.GetAsync($"/admin/v2/persistent/{topic}/stats", cancellationToken).ConfigureAwait(false);
+        if (response.IsSuccessStatusCode)
+        {
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (!json.RootElement.TryGetProperty("subscriptions", out var subscriptionsProperty))
+            {
+                return 0;
+            }
+
+            if (!subscriptionsProperty.TryGetProperty(subscription, out var subscriptionProperty))
+            {
+                return 0;
+            }
+
+            if (subscriptionProperty.TryGetProperty("consumers", out var consumersProperty))
+            {
+                foreach (var consumer in consumersProperty.EnumerateArray())
+                {
+                    if (consumer.TryGetProperty("availablePermits", out var permitsProperty))
+                    {
+                        var permits = permitsProperty.GetInt64();
+                        if (permits > 0)
+                        {
+                            return permits;
+                        }
+                    }
+                }
+            }
+        }
+
+        return 0;
+    }
 
     public void Dispose() => _cts.Dispose();
 }
