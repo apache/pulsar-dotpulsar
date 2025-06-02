@@ -469,33 +469,32 @@ public sealed class ConsumerTests : IDisposable
     }
 
     [Fact]
-    public async Task Should_Not_Increase_Permits_On_TryReceive()
+    public async Task TryReceive_WhenBufferIsEmpty_ShouldNotIncreasePermits()
     {
         //Arrange
-        var topicName = await _fixture.CreateTopic(CancellationToken.None);
+        var topicName = await _fixture.CreateTopic(_cts.Token);
         var subscription = CreateSubscriptionName();
         var maxPrefetch = 2;
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         using var httpClient = CreateAdminClient();
         await using var pulsarClient = CreateClient();
         await using var consumer = CreateConsumer(pulsarClient, topicName, subscription, Schema.ByteSequence, (uint)maxPrefetch);
         await using var producer = CreateProducer(pulsarClient, topicName, Schema.ByteSequence);
 
-        await consumer.StateChangedTo(ConsumerState.Active, cts.Token);
+        await consumer.StateChangedTo(ConsumerState.Active, _cts.Token);
 
         // Wait until we get our first message
-        await producer.Send([1], cts.Token);
-        var message = await consumer.Receive(cts.Token);
-        await consumer.Acknowledge(message, cts.Token);
+        await producer.Send([1], _cts.Token);
+        var message = await consumer.Receive(_cts.Token);
+        await consumer.Acknowledge(message, _cts.Token);
 
         //Act
         var maxPermits = 0L;
         for (int i = 0; i < maxPrefetch * 5; i++)
         {
             consumer.TryReceive(out _).ShouldBe(false);
-            await Task.Delay(50, cts.Token);
-            var permits = await GetPermits(httpClient, topicName, subscription, cts.Token);
+            await Task.Delay(50, _cts.Token);
+            var permits = await GetPermits(httpClient, topicName, subscription, _cts.Token);
             maxPermits = Math.Max(maxPermits, permits);
         }
 
