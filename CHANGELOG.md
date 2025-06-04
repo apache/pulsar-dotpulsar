@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.3.0-rc1] - 2025-06-04
+
+### Added
+
+- Support for AllowOutOfOrderDelivery on KeyShared subscriptions
+
+### Fixed
+
+- Issue where calling Receive in some circumstances would trigger a flow command and thereby increasing permits
+
 ## [4.2.4] - 2025-05-14
 
 ### Changed
