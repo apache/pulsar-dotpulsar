@@ -26,7 +26,7 @@
   <ItemGroup>
     <PackageReference Include="HashDepot" Version="2.0.3" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.7" />
-    <PackageReference Include="protobuf-net" Version="3.2.52" />
+    <PackageReference Include="protobuf-net" Version="3.2.56" />
   </ItemGroup>
  
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
