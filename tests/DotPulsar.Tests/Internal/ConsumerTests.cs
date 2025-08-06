@@ -478,7 +478,7 @@ public sealed class ConsumerTests : IDisposable
 
         using var httpClient = CreateAdminClient();
         await using var pulsarClient = CreateClient();
-        await using var consumer = CreateConsumer(pulsarClient, topicName, subscription, Schema.ByteSequence, (uint)maxPrefetch);
+        await using var consumer = CreateConsumer(pulsarClient, topicName, subscription, Schema.ByteSequence, (uint) maxPrefetch);
         await using var producer = CreateProducer(pulsarClient, topicName, Schema.ByteSequence);
 
         await consumer.StateChangedTo(ConsumerState.Active, _cts.Token);
