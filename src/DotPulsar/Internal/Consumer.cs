@@ -18,6 +18,7 @@ using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
 using DotPulsar.Internal.Abstractions;
+using System.Collections.Concurrent;
 using DotPulsar.Internal.Compression;
 using DotPulsar.Internal.PulsarApi;
 
@@ -32,7 +33,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
     private readonly Executor _executor;
     private readonly SemaphoreSlim _semaphoreSlim;
     private readonly AsyncLock _lock;
-    private readonly Dictionary<string, SubConsumer<TMessage>> _subConsumers;
+    private readonly ConcurrentDictionary<string, SubConsumer<TMessage>> _subConsumers;
     private readonly TaskCompletionSource<IMessage<TMessage>> _neverEndingTask;
     private SubConsumer<TMessage>[] _receivers;
     private Task<IMessage<TMessage>>[] _receiveTasks;
@@ -79,7 +80,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         _exceptionHandler = exceptionHandler;
         _allSubConsumersAreReady = false;
         _isDisposed = 0;
-        _subConsumers = [];
+        _subConsumers = new ConcurrentDictionary<string, SubConsumer<TMessage>>();
         _singleSubConsumer = null;
 
         _ = Setup();
