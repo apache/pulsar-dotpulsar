@@ -14,8 +14,8 @@
 
 namespace DotPulsar;
 
-using System.Text.RegularExpressions;
 using DotPulsar.Abstractions;
+using System.Text.RegularExpressions;
 
 /// <summary>
 /// The consumer building options.
