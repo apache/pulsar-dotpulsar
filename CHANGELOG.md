@@ -9,10 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Changed
 
 - Updated the protobuf-net dependency from version 3.2.52 to 3.2.56
-- Updated the Microsoft.Extensions.ObjectPool dependency from version 9.0.7 to 9.0.8
-- Updated the Microsoft.Bcl.AsyncInterfaces dependency from version 9.0.7 to 9.0.8 for .NET Standard 2.0
-- Updated the System.Diagnostics.DiagnosticSource dependency from version 9.0.7 to 9.0.8 for .NET Standard 2.0 and 2.1
-- Updated the System.IO.Pipelines dependency from version 9.0.7 to 9.0.8 for .NET 8 and 9
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 9.0.7 to 9.0.9
+- Updated the Microsoft.Bcl.AsyncInterfaces dependency from version 9.0.7 to 9.0.9 for .NET Standard 2.0
+- Updated the System.Diagnostics.DiagnosticSource dependency from version 9.0.7 to 9.0.9 for .NET Standard 2.0 and 2.1
+- Updated the System.IO.Pipelines dependency from version 9.0.7 to 9.0.9 for .NET 8 and 9
 
 ## [4.3.1] - 2025-07-16
 
