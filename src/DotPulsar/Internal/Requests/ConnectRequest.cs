@@ -26,8 +26,8 @@ public readonly struct ConnectRequest : IRequest
     public bool SenderIsProducer(ulong producerId)
         => false;
 
-    public bool IsCommandType(BaseCommand.Type commandType)
-        => commandType == BaseCommand.Type.Connect;
+    public bool IsCommandType(BaseCommand.Types.Type commandType)
+        => commandType == BaseCommand.Types.Type.Connect;
 
 #if NETSTANDARD2_0
     public bool Equals(IRequest other)

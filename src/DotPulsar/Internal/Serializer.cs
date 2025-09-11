@@ -15,13 +15,17 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.PulsarApi;
+using Google.Protobuf;
+using Google.Protobuf.Reflection;
 using System.Buffers;
 
 public static class Serializer
 {
-    static Serializer() => Serialize(new BaseCommand()); //Let's see if this fixes the bug in protobuf-net
+    private static readonly Dictionary<Type, MessageDescriptor> FileDescriptors =
+        PulsarApiReflection.Descriptor.MessageTypes.ToDictionary(it => it.ClrType, it => it);
 
-    public static T Deserialize<T>(ReadOnlySequence<byte> sequence) => ProtoBuf.Serializer.Deserialize<T>(sequence);
+    public static T Deserialize<T>(ReadOnlySequence<byte> sequence) =>
+        (T)FileDescriptors[typeof(T)].Parser.ParseFrom(sequence);
 
     public static ReadOnlySequence<byte> Serialize(BaseCommand command)
     {
@@ -64,10 +68,5 @@ public static class Serializer
             : [union.B0, union.B1, union.B2, union.B3];
     }
 
-    private static byte[] Serialize<T>(T item)
-    {
-        using var ms = new MemoryStream();
-        ProtoBuf.Serializer.Serialize(ms, item);
-        return ms.ToArray();
-    }
+    private static byte[] Serialize<T>(T item) where T : IMessage => item.ToByteArray();
 }

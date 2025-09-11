@@ -35,8 +35,8 @@ public readonly struct SendRequest : IRequest
     public bool SenderIsProducer(ulong producerId)
         => _producerId == producerId;
 
-    public bool IsCommandType(BaseCommand.Type commandType)
-        => commandType == BaseCommand.Type.Send;
+    public bool IsCommandType(BaseCommand.Types.Type commandType)
+        => commandType == BaseCommand.Types.Type.Send;
 
 #if NETSTANDARD2_0
     public bool Equals(IRequest other)

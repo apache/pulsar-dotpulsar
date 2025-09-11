@@ -91,7 +91,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
 
                     if (!messagePackage.ValidateMagicNumberAndChecksum())
                     {
-                        await RejectPackage(messagePackage, CommandAck.ValidationErrorType.ChecksumMismatch, cancellationToken).ConfigureAwait(false);
+                        await RejectPackage(messagePackage, CommandAck.Types.ValidationError.ChecksumMismatch, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
 
@@ -111,7 +111,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
                         }
                         catch
                         {
-                            await RejectPackage(messagePackage, CommandAck.ValidationErrorType.DecompressionError, cancellationToken).ConfigureAwait(false);
+                            await RejectPackage(messagePackage, CommandAck.Types.ValidationError.DecompressionError, cancellationToken).ConfigureAwait(false);
                             continue;
                         }
                     }
@@ -119,7 +119,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
                     var messageId = messagePackage.MessageId;
                     var redeliveryCount = messagePackage.RedeliveryCount;
 
-                    if (metadata.ShouldSerializeNumMessagesInBatch())
+                    if (metadata.HasNumMessagesInBatch)
                     {
                         try
                         {
@@ -127,7 +127,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
                         }
                         catch
                         {
-                            await RejectPackage(messagePackage, CommandAck.ValidationErrorType.BatchDeSerializeError, cancellationToken).ConfigureAwait(false);
+                            await RejectPackage(messagePackage, CommandAck.Types.ValidationError.BatchDeSerializeError, cancellationToken).ConfigureAwait(false);
                             continue;
                         }
                     }
@@ -146,7 +146,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
 
     public async Task Send(CommandAck command, CancellationToken cancellationToken)
     {
-        var messageId = command.MessageIds[0];
+        var messageId = command.MessageId[0];
 
         if (messageId.BatchIndex != -1)
         {
@@ -155,7 +155,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
             if (batchMessageId is null)
                 return;
 
-            command.MessageIds[0] = batchMessageId;
+            command.MessageId[0] = batchMessageId;
         }
 
         command.ConsumerId = _id;
@@ -172,14 +172,14 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
     {
         command.ConsumerId = _id;
         var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
-        response.Expect(BaseCommand.Type.Success);
+        response.Expect(BaseCommand.Types.Type.Success);
     }
 
     public async Task Send(CommandSeek command, CancellationToken cancellationToken)
     {
         command.ConsumerId = _id;
         var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
-        response.Expect(BaseCommand.Type.Success);
+        response.Expect(BaseCommand.Types.Type.Success);
         _batchHandler.Clear();
     }
 
@@ -187,7 +187,7 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
     {
         command.ConsumerId = _id;
         var response = await _connection.Send(command, cancellationToken).ConfigureAwait(false);
-        response.Expect(BaseCommand.Type.GetLastMessageIdResponse);
+        response.Expect(BaseCommand.Types.Type.GetLastMessageIdResponse);
         var messageIdData = response.GetLastMessageIdResponse.LastMessageId;
         if (messageIdData.LedgerId == MessageId.Earliest.LedgerId &&
             messageIdData.EntryId == MessageId.Earliest.EntryId &&
@@ -222,15 +222,15 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
         _sendWhenZero = _cachedCommandFlow.MessagePermits;
     }
 
-    private async Task RejectPackage(MessagePackage messagePackage, CommandAck.ValidationErrorType validationErrorType, CancellationToken cancellationToken)
+    private async Task RejectPackage(MessagePackage messagePackage, CommandAck.Types.ValidationError validationErrorType, CancellationToken cancellationToken)
     {
         var ack = new CommandAck
         {
-            Type = CommandAck.AckType.Individual,
+            AckType = CommandAck.Types.AckType.Individual,
             ValidationError = validationErrorType
         };
 
-        ack.MessageIds.Add(messagePackage.MessageId);
+        ack.MessageId.Add(messagePackage.MessageId);
 
         await Send(ack, cancellationToken).ConfigureAwait(false);
     }

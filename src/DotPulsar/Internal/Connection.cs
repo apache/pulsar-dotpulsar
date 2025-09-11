@@ -21,6 +21,7 @@ using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Exceptions;
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
+using Google.Protobuf;
 using System.Buffers;
 
 public sealed class Connection : IConnection
@@ -99,9 +100,9 @@ public sealed class Connection : IConnection
     {
         if (_authentication is not null)
         {
-            command.Response ??= new AuthData();
+            command.Response = command.Response ?? new AuthData();
             command.Response.AuthMethodName = _authentication.AuthenticationMethodName;
-            command.Response.Data = await _authentication.GetAuthenticationData(cancellationToken).ConfigureAwait(false);
+            command.Response.AuthData_ = ByteString.CopyFrom(await _authentication.GetAuthenticationData(cancellationToken).ConfigureAwait(false));
         }
 
         await Send(command.AsBaseCommand(), cancellationToken).ConfigureAwait(false);
@@ -145,7 +146,8 @@ public sealed class Connection : IConnection
         if (_authentication is not null)
         {
             command.AuthMethodName = _authentication.AuthenticationMethodName;
-            command.AuthData = await _authentication.GetAuthenticationData(cancellationToken).ConfigureAwait(false);
+            command.AuthData = ByteString.CopyFrom(
+                await _authentication.GetAuthenticationData(cancellationToken).ConfigureAwait(false));
         }
 
         Task<BaseCommand>? responseTask;
@@ -359,17 +361,15 @@ public sealed class Connection : IConnection
                 var commandSize = frame.ReadUInt32(0, true);
                 var command = Serializer.Deserialize<BaseCommand>(frame.Slice(4, commandSize));
 
-                _pingPongHandler.Incoming(command.CommandType);
+                _pingPongHandler.Incoming(command.Type);
 
-                if (command.CommandType == BaseCommand.Type.Message)
+                if (command.Type == BaseCommand.Types.Type.Message)
                     _channelManager.Incoming(command.Message, new ReadOnlySequence<byte>(frame.Slice(commandSize + 4).ToArray()));
-                else if (command.CommandType == BaseCommand.Type.AuthChallenge)
+                else if (command.Type == BaseCommand.Types.Type.AuthChallenge)
                     _ = Task.Factory.StartNew(async () => await Send(new CommandAuthResponse(), cancellationToken).ConfigureAwait(false));
-                else if (command.CommandType == BaseCommand.Type.Ping)
+                else if (command.Type == BaseCommand.Types.Type.Ping)
                     _ = Task.Factory.StartNew(async () => await Send(new CommandPong(), cancellationToken).ConfigureAwait(false));
-                else if (command.CommandType == BaseCommand.Type.Pong)
-                    continue;
-                else
+                else if (command.Type != BaseCommand.Types.Type.Pong)
                     _channelManager.Incoming(command);
             }
         }

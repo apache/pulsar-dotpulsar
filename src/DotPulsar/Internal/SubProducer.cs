@@ -159,7 +159,7 @@ public sealed class SubProducer : IContainsChannel, IStateHolder<ProducerState>
                 if (responseTask.IsFaulted)
                     throw responseTask.Exception!;
 
-                responseTask.Result.Expect(BaseCommand.Type.SendReceipt);
+                responseTask.Result.Expect(BaseCommand.Types.Type.SendReceipt);
                 ProcessReceipt(responseTask.Result.SendReceipt);
             }, CancellationToken.None).ConfigureAwait(false); // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
 
