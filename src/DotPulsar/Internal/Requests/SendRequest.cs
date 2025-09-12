@@ -16,7 +16,9 @@ namespace DotPulsar.Internal.Requests;
 
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
+#if !NETSTANDARD2_0
 using System.Diagnostics.CodeAnalysis;
+#endif
 
 public readonly struct SendRequest : IRequest
 {

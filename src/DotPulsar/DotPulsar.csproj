@@ -20,7 +20,8 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <NoWarn>1591</NoWarn>
+    <!-- last 3 due to protobuf generated model, to remove ideally -->
+    <NoWarn>1591;8601;8625;8765</NoWarn>
   </PropertyGroup>
  
   <ItemGroup>

@@ -46,10 +46,13 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
 
         _commandProducer = new CommandProducer
         {
-            ProducerName = producerName,
             ProducerAccessMode = producerAccessMode,
             Topic = topic
         };
+        if (producerName is not null)
+        {
+            _commandProducer.ProducerName = producerName;
+        }
 
         if (_schema.Type != Schema.Types.Type.None)
             _commandProducer.Schema = _schema;
@@ -96,6 +99,6 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         if (response.GetOrCreateSchemaResponse.HasErrorCode)
             response.GetOrCreateSchemaResponse.Throw();
 
-        return response.GetOrCreateSchemaResponse.SchemaVersion?.ToByteArray();
+        return response.GetOrCreateSchemaResponse.SchemaVersion.ToByteArray();
     }
 }

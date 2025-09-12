@@ -21,11 +21,11 @@ using System.Buffers;
 
 public static class Serializer
 {
-    private static readonly Dictionary<Type, MessageDescriptor> FileDescriptors =
-        PulsarApiReflection.Descriptor.MessageTypes.ToDictionary(it => it.ClrType, it => it);
-
-    public static T Deserialize<T>(ReadOnlySequence<byte> sequence) =>
-        (T)FileDescriptors[typeof(T)].Parser.ParseFrom(sequence);
+    public static T Deserialize<T>(ReadOnlySequence<byte> sequence)
+    {
+        var message = PulsarApiReflection.Descriptor.FindTypeByName<MessageDescriptor>(typeof(T).Name).Parser.ParseFrom(sequence);
+        return (T) message;
+    }
 
     public static ReadOnlySequence<byte> Serialize(BaseCommand command)
     {

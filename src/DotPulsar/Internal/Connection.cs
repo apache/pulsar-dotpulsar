@@ -100,7 +100,7 @@ public sealed class Connection : IConnection
     {
         if (_authentication is not null)
         {
-            command.Response = command.Response ?? new AuthData();
+            command.Response ??= new AuthData();
             command.Response.AuthMethodName = _authentication.AuthenticationMethodName;
             command.Response.AuthData_ = ByteString.CopyFrom(await _authentication.GetAuthenticationData(cancellationToken).ConfigureAwait(false));
         }

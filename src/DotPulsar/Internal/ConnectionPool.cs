@@ -172,19 +172,23 @@ public sealed class ConnectionPool : IConnectionPool
 
     private static CommandConnect WithProxyToBroker(CommandConnect commandConnect, Uri logicalUrl)
     {
-        return new CommandConnect
-        {
-            AuthData = commandConnect.HasAuthData ? commandConnect.AuthData : null,
-            AuthMethod = commandConnect.HasAuthMethod ? commandConnect.AuthMethod : AuthMethod.None,
-            AuthMethodName = commandConnect.HasAuthMethodName ? commandConnect.AuthMethodName : null,
-            ClientVersion = commandConnect.ClientVersion,
-            OriginalPrincipal = commandConnect.HasOriginalPrincipal ? commandConnect.OriginalPrincipal : null,
-            ProtocolVersion = commandConnect.ProtocolVersion,
-            OriginalAuthData = commandConnect.HasOriginalAuthData ? commandConnect.OriginalAuthData : null,
-            OriginalAuthMethod = commandConnect.HasOriginalAuthMethod ? commandConnect.OriginalAuthMethod : null,
-            ProxyToBrokerUrl = $"{logicalUrl.Host}:{logicalUrl.Port}",
-            FeatureFlags = commandConnect.FeatureFlags
-        };
+        var broker = new CommandConnect();
+        if (commandConnect.HasAuthData)
+            broker.AuthData = commandConnect.AuthData;
+        broker.AuthMethod = commandConnect.HasAuthMethod ? commandConnect.AuthMethod : AuthMethod.None;
+        if (commandConnect.HasAuthMethodName)
+            broker.AuthMethodName = commandConnect.AuthMethodName;
+        broker.ClientVersion = commandConnect.ClientVersion;
+        if (commandConnect.HasOriginalPrincipal)
+            broker.OriginalPrincipal = commandConnect.OriginalPrincipal;
+        broker.ProtocolVersion = commandConnect.ProtocolVersion;
+        if (commandConnect.HasOriginalAuthData)
+            broker.OriginalAuthData = commandConnect.OriginalAuthData;
+        if (commandConnect.HasOriginalAuthMethod)
+            broker.OriginalAuthMethod = commandConnect.OriginalAuthMethod;
+        broker.ProxyToBrokerUrl = $"{logicalUrl.Host}:{logicalUrl.Port}";
+        broker.FeatureFlags = commandConnect.FeatureFlags;
+        return broker;
     }
 
     private sealed class PulsarUrl : IEquatable<PulsarUrl>

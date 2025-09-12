@@ -272,7 +272,7 @@ public sealed class Reader<TMessage> : IReader<TMessage>
     {
         var correlationId = Guid.NewGuid();
 
-        var subscription = _readerOptions.SubscriptionName is not null ? _readerOptions.SubscriptionName : $"{_readerOptions.SubscriptionRolePrefix}-{correlationId:N}";
+        var subscription = _readerOptions.SubscriptionName ?? $"{_readerOptions.SubscriptionRolePrefix}-{correlationId:N}";
 
         var subscribe = new CommandSubscribe
         {
@@ -281,7 +281,8 @@ public sealed class Reader<TMessage> : IReader<TMessage>
             ReadCompacted = _readerOptions.ReadCompacted,
             StartMessageId = _readerOptions.StartMessageId.ToMessageIdData(),
             Subscription = subscription,
-            Topic = topic
+            Topic = topic,
+            SubType = CommandSubscribe.Types.SubType.Exclusive
         };
         var messagePrefetchCount = _readerOptions.MessagePrefetchCount;
         var messageFactory = new MessageFactory<TMessage>(_readerOptions.Schema);
