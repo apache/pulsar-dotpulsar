@@ -87,13 +87,13 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
         => await _executor.Execute(() => InternalReceive(cancellationToken), cancellationToken).ConfigureAwait(false);
 
     public async ValueTask Acknowledge(MessageId messageId, CancellationToken cancellationToken)
-        => await InternalAcknowledge(messageId, CommandAck.AckType.Individual, cancellationToken).ConfigureAwait(false);
+        => await InternalAcknowledge(messageId, CommandAck.Types.AckType.Individual, cancellationToken).ConfigureAwait(false);
 
     public async ValueTask Acknowledge(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken = default)
         => await InternalAcknowledge(messageIds, cancellationToken).ConfigureAwait(false);
 
     public async ValueTask AcknowledgeCumulative(MessageId messageId, CancellationToken cancellationToken)
-        => await InternalAcknowledge(messageId, CommandAck.AckType.Cumulative, cancellationToken).ConfigureAwait(false);
+        => await InternalAcknowledge(messageId, CommandAck.Types.AckType.Cumulative, cancellationToken).ConfigureAwait(false);
 
     public async ValueTask RedeliverUnacknowledgedMessages(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken)
     {
@@ -194,14 +194,14 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
         await _channel.Send(command, cancellationToken).ConfigureAwait(false);
     }
 
-    private async ValueTask InternalAcknowledge(MessageId messageId, CommandAck.AckType ackType, CancellationToken cancellationToken)
+    private async ValueTask InternalAcknowledge(MessageId messageId, CommandAck.Types.AckType ackType, CancellationToken cancellationToken)
     {
         var commandAck = _commandAckPool.Get();
-        commandAck.Type = ackType;
-        if (commandAck.MessageIds.Count == 0)
-            commandAck.MessageIds.Add(messageId.ToMessageIdData());
+        commandAck.AckType = ackType;
+        if (commandAck.MessageId.Count == 0)
+            commandAck.MessageId.Add(messageId.ToMessageIdData());
         else
-            commandAck.MessageIds[0].MapFrom(messageId);
+            commandAck.MessageId[0].MapFrom(messageId);
 
         try
         {
@@ -216,12 +216,12 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
     private async ValueTask InternalAcknowledge(IEnumerable<MessageId> messageIds, CancellationToken cancellationToken)
     {
         var commandAck = _commandAckPool.Get();
-        commandAck.Type = CommandAck.AckType.Individual;
-        commandAck.MessageIds.Clear();
+        commandAck.AckType = CommandAck.Types.AckType.Individual;
+        commandAck.MessageId.Clear();
 
         foreach (var messageId in messageIds)
         {
-            commandAck.MessageIds.Add(messageId.ToMessageIdData());
+            commandAck.MessageId.Add(messageId.ToMessageIdData());
         }
 
         try
@@ -230,7 +230,7 @@ public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChanne
         }
         finally
         {
-            commandAck.MessageIds.Clear();
+            commandAck.MessageId.Clear();
             _commandAckPool.Return(commandAck);
         }
     }

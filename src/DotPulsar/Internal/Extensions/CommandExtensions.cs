@@ -20,18 +20,18 @@ using DotPulsar.Internal.PulsarApi;
 
 public static class CommandExtensions
 {
-    public static void Expect(this BaseCommand command, BaseCommand.Type type)
+    public static void Expect(this BaseCommand command, BaseCommand.Types.Type type)
     {
-        if (command.CommandType == type)
+        if (command.Type == type)
             return;
 
-        if (command.CommandType == BaseCommand.Type.Error)
+        if (command.Type == BaseCommand.Types.Type.Error)
             command.Error.Throw();
 
-        if (command.CommandType == BaseCommand.Type.SendError)
+        if (command.Type == BaseCommand.Types.Type.SendError)
             command.SendError.Throw();
 
-        throw new UnexpectedResponseException($"Expected '{type}' but got '{command.CommandType}'");
+        throw new UnexpectedResponseException($"Expected '{type}' but got '{command.Type}'");
     }
 
     public static void Throw(this CommandSendError command)
@@ -83,133 +83,133 @@ public static class CommandExtensions
     public static BaseCommand AsBaseCommand(this CommandAck command)
         => new()
         {
-            CommandType = BaseCommand.Type.Ack,
+            Type = BaseCommand.Types.Type.Ack,
             Ack = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandConnect command)
         => new()
         {
-            CommandType = BaseCommand.Type.Connect,
+            Type = BaseCommand.Types.Type.Connect,
             Connect = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandPing command)
         => new()
         {
-            CommandType = BaseCommand.Type.Ping,
+            Type = BaseCommand.Types.Type.Ping,
             Ping = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandAuthResponse command)
         => new()
         {
-            CommandType = BaseCommand.Type.AuthResponse,
+            Type = BaseCommand.Types.Type.AuthResponse,
             AuthResponse = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandPong command)
         => new()
         {
-            CommandType = BaseCommand.Type.Pong,
+            Type = BaseCommand.Types.Type.Pong,
             Pong = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandProducer command)
         => new()
         {
-            CommandType = BaseCommand.Type.Producer,
+            Type = BaseCommand.Types.Type.Producer,
             Producer = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandGetLastMessageId command)
         => new()
         {
-            CommandType = BaseCommand.Type.GetLastMessageId,
+            Type = BaseCommand.Types.Type.GetLastMessageId,
             GetLastMessageId = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandUnsubscribe command)
         => new()
         {
-            CommandType = BaseCommand.Type.Unsubscribe,
+            Type = BaseCommand.Types.Type.Unsubscribe,
             Unsubscribe = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandSubscribe command)
         => new()
         {
-            CommandType = BaseCommand.Type.Subscribe,
+            Type = BaseCommand.Types.Type.Subscribe,
             Subscribe = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandLookupTopic command)
         => new()
         {
-            CommandType = BaseCommand.Type.Lookup,
+            Type = BaseCommand.Types.Type.Lookup,
             LookupTopic = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandSend command)
         => new()
         {
-            CommandType = BaseCommand.Type.Send,
+            Type = BaseCommand.Types.Type.Send,
             Send = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandFlow command)
         => new()
         {
-            CommandType = BaseCommand.Type.Flow,
+            Type = BaseCommand.Types.Type.Flow,
             Flow = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandCloseProducer command)
         => new()
         {
-            CommandType = BaseCommand.Type.CloseProducer,
+            Type = BaseCommand.Types.Type.CloseProducer,
             CloseProducer = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandCloseConsumer command)
         => new()
         {
-            CommandType = BaseCommand.Type.CloseConsumer,
+            Type = BaseCommand.Types.Type.CloseConsumer,
             CloseConsumer = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandSeek command)
         => new()
         {
-            CommandType = BaseCommand.Type.Seek,
+            Type = BaseCommand.Types.Type.Seek,
             Seek = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandRedeliverUnacknowledgedMessages command)
         => new()
         {
-            CommandType = BaseCommand.Type.RedeliverUnacknowledgedMessages,
+            Type = BaseCommand.Types.Type.RedeliverUnacknowledgedMessages,
             RedeliverUnacknowledgedMessages = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandGetOrCreateSchema command)
         => new()
         {
-            CommandType = BaseCommand.Type.GetOrCreateSchema,
+            Type = BaseCommand.Types.Type.GetOrCreateSchema,
             GetOrCreateSchema = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandPartitionedTopicMetadata command)
         => new()
         {
-            CommandType = BaseCommand.Type.PartitionedMetadata,
+            Type = BaseCommand.Types.Type.PartitionedMetadata,
             PartitionMetadata = command
         };
 
     public static BaseCommand AsBaseCommand(this CommandGetTopicsOfNamespace command)
         => new()
         {
-            CommandType = BaseCommand.Type.GetTopicsOfNamespace,
-            getTopicsOfNamespace = command
+            Type = BaseCommand.Types.Type.GetTopicsOfNamespace,
+            GetTopicsOfNamespace = command
         };
 }

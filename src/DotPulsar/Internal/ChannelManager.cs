@@ -26,7 +26,7 @@ public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposa
     private readonly RequestResponseHandler _requestResponseHandler;
     private readonly IdLookup<IChannel> _consumerChannels;
     private readonly IdLookup<IChannel> _producerChannels;
-    private readonly EnumLookup<BaseCommand.Type, Action<BaseCommand>> _incoming;
+    private readonly EnumLookup<BaseCommand.Types.Type, Action<BaseCommand>> _incoming;
 
     public IState<ChannelManagerState> State => _stateManager;
 
@@ -36,11 +36,11 @@ public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposa
         _requestResponseHandler = new RequestResponseHandler();
         _consumerChannels = new IdLookup<IChannel>();
         _producerChannels = new IdLookup<IChannel>();
-        _incoming = new EnumLookup<BaseCommand.Type, Action<BaseCommand>>(cmd => _requestResponseHandler.Incoming(cmd));
-        _incoming.Set(BaseCommand.Type.CloseConsumer, cmd => Incoming(cmd.CloseConsumer));
-        _incoming.Set(BaseCommand.Type.CloseProducer, cmd => Incoming(cmd.CloseProducer));
-        _incoming.Set(BaseCommand.Type.ActiveConsumerChange, cmd => Incoming(cmd.ActiveConsumerChange));
-        _incoming.Set(BaseCommand.Type.ReachedEndOfTopic, cmd => Incoming(cmd.ReachedEndOfTopic));
+        _incoming = new EnumLookup<BaseCommand.Types.Type, Action<BaseCommand>>(cmd => _requestResponseHandler.Incoming(cmd));
+        _incoming.Set(BaseCommand.Types.Type.CloseConsumer, cmd => Incoming(cmd.CloseConsumer));
+        _incoming.Set(BaseCommand.Types.Type.CloseProducer, cmd => Incoming(cmd.CloseProducer));
+        _incoming.Set(BaseCommand.Types.Type.ActiveConsumerChange, cmd => Incoming(cmd.ActiveConsumerChange));
+        _incoming.Set(BaseCommand.Types.Type.ReachedEndOfTopic, cmd => Incoming(cmd.ReachedEndOfTopic));
     }
 
     public Task<ProducerResponse> Outgoing(CommandProducer command, IChannel channel)
@@ -51,7 +51,7 @@ public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposa
 
         return response.ContinueWith(result =>
         {
-            if (result.Result.CommandType == BaseCommand.Type.Error)
+            if (result.Result.Type == BaseCommand.Types.Type.Error)
             {
                 _ = RemoveProducerChannel(producerId);
                 result.Result.Error.Throw();
@@ -79,7 +79,7 @@ public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposa
 
         return response.ContinueWith(result =>
         {
-            if (result.Result.CommandType == BaseCommand.Type.Error)
+            if (result.Result.Type == BaseCommand.Types.Type.Error)
             {
                 _ = RemoveConsumerChannel(consumerId);
                 result.Result.Error.Throw();
@@ -104,7 +104,7 @@ public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposa
 
         _ = response.ContinueWith(result =>
         {
-            if (result.Result.CommandType == BaseCommand.Type.Success)
+            if (result.Result.Type == BaseCommand.Types.Type.Success)
                 _ = RemoveConsumerChannel(consumerId);
         }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
@@ -124,7 +124,7 @@ public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposa
 
         _ = response.ContinueWith(result =>
         {
-            if (result.Result.CommandType == BaseCommand.Type.Success)
+            if (result.Result.Type == BaseCommand.Types.Type.Success)
                 _ = RemoveProducerChannel(producerId);
         }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
@@ -144,7 +144,7 @@ public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposa
 
         _ = response.ContinueWith(result =>
         {
-            if (result.Result.CommandType == BaseCommand.Type.Success)
+            if (result.Result.Type == BaseCommand.Types.Type.Success)
                 RemoveConsumerChannel(consumerId)?.Unsubscribed();
         }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
@@ -191,7 +191,7 @@ public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposa
     }
 
     public void Incoming(BaseCommand command)
-        => _incoming.Get(command.CommandType)(command);
+        => _incoming.Get(command.Type)(command);
 
     public void Incoming(CommandMessage command, ReadOnlySequence<byte> data)
         => _consumerChannels[command.ConsumerId]?.Received(new MessagePackage(command.MessageId, command.RedeliveryCount, data));
@@ -266,7 +266,7 @@ public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposa
     {
         _ = _requestResponseHandler.ExpectAdditionalResponse(command).ContinueWith(response =>
         {
-            if (response.IsCanceled || response.IsFaulted || response.Result.CommandType == BaseCommand.Type.Error)
+            if (response.IsCanceled || response.IsFaulted || response.Result.Type == BaseCommand.Types.Type.Error)
             {
                 _producerChannels[command.ProducerId]?.Disconnected();
                 return;

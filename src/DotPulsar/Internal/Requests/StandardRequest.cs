@@ -23,9 +23,9 @@ public readonly struct StandardRequest : IRequest
     private readonly ulong _requestId;
     private readonly ulong? _consumerId;
     private readonly ulong? _producerId;
-    private readonly BaseCommand.Type? _commandType;
+    private readonly BaseCommand.Types.Type? _commandType;
 
-    private StandardRequest(ulong requestId, ulong? consumerId, ulong? producerId, BaseCommand.Type? commandType)
+    private StandardRequest(ulong requestId, ulong? consumerId, ulong? producerId, BaseCommand.Types.Type? commandType)
     {
         _requestId = requestId;
         _consumerId = consumerId;
@@ -36,10 +36,10 @@ public readonly struct StandardRequest : IRequest
     public static StandardRequest WithRequestId(ulong requestId)
         => new(requestId, null, null, null);
 
-    public static StandardRequest WithConsumerId(ulong requestId, ulong consumerId, BaseCommand.Type? commandType = null)
+    public static StandardRequest WithConsumerId(ulong requestId, ulong consumerId, BaseCommand.Types.Type? commandType = null)
         => new(requestId, consumerId, null, commandType);
 
-    public static StandardRequest WithProducerId(ulong requestId, ulong producerId, BaseCommand.Type? commandType = null)
+    public static StandardRequest WithProducerId(ulong requestId, ulong producerId, BaseCommand.Types.Type? commandType = null)
         => new(requestId, null, producerId, commandType);
 
     public bool SenderIsConsumer(ulong consumerId)
@@ -48,7 +48,7 @@ public readonly struct StandardRequest : IRequest
     public bool SenderIsProducer(ulong producerId)
         => _producerId.HasValue && _producerId.Value == producerId;
 
-    public bool IsCommandType(BaseCommand.Type commandType)
+    public bool IsCommandType(BaseCommand.Types.Type commandType)
         => _commandType.HasValue && _commandType.Value == commandType;
 
 #if NETSTANDARD2_0

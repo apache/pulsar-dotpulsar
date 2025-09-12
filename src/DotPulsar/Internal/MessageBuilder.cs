@@ -16,6 +16,7 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Internal.Extensions;
+using Google.Protobuf;
 
 public sealed class MessageBuilder<TMessage> : IMessageBuilder<TMessage>
 {
@@ -78,7 +79,7 @@ public sealed class MessageBuilder<TMessage> : IMessageBuilder<TMessage>
 
     public IMessageBuilder<TMessage> OrderingKey(byte[] key)
     {
-        _metadata.Metadata.OrderingKey = key;
+        _metadata.Metadata.OrderingKey = ByteString.CopyFrom(key);
         return this;
     }
 
@@ -90,7 +91,7 @@ public sealed class MessageBuilder<TMessage> : IMessageBuilder<TMessage>
 
     public IMessageBuilder<TMessage> SchemaVersion(byte[] schemaVersion)
     {
-        _metadata.Metadata.SchemaVersion = schemaVersion;
+        _metadata.Metadata.SchemaVersion = ByteString.CopyFrom(schemaVersion);
         return this;
     }
 

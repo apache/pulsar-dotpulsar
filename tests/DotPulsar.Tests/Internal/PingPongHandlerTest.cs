@@ -43,7 +43,7 @@ public class PingPongHandlerTest
 
         // Act
         _ = await uut.State.OnStateChangeTo(PingPongHandlerState.ThresholdExceeded);
-        uut.Incoming(DotPulsar.Internal.PulsarApi.BaseCommand.Type.Ack);
+        uut.Incoming(DotPulsar.Internal.PulsarApi.BaseCommand.Types.Type.Ack);
         var actual = await uut.State.OnStateChangeTo(PingPongHandlerState.Active);
 
         // Assert

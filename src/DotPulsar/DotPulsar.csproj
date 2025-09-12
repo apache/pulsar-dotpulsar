@@ -20,13 +20,14 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <NoWarn>1591</NoWarn>
+    <!-- last 3 due to protobuf generated model, to remove ideally -->
+    <NoWarn>1591;8601;8625;8765</NoWarn>
   </PropertyGroup>
  
   <ItemGroup>
     <PackageReference Include="HashDepot" Version="2.0.3" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.9" />
-    <PackageReference Include="protobuf-net" Version="3.2.56" />
+    <PackageReference Include="Google.Protobuf" Version="3.31.1" />
   </ItemGroup>
  
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
@@ -34,11 +35,13 @@
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.9" />
     <PackageReference Include="System.IO.Pipelines" Version="8.0.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.9" />
     <PackageReference Include="System.IO.Pipelines" Version="8.0.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">

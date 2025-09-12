@@ -16,6 +16,7 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
+using Google.Protobuf;
 using Microsoft.Extensions.ObjectPool;
 using System.Buffers;
 
@@ -72,7 +73,7 @@ public sealed class ProducerChannel : IProducerChannel
 
             if (metadata.SchemaVersion is null && _schemaVersion is not null)
             {
-                metadata.SchemaVersion = _schemaVersion;
+                metadata.SchemaVersion = ByteString.CopyFrom(_schemaVersion);
                 resetSchema = true;
             }
 

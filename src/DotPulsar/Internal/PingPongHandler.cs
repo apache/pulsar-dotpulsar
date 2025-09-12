@@ -37,7 +37,7 @@ public sealed class PingPongHandler : IStateHolder<PingPongHandlerState>, IAsync
         _ = Task.Factory.StartNew(() => Watch());
     }
 
-    public void Incoming(BaseCommand.Type _)
+    public void Incoming(BaseCommand.Types.Type _)
     {
         Interlocked.Exchange(ref _lastCommand, Stopwatch.GetTimestamp());
         _waitForPong = false;
