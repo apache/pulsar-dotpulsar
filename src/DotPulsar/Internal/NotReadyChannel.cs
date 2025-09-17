@@ -17,7 +17,7 @@ namespace DotPulsar.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using System.Buffers;
 
 public sealed class NotReadyChannel<TMessage> : IConsumerChannel<TMessage>, IProducerChannel

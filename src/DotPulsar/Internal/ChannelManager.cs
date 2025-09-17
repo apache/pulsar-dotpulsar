@@ -17,7 +17,7 @@ namespace DotPulsar.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using System.Buffers;
 
 public sealed class ChannelManager : IStateHolder<ChannelManagerState>, IDisposable

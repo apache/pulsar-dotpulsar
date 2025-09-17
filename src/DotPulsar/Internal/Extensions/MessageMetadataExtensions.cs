@@ -15,7 +15,7 @@
 namespace DotPulsar.Internal.Extensions;
 
 using System.Text;
-using Metadata = PulsarApi.MessageMetadata;
+using Metadata = Pulsar.Proto.MessageMetadata;
 
 public static class MessageMetadataExtensions
 {

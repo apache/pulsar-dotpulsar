@@ -20,7 +20,7 @@ using DotPulsar.Extensions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Exceptions;
 using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using Google.Protobuf;
 using System.Buffers;
 

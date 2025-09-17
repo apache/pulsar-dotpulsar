@@ -15,7 +15,7 @@
 namespace DotPulsar;
 
 using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using Google.Protobuf;
 
 /// <summary>
@@ -27,16 +27,16 @@ public sealed class MessageMetadata
     /// Initializes a new instance of the message metadata builder.
     /// </summary>
     public MessageMetadata()
-        => Metadata = new Internal.PulsarApi.MessageMetadata();
+        => Metadata = new Pulsar.Proto.MessageMetadata();
 
-    internal Internal.PulsarApi.MessageMetadata Metadata { get; }
+    internal Pulsar.Proto.MessageMetadata Metadata { get; }
 
     /// <summary>
     /// Manually set the compression information.
     /// </summary>
     public void SetCompressionInfo(CompressionType compressionType, uint uncompressedSize)
     {
-        Metadata.Compression = (Internal.PulsarApi.CompressionType) compressionType;
+        Metadata.Compression = (Pulsar.Proto.CompressionType) compressionType;
         Metadata.UncompressedSize = uncompressedSize;
     }
 

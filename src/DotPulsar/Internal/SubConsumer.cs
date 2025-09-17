@@ -19,7 +19,7 @@ using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Events;
 using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using Microsoft.Extensions.ObjectPool;
 
 public sealed class SubConsumer<TMessage> : IConsumer<TMessage>, IContainsChannel

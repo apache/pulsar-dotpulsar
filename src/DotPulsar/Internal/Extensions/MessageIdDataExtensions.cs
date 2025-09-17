@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Internal.Extensions;
 
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 
 public static class MessageIdDataExtensions
 {

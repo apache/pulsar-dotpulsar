@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Internal;
 
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using System.Buffers;

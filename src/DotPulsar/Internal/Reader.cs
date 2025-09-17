@@ -18,7 +18,7 @@ using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Compression;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 
 public sealed class Reader<TMessage> : IReader<TMessage>
 {

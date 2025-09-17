@@ -18,7 +18,7 @@ using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Events;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 
 public sealed class SubReader<TMessage> : IContainsChannel, IReader<TMessage>
 {

@@ -15,7 +15,7 @@
 namespace DotPulsar.Internal.Requests;
 
 using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 #if !NETSTANDARD2_0
 using System.Diagnostics.CodeAnalysis;
 #endif

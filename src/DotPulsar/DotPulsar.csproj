@@ -22,12 +22,53 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <!-- last 3 due to protobuf generated model, to remove ideally -->
     <NoWarn>1591;8601;8625;8765</NoWarn>
+    
+    <!-- proto model generation -->
+    <PulsarProtoVersion>4.1.0</PulsarProtoVersion>
+    <PulsarBaseUrl>https://raw.githubusercontent.com/apache/pulsar/refs/tags/v$(PulsarProtoVersion)/pulsar-common/src/main/proto</PulsarBaseUrl>
+    <PulsarProtoFile>PulsarApi.proto</PulsarProtoFile>
+    <PulsarApiProtoUrl>$(PulsarBaseUrl)/$(PulsarProtoFile)</PulsarApiProtoUrl>
+    <PulsarApiProtoMarkersUrl>$(PulsarBaseUrl)/PulsarMarkers.proto</PulsarApiProtoMarkersUrl>
+    <ProtosDir>$(BaseIntermediateOutputPath)protos/$(TargetFramework)</ProtosDir>
   </PropertyGroup>
- 
+
+  <Target Name="DownloadProto"
+          BeforeTargets="BeforeCompile"
+          DependsOnTargets="Protobuf_BeforeCompile"
+          Inputs="$(ProtosDir)/$(PulsarProtoFile)"
+          Outputs="$(ProtosDir)/$(PulsarProtoFile)">
+    <DownloadFile
+      SourceUrl="$(PulsarApiProtoUrl)"
+      DestinationFolder="$(ProtosDir)"
+      SkipUnchangedFiles="true"
+      Retries="3"
+    />
+    <DownloadFile
+      SourceUrl="$(PulsarApiProtoMarkersUrl)"
+      DestinationFolder="$(ProtosDir)"
+      SkipUnchangedFiles="true"
+      Retries="3"
+    />
+    
+    <ItemGroup>
+      <Protobuf
+          Include="$(ProtosDir)/$(PulsarProtoFile)"
+          ProtoRoot="$(ProtosDir)"
+          GrpcServices="None"
+          Access="public"
+          ProtoCompile="true"
+          CompileOutputs="true"
+          OutputDir="$(IntermediateOutputPath)/$(Configuration)/$(TargetFramework)/Generated/Pulsar/Proto"
+          Link="protos\$(PulsarProtoFile)"
+      />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="HashDepot" Version="2.0.3" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.9" />
-    <PackageReference Include="Google.Protobuf" Version="3.31.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.32.1" />
+    <PackageReference Include="Grpc.Tools" Version="2.72.0" PrivateAssets="all" />
   </ItemGroup>
  
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">

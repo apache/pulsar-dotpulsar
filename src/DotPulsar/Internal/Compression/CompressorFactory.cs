@@ -15,7 +15,7 @@
 namespace DotPulsar.Internal.Compression;
 
 using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 
 public sealed class CompressorFactory : ICompressorFactory
 {

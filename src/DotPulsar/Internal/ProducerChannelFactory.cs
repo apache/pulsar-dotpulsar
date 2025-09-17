@@ -16,7 +16,7 @@ namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 
 public sealed class ProducerChannelFactory : IProducerChannelFactory
 {

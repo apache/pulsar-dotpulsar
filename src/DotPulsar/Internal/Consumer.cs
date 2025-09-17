@@ -19,7 +19,7 @@ using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Compression;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 
 public sealed class Consumer<TMessage> : IConsumer<TMessage>
 {

@@ -15,7 +15,7 @@
 namespace DotPulsar.Internal.Requests;
 
 using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using System.Diagnostics.CodeAnalysis;
 
 public readonly struct ConnectRequest : IRequest

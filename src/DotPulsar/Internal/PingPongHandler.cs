@@ -15,7 +15,7 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Abstractions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using System.Diagnostics;
 
 public sealed class PingPongHandler : IStateHolder<PingPongHandlerState>, IAsyncDisposable

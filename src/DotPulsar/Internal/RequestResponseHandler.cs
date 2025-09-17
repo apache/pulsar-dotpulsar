@@ -15,7 +15,7 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.Abstractions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using DotPulsar.Internal.Requests;
 
 public sealed class RequestResponseHandler : IDisposable

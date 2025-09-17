@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Internal.Abstractions;
 
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using System.Text.RegularExpressions;
 
 public interface IConnectionPool : IAsyncDisposable

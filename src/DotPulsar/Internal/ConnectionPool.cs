@@ -18,7 +18,7 @@ using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
