@@ -36,8 +36,8 @@ public static class BuiltinZlibCompression
             var compressionModeType = types.FirstOrDefault(t => t.FullName == "System.IO.Compression.CompressionMode");
             var compressionModeDecompress = compressionModeType?.GetEnumValues().GetValue(0);
 
-            compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Zlib, () => new Compressor(CreateCompressor(zlibStreamType, compressionLevelOptimal)));
-            decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Zlib, () => new Decompressor(CreateDecompressor(zlibStreamType, compressionModeDecompress)));
+            compressorFactory = new CompressorFactory(Pulsar.Proto.CompressionType.Zlib, () => new Compressor(CreateCompressor(zlibStreamType, compressionLevelOptimal)));
+            decompressorFactory = new DecompressorFactory(Pulsar.Proto.CompressionType.Zlib, () => new Decompressor(CreateDecompressor(zlibStreamType, compressionModeDecompress)));
 
             return CompressionTester.TestCompression(compressorFactory, decompressorFactory);
         }

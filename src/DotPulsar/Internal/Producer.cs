@@ -158,7 +158,7 @@ public sealed class Producer<TMessage> : IProducer<TMessage>, IRegisterEvent
         var correlationId = Guid.NewGuid();
         var producerName = _options.ProducerName;
         var schema = _options.Schema;
-        var producerAccessMode = (PulsarApi.ProducerAccessMode) _options.ProducerAccessMode;
+        var producerAccessMode = (Pulsar.Proto.ProducerAccessMode) _options.ProducerAccessMode;
         var producerProperties = _options.ProducerProperties;
         var factory = new ProducerChannelFactory(correlationId, _processManager, _connectionPool, topic, producerName, producerAccessMode, schema.SchemaInfo, _compressorFactory, producerProperties);
         var stateManager = CreateStateManager();

@@ -18,7 +18,7 @@ using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
@@ -73,8 +73,11 @@ public sealed class ConnectionPool : IConnectionPool
         {
             Topic = topic,
             Authoritative = false,
-            AdvertisedListenerName = _listenerName
         };
+        if (_listenerName is not null)
+        {
+            lookup.AdvertisedListenerName = _listenerName;
+        }
 
         var physicalUrl = _serviceUrl;
 
@@ -83,16 +86,16 @@ public sealed class ConnectionPool : IConnectionPool
             var connection = await GetConnection(physicalUrl, cancellationToken).ConfigureAwait(false);
             var response = await connection.Send(lookup, cancellationToken).ConfigureAwait(false);
 
-            response.Expect(BaseCommand.Type.LookupResponse);
+            response.Expect(BaseCommand.Types.Type.LookupResponse);
 
-            if (response.LookupTopicResponse.Response == CommandLookupTopicResponse.LookupType.Failed)
+            if (response.LookupTopicResponse.Response == CommandLookupTopicResponse.Types.LookupType.Failed)
                 response.LookupTopicResponse.Throw();
 
             lookup.Authoritative = response.LookupTopicResponse.Authoritative;
 
             var lookupResponseServiceUrl = new Uri(GetBrokerServiceUrl(response.LookupTopicResponse));
 
-            if (response.LookupTopicResponse.Response == CommandLookupTopicResponse.LookupType.Redirect || !response.LookupTopicResponse.Authoritative)
+            if (response.LookupTopicResponse.Response == CommandLookupTopicResponse.Types.LookupType.Redirect || !response.LookupTopicResponse.Authoritative)
             {
                 physicalUrl = lookupResponseServiceUrl;
                 continue;
@@ -153,9 +156,9 @@ public sealed class ConnectionPool : IConnectionPool
             commandConnect = WithProxyToBroker(commandConnect, url.Logical);
 
         var connection = Connection.Connect(new PulsarStream(stream), _authentication, _keepAliveInterval, _closeInactiveConnectionsInterval);
-        _ = connection.State.OnStateChangeFrom(ConnectionState.Connected, CancellationToken.None).AsTask().ContinueWith(t => DisposeConnection(url, connection), CancellationToken.None);
+        _ = connection.State.OnStateChangeFrom(ConnectionState.Connected, CancellationToken.None).AsTask().ContinueWith(_ => DisposeConnection(url, connection), CancellationToken.None);
         var response = await connection.Send(commandConnect, cancellationToken).ConfigureAwait(false);
-        response.Expect(BaseCommand.Type.Connected);
+        response.Expect(BaseCommand.Types.Type.Connected);
         _connections[url] = connection;
         connection.MaxMessageSize = response.Connected.MaxMessageSize;
         return connection;
@@ -169,19 +172,23 @@ public sealed class ConnectionPool : IConnectionPool
 
     private static CommandConnect WithProxyToBroker(CommandConnect commandConnect, Uri logicalUrl)
     {
-        return new CommandConnect
-        {
-            AuthData = commandConnect.ShouldSerializeAuthData() ? commandConnect.AuthData : null,
-            AuthMethod = commandConnect.ShouldSerializeAuthMethod() ? commandConnect.AuthMethod : AuthMethod.AuthMethodNone,
-            AuthMethodName = commandConnect.ShouldSerializeAuthMethodName() ? commandConnect.AuthMethodName : null,
-            ClientVersion = commandConnect.ClientVersion,
-            OriginalPrincipal = commandConnect.ShouldSerializeOriginalPrincipal() ? commandConnect.OriginalPrincipal : null,
-            ProtocolVersion = commandConnect.ProtocolVersion,
-            OriginalAuthData = commandConnect.ShouldSerializeOriginalAuthData() ? commandConnect.OriginalAuthData : null,
-            OriginalAuthMethod = commandConnect.ShouldSerializeOriginalAuthMethod() ? commandConnect.OriginalAuthMethod : null,
-            ProxyToBrokerUrl = $"{logicalUrl.Host}:{logicalUrl.Port}",
-            FeatureFlags = commandConnect.FeatureFlags
-        };
+        var broker = new CommandConnect();
+        if (commandConnect.HasAuthData)
+            broker.AuthData = commandConnect.AuthData;
+        broker.AuthMethod = commandConnect.HasAuthMethod ? commandConnect.AuthMethod : AuthMethod.None;
+        if (commandConnect.HasAuthMethodName)
+            broker.AuthMethodName = commandConnect.AuthMethodName;
+        broker.ClientVersion = commandConnect.ClientVersion;
+        if (commandConnect.HasOriginalPrincipal)
+            broker.OriginalPrincipal = commandConnect.OriginalPrincipal;
+        broker.ProtocolVersion = commandConnect.ProtocolVersion;
+        if (commandConnect.HasOriginalAuthData)
+            broker.OriginalAuthData = commandConnect.OriginalAuthData;
+        if (commandConnect.HasOriginalAuthMethod)
+            broker.OriginalAuthMethod = commandConnect.OriginalAuthMethod;
+        broker.ProxyToBrokerUrl = $"{logicalUrl.Host}:{logicalUrl.Port}";
+        broker.FeatureFlags = commandConnect.FeatureFlags;
+        return broker;
     }
 
     private sealed class PulsarUrl : IEquatable<PulsarUrl>
@@ -226,15 +233,15 @@ public sealed class ConnectionPool : IConnectionPool
         var commandPartitionedMetadata = new CommandPartitionedTopicMetadata { Topic = topic };
         var response = await connection.Send(commandPartitionedMetadata, cancellationToken).ConfigureAwait(false);
 
-        response.Expect(BaseCommand.Type.PartitionedMetadataResponse);
+        response.Expect(BaseCommand.Types.Type.PartitionedMetadataResponse);
 
-        if (response.PartitionMetadataResponse.Response == CommandPartitionedTopicMetadataResponse.LookupType.Failed)
+        if (response.PartitionMetadataResponse.Response == CommandPartitionedTopicMetadataResponse.Types.LookupType.Failed)
             response.PartitionMetadataResponse.Throw();
 
         return response.PartitionMetadataResponse.Partitions;
     }
 
-    public async ValueTask<IEnumerable<string>> GetTopicsOfNamespace(CommandGetTopicsOfNamespace.Mode mode, Regex topicsPattern, CancellationToken cancellationToken = default)
+    public async ValueTask<IEnumerable<string>> GetTopicsOfNamespace(CommandGetTopicsOfNamespace.Types.Mode mode, Regex topicsPattern, CancellationToken cancellationToken = default)
     {
         var topicUriPattern = new Regex(@"^(persistent|non-persistent)://([^/]+)/([^/]+)/(.+)$", RegexOptions.Compiled);
 
@@ -251,14 +258,14 @@ public sealed class ConnectionPool : IConnectionPool
         if (!string.IsNullOrEmpty(persistence))
         {
             if (persistence.Equals("persistent"))
-                mode = CommandGetTopicsOfNamespace.Mode.Persistent;
+                mode = CommandGetTopicsOfNamespace.Types.Mode.Persistent;
             else
-                mode = CommandGetTopicsOfNamespace.Mode.NonPersistent;
+                mode = CommandGetTopicsOfNamespace.Types.Mode.NonPersistent;
         }
 
         var getTopicsOfNamespace = new CommandGetTopicsOfNamespace
         {
-            mode = mode,
+            Mode = mode,
             Namespace = $"{tenant}/{ns}",
             TopicsPattern = patternString
         };
@@ -266,14 +273,14 @@ public sealed class ConnectionPool : IConnectionPool
         var connection = await GetConnection(_serviceUrl, cancellationToken).ConfigureAwait(false);
         var response = await connection.Send(getTopicsOfNamespace, cancellationToken).ConfigureAwait(false);
 
-        response.Expect(BaseCommand.Type.GetTopicsOfNamespaceResponse);
+        response.Expect(BaseCommand.Types.Type.GetTopicsOfNamespaceResponse);
 
-        if (response.getTopicsOfNamespaceResponse.Filtered)
-            return response.getTopicsOfNamespaceResponse.Topics;
+        if (response.GetTopicsOfNamespaceResponse.Filtered)
+            return response.GetTopicsOfNamespaceResponse.Topics;
 
         var topics = new List<string>();
 
-        foreach (var topic in response.getTopicsOfNamespaceResponse.Topics)
+        foreach (var topic in response.GetTopicsOfNamespaceResponse.Topics)
         {
             if (topicsPattern.Match(topic).Success)
                 topics.Add(topic);

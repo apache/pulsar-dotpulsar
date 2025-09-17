@@ -63,7 +63,7 @@ public sealed class PulsarClient : IPulsarClient
         ICompressorFactory? compressorFactory = null;
         if (options.CompressionType != CompressionType.None)
         {
-            var compressionType = (Internal.PulsarApi.CompressionType) options.CompressionType;
+            var compressionType = (Pulsar.Proto.CompressionType) options.CompressionType;
             compressorFactory = CompressionFactories.CompressorFactories().SingleOrDefault(f => f.CompressionType == compressionType);
 
             if (compressorFactory is null)

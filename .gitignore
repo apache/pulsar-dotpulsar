@@ -291,3 +291,6 @@ Temporary Items
 # VSCode
 .devcontainer
 .vscode
+
+# generated content
+src/DotPulsar/Internal/PulsarApi/*

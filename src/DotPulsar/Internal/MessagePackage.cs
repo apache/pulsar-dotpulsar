@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Internal;
 
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using System.Buffers;
 
 public readonly struct MessagePackage

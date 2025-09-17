@@ -40,7 +40,7 @@ public static class ZstdCompression
             var compressorMethods = compressorType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
             var wrapMethod = FindWrap(compressorMethods);
 
-            compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Zstd, () =>
+            compressorFactory = new CompressorFactory(Pulsar.Proto.CompressionType.Zstd, () =>
             {
                 var compressor = Activator.CreateInstance(compressorType);
                 if (compressor is null)
@@ -50,7 +50,7 @@ public static class ZstdCompression
                 return new Compressor(CreateCompressor(wrap), (IDisposable) compressor);
             });
 
-            decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Zstd, () =>
+            decompressorFactory = new DecompressorFactory(Pulsar.Proto.CompressionType.Zstd, () =>
             {
                 var decompressor = Activator.CreateInstance(decompressorType);
                 if (decompressor is null)

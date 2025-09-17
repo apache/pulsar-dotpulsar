@@ -15,7 +15,7 @@
 namespace DotPulsar.Internal.Abstractions;
 
 using DotPulsar.Abstractions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 using System.Buffers;
 
 public interface IMessageFactory<TValue>

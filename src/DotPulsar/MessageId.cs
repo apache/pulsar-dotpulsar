@@ -15,7 +15,7 @@
 namespace DotPulsar;
 
 using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 
 /// <summary>
 /// Unique identifier of a single message.

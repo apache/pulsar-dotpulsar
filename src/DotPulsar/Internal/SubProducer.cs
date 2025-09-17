@@ -20,7 +20,7 @@ using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.Events;
 using DotPulsar.Internal.Exceptions;
 using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 
 public sealed class SubProducer : IContainsChannel, IStateHolder<ProducerState>
 {
@@ -159,7 +159,7 @@ public sealed class SubProducer : IContainsChannel, IStateHolder<ProducerState>
                 if (responseTask.IsFaulted)
                     throw responseTask.Exception!;
 
-                responseTask.Result.Expect(BaseCommand.Type.SendReceipt);
+                responseTask.Result.Expect(BaseCommand.Types.Type.SendReceipt);
                 ProcessReceipt(responseTask.Result.SendReceipt);
             }, CancellationToken.None).ConfigureAwait(false); // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
 

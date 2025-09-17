@@ -14,11 +14,11 @@
 
 namespace DotPulsar.Internal.Abstractions;
 
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
 
 public interface IRequest : IEquatable<IRequest>
 {
     bool SenderIsProducer(ulong producerId);
     bool SenderIsConsumer(ulong consumerId);
-    bool IsCommandType(BaseCommand.Type commandType);
+    bool IsCommandType(BaseCommand.Types.Type commandType);
 }

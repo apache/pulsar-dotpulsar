@@ -15,7 +15,8 @@
 namespace DotPulsar;
 
 using DotPulsar.Internal.Extensions;
-using DotPulsar.Internal.PulsarApi;
+using Pulsar.Proto;
+using Google.Protobuf;
 
 /// <summary>
 /// The message metadata builder.
@@ -26,16 +27,16 @@ public sealed class MessageMetadata
     /// Initializes a new instance of the message metadata builder.
     /// </summary>
     public MessageMetadata()
-        => Metadata = new Internal.PulsarApi.MessageMetadata();
+        => Metadata = new Pulsar.Proto.MessageMetadata();
 
-    internal Internal.PulsarApi.MessageMetadata Metadata { get; }
+    internal Pulsar.Proto.MessageMetadata Metadata { get; }
 
     /// <summary>
     /// Manually set the compression information.
     /// </summary>
     public void SetCompressionInfo(CompressionType compressionType, uint uncompressedSize)
     {
-        Metadata.Compression = (Internal.PulsarApi.CompressionType) compressionType;
+        Metadata.Compression = (Pulsar.Proto.CompressionType) compressionType;
         Metadata.UncompressedSize = uncompressedSize;
     }
 
@@ -116,8 +117,8 @@ public sealed class MessageMetadata
     /// </summary>
     public byte[]? OrderingKey
     {
-        get => Metadata.OrderingKey;
-        set => Metadata.OrderingKey = value;
+        get => Metadata.OrderingKey.ToByteArray();
+        set => Metadata.OrderingKey = value is null ? null : ByteString.CopyFrom(value);
     }
 
     /// <summary>
@@ -166,8 +167,8 @@ public sealed class MessageMetadata
     /// </summary>
     public byte[]? SchemaVersion
     {
-        get => Metadata.SchemaVersion;
-        set => Metadata.SchemaVersion = value;
+        get => Metadata.SchemaVersion.ToByteArray();
+        set => Metadata.SchemaVersion = value is null ? null : ByteString.CopyFrom(value);
     }
 
     /// <summary>

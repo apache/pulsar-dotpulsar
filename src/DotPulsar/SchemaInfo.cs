@@ -14,26 +14,28 @@
 
 namespace DotPulsar;
 
+using Google.Protobuf;
+
 /// <summary>
 /// Information about the schema.
 /// </summary>
 public sealed class SchemaInfo
 {
-    internal SchemaInfo(Internal.PulsarApi.Schema schema)
+    internal SchemaInfo(Pulsar.Proto.Schema schema)
         => PulsarSchema = schema;
 
     public SchemaInfo(string name, byte[] data, SchemaType type, IReadOnlyDictionary<string, string> properties)
     {
-        PulsarSchema = new Internal.PulsarApi.Schema
+        PulsarSchema = new Pulsar.Proto.Schema
         {
             Name = name,
-            SchemaData = data,
-            Type = (Internal.PulsarApi.Schema.SchemaType) type,
+            SchemaData = ByteString.CopyFrom(data),
+            Type = (Pulsar.Proto.Schema.Types.Type) type,
         };
 
         foreach (var property in properties)
         {
-            var keyValue = new Internal.PulsarApi.KeyValue
+            var keyValue = new Pulsar.Proto.KeyValue
             {
                 Key = property.Key,
                 Value = property.Value
@@ -43,7 +45,7 @@ public sealed class SchemaInfo
         }
     }
 
-    internal Internal.PulsarApi.Schema PulsarSchema { get; }
+    internal Pulsar.Proto.Schema PulsarSchema { get; }
 
     /// <summary>
     /// The name of the schema.
@@ -53,7 +55,7 @@ public sealed class SchemaInfo
     /// <summary>
     /// The data of the schema.
     /// </summary>
-    public byte[] Data => PulsarSchema.SchemaData;
+    public byte[] Data => PulsarSchema.SchemaData.ToByteArray();
 
     /// <summary>
     /// The type of the schema.
