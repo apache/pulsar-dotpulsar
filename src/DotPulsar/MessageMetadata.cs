@@ -16,6 +16,7 @@ namespace DotPulsar;
 
 using DotPulsar.Internal.Extensions;
 using DotPulsar.Internal.PulsarApi;
+using Google.Protobuf;
 
 /// <summary>
 /// The message metadata builder.
@@ -116,8 +117,8 @@ public sealed class MessageMetadata
     /// </summary>
     public byte[]? OrderingKey
     {
-        get => Metadata.OrderingKey;
-        set => Metadata.OrderingKey = value;
+        get => Metadata.OrderingKey.IsEmpty ? null : Metadata.OrderingKey.ToByteArray();
+        set => Metadata.OrderingKey = value is null ? null : ByteString.CopyFrom(value);
     }
 
     /// <summary>
@@ -166,8 +167,8 @@ public sealed class MessageMetadata
     /// </summary>
     public byte[]? SchemaVersion
     {
-        get => Metadata.SchemaVersion;
-        set => Metadata.SchemaVersion = value;
+        get => Metadata.SchemaVersion.IsEmpty ? null : Metadata.SchemaVersion.ToByteArray();
+        set => Metadata.SchemaVersion = value is null ? null : ByteString.CopyFrom(value);
     }
 
     /// <summary>

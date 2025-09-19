@@ -46,16 +46,18 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
 
         _commandProducer = new CommandProducer
         {
-            ProducerName = producerName,
             ProducerAccessMode = producerAccessMode,
             Topic = topic
         };
 
-        if (_schema.Type != Schema.SchemaType.None)
+        if (producerName is not null)
+            _commandProducer.ProducerName = producerName;
+
+        if (_schema.Type != Schema.Types.Type.None)
             _commandProducer.Schema = _schema;
 
         if (properties is not null)
-            _commandProducer.Metadatas.AddRange(properties.Select(x => new KeyValue { Key = x.Key, Value = x.Value }));
+            _commandProducer.Metadata.AddRange(properties.Select(x => new KeyValue { Key = x.Key, Value = x.Value }));
 
         _compressorFactory = compressorFactory;
     }
@@ -69,7 +71,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
             _commandProducer.TopicEpoch = _topicEpoch.Value;
         }
         else
-            _commandProducer.ResetTopicEpoch();
+            _commandProducer.ClearTopicEpoch();
 
         var connection = await _connectionPool.FindConnectionForTopic(_commandProducer.Topic, cancellationToken).ConfigureAwait(false);
         var channel = new Channel(_correlationId, _eventRegister, new AsyncQueue<MessagePackage>());
@@ -81,7 +83,7 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
 
     private async ValueTask<byte[]?> GetSchemaVersion(IConnection connection, CancellationToken cancellationToken)
     {
-        if (_schema is null || _schema.Type == Schema.SchemaType.None)
+        if (_schema is null || _schema.Type == Schema.Types.Type.None)
             return null;
 
         var command = new CommandGetOrCreateSchema
@@ -92,10 +94,10 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
 
         var response = await connection.Send(command, cancellationToken).ConfigureAwait(false);
 
-        response.Expect(BaseCommand.Type.GetOrCreateSchemaResponse);
-        if (response.GetOrCreateSchemaResponse.ShouldSerializeErrorCode())
+        response.Expect(BaseCommand.Types.Type.GetOrCreateSchemaResponse);
+        if (response.GetOrCreateSchemaResponse.HasErrorCode)
             response.GetOrCreateSchemaResponse.Throw();
 
-        return response.GetOrCreateSchemaResponse.SchemaVersion;
+        return response.GetOrCreateSchemaResponse.SchemaVersion.ToArray();
     }
 }

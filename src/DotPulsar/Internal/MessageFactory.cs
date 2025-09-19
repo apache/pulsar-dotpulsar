@@ -17,6 +17,7 @@ namespace DotPulsar.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Internal.Abstractions;
 using DotPulsar.Internal.PulsarApi;
+using Google.Protobuf.Collections;
 using System.Buffers;
 
 public sealed class MessageFactory<TValue> : IMessageFactory<TValue>
@@ -25,7 +26,7 @@ public sealed class MessageFactory<TValue> : IMessageFactory<TValue>
 
     static MessageFactory() => _empty = [];
 
-    private static IReadOnlyDictionary<string, string> FromKeyValueList(List<KeyValue> keyValues)
+    private static IReadOnlyDictionary<string, string> FromKeyValueList(RepeatedField<KeyValue> keyValues)
     {
         if (keyValues.Count == 0)
             return _empty;
@@ -71,8 +72,8 @@ public sealed class MessageFactory<TValue> : IMessageFactory<TValue>
             properties: FromKeyValueList(metadata.Properties),
             hasBase64EncodedKey: metadata.PartitionKeyB64Encoded,
             key: metadata.PartitionKey,
-            orderingKey: metadata.OrderingKey,
-            schemaVersion: metadata.SchemaVersion,
+            orderingKey: metadata.OrderingKey.IsEmpty ? null : metadata.OrderingKey.ToByteArray(),
+            schemaVersion: metadata.SchemaVersion.IsEmpty ? null : metadata.SchemaVersion.ToByteArray(),
             _schema);
     }
 
@@ -94,8 +95,8 @@ public sealed class MessageFactory<TValue> : IMessageFactory<TValue>
             properties: FromKeyValueList(singleMetadata.Properties),
             hasBase64EncodedKey: singleMetadata.PartitionKeyB64Encoded,
             key: singleMetadata.PartitionKey,
-            orderingKey: singleMetadata.OrderingKey,
-            schemaVersion: metadata.SchemaVersion,
+            orderingKey: singleMetadata.OrderingKey.IsEmpty ? null : metadata.OrderingKey.ToByteArray(),
+            schemaVersion: metadata.SchemaVersion.IsEmpty ? null : metadata.SchemaVersion.ToByteArray(),
             _schema);
     }
 }

@@ -129,7 +129,7 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         var pattern = _consumerOptions.TopicsPattern;
         if (pattern is not null)
         {
-            var mode = (CommandGetTopicsOfNamespace.Mode) _consumerOptions.RegexSubscriptionMode;
+            var mode = (CommandGetTopicsOfNamespace.Types.Mode) _consumerOptions.RegexSubscriptionMode;
             var foundTopics = await _connectionPool.GetTopicsOfNamespace(mode, pattern, _cts.Token).ConfigureAwait(false);
             topics.AddRange(foundTopics);
             if (topics.Count == 0)
@@ -432,13 +432,13 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
         var subscribe = new CommandSubscribe
         {
             ConsumerName = consumerName,
-            InitialPosition = (CommandSubscribe.InitialPositionType) _consumerOptions.InitialPosition,
+            InitialPosition = (CommandSubscribe.Types.InitialPosition) _consumerOptions.InitialPosition,
             PriorityLevel = _consumerOptions.PriorityLevel,
             ReadCompacted = _consumerOptions.ReadCompacted,
             ReplicateSubscriptionState = _consumerOptions.ReplicateSubscriptionState,
             Subscription = _consumerOptions.SubscriptionName,
             Topic = topic,
-            Type = (CommandSubscribe.SubType) _consumerOptions.SubscriptionType
+            SubType = (CommandSubscribe.Types.SubType) _consumerOptions.SubscriptionType
         };
 
         if (_consumerOptions.Schema.SchemaInfo.Type != SchemaType.None)
@@ -452,9 +452,9 @@ public sealed class Consumer<TMessage> : IConsumer<TMessage>
 
         if (_consumerOptions is { SubscriptionType: SubscriptionType.KeyShared, AllowOutOfOrderDeliver: true })
         {
-            subscribe.keySharedMeta = new KeySharedMeta
+            subscribe.KeySharedMeta = new KeySharedMeta
             {
-                allowOutOfOrderDelivery = true
+                AllowOutOfOrderDelivery = true
             };
         }
 

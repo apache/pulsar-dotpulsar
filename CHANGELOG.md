@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Replaced the protobuf-net (version 3.2.56) dependency with Google.Protobuf (version 3.32.1)
+- System.Collections.Immutable (version 9.0.9) is now a dependency for .NET Standard 2.0 and 2.1
+
 ## [4.3.2] - 2025-09-17
 
 ### Changed

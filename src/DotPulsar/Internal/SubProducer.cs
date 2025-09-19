@@ -107,7 +107,7 @@ public sealed class SubProducer : IContainsChannel, IStateHolder<ProducerState>
     private async Task MessageDispatcher(IProducerChannel channel, CancellationToken cancellationToken)
     {
         using var responseQueue = new AsyncQueue<Task<BaseCommand>>();
-        var responseProcessorTask = Task.Run(async () => await ResponseProcessor(responseQueue, cancellationToken));
+        var responseProcessorTask = Task.Run(async () => await ResponseProcessor(responseQueue, cancellationToken), CancellationToken.None);
 
         _sendQueue.ResetCursor();
 
@@ -159,7 +159,7 @@ public sealed class SubProducer : IContainsChannel, IStateHolder<ProducerState>
                 if (responseTask.IsFaulted)
                     throw responseTask.Exception!;
 
-                responseTask.Result.Expect(BaseCommand.Type.SendReceipt);
+                responseTask.Result.Expect(BaseCommand.Types.Type.SendReceipt);
                 ProcessReceipt(responseTask.Result.SendReceipt);
             }, CancellationToken.None).ConfigureAwait(false); // Use CancellationToken.None here because otherwise it will throw exceptions on all fault actions even retry.
 
@@ -220,7 +220,7 @@ public sealed class SubProducer : IContainsChannel, IStateHolder<ProducerState>
 
         _channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
         _dispatcherCts = new CancellationTokenSource();
-        _dispatcherTask = Task.Run(async () => await MessageDispatcher(_channel, _dispatcherCts.Token));
+        _dispatcherTask = Task.Run(async () => await MessageDispatcher(_channel, _dispatcherCts.Token), CancellationToken.None);
     }
 
     public async ValueTask CloseChannel(CancellationToken cancellationToken)

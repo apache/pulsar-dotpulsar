@@ -281,7 +281,8 @@ public sealed class Reader<TMessage> : IReader<TMessage>
             ReadCompacted = _readerOptions.ReadCompacted,
             StartMessageId = _readerOptions.StartMessageId.ToMessageIdData(),
             Subscription = subscription,
-            Topic = topic
+            Topic = topic,
+            SubType = CommandSubscribe.Types.SubType.Exclusive
         };
         var messagePrefetchCount = _readerOptions.MessagePrefetchCount;
         var messageFactory = new MessageFactory<TMessage>(_readerOptions.Schema);

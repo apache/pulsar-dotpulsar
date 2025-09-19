@@ -23,5 +23,5 @@ public interface IConnectionPool : IAsyncDisposable
 
     ValueTask<uint> GetNumberOfPartitions(string topic, CancellationToken cancellationToken = default);
 
-    ValueTask<IEnumerable<string>> GetTopicsOfNamespace(CommandGetTopicsOfNamespace.Mode mode, Regex topicsPattern, CancellationToken cancellationToken = default);
+    ValueTask<IEnumerable<string>> GetTopicsOfNamespace(CommandGetTopicsOfNamespace.Types.Mode mode, Regex topicsPattern, CancellationToken cancellationToken = default);
 }

@@ -15,17 +15,14 @@
 namespace DotPulsar.Internal;
 
 using DotPulsar.Internal.PulsarApi;
+using Google.Protobuf;
 using System.Buffers;
 
 public static class Serializer
 {
-    static Serializer() => Serialize(new BaseCommand()); //Let's see if this fixes the bug in protobuf-net
-
-    public static T Deserialize<T>(ReadOnlySequence<byte> sequence) => ProtoBuf.Serializer.Deserialize<T>(sequence);
-
     public static ReadOnlySequence<byte> Serialize(BaseCommand command)
     {
-        var commandBytes = Serialize<BaseCommand>(command);
+        var commandBytes = command.ToByteArray();
         var commandSizeBytes = ToBigEndianBytes((uint) commandBytes.Length);
         var totalSizeBytes = ToBigEndianBytes((uint) commandBytes.Length + 4);
 
@@ -38,10 +35,10 @@ public static class Serializer
 
     public static ReadOnlySequence<byte> Serialize(BaseCommand command, MessageMetadata metadata, ReadOnlySequence<byte> payload)
     {
-        var commandBytes = Serialize<BaseCommand>(command);
+        var commandBytes = command.ToByteArray();
         var commandSizeBytes = ToBigEndianBytes((uint) commandBytes.Length);
 
-        var metadataBytes = Serialize(metadata);
+        var metadataBytes = metadata.ToByteArray();
         var metadataSizeBytes = ToBigEndianBytes((uint) metadataBytes.Length);
 
         var sb = new SequenceBuilder<byte>().Append(metadataSizeBytes).Append(metadataBytes).Append(payload);
@@ -62,12 +59,5 @@ public static class Serializer
         return BitConverter.IsLittleEndian
             ? [union.B3, union.B2, union.B1, union.B0]
             : [union.B0, union.B1, union.B2, union.B3];
-    }
-
-    private static byte[] Serialize<T>(T item)
-    {
-        using var ms = new MemoryStream();
-        ProtoBuf.Serializer.Serialize(ms, item);
-        return ms.ToArray();
     }
 }

@@ -48,7 +48,7 @@ public sealed class BatchHandler<TMessage>
         {
             var singleMetadataSize = data.ReadUInt32(index, true);
             index += 4;
-            var singleMetadata = Serializer.Deserialize<SingleMessageMetadata>(data.Slice(index, singleMetadataSize));
+            var singleMetadata = SingleMessageMetadata.Parser.ParseFrom(data.Slice(index, singleMetadataSize));
             index += singleMetadataSize;
             var singleMessageId = new MessageId(messageId.LedgerId, messageId.EntryId, messageId.Partition, i);
             var message = _messageFactory.Create(singleMessageId, redeliveryCount, data.Slice(index, singleMetadata.PayloadSize), metadata, singleMetadata);
