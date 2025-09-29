@@ -15,7 +15,7 @@
 namespace DotPulsar;
 
 using DotPulsar.Abstractions;
-using HashDepot;
+using DotPulsar.Internal;
 
 /// <summary>
 /// The single partition messages router.

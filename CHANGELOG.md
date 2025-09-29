@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 - Replaced the protobuf-net (version 3.2.56) dependency with Google.Protobuf (version 3.32.1)
 - System.Collections.Immutable (version 9.0.9) is now a dependency for .NET Standard 2.0 and 2.1
+- Updated the System.IO.Pipelines dependency from version 8.0.0 to 9.0.9 for .NET Standard 2.0 and 2.1
+
+### Removed
+
+- The HashDepot dependency has been removed
+- .NET 6 and 7 removed as a target frameworks
 
 ## [4.3.2] - 2025-09-17
 

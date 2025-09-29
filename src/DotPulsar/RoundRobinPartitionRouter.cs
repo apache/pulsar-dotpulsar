@@ -15,7 +15,7 @@
 namespace DotPulsar;
 
 using DotPulsar.Abstractions;
-using HashDepot;
+using DotPulsar.Internal;
 
 /// <summary>
 /// The round-robin partition messages router, which is the default router.
