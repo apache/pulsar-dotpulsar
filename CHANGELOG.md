@@ -8,9 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Changed
 
-- Replaced the protobuf-net (version 3.2.56) dependency with Google.Protobuf (version 3.32.1)
-- System.Collections.Immutable (version 9.0.9) is now a dependency for .NET Standard 2.0 and 2.1
-- Updated the System.IO.Pipelines dependency from version 8.0.0 to 9.0.9 for .NET Standard 2.0 and 2.1
+- Replaced the protobuf-net (version 3.2.56) dependency with Google.Protobuf (version 3.33.0)
+- System.Collections.Immutable (version 9.0.10) is now a dependency for .NET Standard 2.0 and 2.1
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 9.0.9 to 9.0.10
+- Updated the Microsoft.Bcl.AsyncInterfaces dependency from version 9.0.9 to 9.0.10 for .NET Standard 2.0
+- Updated the System.Diagnostics.DiagnosticSource dependency from version 9.0.9 to 9.0.10 for .NET Standard 2.0 and 2.1
+- Updated the System.IO.Pipelines dependency from version 9.0.9 to 9.0.10 for .NET Standard 2.0 and 2.1 and .NET 8
 
 ### Removed
 
