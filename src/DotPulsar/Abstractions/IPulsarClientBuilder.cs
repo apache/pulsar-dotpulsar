@@ -57,6 +57,11 @@ public interface IPulsarClientBuilder
     IPulsarClientBuilder ListenerName(string listenerName);
 
     /// <summary>
+    /// Register a custom remote certificate validator. This is optional.
+    /// </summary>
+    IPulsarClientBuilder RemoteCertificateValidation(IValidateRemoteCertificate remoteCertificateValidator);
+
+    /// <summary>
     /// The time to wait before retrying an operation or a reconnect. The default is 3 seconds.
     /// </summary>
     IPulsarClientBuilder RetryInterval(TimeSpan interval);

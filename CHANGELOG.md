@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Added
 
 - .NET 10 added as a target framework
+- Support for custom remote certificate validation
 
 ### Changed
 

@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Internal;
 
-using System;
+using DotPulsar.Abstractions;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -23,23 +23,17 @@ using System.Security.Cryptography.X509Certificates;
 
 public sealed class Connector
 {
+    private readonly IValidateRemoteCertificate _remoteCertificateValidator;
     private readonly X509Certificate2Collection _clientCertificates;
-    private readonly X509Certificate2? _trustedCertificateAuthority;
-    private readonly bool _verifyCertificateAuthority;
-    private readonly bool _verifyCertificateName;
     private readonly bool _checkCertificateRevocation;
 
     public Connector(
+        IValidateRemoteCertificate remoteCertificateValidator,
         X509Certificate2Collection clientCertificates,
-        X509Certificate2? trustedCertificateAuthority,
-        bool verifyCertificateAuthority,
-        bool verifyCertificateName,
         bool checkCertificateRevocation)
     {
+        _remoteCertificateValidator = remoteCertificateValidator;
         _clientCertificates = clientCertificates;
-        _trustedCertificateAuthority = trustedCertificateAuthority;
-        _verifyCertificateAuthority = verifyCertificateAuthority;
-        _verifyCertificateName = verifyCertificateName;
         _checkCertificateRevocation = checkCertificateRevocation;
     }
 
@@ -103,7 +97,7 @@ public sealed class Connector
         bool Validate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
         {
             policyErrors = sslPolicyErrors;
-            return ValidateServerCertificate(certificate, chain, sslPolicyErrors);
+            return _remoteCertificateValidator.Validate(sender, certificate, chain, sslPolicyErrors);
         }
 
         try
@@ -134,7 +128,7 @@ public sealed class Connector
         bool Validate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
         {
             policyErrors = sslPolicyErrors;
-            return ValidateServerCertificate(certificate, chain, sslPolicyErrors);
+            return _remoteCertificateValidator.Validate(sender, certificate, chain, sslPolicyErrors);
         }
 
         try
@@ -164,35 +158,4 @@ public sealed class Connector
         }
     }
 #endif
-
-    private bool ValidateServerCertificate(X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
-    {
-        if (sslPolicyErrors == SslPolicyErrors.None)
-            return true;
-
-        if (sslPolicyErrors.HasFlag(SslPolicyErrors.RemoteCertificateNotAvailable))
-            return false;
-
-        if (sslPolicyErrors.HasFlag(SslPolicyErrors.RemoteCertificateNameMismatch) && _verifyCertificateName)
-            return false;
-
-        if (sslPolicyErrors.HasFlag(SslPolicyErrors.RemoteCertificateChainErrors) && _verifyCertificateAuthority)
-        {
-            if (_trustedCertificateAuthority is null || chain is null || certificate is null)
-                return false;
-
-            chain.ChainPolicy.ExtraStore.Add(_trustedCertificateAuthority);
-            _ = chain.Build((X509Certificate2) certificate);
-
-            for (var i = 0; i < chain.ChainElements.Count; i++)
-            {
-                if (chain.ChainElements[i].Certificate.Thumbprint == _trustedCertificateAuthority.Thumbprint)
-                    return true;
-            }
-
-            return false;
-        }
-
-        return true;
-    }
 }

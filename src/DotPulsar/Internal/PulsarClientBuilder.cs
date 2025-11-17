@@ -35,6 +35,7 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
     private bool _verifyCertificateName;
     private TimeSpan _closeInactiveConnectionsInterval;
     private IAuthentication? _authentication;
+    private IValidateRemoteCertificate? _remoteCertificateValidator;
 
     public PulsarClientBuilder()
     {
@@ -102,6 +103,12 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
         return this;
     }
 
+    public IPulsarClientBuilder RemoteCertificateValidation(IValidateRemoteCertificate remoteCertificateValidator)
+    {
+        _remoteCertificateValidator = remoteCertificateValidator;
+        return this;
+    }
+
     public IPulsarClientBuilder RetryInterval(TimeSpan interval)
     {
         _retryInterval = interval;
@@ -147,21 +154,22 @@ public sealed class PulsarClientBuilder : IPulsarClientBuilder
             _encryptionPolicy ??= EncryptionPolicy.EnforceUnencrypted;
 
             if (_encryptionPolicy.Value == EncryptionPolicy.EnforceEncrypted)
-                throw new ConnectionSecurityException(
-                    $"The scheme of the ServiceUrl ({_serviceUrl}) is '{Constants.PulsarScheme}' and cannot be used with an encryption policy of 'EnforceEncrypted'");
+                throw new ConnectionSecurityException($"The scheme of the ServiceUrl ({_serviceUrl}) is '{Constants.PulsarScheme}' and cannot be used with an encryption policy of 'EnforceEncrypted'");
         }
         else if (scheme == Constants.PulsarSslScheme)
         {
             _encryptionPolicy ??= EncryptionPolicy.EnforceEncrypted;
 
             if (_encryptionPolicy.Value == EncryptionPolicy.EnforceUnencrypted)
-                throw new ConnectionSecurityException(
-                    $"The scheme of the ServiceUrl ({_serviceUrl}) is '{Constants.PulsarSslScheme}' and cannot be used with an encryption policy of 'EnforceUnencrypted'");
+                throw new ConnectionSecurityException($"The scheme of the ServiceUrl ({_serviceUrl}) is '{Constants.PulsarSslScheme}' and cannot be used with an encryption policy of 'EnforceUnencrypted'");
         }
         else
             throw new InvalidSchemeException($"Invalid scheme '{scheme}'. Expected '{Constants.PulsarScheme}' or '{Constants.PulsarSslScheme}'");
 
-        var connector = new Connector(_clientCertificates, _trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName, _checkCertificateRevocation);
+        if (_remoteCertificateValidator is null)
+            _remoteCertificateValidator = new DefaultRemoteCertificateValidator(_trustedCertificateAuthority, _verifyCertificateAuthority, _verifyCertificateName);
+
+        var connector = new Connector(_remoteCertificateValidator, _clientCertificates, _checkCertificateRevocation);
 
         var exceptionHandlers = new List<IHandleException>(_exceptionHandlers) { new DefaultExceptionHandler() };
         var exceptionHandlerPipeline = new ExceptionHandlerPipeline(_retryInterval, exceptionHandlers);

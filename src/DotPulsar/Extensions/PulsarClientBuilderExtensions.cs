@@ -16,6 +16,8 @@ namespace DotPulsar.Extensions;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Internal;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 /// <summary>
 /// Extensions for IPulsarClientBuilder.
@@ -26,17 +28,17 @@ public static class PulsarClientBuilderExtensions
     /// Register a custom exception handler that will be invoked before the default exception handler.
     /// </summary>
     public static IPulsarClientBuilder ExceptionHandler(this IPulsarClientBuilder builder, Action<ExceptionContext> exceptionHandler)
-    {
-        builder.ExceptionHandler(new ActionExceptionHandler(exceptionHandler));
-        return builder;
-    }
+        => builder.ExceptionHandler(new ActionExceptionHandler(exceptionHandler));
 
     /// <summary>
     /// Register a custom exception handler that will be invoked before the default exception handler.
     /// </summary>
     public static IPulsarClientBuilder ExceptionHandler(this IPulsarClientBuilder builder, Func<ExceptionContext, ValueTask> exceptionHandler)
-    {
-        builder.ExceptionHandler(new FuncExceptionHandler(exceptionHandler));
-        return builder;
-    }
+        => builder.ExceptionHandler(new FuncExceptionHandler(exceptionHandler));
+
+    /// <summary>
+    /// Register a custom remote certificate validator.
+    /// </summary>
+    public static IPulsarClientBuilder RemoteCertificateValidation(this IPulsarClientBuilder builder, Func<object, X509Certificate?, X509Chain?, SslPolicyErrors, bool> validator)
+        => builder.RemoteCertificateValidation(new FuncRemoteCertificateValidator(validator));
 }
