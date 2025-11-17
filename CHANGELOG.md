@@ -6,9 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [Unreleased]
 
+### Added
+
+- .NET 10 added as a target framework
+
 ### Changed
 
 - Updated the Google.Protobuf dependency from version 3.33.0 to 3.33.1
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 9.0.10 to 10.0.0
+- Updated the Microsoft.Bcl.AsyncInterfaces dependency from version 9.0.10 to 10.0.0 for .NET Standard 2.0
+- Updated the System.Collections.Immutable from version 9.0.10 to 10.0.0 for .NET Standard 2.0 and 2.1
+- Updated the System.Diagnostics.DiagnosticSource dependency from version 9.0.10 to 10.0.0 for .NET Standard 2.0 and 2.1
+- Updated the System.IO.Pipelines dependency from version 9.0.10 to 10.0.0 for .NET Standard 2.0 and 2.1 and .NET 8
 
 ## [5.0.0] - 2025-10-24
 
