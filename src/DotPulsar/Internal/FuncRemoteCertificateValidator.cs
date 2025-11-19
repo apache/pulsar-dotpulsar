@@ -22,7 +22,7 @@ public sealed class FuncRemoteCertificateValidator : IValidateRemoteCertificate
 {
     private readonly Func<object, X509Certificate?, X509Chain?, SslPolicyErrors, bool> _validator;
 
-    public FuncRemoteCertificateValidator(Func<object, X509Certificate?, X509Chain?, SslPolicyErrors, bool> validator) => _validator = validator;        
+    public FuncRemoteCertificateValidator(Func<object, X509Certificate?, X509Chain?, SslPolicyErrors, bool> validator) => _validator = validator;
 
     public bool Validate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) => _validator(sender, certificate, chain, sslPolicyErrors);
 }
