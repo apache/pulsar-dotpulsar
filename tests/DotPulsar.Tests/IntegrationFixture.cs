@@ -60,7 +60,7 @@ public class IntegrationFixture : IAsyncLifetime
             .Build();
 
         _pulsarCluster = new PulsarBuilder()
-            .WithImage("apachepulsar/pulsar:4.0.5")
+            .WithImage("apachepulsar/pulsar:4.0.8")
             .WithAuthentication()
             .WithNetwork(_network)
             .WithHostname("pulsar")
