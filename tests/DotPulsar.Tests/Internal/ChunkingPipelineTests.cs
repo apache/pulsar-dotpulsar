@@ -15,10 +15,7 @@
 namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Internal;
-using System;
 using System.Buffers;
-using System.IO;
-using System.Linq;
 
 [Trait("Category", "Unit")]
 public class ChunkingPipelineTests

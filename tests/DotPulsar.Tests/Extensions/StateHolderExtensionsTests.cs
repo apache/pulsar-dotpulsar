@@ -17,7 +17,6 @@ namespace DotPulsar.Tests.Extensions;
 using AutoFixture.Xunit2;
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
-using System;
 
 [Trait("Category", "Unit")]
 public class StateHolderExtensionsTests

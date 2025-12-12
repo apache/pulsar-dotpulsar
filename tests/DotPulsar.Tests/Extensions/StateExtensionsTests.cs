@@ -18,7 +18,6 @@ using AutoFixture.Xunit2;
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 using NSubstitute.ExceptionExtensions;
-using System;
 
 [Trait("Category", "Unit")]
 public class StateExtensionsTests

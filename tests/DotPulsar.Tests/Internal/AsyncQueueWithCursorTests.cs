@@ -16,7 +16,6 @@ namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Internal;
 using DotPulsar.Internal.Exceptions;
-using System;
 
 [Trait("Category", "Unit")]
 public class AsyncQueueWithCursorTests

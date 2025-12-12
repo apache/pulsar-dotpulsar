@@ -17,7 +17,6 @@ namespace DotPulsar.Tests.Internal;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Internal;
-using System.Threading;
 
 [Trait("Category", "Unit")]
 public sealed class MessageProcessorTests : IDisposable

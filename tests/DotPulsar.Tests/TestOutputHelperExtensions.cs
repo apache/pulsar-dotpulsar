@@ -14,7 +14,6 @@
 
 namespace DotPulsar.Tests;
 
-using System;
 using Xunit.Abstractions;
 
 public static class TestOutputHelperExtensions
