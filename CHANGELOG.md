@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Changed
 
-- Updated the Google.Protobuf dependency from version 3.33.2 to 3.33.3
+- Updated the Google.Protobuf dependency from version 3.33.2 to 3.33.4
 
 ## [5.1.1] - 2025-12-12
 
