@@ -50,8 +50,7 @@ public class IntegrationFixture : IAsyncLifetime
             .WithName(Guid.NewGuid().ToString("D"))
             .Build();
 
-        _toxiProxy = new ContainerBuilder()
-            .WithImage("ghcr.io/shopify/toxiproxy:2.12.0")
+        _toxiProxy = new ContainerBuilder("ghcr.io/shopify/toxiproxy:2.12.0")
             .WithPortBinding(ToxiProxyControlPort, true)
             .WithPortBinding(ToxiProxyPort, true)
             .WithHostname("toxiproxy")
@@ -59,8 +58,7 @@ public class IntegrationFixture : IAsyncLifetime
             .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(strategy => strategy.ForPath("/version").ForPort(ToxiProxyControlPort)))
             .Build();
 
-        _pulsarCluster = new PulsarBuilder()
-            .WithImage("apachepulsar/pulsar:4.0.8")
+        _pulsarCluster = new PulsarBuilder("apachepulsar/pulsar:4.0.8")
             .WithAuthentication()
             .WithNetwork(_network)
             .WithHostname("pulsar")
