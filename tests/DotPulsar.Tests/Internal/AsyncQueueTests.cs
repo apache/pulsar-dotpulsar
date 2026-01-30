@@ -25,7 +25,7 @@ public class AsyncQueueTests
         //Arrange
         const int expected = 1;
         var queue = new AsyncQueue<int>();
-        var dequeueTask = queue.Dequeue();
+        var dequeueTask = queue.Dequeue(Current.CancellationToken);
         queue.Enqueue(expected);
 
         //Act
@@ -47,7 +47,7 @@ public class AsyncQueueTests
         queue.Enqueue(expected);
 
         //Act
-        var actual = await queue.Dequeue();
+        var actual = await queue.Dequeue(Current.CancellationToken);
 
         //Assert
         actual.ShouldBe(expected);
@@ -62,8 +62,8 @@ public class AsyncQueueTests
         //Arrange
         const int expected1 = 1, expected2 = 2;
         var queue = new AsyncQueue<int>();
-        var dequeue1 = queue.Dequeue();
-        var dequeue2 = queue.Dequeue();
+        var dequeue1 = queue.Dequeue(Current.CancellationToken);
+        var dequeue2 = queue.Dequeue(Current.CancellationToken);
         queue.Enqueue(expected1);
         queue.Enqueue(expected2);
 
@@ -89,8 +89,8 @@ public class AsyncQueueTests
         queue.Enqueue(expected2);
 
         //Act
-        var actual1 = await queue.Dequeue();
-        var actual2 = await queue.Dequeue();
+        var actual1 = await queue.Dequeue(Current.CancellationToken);
+        var actual2 = await queue.Dequeue(Current.CancellationToken);
 
         //Assert
         actual1.ShouldBe(expected1);

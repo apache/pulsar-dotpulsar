@@ -39,12 +39,12 @@ public sealed class MessageProcessorTests : IDisposable
     [InlineAutoData(SubscriptionType.KeyShared)]
     public void Constructor_GivenSharedSubscriptionTypeWithOrderedAcknowledgment_ShouldThrowProcessingException(
         SubscriptionType subscriptionType,
-        [AutoFixture.Xunit2.Frozen] IConsumer<byte[]> consumer,
+        [AutoFixture.Xunit3.Frozen] IConsumer<byte[]> consumer,
         ProcessingOptions options)
     {
         //Arrange
         consumer.SubscriptionType.Returns(subscriptionType);
-        ValueTask ProcessMessage(IMessage<byte[]> _1, CancellationToken _2) => ValueTask.CompletedTask;
+        static ValueTask ProcessMessage(IMessage<byte[]> _1, CancellationToken _2) => ValueTask.CompletedTask;
 
         //Act
         var exception = Record.Exception(() => new MessageProcessor<byte[]>(consumer, ProcessMessage, options));
@@ -55,7 +55,7 @@ public sealed class MessageProcessorTests : IDisposable
 
     [Theory, AutoData]
     public async Task Process_GivenNoShutdownGracePeriod_ShouldNotLetTaskComplete(
-        [AutoFixture.Xunit2.Frozen] IConsumer<byte[]> consumer,
+        [AutoFixture.Xunit3.Frozen] IConsumer<byte[]> consumer,
         ProcessingOptions options)
     {
         //Arrange
@@ -63,7 +63,7 @@ public sealed class MessageProcessorTests : IDisposable
         var uut = new MessageProcessor<byte[]>(consumer, ProcessMessage, options);
 
         //Act
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(Current.CancellationToken);
         var processTask = uut.Process(_cts.Token).AsTask();
         while (!_taskHasStarted) { }
         _cts.Cancel();
@@ -76,7 +76,7 @@ public sealed class MessageProcessorTests : IDisposable
 
     [Theory, AutoData]
     public async Task Process_GivenShutdownGracePeriod_ShouldLetTaskComplete(
-        [AutoFixture.Xunit2.Frozen] IConsumer<byte[]> consumer,
+        [AutoFixture.Xunit3.Frozen] IConsumer<byte[]> consumer,
         ProcessingOptions options)
     {
         //Arrange
@@ -85,7 +85,7 @@ public sealed class MessageProcessorTests : IDisposable
         var uut = new MessageProcessor<byte[]>(consumer, ProcessMessage, options);
 
         //Act
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(Current.CancellationToken);
         var processTask = uut.Process(_cts.Token).AsTask();
         while (!_taskHasStarted) { }
         _cts.Cancel();

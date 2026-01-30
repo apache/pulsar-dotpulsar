@@ -75,7 +75,7 @@ public class AsyncLockTests
         var sut = new AsyncLock();
         var gotLock = await sut.Lock(CancellationToken.None);
         var awaiting = sut.Lock(CancellationToken.None);
-        _ = Task.Run(async () => await sut.DisposeAsync());
+        _ = Task.Run(async () => await sut.DisposeAsync(), Current.CancellationToken);
 
         //Act
         var exception = await Record.ExceptionAsync(() => awaiting);
@@ -116,7 +116,7 @@ public class AsyncLockTests
         //Arrange
         var sut = new AsyncLock();
         var gotLock = await sut.Lock(CancellationToken.None);
-        var disposeTask = Task.Run(async () => await sut.DisposeAsync());
+        var disposeTask = Task.Run(async () => await sut.DisposeAsync(), Current.CancellationToken);
         Assert.False(disposeTask.IsCompleted);
 
         //Act

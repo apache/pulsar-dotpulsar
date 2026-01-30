@@ -14,7 +14,11 @@
 
 namespace DotPulsar.Tests;
 
-public class InlineAutoDataAttribute : AutoFixture.Xunit2.InlineAutoDataAttribute
+using AutoFixture;
+using AutoFixture.AutoNSubstitute;
+
+public class InlineAutoDataAttribute : AutoFixture.Xunit3.InlineAutoDataAttribute
 {
-    public InlineAutoDataAttribute(params object[] objects) : base(new AutoDataAttribute(), objects) { }
+    public InlineAutoDataAttribute(params object[] values)
+        : base(() => new Fixture().Customize(new AutoNSubstituteCustomization()), values) { }
 }

@@ -17,7 +17,6 @@ namespace DotPulsar.Tests;
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
 using DotPulsar.Extensions;
-using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
 public sealed class PulsarClientTests : IDisposable

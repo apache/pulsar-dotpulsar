@@ -12,12 +12,13 @@
     <Using Include="NSubstitute" />
     <Using Include="Shouldly" />
     <Using Include="Xunit" />
+    <Using Include="Xunit.TestContext" Static="true" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Apache.Avro" Version="1.12.1" />
     <PackageReference Include="AutoFixture.AutoNSubstitute" Version="4.18.1" />
-    <PackageReference Include="AutoFixture.Xunit2" Version="4.18.1" />
+    <PackageReference Include="AutoFixture.Xunit3" Version="4.19.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -29,7 +30,7 @@
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="Testcontainers.Pulsar" Version="4.10.0" />
     <PackageReference Include="ToxiproxyNetCore" Version="1.0.50" />
-    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

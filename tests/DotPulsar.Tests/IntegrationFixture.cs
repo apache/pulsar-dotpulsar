@@ -23,8 +23,8 @@ using System.Text;
 using System.Text.Json;
 using Testcontainers.Pulsar;
 using Toxiproxy.Net;
-using Xunit.Abstractions;
 using Xunit.Sdk;
+using Xunit.v3;
 
 public class IntegrationFixture : IAsyncLifetime
 {
@@ -77,15 +77,16 @@ public class IntegrationFixture : IAsyncLifetime
 
     public IAuthentication Authentication => AuthenticationFactory.Token(ct => ValueTask.FromResult(_token!));
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await _pulsarCluster.DisposeAsync();
         await _toxiProxy.DisposeAsync();
         _toxiProxyConnection.Dispose();
         _cts.Dispose();
+        GC.SuppressFinalize(this);
     }
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         SubscribeToContainerEvents(_toxiProxy, "Toxiproxy");
         SubscribeToContainerEvents(_pulsarCluster, "Pulsar cluster");

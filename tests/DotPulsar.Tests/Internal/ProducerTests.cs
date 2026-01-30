@@ -19,7 +19,6 @@ using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 using DotPulsar.Tests.Schemas.TestSamples.AvroModels;
 using System.Text;
-using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
 public sealed class ProducerTests : IDisposable

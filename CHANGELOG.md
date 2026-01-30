@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Changed
 
-- Updated the Google.Protobuf dependency from version 3.33.2 to 3.33.4
+- Updated the Google.Protobuf dependency from version 3.33.2 to 3.33.5
 - Downgraded the Microsoft.Extensions.ObjectPool dependency from version 10.0.1 to 8.0.23 for .NET 8
 - Downgraded the Microsoft.Extensions.ObjectPool dependency from version 10.0.1 to 9.0.12 for .NET 9
 - Updated the Microsoft.Extensions.ObjectPool dependency from version 10.0.1 to 10.0.2 for .NET 10 and .NET Standard 2.X

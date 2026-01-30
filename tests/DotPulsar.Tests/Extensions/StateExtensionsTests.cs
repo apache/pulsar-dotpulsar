@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Tests.Extensions;
 
-using AutoFixture.Xunit2;
+using AutoFixture.Xunit3;
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 using NSubstitute.ExceptionExtensions;
@@ -31,7 +31,7 @@ public class StateExtensionsTests
         uut.IsFinalState(expected).Returns(true);
 
         // Act
-        var actual = await uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
+        var actual = await uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1), Current.CancellationToken);
 
         // Assert
         actual.ShouldBe(expected);
@@ -48,7 +48,7 @@ public class StateExtensionsTests
         uut.IsFinalState(expected).Returns(true);
 
         // Act
-        var actual = await uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
+        var actual = await uut.OnStateChangeTo(ProducerState.Disconnected, TimeSpan.FromSeconds(1), Current.CancellationToken);
 
         // Assert
         actual.ShouldBe(expected);
@@ -64,7 +64,7 @@ public class StateExtensionsTests
         uut.OnStateChangeFrom(expected, Arg.Any<CancellationToken>()).Throws<OperationCanceledException>();
 
         // Act
-        var actual = await uut.OnStateChangeTo(expected, TimeSpan.FromSeconds(1));
+        var actual = await uut.OnStateChangeTo(expected, TimeSpan.FromSeconds(1), Current.CancellationToken);
 
         // Assert
         actual.ShouldBe(expected);
@@ -111,7 +111,7 @@ public class StateExtensionsTests
         uut.IsFinalState(expected).Returns(true);
 
         // Act
-        var actual = await uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
+        var actual = await uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1), Current.CancellationToken);
 
         // Assert
         actual.ShouldBe(expected);
@@ -128,7 +128,7 @@ public class StateExtensionsTests
         uut.IsFinalState(expected).Returns(true);
 
         // Act
-        var actual = await uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1));
+        var actual = await uut.OnStateChangeFrom(ProducerState.Disconnected, TimeSpan.FromSeconds(1), Current.CancellationToken);
 
         // Assert
         actual.ShouldBe(expected);
@@ -144,7 +144,7 @@ public class StateExtensionsTests
         uut.OnStateChangeTo(ProducerState.Connected, Arg.Any<CancellationToken>()).Throws<OperationCanceledException>();
 
         // Act
-        var actual = await uut.OnStateChangeFrom(ProducerState.Connected, TimeSpan.FromSeconds(1));
+        var actual = await uut.OnStateChangeFrom(ProducerState.Connected, TimeSpan.FromSeconds(1), Current.CancellationToken);
 
         // Assert
         actual.ShouldBe(expected);

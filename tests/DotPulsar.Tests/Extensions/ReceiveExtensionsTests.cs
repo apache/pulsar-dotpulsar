@@ -16,7 +16,6 @@ namespace DotPulsar.Tests.Extensions;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
-using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
 public class ReceiveExtensionsTests
@@ -43,7 +42,7 @@ public class ReceiveExtensionsTests
         await producer.Send("test-message", _cts.Token);
         await producer.Send("test-message", _cts.Token);
         _ = await receiver.Receive(_cts.Token); //Trigger the message flow and wait for the first message to arrive
-        await Task.Delay(TimeSpan.FromSeconds(2)); //Wait for the second message
+        await Task.Delay(TimeSpan.FromSeconds(2), _cts.Token); //Wait for the second message
 
         //Act
         var actual = receiver.TryReceive(out var message);

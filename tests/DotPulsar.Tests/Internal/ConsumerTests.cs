@@ -22,7 +22,6 @@ using DotPulsar.Tests.Schemas.TestSamples.AvroModels;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Xunit.Abstractions;
 
 [Collection("Integration"), Trait("Category", "Integration")]
 public sealed class ConsumerTests : IDisposable
@@ -293,7 +292,7 @@ public sealed class ConsumerTests : IDisposable
         await producer.Send(new ValidModel(), _cts.Token);
 
         //Act
-        var exception = await Record.ExceptionAsync(consumer.Receive().AsTask);
+        var exception = await Record.ExceptionAsync(consumer.Receive(Current.CancellationToken).AsTask);
 
         //Assert
         exception.ShouldBeOfType<IncompatibleSchemaException>();

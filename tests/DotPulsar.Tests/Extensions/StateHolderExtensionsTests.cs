@@ -14,7 +14,7 @@
 
 namespace DotPulsar.Tests.Extensions;
 
-using AutoFixture.Xunit2;
+using AutoFixture.Xunit3;
 using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 
@@ -34,7 +34,7 @@ public class StateHolderExtensionsTests
         void onStateReached(IStateHolder<ProducerState> _, ProducerState state) => stateReached = state;
 
         // Act
-        await uut.DelayedStateMonitor(ProducerState.Connected, TimeSpan.FromSeconds(1), onStateLeft, onStateReached);
+        await uut.DelayedStateMonitor(ProducerState.Connected, TimeSpan.FromSeconds(1), onStateLeft, onStateReached, Current.CancellationToken);
 
         // Assert
         stateLeft.HasValue.ShouldBeTrue();
@@ -57,7 +57,7 @@ public class StateHolderExtensionsTests
         void onStateReached(IStateHolder<ProducerState> _, ProducerState state) => stateReached = state;
 
         // Act
-        await uut.DelayedStateMonitor(ProducerState.Connected, TimeSpan.FromSeconds(1), onStateLeft, onStateReached);
+        await uut.DelayedStateMonitor(ProducerState.Connected, TimeSpan.FromSeconds(1), onStateLeft, onStateReached, Current.CancellationToken);
 
         // Assert
         stateLeft.HasValue.ShouldBeTrue();

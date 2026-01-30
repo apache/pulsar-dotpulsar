@@ -14,8 +14,6 @@
 
 namespace DotPulsar.Tests;
 
-using Xunit.Abstractions;
-
 public static class TestOutputHelperExtensions
 {
     public static void Log(this ITestOutputHelper helper, string message)

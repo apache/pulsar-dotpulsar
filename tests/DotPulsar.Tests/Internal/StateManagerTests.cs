@@ -66,7 +66,7 @@ public class StateManagerTests
     {
         //Arrange
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
-        var task = uut.OnStateChangeTo(newState, default);
+        var task = uut.OnStateChangeTo(newState, Current.CancellationToken);
 
         //Act
         _ = uut.SetState(newState);
@@ -84,7 +84,7 @@ public class StateManagerTests
     {
         //Arrange
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
-        var task = uut.OnStateChangeFrom(initialState, default);
+        var task = uut.OnStateChangeFrom(initialState, Current.CancellationToken);
 
         //Act
         _ = uut.SetState(newState);
@@ -103,7 +103,7 @@ public class StateManagerTests
         var uut = new StateManager<ProducerState>(state, ProducerState.Closed);
 
         //Act
-        var task = uut.OnStateChangeTo(state, default);
+        var task = uut.OnStateChangeTo(state, Current.CancellationToken);
 
         //Assert
         Assert.True(task.IsCompleted);
@@ -120,7 +120,7 @@ public class StateManagerTests
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = uut.OnStateChangeTo(wantedState, default);
+        var task = uut.OnStateChangeTo(wantedState, Current.CancellationToken);
 
         //Assert
         task.IsCompleted.ShouldBeFalse();
@@ -135,7 +135,7 @@ public class StateManagerTests
         var uut = new StateManager<ProducerState>(ProducerState.Closed, ProducerState.Closed);
 
         //Act
-        var task = uut.OnStateChangeTo(state, default);
+        var task = uut.OnStateChangeTo(state, Current.CancellationToken);
 
         //Assert
         task.IsCompleted.ShouldBeTrue();
@@ -150,7 +150,7 @@ public class StateManagerTests
         var uut = new StateManager<ProducerState>(state, ProducerState.Closed);
 
         //Act
-        var task = uut.OnStateChangeFrom(state, default);
+        var task = uut.OnStateChangeFrom(state, Current.CancellationToken);
 
         //Assert
         task.IsCompleted.ShouldBeFalse();
@@ -167,7 +167,7 @@ public class StateManagerTests
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = uut.OnStateChangeFrom(fromState, default);
+        var task = uut.OnStateChangeFrom(fromState, Current.CancellationToken);
 
         //Assert
         task.IsCompleted.ShouldBeTrue();
@@ -183,7 +183,7 @@ public class StateManagerTests
         var uut = new StateManager<ProducerState>(ProducerState.Closed, ProducerState.Closed);
 
         //Act
-        var task = uut.OnStateChangeFrom(state, default);
+        var task = uut.OnStateChangeFrom(state, Current.CancellationToken);
 
         //Assert
         task.IsCompleted.ShouldBeTrue();
@@ -198,7 +198,7 @@ public class StateManagerTests
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = uut.OnStateChangeTo(wantedState, default);
+        var task = uut.OnStateChangeTo(wantedState, Current.CancellationToken);
         _ = uut.SetState(ProducerState.Closed);
 
         //Assert
@@ -214,7 +214,7 @@ public class StateManagerTests
         var uut = new StateManager<ProducerState>(initialState, ProducerState.Closed);
 
         //Act
-        var task = uut.OnStateChangeTo(wantedState, default);
+        var task = uut.OnStateChangeTo(wantedState, Current.CancellationToken);
         _ = uut.SetState(newState);
 
         //Assert
