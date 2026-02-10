@@ -98,6 +98,26 @@ public static class Schema
     public static TimeSchema Time { get; }
 
     /// <summary>
+    /// JSON schema using System.Text.Json
+    /// </summary>
+    public static JsonSchema<T> Json<T>() => new();
+
+    /// <summary>
+    /// JSON schema using System.Text.Json with custom serializer options
+    /// </summary>
+    public static JsonSchema<T> Json<T>(System.Text.Json.JsonSerializerOptions options) => new(options);
+
+    /// <summary>
+    /// JSON schema using System.Text.Json with custom serializer options and schema definition
+    /// </summary>
+    public static JsonSchema<T> Json<T>(System.Text.Json.JsonSerializerOptions options, string jsonSchemaDefinition) => new(options, jsonSchemaDefinition);
+
+    /// <summary>
+    /// Protobuf native schema for classes that implement Google.Protobuf.IMessage
+    /// </summary>
+    public static ProtobufSchema<T> Protobuf<T>() where T : Google.Protobuf.IMessage<T>, new() => new();
+
+    /// <summary>
     /// Avro schema for classes that use ISpecificRecord
     /// </summary>
     public static AvroISpecificRecordSchema<T> AvroISpecificRecord<T>() => new();
