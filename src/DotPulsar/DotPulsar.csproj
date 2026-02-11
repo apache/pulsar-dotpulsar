@@ -32,34 +32,34 @@
   </ItemGroup>
  
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.3" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.2" />
-    <PackageReference Include="System.Collections.Immutable" Version="10.0.2" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.2" />
-    <PackageReference Include="System.IO.Pipelines" Version="10.0.2" />
-    <PackageReference Include="System.Text.Json" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.3" />
+    <PackageReference Include="System.Collections.Immutable" Version="10.0.3" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.3" />
+    <PackageReference Include="System.IO.Pipelines" Version="10.0.3" />
+    <PackageReference Include="System.Text.Json" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.2" />
-    <PackageReference Include="System.Collections.Immutable" Version="10.0.2" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.2" />
-    <PackageReference Include="System.IO.Pipelines" Version="10.0.2" />
-    <PackageReference Include="System.Text.Json" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.3" />
+    <PackageReference Include="System.Collections.Immutable" Version="10.0.3" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.3" />
+    <PackageReference Include="System.IO.Pipelines" Version="10.0.3" />
+    <PackageReference Include="System.Text.Json" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.23" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.24" />
     <PackageReference Include="System.IO.Pipelines" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.12" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="9.0.13" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup>
