@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,11 +12,10 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Exceptions;
+namespace DotPulsar.Tests.Schemas.TestSamples.JsonModels;
 
-public sealed class SchemaSerializationException : DotPulsarException
+public sealed class PersonModel
 {
-    public SchemaSerializationException(string message) : base(message) { }
-
-    public SchemaSerializationException(string message, Exception innerException) : base(message, innerException) { }
+    public string Name { get; set; } = string.Empty;
+    public int Age { get; set; }
 }
