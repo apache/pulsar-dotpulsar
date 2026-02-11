@@ -41,4 +41,4 @@ jobs:
       - name: run unit tests
         run: |
           echo 'Dotnet Version: ${{ steps.setupstep.outputs.dotnet-version }}'
-          dotnet test ./tests/DotPulsar.Tests/DotPulsar.Tests.csproj --logger "trx;verbosity=detailed"
+          dotnet test ./tests/DotPulsar.Tests/DotPulsar.Tests.csproj --logger "trx;verbosity=detailed" --settings .runsettings
