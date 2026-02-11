@@ -87,6 +87,8 @@ For a more in-depth tour of the API, please visit the [Wiki](https://github.com/
     - Float and Double
     - Time (using TimeSpan)
     - Timestamp and Date (using DateTime)
+    - JSON
+    - Protobuf
 
 For a horizontal comparison with more language-specific clients, see [Client Feature Matrix](https://pulsar.apache.org/client-feature-matrix/).
 

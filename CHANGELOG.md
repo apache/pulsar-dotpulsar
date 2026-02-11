@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Added
 
-- System.Text.Json added as a dependency for .NET Standard 2.0 and 2.1 (for use in the new JSON and Protobuf schema support)
+- System.Text.Json added as a dependency for .NET Standard 2.0 and 2.1 (for use in the new JSON schema support)
 - Support for JSON schema with System.Text.Json
 - Support for Protobuf schema with Google.Protobuf
 

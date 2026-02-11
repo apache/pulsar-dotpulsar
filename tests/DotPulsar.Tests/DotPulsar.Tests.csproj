@@ -43,10 +43,4 @@
     <ProjectReference Include="..\..\src\DotPulsar\DotPulsar.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

@@ -23,8 +23,6 @@ using System.Text;
 using System.Text.Json;
 using Testcontainers.Pulsar;
 using Toxiproxy.Net;
-using Xunit.Sdk;
-using Xunit.v3;
 
 public class IntegrationFixture : IAsyncLifetime
 {
@@ -32,7 +30,6 @@ public class IntegrationFixture : IAsyncLifetime
     private const int ToxiProxyControlPort = 8474;
     private const int ToxiProxyPort = 15124;
     private readonly CancellationTokenSource _cts;
-    private readonly IMessageSink _messageSink;
     private readonly INetwork _network;
     private readonly PulsarContainer _pulsarCluster;
     private readonly IContainer _toxiProxy;
@@ -41,9 +38,8 @@ public class IntegrationFixture : IAsyncLifetime
     private Proxy _toxiProxyPulsarProxy;
     private string? _token;
 
-    public IntegrationFixture(IMessageSink messageSink)
+    public IntegrationFixture()
     {
-        _messageSink = messageSink;
         _cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
 
         _network = new NetworkBuilder()
@@ -91,11 +87,11 @@ public class IntegrationFixture : IAsyncLifetime
         SubscribeToContainerEvents(_toxiProxy, "Toxiproxy");
         SubscribeToContainerEvents(_pulsarCluster, "Pulsar cluster");
         await _network.CreateAsync(_cts.Token);
-        _messageSink.OnMessage(new DiagnosticMessage("Starting Toxiproxy"));
+        Current.SendDiagnosticMessage("Starting Toxiproxy");
         await _toxiProxy.StartAsync(_cts.Token);
-        _messageSink.OnMessage(new DiagnosticMessage("Starting Pulsar Cluster"));
+        Current.SendDiagnosticMessage("Starting Pulsar Cluster");
         await _pulsarCluster.StartAsync(_cts.Token);
-        _messageSink.OnMessage(new DiagnosticMessage("The containers has initiated. Next, we'll configure Toxiproxy mappings."));
+        Current.SendDiagnosticMessage("The containers has initiated. Next, we'll configure Toxiproxy mappings.");
 
         ServiceUrl = new Uri(_pulsarCluster.GetBrokerAddress());
         AdminUrl = new Uri(_pulsarCluster.GetServiceAddress());
@@ -111,15 +107,14 @@ public class IntegrationFixture : IAsyncLifetime
         };
         await _toxiProxyClient.AddAsync(_toxiProxyPulsarProxy);
 
-        _messageSink.OnMessage(new DiagnosticMessage("Toxiproxy successfully mapped connections between host and the Pulsar Cluster."));
+        Current.SendDiagnosticMessage("Toxiproxy successfully mapped connections between host and the Pulsar Cluster.");
         ServiceUrl = new Uri($"pulsar://{_toxiProxy.Hostname}:{_toxiProxy.GetMappedPublicPort(ToxiProxyPort)}");
-        _messageSink.OnMessage(new DiagnosticMessage("You can connect with: " + ServiceUrl));
+        Current.SendDiagnosticMessage("You can connect with: " + ServiceUrl);
 
         _token = await CreateToken(Timeout.InfiniteTimeSpan, _cts.Token);
     }
 
-    private void HandleClusterStateChange(string containerName, string state) =>
-        _messageSink.OnMessage(new DiagnosticMessage($"The {containerName} changed state to: {state}"));
+    private void HandleClusterStateChange(string containerName, string state) => Current.SendDiagnosticMessage($"The {containerName} changed state to: {state}");
 
     private void SubscribeToContainerEvents(IContainer container, string containerName)
     {
