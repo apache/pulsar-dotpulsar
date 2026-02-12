@@ -26,13 +26,21 @@ public sealed class Awaiter<T, TResult> : IDisposable where T : notnull
     public Task<TResult> CreateTask(T item)
     {
         var tcs = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _ = _items.TryAdd(item, tcs);
+        AddOrReplace(item, tcs);
         return tcs.Task;
     }
 
     public void AddTaskCompletionSource(T item, TaskCompletionSource<TResult> tcs)
     {
-        _ = _items.TryAdd(item, tcs);
+        AddOrReplace(item, tcs);
+    }
+
+    private void AddOrReplace(T item, TaskCompletionSource<TResult> tcs)
+    {
+        if (_items.TryRemove(item, out var oldTcs))
+            oldTcs.TrySetCanceled();
+
+        _items.TryAdd(item, tcs);
     }
 
     public void SetResult(T item, TResult result)
