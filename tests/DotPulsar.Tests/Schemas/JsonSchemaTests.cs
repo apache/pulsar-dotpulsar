@@ -182,4 +182,49 @@ public sealed class JsonSchemaTests
         //Assert
         exception.ShouldBeOfType<DotPulsar.Exceptions.SchemaSerializationException>();
     }
+
+    [Fact]
+    public void Constructor_GivenNoArguments_ShouldGenerateNonEmptySchemaData()
+    {
+        //Act
+        var schema = new JsonSchema<PersonModel>();
+
+        //Assert
+        schema.SchemaInfo.Data.Length.ShouldBeGreaterThan(0);
+        var schemaData = System.Text.Encoding.UTF8.GetString(schema.SchemaInfo.Data);
+        schemaData.ShouldContain("\"type\":\"record\"");
+        schemaData.ShouldContain("\"name\":\"PersonModel\"");
+    }
+
+    [Fact]
+    public void Constructor_GivenCustomOptions_ShouldGenerateNonEmptySchemaData()
+    {
+        //Arrange
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+        //Act
+        var schema = new JsonSchema<PersonModel>(options);
+
+        //Assert
+        schema.SchemaInfo.Data.Length.ShouldBeGreaterThan(0);
+        var schemaData = System.Text.Encoding.UTF8.GetString(schema.SchemaInfo.Data);
+        schemaData.ShouldContain("\"type\":\"record\"");
+        schemaData.ShouldContain("\"name\":\"name\"");
+        schemaData.ShouldContain("\"name\":\"age\"");
+    }
+
+    [Fact]
+    public void Constructor_GivenExplicitDefinition_ShouldNotAutoGenerate()
+    {
+        //Arrange
+        var customDefinition = "{\"custom\":\"schema\"}";
+        var options = new JsonSerializerOptions();
+
+        //Act
+        var schema = new JsonSchema<PersonModel>(options, customDefinition);
+
+        //Assert — explicit definition should be used as-is
+        var schemaData = System.Text.Encoding.UTF8.GetString(schema.SchemaInfo.Data);
+        schemaData.ShouldBe(customDefinition);
+    }
 }

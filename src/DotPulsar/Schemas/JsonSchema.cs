@@ -31,13 +31,15 @@ public sealed class JsonSchema<T> : ISchema<T>
     public JsonSchema()
     {
         _options = new JsonSerializerOptions();
-        SchemaInfo = new SchemaInfo(typeof(T).Name, Array.Empty<byte>(), SchemaType.Json, ImmutableDictionary<string, string>.Empty);
+        var schemaData = GenerateSchemaData(_options);
+        SchemaInfo = new SchemaInfo(typeof(T).Name, schemaData, SchemaType.Json, ImmutableDictionary<string, string>.Empty);
     }
 
     public JsonSchema(JsonSerializerOptions options)
     {
         _options = options;
-        SchemaInfo = new SchemaInfo(typeof(T).Name, Array.Empty<byte>(), SchemaType.Json, ImmutableDictionary<string, string>.Empty);
+        var schemaData = GenerateSchemaData(_options);
+        SchemaInfo = new SchemaInfo(typeof(T).Name, schemaData, SchemaType.Json, ImmutableDictionary<string, string>.Empty);
     }
 
     public JsonSchema(JsonSerializerOptions options, string jsonSchemaDefinition)
@@ -67,5 +69,11 @@ public sealed class JsonSchema<T> : ISchema<T>
     {
         var bytes = JsonSerializer.SerializeToUtf8Bytes(message, _options);
         return new ReadOnlySequence<byte>(bytes);
+    }
+
+    private static byte[] GenerateSchemaData(JsonSerializerOptions options)
+    {
+        var definition = JsonSchemaDefinitionGenerator.Generate<T>(options);
+        return Encoding.UTF8.GetBytes(definition);
     }
 }
