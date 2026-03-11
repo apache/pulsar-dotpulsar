@@ -60,6 +60,9 @@ public sealed class PulsarClient : IPulsarClient
     {
         ThrowIfDisposed();
 
+        if (options.MaxPendingMessages == 0)
+            throw new ConfigurationException("ProducerOptions.MaxPendingMessages must be greater than 0");
+
         ICompressorFactory? compressorFactory = null;
         if (options.CompressionType != CompressionType.None)
         {
