@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 8.0.24 to 8.0.25 for .NET 8
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 9.0.13 to 9.0.14 for .NET 9
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 10.0.3 to 10.0.5 for .NET 10 and .NET Standard 2.X
+- Updated the Microsoft.Bcl.AsyncInterfaces dependency from version 10.0.3 to 10.0.5 for .NET Standard 2.0
+- Updated the System.Collections.Immutable from version 10.0.3 to 10.0.5 for .NET Standard 2.0 and 2.1
+- Updated the System.Diagnostics.DiagnosticSource dependency from version 10.0.3 to 10.0.5 for .NET Standard 2.0 and 2.1
+- Updated the System.IO.Pipelines dependency from version 10.0.3 to 10.0.5 for .NET Standard 2.0 and 2.1
+
 ## [5.2.2] - 2026-03-05
 
 ### Changed
