@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-namespace DotPulsar.Tests;
+namespace DotPulsar.Tests.Internal;
 
 using DotPulsar.Abstractions;
 using DotPulsar.Exceptions;
