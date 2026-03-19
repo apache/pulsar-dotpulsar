@@ -124,6 +124,28 @@ public sealed class PulsarClientTests : IDisposable
         state.ShouldBe(ProducerState.Connected);
     }
 
+    [Fact]
+    public async Task CreateProducer_GivenMaxPendingMessagesIsZero_ShouldThrowConfigurationException()
+    {
+        // Arrange
+        await using var client = PulsarClient
+            .Builder()
+            .ServiceUrl(new Uri("pulsar://localhost:6650"))
+            .Build();
+
+        var options = new ProducerOptions<string>("persistent://public/default/my-topic", Schema.String)
+        {
+            MaxPendingMessages = 0
+        };
+
+        // Act
+        var act = () => client.CreateProducer(options);
+
+        // Assert
+        var exception = act.ShouldThrow<ConfigurationException>();
+        exception.Message.ShouldBe("ProducerOptions.MaxPendingMessages must be greater than 0");
+    }
+
     private IPulsarClient CreateClient(Func<CancellationToken, ValueTask<string>> tokenSupplier)
         => PulsarClient
         .Builder()
