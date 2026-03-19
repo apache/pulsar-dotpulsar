@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -108,9 +108,6 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
     {
         if (string.IsNullOrEmpty(_topic))
             throw new ConfigurationException("ProducerOptions.Topic may not be null or empty");
-
-        if (_maxPendingMessages == 0)
-            throw new ConfigurationException("ProducerOptions.MaxPendingMessages must be greater than 0");
 
         var options = new ProducerOptions<TMessage>(_topic!, _schema)
         {
