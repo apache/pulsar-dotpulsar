@@ -35,6 +35,13 @@ public interface IProducerBuilder<TMessage>
     IProducerBuilder<TMessage> InitialSequenceId(ulong initialSequenceId);
 
     /// <summary>
+    /// Set the name of the initial subscription to be created on the topic when the producer first connects.
+    /// If the broker has 'allowAutoSubscriptionCreation' disabled, the producer will fail to be created.
+    /// This is optional and not set by default.
+    /// </summary>
+    IProducerBuilder<TMessage> InitialSubscriptionName(string initialSubscriptionName);
+
+    /// <summary>
     /// Set the producer access mode. The default is 'Shared'.
     /// </summary>
     /// <returns></returns>

@@ -37,7 +37,8 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
         ProducerAccessMode producerAccessMode,
         SchemaInfo schemaInfo,
         ICompressorFactory? compressorFactory,
-        Dictionary<string, string>? properties)
+        Dictionary<string, string>? properties,
+        string? initialSubscriptionName)
     {
         _correlationId = correlationId;
         _eventRegister = eventRegister;
@@ -52,6 +53,9 @@ public sealed class ProducerChannelFactory : IProducerChannelFactory
 
         if (producerName is not null)
             _commandProducer.ProducerName = producerName;
+
+        if (!string.IsNullOrEmpty(initialSubscriptionName))
+            _commandProducer.InitialSubscriptionName = initialSubscriptionName;
 
         if (_schema.Type != Schema.Types.Type.None)
             _commandProducer.Schema = _schema;

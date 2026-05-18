@@ -19,6 +19,7 @@ using DotPulsar.Abstractions;
 using DotPulsar.Extensions;
 using DotPulsar.Tests.Schemas.TestSamples.AvroModels;
 using System.Text;
+using System.Text.Json;
 
 [Collection("Integration"), Trait("Category", "Integration")]
 public sealed class ProducerTests : IDisposable
@@ -51,6 +52,30 @@ public sealed class ProducerTests : IDisposable
         //Assert
         message.MessageId.ShouldBe(messageId);
         message.Value().ShouldBe(content);
+    }
+
+    [Fact]
+    public async Task InitialSubscriptionName_GivenProducerConnects_ShouldCreateSubscriptionOnTopic()
+    {
+        //Arrange
+        const string subscriptionName = "dlq-backlog";
+        var topicName = await _fixture.CreateTopic(_cts.Token);
+        await using var client = CreateClient();
+
+        //Act
+        await using var producer = client.NewProducer(Schema.String)
+            .Topic(topicName)
+            .InitialSubscriptionName(subscriptionName)
+            .StateChangedHandler(_testOutputHelper.Log)
+            .Create();
+
+        await producer.State.OnStateChangeTo(ProducerState.Connected, _cts.Token);
+
+        using var httpClient = CreateAdminClient();
+        var subscriptions = await GetSubscriptions(httpClient, topicName, _cts.Token);
+
+        //Assert
+        subscriptions.ShouldContain(subscriptionName);
     }
 
     [Fact]
@@ -509,6 +534,24 @@ public sealed class ProducerTests : IDisposable
         .ExceptionHandler(_testOutputHelper.Log)
         .ServiceUrl(_fixture.ServiceUrl)
         .Build();
+
+    private HttpClient CreateAdminClient() => new()
+    {
+        BaseAddress = _fixture.AdminUrl,
+        DefaultRequestHeaders =
+        {
+            Authorization = _fixture.AuthorizationHeader
+        }
+    };
+
+    private static async Task<IReadOnlyList<string>> GetSubscriptions(HttpClient httpClient, string topic, CancellationToken cancellationToken)
+    {
+        topic = topic.Replace("persistent://", string.Empty);
+        using var response = await httpClient.GetAsync($"/admin/v2/persistent/{topic}/subscriptions", cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        return await JsonSerializer.DeserializeAsync<List<string>>(stream, cancellationToken: cancellationToken).ConfigureAwait(false) ?? [];
+    }
 
     public void Dispose() => _cts.Dispose();
 }

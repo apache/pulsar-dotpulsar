@@ -67,6 +67,13 @@ public sealed class ProducerOptions<TMessage>
     public ulong InitialSequenceId { get; set; }
 
     /// <summary>
+    /// Set the name of the initial subscription to be created on the topic when the producer first connects.
+    /// If the broker has 'allowAutoSubscriptionCreation' disabled, the producer will fail to be created.
+    /// This is optional and not set by default.
+    /// </summary>
+    public string? InitialSubscriptionName { get; set; }
+
+    /// <summary>
     /// Set the producer access mode. The default is 'Shared'
     /// </summary>
     public ProducerAccessMode ProducerAccessMode { get; set; }

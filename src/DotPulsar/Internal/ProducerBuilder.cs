@@ -27,6 +27,7 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
     private bool _attachTraceInfoToMessages;
     private CompressionType _compressionType;
     private ulong _initialSequenceId;
+    private string? _initialSubscriptionName;
     private string? _topic;
     private IHandleStateChanged<ProducerStateChanged>? _stateChangedHandler;
     private IMessageRouter? _messageRouter;
@@ -59,6 +60,12 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
     public IProducerBuilder<TMessage> InitialSequenceId(ulong initialSequenceId)
     {
         _initialSequenceId = initialSequenceId;
+        return this;
+    }
+
+    public IProducerBuilder<TMessage> InitialSubscriptionName(string initialSubscriptionName)
+    {
+        _initialSubscriptionName = initialSubscriptionName;
         return this;
     }
 
@@ -115,6 +122,7 @@ public sealed class ProducerBuilder<TMessage> : IProducerBuilder<TMessage>
             AttachTraceInfoToMessages = _attachTraceInfoToMessages,
             CompressionType = _compressionType,
             InitialSequenceId = _initialSequenceId,
+            InitialSubscriptionName = _initialSubscriptionName,
             ProducerName = _producerName,
             StateChangedHandler = _stateChangedHandler,
             MaxPendingMessages = _maxPendingMessages,
