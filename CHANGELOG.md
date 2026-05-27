@@ -9,6 +9,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Changed
 
 - Updated the Google.Protobuf dependency from version 3.34.1 to 3.35.0
+- Updated the Microsoft.Bcl.AsyncInterfaces dependency from version 10.0.7 to 10.0.8 for .NET Standard 2.0
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 8.0.26 to 8.0.27 for .NET 8
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 9.0.15 to 9.0.16 for .NET 9
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 10.0.7 to 10.0.8 for .NET 10 and .NET Standard 2.X
+- Updated the System.Collections.Immutable from version 10.0.7 to 10.0.8 for .NET Standard 2.X
+- Updated the System.Diagnostics.DiagnosticSource dependency from version 10.0.7 to 10.0.8 for .NET Standard 2.X
+- Updated the System.IO.Pipelines dependency from version 10.0.7 to 10.0.8 for .NET Standard 2.X
+- Updated the System.Text.Json dependency from version 10.0.7 to 10.0.8 for .NET Standard 2.X
 
 ## [5.3.1] - 2026-05-04
 
