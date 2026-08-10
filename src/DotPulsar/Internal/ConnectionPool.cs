@@ -150,17 +150,10 @@ public sealed class ConnectionPool : IConnectionPool
         if (_connections.TryGetValue(url, out var connection) && connection is not null)
             return connection;
 
-        // Serialize connection establishment per broker URL.
-        // Without this gate, all 50K producers that detect a disconnect simultaneously
-        // fall through to EstablishNewConnection, creating as many Connection objects
-        // (and their associated background tasks) as there are producers — causing a
-        // massive ThreadPool burst and thread spike on broker restart.
         var gate = _connectionGates.GetOrAdd(url, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            // Re-check inside the gate: a concurrent caller may have already
-            // established and stored the connection while we were waiting.
             if (_connections.TryGetValue(url, out connection) && connection is not null)
                 return connection;
 
@@ -191,15 +184,8 @@ public sealed class ConnectionPool : IConnectionPool
 
     private async ValueTask DisposeConnection(PulsarUrl serviceUrl, Connection connection)
     {
-        // Remove only if this specific connection instance is still the cached one.
-        // TryRemove(key) would blindly evict whatever is currently at the key, which
-        // could be a freshly-established replacement connection that arrived while the
-        // ContinueWith for the old (dead) connection was queued — leaking the new one.
         var pair = new KeyValuePair<PulsarUrl, Connection>(serviceUrl, connection);
 #if NETSTANDARD2_0 || NETSTANDARD2_1
-        // TryRemove(KeyValuePair<K,V>) is not part of the netstandard API surface; use the
-        // explicit ICollection<KeyValuePair<K,V>>.Remove(kvp) overload which does the
-        // same atomic key+value compare on all .NET Core runtimes.
         ((ICollection<KeyValuePair<PulsarUrl, Connection>>)_connections).Remove(pair);
 #else
         _connections.TryRemove(pair);

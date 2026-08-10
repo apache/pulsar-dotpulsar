@@ -221,8 +221,8 @@ public sealed class SubProducer : IContainsChannel, IStateHolder<ProducerState>
         _channel = await _executor.Execute(() => _factory.Create(cancellationToken), cancellationToken).ConfigureAwait(false);
 
         var cts = new CancellationTokenSource();
-        var token = cts.Token; // Materialize the token while the CTS is guaranteed to be alive.
-        var channel = _channel; // Pin the channel this dispatcher belongs to.
+        var token = cts.Token;
+        var channel = _channel;
         _dispatcherCts = cts;
         _dispatcherTask = Task.Run(() => MessageDispatcher(channel, token), CancellationToken.None);
     }
