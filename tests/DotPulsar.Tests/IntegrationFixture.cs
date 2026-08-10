@@ -73,6 +73,15 @@ public class IntegrationFixture : IAsyncLifetime
 
     public IAuthentication Authentication => AuthenticationFactory.Token(ct => ValueTask.FromResult(_token!));
 
+    public HttpClient CreateAdminClient() => new()
+    {
+        BaseAddress = AdminUrl,
+        DefaultRequestHeaders =
+        {
+            Authorization = AuthorizationHeader
+        }
+    };
+
     public async ValueTask DisposeAsync()
     {
         await _pulsarCluster.DisposeAsync();
