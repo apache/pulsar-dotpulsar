@@ -591,14 +591,7 @@ public sealed class ConsumerTests : IDisposable
         .ServiceUrl(_fixture.ServiceUrl)
         .Build();
 
-    private HttpClient CreateAdminClient() => new()
-    {
-        BaseAddress = _fixture.AdminUrl,
-        DefaultRequestHeaders =
-        {
-            Authorization = _fixture.AuthorizationHeader
-        }
-    };
+    private HttpClient CreateAdminClient() => _fixture.CreateAdminClient();
 
     private static async ValueTask<long> GetPermits(HttpClient httpClient, string topic, string subscription, CancellationToken cancellationToken)
     {

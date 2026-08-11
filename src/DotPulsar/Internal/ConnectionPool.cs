@@ -29,6 +29,7 @@ public sealed class ConnectionPool : IConnectionPool
     private readonly Connector _connector;
     private readonly EncryptionPolicy _encryptionPolicy;
     private readonly ConcurrentDictionary<PulsarUrl, Connection> _connections;
+    private readonly ConcurrentDictionary<PulsarUrl, SemaphoreSlim> _connectionGates;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly string? _listenerName;
     private readonly TimeSpan _closeInactiveConnectionsInterval;
@@ -51,6 +52,7 @@ public sealed class ConnectionPool : IConnectionPool
         _encryptionPolicy = encryptionPolicy;
         _listenerName = listenerName;
         _connections = new ConcurrentDictionary<PulsarUrl, Connection>();
+        _connectionGates = new ConcurrentDictionary<PulsarUrl, SemaphoreSlim>();
         _cancellationTokenSource = new CancellationTokenSource();
         _closeInactiveConnectionsInterval = closeInactiveConnectionsInterval;
         _keepAliveInterval = keepAliveInterval;
@@ -64,6 +66,11 @@ public sealed class ConnectionPool : IConnectionPool
         foreach (var entry in _connections.ToArray())
         {
             await DisposeConnection(entry.Key, entry.Value).ConfigureAwait(false);
+        }
+
+        foreach (var gate in _connectionGates.Values)
+        {
+            gate.Dispose();
         }
     }
 
@@ -143,7 +150,19 @@ public sealed class ConnectionPool : IConnectionPool
         if (_connections.TryGetValue(url, out var connection) && connection is not null)
             return connection;
 
-        return await EstablishNewConnection(url, cancellationToken).ConfigureAwait(false);
+        var gate = _connectionGates.GetOrAdd(url, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (_connections.TryGetValue(url, out connection) && connection is not null)
+                return connection;
+
+            return await EstablishNewConnection(url, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            gate.Release();
+        }
     }
 
     private async Task<Connection> EstablishNewConnection(PulsarUrl url, CancellationToken cancellationToken)
@@ -165,7 +184,12 @@ public sealed class ConnectionPool : IConnectionPool
 
     private async ValueTask DisposeConnection(PulsarUrl serviceUrl, Connection connection)
     {
-        _connections.TryRemove(serviceUrl, out var _);
+        var pair = new KeyValuePair<PulsarUrl, Connection>(serviceUrl, connection);
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+        ((ICollection<KeyValuePair<PulsarUrl, Connection>>)_connections).Remove(pair);
+#else
+        _connections.TryRemove(pair);
+#endif
         await connection.DisposeAsync().ConfigureAwait(false);
     }
 
