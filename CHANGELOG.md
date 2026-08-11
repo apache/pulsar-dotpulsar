@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.3.2-rc.1] - 2026-08-11
 
 ### Changed
 
@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Updated the System.Diagnostics.DiagnosticSource dependency from version 10.0.7 to 10.0.10 for .NET Standard 2.X
 - Updated the System.IO.Pipelines dependency from version 10.0.7 to 10.0.10 for .NET Standard 2.X
 - Updated the System.Text.Json dependency from version 10.0.7 to 10.0.10 for .NET Standard 2.X
+
+### Fixed
+
+- Race conditions causing thread pool starvation and connection leaks on broker/proxy restarts (Thanks for the PR, Eugene Polozhenkov)
 
 ## [5.3.1] - 2026-05-04
 
