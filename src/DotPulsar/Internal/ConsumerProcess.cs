@@ -63,11 +63,7 @@ public sealed class ConsumerProcess : Process
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
                 _stateManager.SetState(ConsumerState.Disconnected);
-                ActionQueue.Enqueue(async x =>
-                {
-                    await _subConsumer.CloseChannel(x).ConfigureAwait(false);
-                    await _subConsumer.EstablishNewChannel(x).ConfigureAwait(false);
-                });
+                ScheduleReconnect(_subConsumer);
                 return;
             case ChannelState.Connected:
                 if (!_isFailoverSubscription)

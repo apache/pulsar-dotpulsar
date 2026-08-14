@@ -54,11 +54,7 @@ public sealed class ReaderProcess : Process
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
                 _stateManager.SetState(ReaderState.Disconnected);
-                ActionQueue.Enqueue(async x =>
-                {
-                    await _subReader.CloseChannel(x).ConfigureAwait(false);
-                    await _subReader.EstablishNewChannel(x).ConfigureAwait(false);
-                });
+                ScheduleReconnect(_subReader);
                 return;
             case ChannelState.Connected:
                 _stateManager.SetState(ReaderState.Connected);

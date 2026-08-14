@@ -19,6 +19,7 @@ using DotPulsar.Internal.Events;
 public abstract class Process : IProcess
 {
     private readonly CancellationTokenSource _cancellationTokenSource;
+    private int _isReconnecting;
     protected readonly AsyncQueue<Func<CancellationToken, Task>> ActionQueue;
     private Task? _actionProcessorTask;
     protected ChannelState ChannelState;
@@ -88,6 +89,28 @@ public abstract class Process : IProcess
     }
 
     protected abstract void CalculateState();
+
+    protected void ScheduleReconnect(IContainsChannel channel)
+    {
+        if (Interlocked.CompareExchange(ref _isReconnecting, 1, 0) != 0)
+            return;
+
+        ActionQueue.Enqueue(async cancellationToken =>
+        {
+            try
+            {
+                await channel.CloseChannel(cancellationToken).ConfigureAwait(false);
+                await channel.EstablishNewChannel(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _isReconnecting, 0);
+
+                if (ChannelState is ChannelState.ClosedByServer or ChannelState.Disconnected)
+                    CalculateState();
+            }
+        });
+    }
 
     private async Task ProcessActions(CancellationToken cancellationToken)
     {

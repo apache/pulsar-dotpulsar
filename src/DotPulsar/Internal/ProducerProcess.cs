@@ -56,11 +56,7 @@ public sealed class ProducerProcess : Process
             case ChannelState.ClosedByServer:
             case ChannelState.Disconnected:
                 _stateManager.SetState(ProducerState.Disconnected);
-                ActionQueue.Enqueue(async x =>
-                {
-                    await _subProducer.CloseChannel(x).ConfigureAwait(false);
-                    await _subProducer.EstablishNewChannel(x).ConfigureAwait(false);
-                });
+                ScheduleReconnect(_subProducer);
                 return;
             case ChannelState.Connected:
                 ActionQueue.Enqueue(x =>
