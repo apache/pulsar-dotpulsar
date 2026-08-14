@@ -110,6 +110,52 @@ public sealed class ProcessReconnectTests
         channel.EstablishCount.ShouldBe(3);
     }
 
+    [Theory]
+    [InlineData(ProcessKind.Producer)]
+    [InlineData(ProcessKind.Consumer)]
+    [InlineData(ProcessKind.Reader)]
+    public async Task Handle_WhenEventsArriveConcurrently_ReconnectsAfterFinalDisconnect(ProcessKind processKind)
+    {
+        //Arrange
+        var correlationId = Guid.NewGuid();
+        var channel = new TrackingChannelContainer();
+        await using var harness = CreateHarness(processKind, correlationId, channel);
+        channel.OnEstablished = _ => harness.Process.Handle(new ChannelConnected(correlationId));
+
+        harness.Process.Start();
+        await channel.WaitForEstablishAsync(Current.CancellationToken);
+        await harness.WaitForConnected(Current.CancellationToken);
+
+        //Act
+        Parallel.For(0, 500, _ =>
+        {
+            harness.Process.Handle(new ChannelDisconnected(correlationId));
+            harness.Process.Handle(new ChannelConnected(correlationId));
+        });
+
+        await WaitForEstablishQuiescenceAsync(channel, Current.CancellationToken);
+        var establishCountBeforeFinalDisconnect = channel.EstablishCount;
+
+        harness.Process.Handle(new ChannelDisconnected(correlationId));
+
+        while (channel.EstablishCount <= establishCountBeforeFinalDisconnect)
+            await channel.WaitForEstablishAsync(Current.CancellationToken);
+
+        //Assert
+        channel.EstablishCount.ShouldBeGreaterThan(establishCountBeforeFinalDisconnect);
+    }
+
+    private static async Task WaitForEstablishQuiescenceAsync(TrackingChannelContainer channel, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            var count = channel.EstablishCount;
+            await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
+            if (channel.EstablishCount == count)
+                return;
+        }
+    }
+
     private static ProcessHarness CreateHarness(
         ProcessKind processKind,
         Guid correlationId,
