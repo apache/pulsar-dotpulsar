@@ -19,6 +19,8 @@ using DotPulsar.Internal.Events;
 public abstract class Process : IProcess
 {
     private readonly CancellationTokenSource _cancellationTokenSource;
+    private readonly object _stateLock = new object();
+    private int _isReconnecting;
     protected readonly AsyncQueue<Func<CancellationToken, Task>> ActionQueue;
     private Task? _actionProcessorTask;
     protected ChannelState ChannelState;
@@ -39,7 +41,11 @@ public abstract class Process : IProcess
     public void Start()
     {
         _actionProcessorTask = ProcessActions(_cancellationTokenSource.Token);
-        CalculateState();
+
+        lock (_stateLock)
+        {
+            CalculateState();
+        }
     }
 
     public virtual async ValueTask DisposeAsync()
@@ -51,43 +57,71 @@ public abstract class Process : IProcess
 
     public void Handle(IEvent e)
     {
-        switch (e)
+        lock (_stateLock)
         {
-            case ExecutorFaulted executorFaulted:
-                ExecutorState = ExecutorState.Faulted;
-                Exception = executorFaulted.Exception;
-                break;
-            case ChannelActivated _:
-                ChannelState = ChannelState.Active;
-                break;
-            case ChannelClosedByServer _:
-                ChannelState = ChannelState.ClosedByServer;
-                break;
-            case ChannelConnected _:
-                ChannelState = ChannelState.Connected;
-                break;
-            case ChannelDeactivated _:
-                ChannelState = ChannelState.Inactive;
-                break;
-            case SendReceiptWrongOrdering _:
-            case ChannelDisconnected _:
-                ChannelState = ChannelState.Disconnected;
-                break;
-            case ChannelReachedEndOfTopic _:
-                ChannelState = ChannelState.ReachedEndOfTopic;
-                break;
-            case ChannelUnsubscribed _:
-                ChannelState = ChannelState.Unsubscribed;
-                break;
-            case ProducerWaitingForExclusive _:
-                ChannelState = ChannelState.WaitingForExclusive;
-                break;
-        }
+            switch (e)
+            {
+                case ExecutorFaulted executorFaulted:
+                    ExecutorState = ExecutorState.Faulted;
+                    Exception = executorFaulted.Exception;
+                    break;
+                case ChannelActivated _:
+                    ChannelState = ChannelState.Active;
+                    break;
+                case ChannelClosedByServer _:
+                    ChannelState = ChannelState.ClosedByServer;
+                    break;
+                case ChannelConnected _:
+                    ChannelState = ChannelState.Connected;
+                    break;
+                case ChannelDeactivated _:
+                    ChannelState = ChannelState.Inactive;
+                    break;
+                case SendReceiptWrongOrdering _:
+                case ChannelDisconnected _:
+                    ChannelState = ChannelState.Disconnected;
+                    break;
+                case ChannelReachedEndOfTopic _:
+                    ChannelState = ChannelState.ReachedEndOfTopic;
+                    break;
+                case ChannelUnsubscribed _:
+                    ChannelState = ChannelState.Unsubscribed;
+                    break;
+                case ProducerWaitingForExclusive _:
+                    ChannelState = ChannelState.WaitingForExclusive;
+                    break;
+            }
 
-        CalculateState();
+            CalculateState();
+        }
     }
 
     protected abstract void CalculateState();
+
+    protected void ScheduleReconnect(IContainsChannel channel)
+    {
+        if (Interlocked.CompareExchange(ref _isReconnecting, 1, 0) != 0)
+            return;
+
+        ActionQueue.Enqueue(async cancellationToken =>
+        {
+            try
+            {
+                await channel.CloseChannel(cancellationToken).ConfigureAwait(false);
+                await channel.EstablishNewChannel(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _isReconnecting, 0);
+
+                lock (_stateLock)
+                {
+                    if (ChannelState is ChannelState.ClosedByServer or ChannelState.Disconnected)
+                        CalculateState();
+                }
+            }
+        });
+    }
 
     private async Task ProcessActions(CancellationToken cancellationToken)
     {
