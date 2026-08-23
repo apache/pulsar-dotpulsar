@@ -9,6 +9,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Changed
 
 - Updated the Google.Protobuf dependency from version 3.35.1 to 3.36.0
+- Updated the Microsoft.Bcl.AsyncInterfaces dependency from version 10.0.10 to 10.0.11 for .NET Standard 2.0
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 8.0.29 to 8.0.30 for .NET 8
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 9.0.18 to 9.0.19 for .NET 9
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 10.0.10 to 10.0.11 for .NET 10 and .NET Standard 2.X
+- Updated the System.Collections.Immutable from version 10.0.10 to 10.0.11 for .NET Standard 2.X
+- Updated the System.Diagnostics.DiagnosticSource dependency from version 10.0.10 to 10.0.11 for .NET Standard 2.X
+- Updated the System.IO.Pipelines dependency from version 10.0.10 to 10.0.11 for .NET Standard 2.X
+- Updated the System.Text.Json dependency from version 10.0.10 to 10.0.11 for .NET Standard 2.X
+
+### Fixed
+
+- Fix reconnect races that can leave producers permanently disconnected (Thanks for the PR, Amiradel Beyg)
 
 ## [5.3.2] - 2026-08-14
 
