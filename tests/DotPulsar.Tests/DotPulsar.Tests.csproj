@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
     <PackageReference Include="NSubstitute" Version="6.2.0" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
-    <PackageReference Include="Testcontainers.Pulsar" Version="4.14.0" />
+    <PackageReference Include="Testcontainers.Pulsar" Version="4.15.0" />
     <PackageReference Include="ToxiproxyNetCore" Version="1.0.50" />
     <PackageReference Include="xunit.v3" Version="3.2.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
