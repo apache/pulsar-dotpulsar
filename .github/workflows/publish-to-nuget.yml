@@ -31,7 +31,7 @@ jobs:
       fail-fast: false
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set nuget package version from git tag
         if: ${{ github.ref_type == 'tag' }}
@@ -40,7 +40,7 @@ jobs:
         run: echo "VERSION=${TAG#v}" >> $GITHUB_ENV
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '9.0.x'
 
