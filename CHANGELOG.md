@@ -8,7 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Changed
 
-- Updated the Google.Protobuf dependency from version 3.36.0 to 3.36.1
+- Updated the Google.Protobuf dependency from version 3.36.0 to 3.36.2
+- Updated the Microsoft.Bcl.AsyncInterfaces dependency from version 10.0.11 to 10.0.12 for .NET Standard 2.0
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 8.0.30 to 8.0.31 for .NET 8
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 9.0.19 to 9.0.20 for .NET 9
+- Updated the Microsoft.Extensions.ObjectPool dependency from version 10.0.11 to 10.0.12 for .NET 10 and .NET Standard 2.X
+- Updated the System.Collections.Immutable from version 10.0.11 to 10.0.12 for .NET Standard 2.X
+- Updated the System.Diagnostics.DiagnosticSource dependency from version 10.0.11 to 10.0.12 for .NET Standard 2.X
+- Updated the System.IO.Pipelines dependency from version 10.0.11 to 10.0.12 for .NET Standard 2.X
+- Updated the System.Text.Json dependency from version 10.0.11 to 10.0.12 for .NET Standard 2.X
 
 ## [5.3.3] - 2026-08-26
 
