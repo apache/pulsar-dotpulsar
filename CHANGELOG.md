@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [5.3.4] - 2026-09-30
 
+### Added
+
+- 'TraceCorrelation' on ProcessingOptions for choosing how the process trace is correlated with the message's send trace, if tracing is enabled
+    - 'None' (the default): no correlation
+    - 'Link': the process trace links to the send trace (equivalent to setting 'LinkTraces' to 'true')
+    - 'Parent': the process trace is a child of the send trace and links to both the send trace and the ambient trace (if any), following the opt-in behavior described in the OpenTelemetry semantic conventions for messaging
+
 ### Changed
 
 - Updated the Google.Protobuf dependency from version 3.36.0 to 3.36.2

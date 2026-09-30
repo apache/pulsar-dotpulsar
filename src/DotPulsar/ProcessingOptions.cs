@@ -25,11 +25,11 @@ public sealed class ProcessingOptions
     public const int Unbounded = -1;
 
     private bool _ensureOrderedAcknowledgment;
-    private bool _linkTraces;
     private int _maxDegreeOfParallelism;
     private int _maxMessagesPerTask;
     private TimeSpan _shutdownGracePeriod;
     private TaskScheduler _taskScheduler;
+    private TraceCorrelation _traceCorrelation;
 
     /// <summary>
     /// Initializes a new instance with the default values.
@@ -37,11 +37,11 @@ public sealed class ProcessingOptions
     public ProcessingOptions()
     {
         _ensureOrderedAcknowledgment = true;
-        _linkTraces = false;
         _maxDegreeOfParallelism = 1;
         _maxMessagesPerTask = Unbounded;
         _shutdownGracePeriod = TimeSpan.Zero;
         _taskScheduler = TaskScheduler.Default;
+        _traceCorrelation = TraceCorrelation.None;
     }
 
     /// <summary>
@@ -55,11 +55,12 @@ public sealed class ProcessingOptions
 
     /// <summary>
     /// Whether to link the process trace to the message's send trace, if tracing is enabled. The default is 'false'.
+    /// This is a shorthand for <see cref="TraceCorrelation"/>: 'true' corresponds to <see cref="DotPulsar.TraceCorrelation.Link"/> and 'false' to <see cref="DotPulsar.TraceCorrelation.None"/>.
     /// </summary>
     public bool LinkTraces
     {
-        get => _linkTraces;
-        set { _linkTraces = value; }
+        get => _traceCorrelation == TraceCorrelation.Link;
+        set { _traceCorrelation = value ? TraceCorrelation.Link : TraceCorrelation.None; }
     }
 
     /// <summary>
@@ -118,6 +119,21 @@ public sealed class ProcessingOptions
                 throw new ArgumentNullException(nameof(value));
 
             _taskScheduler = value;
+        }
+    }
+
+    /// <summary>
+    /// How the process trace is correlated with the message's send trace, if tracing is enabled. The default is 'None'.
+    /// </summary>
+    public TraceCorrelation TraceCorrelation
+    {
+        get => _traceCorrelation;
+        set
+        {
+            if (!Enum.IsDefined(typeof(TraceCorrelation), value))
+                throw new ArgumentOutOfRangeException(nameof(value));
+
+            _traceCorrelation = value;
         }
     }
 }

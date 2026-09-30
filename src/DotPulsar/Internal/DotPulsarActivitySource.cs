@@ -28,21 +28,33 @@ public static class DotPulsarActivitySource
 
     public static ActivitySource ActivitySource { get; }
 
-    public static Activity? StartConsumerActivity(IMessage message, string operationName, KeyValuePair<string, object?>[] tags, bool linkTraces)
+    public static Activity? StartConsumerActivity(IMessage message, string operationName, KeyValuePair<string, object?>[] tags, TraceCorrelation traceCorrelation)
     {
         if (!ActivitySource.HasListeners())
             return null;
 
-        IEnumerable<ActivityLink>? activityLinks = null;
+        ActivityContext parentContext = default;
+        List<ActivityLink>? activityLinks = null;
 
-        if (linkTraces)
+        if (traceCorrelation != TraceCorrelation.None)
         {
-            var activityLink = GetActivityLink(message);
-            if (activityLink is not null)
-                activityLinks = [activityLink.Value];
+            var creationContext = GetCreationContext(message);
+            if (creationContext is not null)
+            {
+                activityLinks = [new ActivityLink(creationContext.Value)];
+
+                if (traceCorrelation == TraceCorrelation.Parent)
+                {
+                    parentContext = creationContext.Value;
+
+                    var ambientContext = Activity.Current?.Context;
+                    if (ambientContext is not null && ambientContext.Value != default)
+                        activityLinks.Add(new ActivityLink(ambientContext.Value));
+                }
+            }
         }
 
-        return StartActivity(operationName, ActivityKind.Consumer, tags, activityLinks, message.GetConversationId());
+        return StartActivity(operationName, ActivityKind.Consumer, tags, activityLinks, message.GetConversationId(), parentContext);
     }
 
     public static Activity? StartProducerActivity(MessageMetadata metadata, string operationName, KeyValuePair<string, object?>[] tags)
@@ -53,14 +65,14 @@ public static class DotPulsarActivitySource
         return StartActivity(operationName, ActivityKind.Producer, tags, null, metadata.GetConversationId());
     }
 
-    private static ActivityLink? GetActivityLink(IMessage message)
+    private static ActivityContext? GetCreationContext(IMessage message)
     {
         if (message.Properties.TryGetValue(Constants.TraceParent, out var traceParent))
         {
             _ = message.Properties.TryGetValue(Constants.TraceState, out var traceState);
 
             if (ActivityContext.TryParse(traceParent, traceState, out var context))
-                return new ActivityLink(context);
+                return context;
         }
 
         return null;
@@ -71,9 +83,10 @@ public static class DotPulsarActivitySource
         ActivityKind kind,
         KeyValuePair<string, object?>[] tags,
         IEnumerable<ActivityLink>? activityLinks,
-        string? conversationId)
+        string? conversationId,
+        ActivityContext parentContext = default)
     {
-        var activity = ActivitySource.StartActivity(kind, name: operationName, tags: tags, links: activityLinks);
+        var activity = ActivitySource.StartActivity(kind, parentContext: parentContext, name: operationName, tags: tags, links: activityLinks);
 
         if (activity is not null && activity.IsAllDataRequested)
         {
