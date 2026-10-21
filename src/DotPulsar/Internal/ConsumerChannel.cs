@@ -146,16 +146,44 @@ public sealed class ConsumerChannel<TMessage> : IConsumerChannel<TMessage>
 
     public async Task Send(CommandAck command, CancellationToken cancellationToken)
     {
-        var messageId = command.MessageId[0];
+        if (command.MessageId.Count == 0)
+            return;
 
-        if (messageId.BatchIndex != -1)
+        if (command.AckType == CommandAck.Types.AckType.Individual && command.MessageId.Count > 1)
         {
-            var batchMessageId = _batchHandler.Acknowledge(messageId);
+            var readyCount = 0;
+            for (var i = 0; i < command.MessageId.Count; ++i)
+            {
+                var messageId = command.MessageId[i];
+                if (messageId.BatchIndex != -1)
+                {
+                    var batchMessageId = _batchHandler.Acknowledge(messageId);
+                    if (batchMessageId is null)
+                        continue;
 
-            if (batchMessageId is null)
+                    messageId = batchMessageId;
+                }
+
+                command.MessageId[readyCount++] = messageId;
+            }
+
+            if (readyCount == 0)
                 return;
 
-            command.MessageId[0] = batchMessageId;
+            while (command.MessageId.Count > readyCount)
+                command.MessageId.RemoveAt(command.MessageId.Count - 1);
+        }
+        else
+        {
+            var messageId = command.MessageId[0];
+            if (messageId.BatchIndex != -1)
+            {
+                var batchMessageId = _batchHandler.Acknowledge(messageId);
+                if (batchMessageId is null)
+                    return;
+
+                command.MessageId[0] = batchMessageId;
+            }
         }
 
         command.ConsumerId = _id;
