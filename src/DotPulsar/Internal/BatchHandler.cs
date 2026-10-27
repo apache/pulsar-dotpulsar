@@ -27,7 +27,7 @@ public sealed class BatchHandler<TMessage>
     private readonly bool _trackBatches;
     private readonly IMessageFactory<TMessage> _messageFactory;
     private readonly Queue<IMessage<TMessage>> _messages;
-    private readonly LinkedList<Batch> _batches;
+    private readonly Dictionary<(ulong LedgerId, ulong EntryId, int Partition), Batch> _batches;
 
     public BatchHandler(bool trackBatches, IMessageFactory<TMessage> messageFactory)
     {
@@ -35,7 +35,7 @@ public sealed class BatchHandler<TMessage>
         _trackBatches = trackBatches;
         _messageFactory = messageFactory;
         _messages = new Queue<IMessage<TMessage>>();
-        _batches = new LinkedList<Batch>();
+        _batches = new Dictionary<(ulong LedgerId, ulong EntryId, int Partition), Batch>();
     }
 
     public IMessage<TMessage> Add(MessageIdData messageId, uint redeliveryCount, MessageMetadata metadata, ReadOnlySequence<byte> data)
@@ -58,8 +58,10 @@ public sealed class BatchHandler<TMessage>
 
         lock (_lock)
         {
-            if (_trackBatches)
-                _batches.AddLast(new Batch(messageId, metadata.NumMessagesInBatch));
+            var key = (messageId.LedgerId, messageId.EntryId, messageId.Partition);
+            // Redelivery must not replace acknowledgements already recorded for this batch.
+            if (_trackBatches && !_batches.ContainsKey(key))
+                _batches.Add(key, new Batch(messageId, metadata.NumMessagesInBatch));
 
             foreach (var message in messages)
             {
@@ -89,52 +91,38 @@ public sealed class BatchHandler<TMessage>
     {
         lock (_lock)
         {
-            foreach (var batch in _batches)
-            {
-                if (messageId.LedgerId != batch.MessageId.LedgerId ||
-                    messageId.EntryId != batch.MessageId.EntryId ||
-                    messageId.Partition != batch.MessageId.Partition)
-                    continue;
+            var key = (messageId.LedgerId, messageId.EntryId, messageId.Partition);
+            if (!_batches.TryGetValue(key, out var batch) || !batch.Acknowledge(messageId.BatchIndex))
+                return null;
 
-                batch.Acknowledge(messageId.BatchIndex);
-
-                if (batch.IsAcknowledged())
-                {
-                    _batches.Remove(batch);
-                    return batch.MessageId;
-                }
-
-                break;
-            }
-
-            return null;
+            _batches.Remove(key);
+            return batch.MessageId;
         }
     }
 
     private sealed class Batch
     {
         private readonly BitArray _acknowledgementIndex;
+        private int _remaining;
 
         public Batch(MessageIdData messageId, int numberOfMessages)
         {
             MessageId = messageId;
             _acknowledgementIndex = new BitArray(numberOfMessages, false);
+            _remaining = numberOfMessages;
         }
 
         public MessageIdData MessageId { get; }
 
-        public void Acknowledge(int batchIndex)
-            => _acknowledgementIndex.Set(batchIndex, true);
-
-        public bool IsAcknowledged()
+        public bool Acknowledge(int batchIndex)
         {
-            for (var i = 0; i < _acknowledgementIndex.Length; i++)
+            if (!_acknowledgementIndex[batchIndex])
             {
-                if (!_acknowledgementIndex[i])
-                    return false;
+                _acknowledgementIndex[batchIndex] = true;
+                --_remaining;
             }
 
-            return true;
+            return _remaining == 0;
         }
     }
 }
