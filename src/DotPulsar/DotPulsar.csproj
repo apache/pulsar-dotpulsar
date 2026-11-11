@@ -26,6 +26,10 @@
   <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
+
+  <ItemGroup>
+    <GlobalAnalyzerConfigFiles Include="Trimming.globalconfig" />
+  </ItemGroup>
  
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.36.2" />

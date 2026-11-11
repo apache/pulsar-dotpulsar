@@ -227,4 +227,77 @@ public sealed class JsonSchemaTests
         var schemaData = System.Text.Encoding.UTF8.GetString(schema.SchemaInfo.Data);
         schemaData.ShouldBe(customDefinition);
     }
+
+    [Fact]
+    public void Constructor_GivenTypeInfo_ShouldGenerateSameSchemaDataAsOptionsConstructor()
+    {
+        //Arrange
+        var expected = new JsonSchema<NestedModel>().SchemaInfo;
+
+        //Act
+        var actual = new JsonSchema<NestedModel>(JsonModelsContext.Default.NestedModel).SchemaInfo;
+
+        //Assert
+        actual.Name.ShouldBe(expected.Name);
+        actual.Type.ShouldBe(SchemaType.Json);
+        System.Text.Encoding.UTF8.GetString(actual.Data).ShouldBe(System.Text.Encoding.UTF8.GetString(expected.Data));
+    }
+
+    [Fact]
+    public void EncodeDecode_GivenTypeInfo_ShouldRoundTrip()
+    {
+        //Arrange
+        var schema = Schema.Json(CamelCaseJsonModelsContext.Default.PersonModel);
+        var expected = new PersonModel { Name = "Frank", Age = 51 };
+
+        //Act
+        var bytes = schema.Encode(expected);
+        var json = System.Text.Encoding.UTF8.GetString(bytes.ToArray());
+        var actual = schema.Decode(bytes);
+
+        //Assert
+        json.ShouldContain("\"name\"", Case.Sensitive);
+        actual.Name.ShouldBe(expected.Name);
+        actual.Age.ShouldBe(expected.Age);
+    }
+
+    [Fact]
+    public void Encode_GivenTypeInfo_ShouldProduceSameBytesAsOptionsConstructor()
+    {
+        //Arrange
+        var model = new NestedModel { Title = "T", Author = new PersonModel { Name = "G", Age = 7 } };
+
+        //Act
+        var expected = new JsonSchema<NestedModel>().Encode(model).ToArray();
+        var actual = new JsonSchema<NestedModel>(JsonModelsContext.Default.NestedModel).Encode(model).ToArray();
+
+        //Assert
+        actual.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Constructor_GivenTypeInfoAndSchemaDefinition_ShouldUseItAsSchemaData()
+    {
+        //Arrange
+        var definition = "{\"custom\":\"schema\"}";
+
+        //Act
+        var schema = new JsonSchema<PersonModel>(JsonModelsContext.Default.PersonModel, definition);
+
+        //Assert
+        System.Text.Encoding.UTF8.GetString(schema.SchemaInfo.Data).ShouldBe(definition);
+    }
+
+    [Fact]
+    public void Decode_GivenTypeInfoAndEmptyBytes_ShouldThrowSchemaSerializationException()
+    {
+        //Arrange
+        var schema = new JsonSchema<PersonModel>(JsonModelsContext.Default.PersonModel);
+
+        //Act
+        var exception = Record.Exception(() => schema.Decode(new ReadOnlySequence<byte>(Array.Empty<byte>())));
+
+        //Assert
+        exception.ShouldBeOfType<DotPulsar.Exceptions.SchemaSerializationException>();
+    }
 }
