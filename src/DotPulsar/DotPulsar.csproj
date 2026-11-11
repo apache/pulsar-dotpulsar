@@ -22,6 +22,10 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
  
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.36.2" />

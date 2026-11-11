@@ -20,6 +20,10 @@ using System.Buffers;
 using System.Reflection;
 using System.Text;
 
+#if NET
+[System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Avro schemas load the Apache.Avro library and the message type via reflection, which is not compatible with trimming.")]
+[System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Avro schemas create generic Apache.Avro types at runtime, which is not compatible with Native AOT.")]
+#endif
 public sealed class AvroGenericRecordSchema<T> : ISchema<T>
 {
     private const string AvroSchemafullName = "Avro.Schema";

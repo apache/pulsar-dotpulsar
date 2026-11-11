@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 - On .NET 8 and later, ZLIB compression uses `System.IO.Compression.ZLibStream` directly instead of loading it via reflection
 - Reflection-based compression codec discovery is annotated as not trim safe, now runs lazily on first use, and is disabled when running as Native AOT
+- The package is marked as AOT compatible (`IsAotCompatible`) for .NET 8 and later
+- The Avro schemas (`Schema.AvroISpecificRecord` and `Schema.AvroGenericRecord`) are annotated as not trim/AOT compatible
 
 ## [5.3.4] - 2026-10-09
 
