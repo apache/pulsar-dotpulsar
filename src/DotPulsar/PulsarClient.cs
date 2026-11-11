@@ -70,7 +70,7 @@ public sealed class PulsarClient : IPulsarClient
             compressorFactory = CompressionFactories.CompressorFactories().SingleOrDefault(f => f.CompressionType == compressionType);
 
             if (compressorFactory is null)
-                throw new CompressionException($"Support for {compressionType} compression was not found");
+                throw new CompressionException($"Support for {compressionType} compression was not found. Reference a supported compression package or register a codec using CompressionCodecs.Register");
         }
 
         var producer = new Producer<TMessage>(ServiceUrl, options, _exceptionHandler, _connectionPool, compressorFactory);

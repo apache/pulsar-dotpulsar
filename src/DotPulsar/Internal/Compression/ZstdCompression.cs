@@ -19,6 +19,9 @@ using DotPulsar.Internal.Abstractions;
 using System.Buffers;
 using System.Reflection;
 
+#if NET5_0_OR_GREATER
+[System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Loads ZstdNet via reflection. Use CompressionCodecs.Register in trimmed applications.")]
+#endif
 public static class ZstdCompression
 {
     public delegate byte[] Wrap(byte[] src);
