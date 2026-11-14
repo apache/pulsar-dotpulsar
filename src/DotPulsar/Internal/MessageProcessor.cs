@@ -34,7 +34,7 @@ public sealed class MessageProcessor<TMessage> : IDisposable
     private readonly SemaphoreSlim _receiveLock;
     private readonly SemaphoreSlim _acknowledgeLock;
     private readonly ObjectPool<ProcessInfo> _processInfoPool;
-    private readonly bool _linkTraces;
+    private readonly TraceCorrelation _traceCorrelation;
     private readonly bool _ensureOrderedAcknowledgment;
     private readonly int _maxDegreeOfParallelism;
     private readonly int _maxMessagesPerTask;
@@ -78,7 +78,7 @@ public sealed class MessageProcessor<TMessage> : IDisposable
         _acknowledgeLock = new SemaphoreSlim(1, 1);
         _processInfoPool = new DefaultObjectPool<ProcessInfo>(new DefaultPooledObjectPolicy<ProcessInfo>());
 
-        _linkTraces = options.LinkTraces;
+        _traceCorrelation = options.TraceCorrelation;
         _ensureOrderedAcknowledgment = options.EnsureOrderedAcknowledgment;
         _maxDegreeOfParallelism = options.MaxDegreeOfParallelism;
         _maxMessagesPerTask = options.MaxMessagesPerTask;
@@ -151,7 +151,7 @@ public sealed class MessageProcessor<TMessage> : IDisposable
                 _receiveLock.Release();
             }
 
-            var activity = DotPulsarActivitySource.StartConsumerActivity(message, _operationName, _activityTags, _linkTraces);
+            var activity = DotPulsarActivitySource.StartConsumerActivity(message, _operationName, _activityTags, _traceCorrelation);
             if (activity is not null && activity.IsAllDataRequested)
             {
                 activity.SetMessageId(message.MessageId);
