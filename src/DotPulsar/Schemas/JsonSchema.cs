@@ -20,33 +20,66 @@ using System.Buffers;
 using System.Collections.Immutable;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 /// <summary>
 /// Schema definition for JSON encoded messages.
 /// </summary>
+/// <remarks>
+/// For trimmed and Native AOT applications, use the constructors taking a <see cref="JsonTypeInfo{T}"/>
+/// (for example from a source-generated <see cref="System.Text.Json.Serialization.JsonSerializerContext"/>).
+/// </remarks>
 public sealed class JsonSchema<T> : ISchema<T>
 {
-    private readonly JsonSerializerOptions _options;
+    internal const string RequiresUnreferencedCodeMessage = "JSON serialization and schema generation for arbitrary types use reflection. Use the overload taking a JsonTypeInfo<T> (for example from a JsonSerializerContext) in trimmed applications.";
+    internal const string RequiresDynamicCodeMessage = "JSON serialization of arbitrary types might need runtime code generation. Use the overload taking a JsonTypeInfo<T> (for example from a JsonSerializerContext) in Native AOT applications.";
 
-    public JsonSchema()
-    {
-        _options = new JsonSerializerOptions();
-        var schemaData = GenerateSchemaData(_options);
-        SchemaInfo = new SchemaInfo(typeof(T).Name, schemaData, SchemaType.Json, ImmutableDictionary<string, string>.Empty);
-    }
+    private readonly JsonTypeInfo<T> _typeInfo;
 
+#if NET
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(RequiresDynamicCodeMessage)]
+#endif
+    public JsonSchema() : this(new JsonSerializerOptions()) { }
+
+#if NET
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(RequiresDynamicCodeMessage)]
+#endif
     public JsonSchema(JsonSerializerOptions options)
     {
-        _options = options;
-        var schemaData = GenerateSchemaData(_options);
-        SchemaInfo = new SchemaInfo(typeof(T).Name, schemaData, SchemaType.Json, ImmutableDictionary<string, string>.Empty);
+        _typeInfo = GetTypeInfo(options);
+        var schemaData = Encoding.UTF8.GetBytes(JsonSchemaDefinitionGenerator.Generate<T>(options));
+        SchemaInfo = CreateSchemaInfo(schemaData);
     }
 
+#if NET
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(RequiresDynamicCodeMessage)]
+#endif
     public JsonSchema(JsonSerializerOptions options, string jsonSchemaDefinition)
     {
-        _options = options;
-        var schemaData = Encoding.UTF8.GetBytes(jsonSchemaDefinition);
-        SchemaInfo = new SchemaInfo(typeof(T).Name, schemaData, SchemaType.Json, ImmutableDictionary<string, string>.Empty);
+        _typeInfo = GetTypeInfo(options);
+        SchemaInfo = CreateSchemaInfo(Encoding.UTF8.GetBytes(jsonSchemaDefinition));
+    }
+
+    /// <summary>
+    /// Create a JSON schema using System.Text.Json contract metadata. The schema definition is generated from the metadata.
+    /// </summary>
+    public JsonSchema(JsonTypeInfo<T> typeInfo)
+    {
+        _typeInfo = typeInfo ?? throw new ArgumentNullException(nameof(typeInfo));
+        var schemaData = Encoding.UTF8.GetBytes(JsonSchemaDefinitionGenerator.Generate(typeInfo));
+        SchemaInfo = CreateSchemaInfo(schemaData);
+    }
+
+    /// <summary>
+    /// Create a JSON schema using System.Text.Json contract metadata and an explicit schema definition.
+    /// </summary>
+    public JsonSchema(JsonTypeInfo<T> typeInfo, string jsonSchemaDefinition)
+    {
+        _typeInfo = typeInfo ?? throw new ArgumentNullException(nameof(typeInfo));
+        SchemaInfo = CreateSchemaInfo(Encoding.UTF8.GetBytes(jsonSchemaDefinition));
     }
 
     public SchemaInfo SchemaInfo { get; }
@@ -56,7 +89,7 @@ public sealed class JsonSchema<T> : ISchema<T>
         try
         {
             var array = bytes.ToArray();
-            return JsonSerializer.Deserialize<T>(array, _options)
+            return JsonSerializer.Deserialize(array, _typeInfo)
                 ?? throw new SchemaSerializationException($"Failed to deserialize JSON to type '{typeof(T).Name}'");
         }
         catch (JsonException exception)
@@ -67,13 +100,22 @@ public sealed class JsonSchema<T> : ISchema<T>
 
     public ReadOnlySequence<byte> Encode(T message)
     {
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(message, _options);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(message, _typeInfo);
         return new ReadOnlySequence<byte>(bytes);
     }
 
-    private static byte[] GenerateSchemaData(JsonSerializerOptions options)
+    private static SchemaInfo CreateSchemaInfo(byte[] schemaData)
+        => new(typeof(T).Name, schemaData, SchemaType.Json, ImmutableDictionary<string, string>.Empty);
+
+#if NET
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(RequiresDynamicCodeMessage)]
+#endif
+    private static JsonTypeInfo<T> GetTypeInfo(JsonSerializerOptions options)
     {
-        var definition = JsonSchemaDefinitionGenerator.Generate<T>(options);
-        return Encoding.UTF8.GetBytes(definition);
+        // Matches what JsonSerializer.Serialize(value, options) does on first use: lock the options and
+        // fall back to the reflection-based resolver if none is configured.
+        options.MakeReadOnly(populateMissingResolver: true);
+        return (JsonTypeInfo<T>) options.GetTypeInfo(typeof(T));
     }
 }

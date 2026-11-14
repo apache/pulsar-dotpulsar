@@ -16,6 +16,52 @@ namespace DotPulsar.Internal.Compression;
 
 using DotPulsar.Internal.Abstractions;
 using System.Buffers;
+#if NET6_0_OR_GREATER
+using System.IO.Compression;
+
+public static class BuiltinZlibCompression
+{
+    public static bool TryLoading(out ICompressorFactory? compressorFactory, out IDecompressorFactory? decompressorFactory)
+    {
+        try
+        {
+            compressorFactory = new CompressorFactory(PulsarApi.CompressionType.Zlib, () => new Compressor(Compress));
+            decompressorFactory = new DecompressorFactory(PulsarApi.CompressionType.Zlib, () => new Decompressor(Decompress));
+            return CompressionTester.TestCompression(compressorFactory, decompressorFactory);
+        }
+        catch
+        {
+            // Ignore
+        }
+
+        compressorFactory = null;
+        decompressorFactory = null;
+
+        return false;
+    }
+
+    private static ReadOnlySequence<byte> Compress(ReadOnlySequence<byte> data)
+    {
+        using var compressedStream = new MemoryStream();
+        using (var compressor = new ZLibStream(compressedStream, CompressionLevel.Optimal, leaveOpen: true))
+        {
+            foreach (var segment in data)
+                compressor.Write(segment.Span);
+        }
+
+        return new ReadOnlySequence<byte>(compressedStream.ToArray());
+    }
+
+    private static ReadOnlySequence<byte> Decompress(ReadOnlySequence<byte> data, int decompressedSize)
+    {
+        using var dataStream = new MemoryStream(data.ToArray());
+        using var decompressor = new ZLibStream(dataStream, CompressionMode.Decompress);
+        using var decompressedStream = new MemoryStream(Math.Max(decompressedSize, 0));
+        decompressor.CopyTo(decompressedStream);
+        return new ReadOnlySequence<byte>(decompressedStream.ToArray());
+    }
+}
+#else
 using System.Reflection;
 
 public static class BuiltinZlibCompression
@@ -75,3 +121,4 @@ public static class BuiltinZlibCompression
             return new ReadOnlySequence<byte>(decompressedStream.ToArray());
         };
 }
+#endif

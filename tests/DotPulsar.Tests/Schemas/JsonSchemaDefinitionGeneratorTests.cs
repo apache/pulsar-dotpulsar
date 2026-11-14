@@ -17,6 +17,7 @@ namespace DotPulsar.Tests.Schemas;
 using DotPulsar.Schemas;
 using DotPulsar.Tests.Schemas.TestSamples.JsonModels;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 [Trait("Category", "Unit")]
 public sealed class JsonSchemaDefinitionGeneratorTests
@@ -252,6 +253,71 @@ public sealed class JsonSchemaDefinitionGeneratorTests
         //Assert — should not throw
         var parsed = JsonDocument.Parse(schema);
         parsed.RootElement.ValueKind.ShouldBe(JsonValueKind.Object);
+    }
+
+    public static TheoryData<Type> SampleModels =>
+    [
+        typeof(PersonModel),
+        typeof(NullableFieldModel),
+        typeof(NestedModel),
+        typeof(CollectionModel),
+        typeof(JsonPropertyNameModel),
+        typeof(JsonIgnoreModel),
+        typeof(EnumModel),
+        typeof(AllTypesModel),
+        typeof(DictionaryModel)
+    ];
+
+    [Theory]
+    [MemberData(nameof(SampleModels))]
+    public void Generate_GivenSourceGeneratedTypeInfo_ShouldMatchReflectionBasedGeneration(Type type)
+    {
+        //Arrange
+        var expected = JsonSchemaDefinitionGenerator.Generate(type);
+        var typeInfo = JsonModelsContext.Default.GetTypeInfo(type)!;
+
+        //Act
+        var actual = JsonSchemaDefinitionGenerator.Generate(typeInfo);
+
+        //Assert
+        actual.ShouldBe(expected);
+    }
+
+    [Theory]
+    [MemberData(nameof(SampleModels))]
+    public void Generate_GivenReflectionTypeInfoWithCamelCase_ShouldMatchReflectionBasedGeneration(Type type)
+    {
+        //Arrange
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+        };
+        var expected = JsonSchemaDefinitionGenerator.Generate(type, options);
+        var typeInfo = options.GetTypeInfo(type);
+
+        //Act
+        var actual = JsonSchemaDefinitionGenerator.Generate(typeInfo);
+
+        //Assert
+        actual.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Generate_GivenSourceGeneratedTypeInfoWithCamelCase_ShouldMatchReflectionBasedGeneration()
+    {
+        //Arrange
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var expectedPerson = JsonSchemaDefinitionGenerator.Generate<PersonModel>(options);
+        var expectedPropertyName = JsonSchemaDefinitionGenerator.Generate<JsonPropertyNameModel>(options);
+
+        //Act
+        var actualPerson = JsonSchemaDefinitionGenerator.Generate(CamelCaseJsonModelsContext.Default.PersonModel);
+        var actualPropertyName = JsonSchemaDefinitionGenerator.Generate(CamelCaseJsonModelsContext.Default.JsonPropertyNameModel);
+
+        //Assert
+        actualPerson.ShouldBe(expectedPerson);
+        actualPropertyName.ShouldBe(expectedPropertyName);
     }
 
     private static JsonElement FindField(JsonElement fields, string name)

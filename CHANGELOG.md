@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `CompressionCodecs.Register` for registering compression codecs explicitly, so compression works in trimmed and Native AOT applications
+- The `DotPulsar.Compression.EnableReflectionDiscovery` runtime feature switch for disabling (and trimming away) reflection-based discovery of compression codecs
+- `Schema.Json<T>(JsonTypeInfo<T>)` and matching `JsonSchema<T>` constructors for trim and Native AOT compatible JSON schemas (for example using a source-generated `JsonSerializerContext`)
+- `JsonSchemaDefinitionGenerator.Generate(JsonTypeInfo)` for generating schema definitions from System.Text.Json contract metadata
+
+### Changed
+
+- On .NET 8 and later, ZLIB compression uses `System.IO.Compression.ZLibStream` directly instead of loading it via reflection
+- Reflection-based compression codec discovery is annotated as not trim safe, now runs lazily on first use, and is disabled when running as Native AOT
+- The package is marked as AOT compatible (`IsAotCompatible`) for .NET 8 and later
+- The Avro schemas (`Schema.AvroISpecificRecord` and `Schema.AvroGenericRecord`) are annotated as not trim/AOT compatible
+- The `JsonSerializerOptions`-based JSON schema APIs and the `Type`-based `JsonSchemaDefinitionGenerator.Generate` overloads are annotated as not trim/AOT compatible. Their generated schema definitions are unchanged
+- `JsonSchema<T>` constructors taking `JsonSerializerOptions` now make the options read-only when the schema is created rather than on first encode/decode
+- Trim and AOT analyzer warnings are treated as errors when building DotPulsar
+
 ## [5.3.4] - 2026-10-09
 
 ### Changed

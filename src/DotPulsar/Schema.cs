@@ -100,17 +100,41 @@ public static class Schema
     /// <summary>
     /// JSON schema using System.Text.Json
     /// </summary>
+#if NET
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(JsonSchema<object>.RequiresUnreferencedCodeMessage)]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(JsonSchema<object>.RequiresDynamicCodeMessage)]
+#endif
     public static JsonSchema<T> Json<T>() => new();
 
     /// <summary>
     /// JSON schema using System.Text.Json with custom serializer options
     /// </summary>
+#if NET
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(JsonSchema<object>.RequiresUnreferencedCodeMessage)]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(JsonSchema<object>.RequiresDynamicCodeMessage)]
+#endif
     public static JsonSchema<T> Json<T>(System.Text.Json.JsonSerializerOptions options) => new(options);
 
     /// <summary>
     /// JSON schema using System.Text.Json with custom serializer options and schema definition
     /// </summary>
+#if NET
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(JsonSchema<object>.RequiresUnreferencedCodeMessage)]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(JsonSchema<object>.RequiresDynamicCodeMessage)]
+#endif
     public static JsonSchema<T> Json<T>(System.Text.Json.JsonSerializerOptions options, string jsonSchemaDefinition) => new(options, jsonSchemaDefinition);
+
+    /// <summary>
+    /// JSON schema using System.Text.Json contract metadata, for example from a source-generated JsonSerializerContext.
+    /// Compatible with trimming and Native AOT.
+    /// </summary>
+    public static JsonSchema<T> Json<T>(System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> typeInfo) => new(typeInfo);
+
+    /// <summary>
+    /// JSON schema using System.Text.Json contract metadata and an explicit schema definition.
+    /// Compatible with trimming and Native AOT.
+    /// </summary>
+    public static JsonSchema<T> Json<T>(System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> typeInfo, string jsonSchemaDefinition) => new(typeInfo, jsonSchemaDefinition);
 
     /// <summary>
     /// Protobuf native schema for classes that implement Google.Protobuf.IMessage
@@ -120,10 +144,18 @@ public static class Schema
     /// <summary>
     /// Avro schema for classes that use ISpecificRecord
     /// </summary>
+#if NET
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Avro schemas load the Apache.Avro library and the message type via reflection, which is not compatible with trimming.")]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Avro schemas create generic Apache.Avro types at runtime, which is not compatible with Native AOT.")]
+#endif
     public static AvroISpecificRecordSchema<T> AvroISpecificRecord<T>() => new();
 
     /// <summary>
     /// Avro schema for generic avro record, always give Avro.Generic.GenericRecord
     /// </summary>
+#if NET
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Avro schemas load the Apache.Avro library and the message type via reflection, which is not compatible with trimming.")]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Avro schemas create generic Apache.Avro types at runtime, which is not compatible with Native AOT.")]
+#endif
     public static AvroGenericRecordSchema<T> AvroGenericRecord<T>(string jsonAvroSchema) => new(jsonAvroSchema);
 }

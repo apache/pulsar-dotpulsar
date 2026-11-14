@@ -22,7 +22,11 @@ public sealed class EnumLookup<TKey, TValue> where TKey : Enum
 
     public EnumLookup(TValue defaultValue)
     {
+#if NET8_0_OR_GREATER
+        var max = Enum.GetValuesAsUnderlyingType(typeof(TKey)).Cast<int>().Max() + 1;
+#else
         var max = Enum.GetValues(typeof(TKey)).Cast<int>().Max() + 1;
+#endif
         _values = new TValue[max];
         for (var i = 0; i < max; ++i)
             _values[i] = defaultValue;

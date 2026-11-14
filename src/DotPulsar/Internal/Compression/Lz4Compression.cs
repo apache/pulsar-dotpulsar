@@ -19,6 +19,9 @@ using DotPulsar.Internal.Abstractions;
 using System.Buffers;
 using System.Reflection;
 
+#if NET5_0_OR_GREATER
+[System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Loads K4os.Compression.LZ4 via reflection. Use CompressionCodecs.Register in trimmed applications.")]
+#endif
 public static class Lz4Compression
 {
     public delegate int Decode(byte[] source, int sourceOffset, int sourceLength, byte[] target, int targetOffset, int targetLength);

@@ -18,6 +18,9 @@ using DotPulsar.Internal.Abstractions;
 using System.Buffers;
 using System.Reflection;
 
+#if NET5_0_OR_GREATER
+[System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Loads IronSnappy via reflection. Use CompressionCodecs.Register in trimmed applications.")]
+#endif
 public static class SnappyCompression
 {
     public delegate byte[] Decode(ReadOnlySpan<byte> source);

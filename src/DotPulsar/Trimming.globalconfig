@@ -1,0 +1,6 @@
+is_global = true
+
+# Treat trimming and AOT analyzer warnings as errors (the analyzers only run for targets where IsAotCompatible is true)
+dotnet_analyzer_diagnostic.category-Trimming.severity = error
+dotnet_analyzer_diagnostic.category-AOT.severity = error
+dotnet_analyzer_diagnostic.category-SingleFile.severity = error
